@@ -16,7 +16,7 @@
   margin-bottom: 28px;
 }
 
-.title { font-size: 22px; font-weight: 600; color: var(--text); margin: 0; }
+.title { font-size: 16px; font-weight: 500; color: var(--text); margin: 0; }
 
 .btnNew {
   padding: 8px 16px;

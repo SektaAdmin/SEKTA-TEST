@@ -15,11 +15,12 @@
 
 .topbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-  background-color: var(--bg);
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 10;
