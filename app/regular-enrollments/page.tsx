@@ -204,25 +204,23 @@ export default function RegularEnrollmentsPage() {
                       <td className={styles.name}>{clientName(e)}</td>
                       <td>{e.schedules?.title || '—'}</td>
                       <td>{getDayName(e.schedules?.day_of_week || 0)}</td>
-                      <td className={styles.time}>{formatTime(e.schedules?.start_time || '')}</td>
+                      <td className={styles.mono}>{formatTime(e.schedules?.start_time || '')}</td>
                       <td>{trainerName(e)}</td>
                       <td>{hallName(e)}</td>
                       <td className={styles.actionCell}>
-                        <div className={styles.actions}>
+                        <div className={styles.actionBtns}>
                           <button
-                            className={styles.btnEdit}
+                            className={styles.editBtn}
                             onClick={() => {
                               setEditEnrollment(e)
                               setShowModal(true)
                             }}
-                            title="Редагувати"
                           >
-                            Редагувати
+                            Змінити
                           </button>
                           <button
-                            className={styles.btnDelete}
+                            className={styles.deleteBtn}
                             onClick={() => setDeleteId(e.id)}
-                            title="Видалити"
                           >
                             Видалити
                           </button>
