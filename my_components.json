@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "total_components": 12,
+    "files_analyzed": 19,
+    "root_path": "/Users/oleksandr/Documents/2025/SEKTA/Supabase/sekta-crm"
+  },
+  "components": [
+    {
+      "name": "ClientModal",
+      "type": "function",
+      "file_path": "components/ClientModal.tsx",
+      "line_number": 28,
+      "is_exported": true,
+      "description": null,
+      "props": [
+        "onClose",
+        "onSaved",
+        "client"
+      ]
+    },
+    {
+      "name": "ClientsPage",
+      "type": "function",
+      "file_path": "app/clients/page.tsx",
+      "line_number": 26,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "Home",
+      "type": "function",
+      "file_path": "app/page.tsx",
+      "line_number": 4,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "LoginPage",
+      "type": "function",
+      "file_path": "app/login/page.tsx",
+      "line_number": 7,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "RootLayout",
+      "type": "function",
+      "file_path": "app/layout.tsx",
+      "line_number": 9,
+      "is_exported": true,
+      "description": null,
+      "props": [
+        "children"
+      ]
+    },
+    {
+      "name": "SaleModal",
+      "type": "function",
+      "file_path": "components/SaleModal.tsx",
+      "line_number": 56,
+      "is_exported": true,
+      "description": null,
+      "props": [
+        "onClose",
+        "onSaved",
+        "editSale"
+      ]
+    },
+    {
+      "name": "SalesPage",
+      "type": "function",
+      "file_path": "app/sales/page.tsx",
+      "line_number": 21,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "Sidebar",
+      "type": "function",
+      "file_path": "components/Sidebar.tsx",
+      "line_number": 36,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "TicketModal",
+      "type": "function",
+      "file_path": "components/TicketModal.tsx",
+      "line_number": 30,
+      "is_exported": true,
+      "description": null,
+      "props": [
+        "onClose",
+        "onSaved"
+      ]
+    },
+    {
+      "name": "TicketsPage",
+      "type": "function",
+      "file_path": "app/tickets/page.tsx",
+      "line_number": 22,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    },
+    {
+      "name": "TrainerModal",
+      "type": "function",
+      "file_path": "components/TrainerModal.tsx",
+      "line_number": 18,
+      "is_exported": true,
+      "description": null,
+      "props": [
+        "onClose",
+        "onSaved"
+      ]
+    },
+    {
+      "name": "TrainersPage",
+      "type": "function",
+      "file_path": "app/trainers/page.tsx",
+      "line_number": 11,
+      "is_exported": true,
+      "description": null,
+      "props": []
+    }
+  ],
+  "summary": {
+    "total_components": 12,
+    "total_files": 19,
+    "components_by_type": {
+      "function": [
+        "ClientsPage",
+        "RootLayout",
+        "LoginPage",
+        "Home",
+        "SalesPage",
+        "TicketsPage",
+        "TrainersPage",
+        "ClientModal",
+        "SaleModal",
+        "Sidebar",
+        "TicketModal",
+        "TrainerModal"
+      ]
+    },
+    "components_by_file": {
+      "app/clients/page.tsx": [
+        "ClientsPage"
+      ],
+      "app/layout.tsx": [
+        "RootLayout"
+      ],
+      "app/login/page.tsx": [
+        "LoginPage"
+      ],
+      "app/page.tsx": [
+        "Home"
+      ],
+      "app/sales/page.tsx": [
+        "SalesPage"
+      ],
+      "app/tickets/page.tsx": [
+        "TicketsPage"
+      ],
+      "app/trainers/page.tsx": [
+        "TrainersPage"
+      ],
+      "components/ClientModal.tsx": [
+        "ClientModal"
+      ],
+      "components/SaleModal.tsx": [
+        "SaleModal"
+      ],
+      "components/Sidebar.tsx": [
+        "Sidebar"
+      ],
+      "components/TicketModal.tsx": [
+        "TicketModal"
+      ],
+      "components/TrainerModal.tsx": [
+        "TrainerModal"
+      ]
+    },
+    "exported_count": 12,
+    "most_used": []
+  }
+}

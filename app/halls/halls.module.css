@@ -1,0 +1,156 @@
+/* halls.module.css */
+
+.layout { display: flex; min-height: 100vh; background: var(--bg); }
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.title { font-size: 22px; font-weight: 600; color: var(--text); margin: 0; }
+
+.btnNew {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btnNew:hover { opacity: 0.85; }
+
+.content { display: flex; flex-direction: column; gap: 24px; }
+
+.empty { color: var(--text-2); font-size: 14px; padding: 32px 0; }
+
+/* ── Table ── */
+.tableWrap {
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  overflow: hidden;
+}
+
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.table thead tr { background: var(--bg-2); }
+
+.table th {
+  padding: 11px 16px;
+  text-align: left;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.table tbody tr {
+  border-bottom: 0.5px solid var(--border);
+  transition: background 0.1s;
+}
+.table tbody tr:last-child { border-bottom: none; }
+.table tbody tr:hover { background: var(--bg-2); }
+
+.table td { padding: 13px 16px; color: var(--text); vertical-align: middle; }
+
+.name { font-weight: 500; }
+.mono { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.description {
+  color: var(--text-2);
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Toggle buttons ── */
+.toggleBtns { display: flex; gap: 4px; }
+
+.toggleBtn {
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid transparent;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+}
+
+.toggleTrue { color: var(--accent); border-color: rgba(200,240,96,0.25); }
+.toggleTrue:hover:not(:disabled) { background: var(--accent-dim); }
+.toggleActiveTrue { background: var(--accent-dim); border-color: var(--accent); cursor: default; }
+
+.toggleFalse { color: var(--text-3); border-color: var(--border); }
+.toggleFalse:hover:not(:disabled) { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); }
+.toggleActiveFalse { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); cursor: default; }
+
+.toggleBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Archived row ── */
+.archivedRow td { color: var(--text-3); }
+.archivedRow .name { color: var(--text-2); }
+
+.restoreBtn {
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.restoreBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.restoreBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Archive section ── */
+.archiveSection { display: flex; flex-direction: column; gap: 12px; }
+
+.archiveToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.archiveToggle:hover { color: var(--text); }
+
+.archiveChevron { display: flex; align-items: center; transition: transform 0.2s; }
+.archiveChevronOpen { transform: rotate(180deg); }
+
+.archiveCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+.archiveEmpty { color: var(--text-3); font-size: 13px; padding: 12px 0; }

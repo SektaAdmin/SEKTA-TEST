@@ -1,0 +1,219 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.btnNew {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  letter-spacing: 0.01em;
+}
+.btnNew:hover { opacity: 0.88; }
+
+.content { flex: 1; padding: 24px 28px; }
+
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.tableWrap {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead tr {
+  background: var(--bg-3);
+}
+
+.table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-3); }
+
+.date { color: var(--text-2) !important; font-family: var(--mono); font-size: 12px !important; }
+.price { font-family: var(--mono); font-size: 13px !important; }
+.trainer { color: var(--text-2) !important; }
+
+.deposit { font-family: var(--mono); font-size: 13px !important; white-space: nowrap; }
+.depositPos { color: #22c55e; font-weight: 500; }
+.depositNeg { color: var(--danger); font-weight: 500; }
+.depositZero { color: var(--text-3); }
+.depositLabel { color: var(--text-3); font-style: italic; font-size: 12px; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badgeCash { background: rgba(200,240,96,0.12); color: var(--accent); }
+.badgeFop { background: rgba(96,160,240,0.1); color: #60a0f0; }
+.badgeCard { background: rgba(240,180,96,0.1); color: #f0b460; }
+
+.actions { display: flex; gap: 6px; }
+
+.btnEdit, .btnDel {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.btnEdit:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
+.btnDel:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+
+.confirmBox {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 300px;
+}
+
+.confirmBox h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.confirmBox p {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 20px;
+}
+
+.confirmError {
+  font-size: 12px;
+  color: var(--danger);
+  background: var(--danger-dim);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.confirmBtns { display: flex; gap: 8px; justify-content: flex-end; }
+
+.btnCancel {
+  background: transparent;
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.btnCancel:hover { color: var(--text); }
+
+.btnConfirmDel {
+  background: var(--danger);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.btnConfirmDel:hover { opacity: 0.85; }
+.btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.depositInfo {
+  color: var(--text-3);
+  font-size: 11px;
+  display: block;
+  margin-top: 4px;
+}
+
+.depositWarning {
+  color: var(--warning, #f59e0b);
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+  background: var(--warning-dim, rgba(245, 158, 11, 0.1));
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+}

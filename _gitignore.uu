@@ -1,0 +1,125 @@
+# Окружение
+.env
+.env.local
+.env.*.local
+.venv/
+venv/
+ENV/
+env/
+node_modules/
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+*.code-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Node.js
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+package-lock.json
+yarn.lock
+
+# БД
+*.db
+*.sqlite
+*.sqlite3
+*.postgres
+
+# Логи
+*.log
+logs/
+*.log.*
+
+# Временные файлы
+*.tmp
+*.bak
+*.backup
+*~
+.tmp/
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE специфичные
+.vscode/settings.json
+.vscode/extensions.json
+
+# Конфиги с секретами
+.env
+.env.production
+secrets.json
+config.local.js
+
+# Сборки
+dist/
+build/
+out/
+
+# Документация (если генерируется)
+site/
+docs/_build/
+
+# MacOS
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Кэши
+.cache/
+*.cache
+
+# Прочее
+.claude/last_commits.txt    # Автогенерируется
+.claude/status.txt          # Автогенерируется
+.claude/project_stats.txt   # Автогенерируется
+
+# Но НЕ исключаем контекстные файлы:
+# ✅ .claude/context.md      # Важно отслеживать
+# ✅ .claude/memory.json     # Важно отслеживать
+# ✅ .claude/sync.sh         # Скрипт должен быть в репозитории

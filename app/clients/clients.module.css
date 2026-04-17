@@ -1,0 +1,307 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Search ─────────────────────────────────────────────────── */
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-3);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 30px 7px 30px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  width: 210px;
+  transition: border-color 0.12s, width 0.2s;
+}
+.searchInput:focus {
+  border-color: var(--accent);
+  width: 260px;
+}
+.searchInput::placeholder { color: var(--text-3); }
+
+.searchClear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 3px;
+  line-height: 1;
+  transition: color 0.12s;
+}
+.searchClear:hover { color: var(--text-2); }
+
+/* ── Page-size select ────────────────────────────────────────── */
+.pageSizeSelect {
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.pageSizeSelect:focus { border-color: var(--accent); }
+
+/* ── Add button ──────────────────────────────────────────────── */
+.btnNew {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.btnNew:hover { opacity: 0.88; }
+
+/* ── Content ─────────────────────────────────────────────────── */
+.content { flex: 1; padding: 24px 28px; }
+
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.empty2 { color: var(--text-3); }
+
+/* ── Table ───────────────────────────────────────────────────── */
+.tableWrap {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead tr { background: var(--bg-3); }
+
+.table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-3); }
+
+.name { font-weight: 500; }
+
+.phone {
+  font-family: var(--mono);
+  font-size: 12px !important;
+}
+
+.link {
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.link:hover { color: var(--text); }
+
+.handle {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+/* ── Action column ───────────────────────────────────────────── */
+.actionCell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 12px !important;
+}
+
+.btnEdit {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.table tbody tr:hover .btnEdit {
+  opacity: 1;
+}
+
+.btnEdit:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+/* ── Balance badges ──────────────────────────────────────────── */
+.balancePos {
+  display: inline-block;
+  background: rgba(200,240,96,0.1);
+  color: var(--accent);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+
+.balanceNeg {
+  display: inline-block;
+  background: var(--danger-dim);
+  color: var(--danger);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+
+.balanceZero {
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+/* ── Pagination ──────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 2px 0;
+}
+
+.paginationLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paginationInfo {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+
+.paginationBtns {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pageBtn {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 0;
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--mono);
+  cursor: pointer;
+  min-width: 32px;
+  text-align: center;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+.pageBtn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.pageBtnActive {
+  background: var(--accent-dim) !important;
+  border-color: rgba(200,240,96,0.35) !important;
+  color: var(--accent) !important;
+  font-weight: 500;
+}
+
+.pageEllipsis {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 0 5px;
+  user-select: none;
+}

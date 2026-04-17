@@ -1,0 +1,62 @@
+📦 sekta-crm/
+├── 📁 .claude  # Папка для контекста и памяти
+│   └── 📁 settings.local.json
+├── 📁 app
+│   ├── 📁 clients
+│   │   ├── 📁 clients.module.css
+│   │   └── 📁 page.tsx
+│   ├── 📁 login
+│   │   ├── 📁 login.module.css
+│   │   └── 📁 page.tsx
+│   ├── 📁 sales
+│   │   ├── 📁 page.tsx
+│   │   └── 📁 sales.module.css
+│   ├── 📁 tickets
+│   │   ├── 📁 page.tsx
+│   │   └── 📁 tickets.module.css
+│   ├── 📁 trainers
+│   │   ├── 📁 page.tsx
+│   │   └── 📁 trainers.module.css
+│   ├── 📁 globals.css
+│   ├── 📁 layout.tsx
+│   └── 📁 page.tsx
+├── 📁 claude
+│   ├── 📁 context.md  # Контекст проекта
+│   ├── 📁 memory.json  # Структурированная память
+│   └── 📁 sync.sh  # Скрипт синхронизации
+├── 📁 components
+│   ├── 📁 ClientModal.module.css
+│   ├── 📁 ClientModal.tsx
+│   ├── 📁 SaleModal.module.css
+│   ├── 📁 SaleModal.tsx
+│   ├── 📁 Sidebar.module.css
+│   ├── 📁 Sidebar.tsx
+│   ├── 📁 TicketModal.module.css
+│   ├── 📁 TicketModal.tsx
+│   ├── 📁 TrainerModal.module.css
+│   └── 📁 TrainerModal.tsx
+├── 📁 lib
+│   ├── 📁 supabase-server.ts
+│   └── 📁 supabase.ts
+├── 📁 supabase
+│   └── 📁 migrations
+│       ├── 📁 20260414000000_adjust_client_balance.sql
+│       ├── 📁 20260414000001_fix_adjust_client_balance.sql
+│       └── 📁 20260414000002_add_telegram_to_clients.sql
+├── 📁 types
+│   └── 📁 index.ts
+├── 📁 {app
+│   └── 📁 {login,sales},components,lib,types}
+├── 📁 .env.local
+├── 📁 CLAUDE.md
+├── 📁 README.md  # Главный README
+├── 📁 _gitignore.uu
+├── 📁 full-db-export.js
+├── 📁 middleware.ts
+├── 📁 next-env.d.ts
+├── 📁 next.config.js
+├── 📁 package-lock.json
+├── 📁 package.json
+├── 📁 tree_structure.py
+├── 📁 tsconfig.json
+└── 📁 tsconfig.tsbuildinfo

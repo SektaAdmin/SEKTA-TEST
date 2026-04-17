@@ -1,0 +1,181 @@
+/* ScheduleModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 520px;
+  margin: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+  position: sticky;
+  top: 0;
+  background: var(--bg-2);
+  z-index: 1;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0; }
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.closeBtn:hover { background: var(--bg-3); color: var(--text); }
+
+/* ── Body ── */
+.body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.input {
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--text-3); }
+.input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+
+.select {
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  font-family: var(--font);
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555250' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.select:focus { border-color: var(--accent); }
+.select option { background: var(--bg-2); color: var(--text); }
+
+/* ── Day pills ── */
+.dayPills { display: flex; gap: 8px; }
+
+.dayPill {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+}
+.dayPill:hover { border-color: var(--accent); color: var(--accent); }
+.dayPillOn { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* ── Error ── */
+.error {
+  font-size: 12px;
+  color: var(--danger);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-dim);
+  border: 0.5px solid rgba(255,92,92,0.25);
+}
+
+/* ── Footer ── */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px 20px;
+  border-top: 0.5px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-2);
+}
+
+.btnCancel {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.btnCancel:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); }
+
+.btnSave {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: var(--font);
+}
+.btnSave:hover:not(:disabled) { opacity: 0.85; }
+
+.btnCancel:disabled,
+.btnSave:disabled { opacity: 0.4; cursor: not-allowed; }

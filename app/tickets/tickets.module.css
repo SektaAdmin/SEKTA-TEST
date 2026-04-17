@@ -1,0 +1,257 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.btnNew {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  letter-spacing: 0.01em;
+}
+.btnNew:hover { opacity: 0.88; }
+
+/* ── Content ─────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* ── Table ───────────────────────────────────────────────────── */
+.tableWrap {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead tr { background: var(--bg-3); }
+
+.table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-3); }
+
+.name { font-weight: 500; }
+
+.mono {
+  font-family: var(--mono);
+  font-size: 12px !important;
+  color: var(--text-2) !important;
+}
+
+/* ── Type badge ──────────────────────────────────────────────── */
+.typeBadge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-3);
+  color: var(--text-2);
+  border: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+/* ── TRUE / FALSE toggle buttons ─────────────────────────────── */
+.toggleBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.toggleBtn {
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+  cursor: pointer;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  transition: background 0.12s, color 0.12s, border-color 0.12s, opacity 0.12s;
+  letter-spacing: 0.03em;
+}
+
+.toggleTrue:hover:not(:disabled):not(.toggleActiveTrue) {
+  border-color: rgba(200,240,96,0.4);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.toggleFalse:hover:not(:disabled):not(.toggleActiveFalse) {
+  border-color: rgba(255,92,92,0.4);
+  color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.toggleActiveTrue {
+  background: var(--accent-dim) !important;
+  border-color: rgba(200,240,96,0.5) !important;
+  color: var(--accent) !important;
+  cursor: default;
+}
+
+.toggleActiveFalse {
+  background: var(--danger-dim) !important;
+  border-color: rgba(255,92,92,0.5) !important;
+  color: var(--danger) !important;
+  cursor: default;
+}
+
+.toggleBtn:disabled {
+  opacity: 1;
+}
+
+/* ── Archive section ─────────────────────────────────────────── */
+.archiveSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.archiveToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: var(--font);
+  padding: 4px 0;
+  transition: color 0.12s;
+  user-select: none;
+  width: fit-content;
+}
+.archiveToggle:hover { color: var(--text-2); }
+
+.archiveChevron {
+  display: flex;
+  align-items: center;
+  transition: transform 0.18s ease;
+  color: var(--text-3);
+}
+.archiveChevronOpen {
+  transform: rotate(180deg);
+}
+
+.archiveCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  min-width: 20px;
+  padding: 1px 7px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+
+.archiveEmpty {
+  color: var(--text-3);
+  font-size: 12px;
+  padding: 14px 0;
+  text-align: center;
+}
+
+/* ── Archived row (dimmed) ───────────────────────────────────── */
+.archivedRow td {
+  opacity: 0.55;
+}
+.archivedRow:hover td {
+  opacity: 0.75;
+}
+
+/* Restore button */
+.restoreBtn {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 11px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-family: var(--font);
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  white-space: nowrap;
+  opacity: 1 !important;
+}
+.archivedRow:hover .restoreBtn { opacity: 1; }
+.restoreBtn:hover {
+  border-color: rgba(200,240,96,0.4);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.restoreBtn:disabled { opacity: 0.4 !important; cursor: not-allowed; }
