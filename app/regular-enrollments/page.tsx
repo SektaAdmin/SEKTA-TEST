@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import RegularEnrollmentModal from '@/components/RegularEnrollmentModal'
@@ -8,14 +8,23 @@ import styles from './regular-enrollments.module.css'
 
 const supabase = createClient()
 
+const DAYS = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота']
+
 export default function RegularEnrollmentsPage() {
-  const [enrollments, setEnrollments] = useState<RegularEnrollment[]>([])
+  const [allEnrollments, setAllEnrollments] = useState<RegularEnrollment[]>([])
+  const [filteredEnrollments, setFilteredEnrollments] = useState<RegularEnrollment[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editEnrollment, setEditEnrollment] = useState<RegularEnrollment | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+
+  // Search and filter
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const [selectedDay, setSelectedDay] = useState('all')
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchEnrollments = useCallback(async () => {
     setLoading(true)
@@ -29,7 +38,8 @@ export default function RegularEnrollmentsPage() {
       if (enrollError) throw enrollError
 
       if (!enrollmentsData || enrollmentsData.length === 0) {
-        setEnrollments([])
+        setAllEnrollments([])
+        setFilteredEnrollments([])
         setLoading(false)
         return
       }
@@ -87,18 +97,58 @@ export default function RegularEnrollmentsPage() {
         }
       }))
 
-      setEnrollments(enrichedEnrollments as unknown as RegularEnrollment[])
+      setAllEnrollments(enrichedEnrollments as unknown as RegularEnrollment[])
     } catch (error) {
       console.error('Fetch error:', error)
-      setEnrollments([])
+      setAllEnrollments([])
     } finally {
       setLoading(false)
     }
   }, [])
 
+  // Apply filters and search
+  useEffect(() => {
+    let result = [...allEnrollments]
+
+    // Filter by search
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(e => {
+        const clientName = `${e.clients?.first_name || ''} ${e.clients?.last_name || ''}`.toLowerCase()
+        return clientName.includes(q)
+      })
+    }
+
+    // Filter by day
+    if (selectedDay !== 'all') {
+      result = result.filter(e => e.schedules?.day_of_week === parseInt(selectedDay))
+    }
+
+    // Sort by day, then time
+    result.sort((a, b) => {
+      const dayA = a.schedules?.day_of_week || 0
+      const dayB = b.schedules?.day_of_week || 0
+      if (dayA !== dayB) return dayA - dayB
+
+      const timeA = a.schedules?.start_time || '00:00'
+      const timeB = b.schedules?.start_time || '00:00'
+      return timeA.localeCompare(timeB)
+    })
+
+    setFilteredEnrollments(result)
+  }, [allEnrollments, search, selectedDay])
+
   useEffect(() => {
     fetchEnrollments()
   }, [fetchEnrollments])
+
+  function handleSearchInput(value: string) {
+    setSearchInput(value)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      setSearch(value)
+    }, 300)
+  }
 
   function clientName(e: RegularEnrollment): string {
     const { first_name, last_name } = e.clients
@@ -118,18 +168,13 @@ export default function RegularEnrollmentsPage() {
     return time.slice(0, 5)
   }
 
-  function getDayName(day: number): string {
-    const dayMap: Record<number, string> = {
-      0: 'Нд',
-      1: 'Пн',
-      2: 'Вт',
-      3: 'Ср',
-      4: 'Чт',
-      5: 'Пт',
-      6: 'Сб',
-    }
-    return dayMap[day] || '?'
-  }
+  // Group by day
+  const groupedByDay = filteredEnrollments.reduce((acc, e) => {
+    const day = e.schedules?.day_of_week || 0
+    if (!acc[day]) acc[day] = []
+    acc[day].push(e)
+    return acc
+  }, {} as Record<number, RegularEnrollment[]>)
 
   async function handleDelete() {
     if (!deleteId) return
@@ -168,68 +213,109 @@ export default function RegularEnrollmentsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Постійники</h1>
-          <button 
-            className={styles.btnNew} 
-            onClick={() => {
-              setEditEnrollment(null)
-              setShowModal(true)
-            }}
+          <div className={styles.topbarRight}>
+            <div className={styles.searchWrap}>
+              <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="7" cy="7" r="4.5"/>
+                <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+              </svg>
+              <input
+                className={styles.searchInput}
+                type="text"
+                value={searchInput}
+                onChange={e => handleSearchInput(e.target.value)}
+                placeholder="Пошук по клієнту..."
+                aria-label="Пошук постійника"
+              />
+            </div>
+            <button 
+              className={styles.btnNew} 
+              onClick={() => {
+                setEditEnrollment(null)
+                setShowModal(true)
+              }}
+            >
+              + Додати постійника
+            </button>
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div className={styles.filters}>
+          <button
+            className={`${styles.filterBtn} ${selectedDay === 'all' ? styles.filterActive : ''}`}
+            onClick={() => setSelectedDay('all')}
           >
-            + Додати постійника
+            Всі дні
           </button>
+          {DAYS.map((day, idx) => (
+            <button
+              key={idx}
+              className={`${styles.filterBtn} ${selectedDay === idx.toString() ? styles.filterActive : ''}`}
+              onClick={() => setSelectedDay(idx.toString())}
+            >
+              {day}
+            </button>
+          ))}
         </div>
 
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
-          ) : enrollments.length === 0 ? (
-            <div className={styles.empty}>Постійників ще немає</div>
+          ) : filteredEnrollments.length === 0 ? (
+            <div className={styles.empty}>
+              {search ? `За запитом «${search}» постійників не знайдено` : 'Постійників ще немає'}
+            </div>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Клієнт</th>
-                    <th>Послуга</th>
-                    <th>День</th>
-                    <th>Час</th>
-                    <th>Тренер</th>
-                    <th>Зала</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {enrollments.map(e => (
-                    <tr key={e.id}>
-                      <td className={styles.name}>{clientName(e)}</td>
-                      <td>{e.schedules?.title || '—'}</td>
-                      <td>{getDayName(e.schedules?.day_of_week || 0)}</td>
-                      <td className={styles.mono}>{formatTime(e.schedules?.start_time || '')}</td>
-                      <td>{trainerName(e)}</td>
-                      <td>{hallName(e)}</td>
-                      <td className={styles.actionCell}>
-                        <div className={styles.actionBtns}>
-                          <button
-                            className={styles.editBtn}
-                            onClick={() => {
-                              setEditEnrollment(e)
-                              setShowModal(true)
-                            }}
-                          >
-                            Змінити
-                          </button>
-                          <button
-                            className={styles.deleteBtn}
-                            onClick={() => setDeleteId(e.id)}
-                          >
-                            Видалити
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className={styles.groupsWrap}>
+              {Object.keys(groupedByDay).map(dayStr => {
+                const day = parseInt(dayStr)
+                const dayEnrollments = groupedByDay[day]
+
+                return (
+                  <div key={day} className={styles.dayGroup}>
+                    <div className={styles.dayGroupHeader}>
+                      <div className={styles.dayGroupTitle}>{DAYS[day]}</div>
+                      <div className={styles.dayGroupCount}>{dayEnrollments.length}</div>
+                    </div>
+
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <tbody>
+                          {dayEnrollments.map(e => (
+                            <tr key={e.id}>
+                              <td className={styles.name}>{clientName(e)}</td>
+                              <td>{e.schedules?.title || '—'}</td>
+                              <td className={styles.mono}>{formatTime(e.schedules?.start_time || '')}</td>
+                              <td>{trainerName(e)}</td>
+                              <td>{hallName(e)}</td>
+                              <td className={styles.actionCell}>
+                                <div className={styles.actionBtns}>
+                                  <button
+                                    className={styles.editBtn}
+                                    onClick={() => {
+                                      setEditEnrollment(e)
+                                      setShowModal(true)
+                                    }}
+                                  >
+                                    Змінити
+                                  </button>
+                                  <button
+                                    className={styles.deleteBtn}
+                                    onClick={() => setDeleteId(e.id)}
+                                  >
+                                    Видалити
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

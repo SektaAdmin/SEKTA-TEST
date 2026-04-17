@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   REGULAR ENROLLMENTS - Matching Schedules Layout
+   REGULAR ENROLLMENTS - With Search, Filters, Grouping
    ════════════════════════════════════════════════════════════════ */
 
 .layout { display: flex; min-height: 100vh; background: var(--bg); }
@@ -20,6 +20,45 @@
 
 .title { font-size: 16px; font-weight: 500; color: var(--text); margin: 0; }
 
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Search ── */
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-3);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 30px 7px 30px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  width: 200px;
+  transition: border-color 0.12s, width 0.2s;
+}
+.searchInput:focus {
+  border-color: var(--accent);
+  width: 250px;
+}
+.searchInput::placeholder { color: var(--text-3); }
+
 .btnNew {
   padding: 8px 16px;
   background: var(--accent);
@@ -33,32 +72,90 @@
 }
 .btnNew:hover { opacity: 0.85; }
 
+/* ── Filters ── */
+.filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.filterBtn:hover { border-color: var(--border-hover); color: var(--text); }
+
+.filterActive {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Content ── */
 .content { display: flex; flex-direction: column; gap: 24px; }
 
 .empty { color: var(--text-2); font-size: 14px; padding: 32px 0; }
 
+/* ── Groups ── */
+.groupsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dayGroup {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 0.5px solid var(--border);
+}
+
+.dayGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-3);
+  border-bottom: 0.5px solid var(--border);
+}
+
+.dayGroupTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.dayGroupCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  border: 0.5px solid rgba(200, 240, 96, 0.35);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* ── Table ── */
 .tableWrap {
-  border-radius: var(--radius);
-  border: 0.5px solid var(--border);
+  border-radius: 0;
+  border: none;
   overflow: hidden;
 }
 
 .table { width: 100%; border-collapse: collapse; font-size: 13px; }
-
-.table thead tr { background: var(--bg-2); }
-
-.table th {
-  padding: 11px 16px;
-  text-align: left;
-  color: var(--text-2);
-  font-weight: 500;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 0.5px solid var(--border);
-}
 
 .table tbody tr {
   border-bottom: 0.5px solid var(--border);
@@ -204,11 +301,19 @@
     padding: 16px 20px;
   }
 
+  .topbarRight {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+
   .table {
     font-size: 12px;
   }
 
-  .table th,
   .table td {
     padding: 8px 12px;
   }
