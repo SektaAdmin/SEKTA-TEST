@@ -134,7 +134,14 @@
   padding-right: 12px !important;
 }
 
-.btnEdit {
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.btnEdit,
+.btnDelete {
   background: transparent;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
@@ -147,13 +154,20 @@
   transition: opacity 0.12s, border-color 0.12s, color 0.12s;
 }
 
-.table tbody tr:hover .btnEdit {
+.table tbody tr:hover .btnEdit,
+.table tbody tr:hover .btnDelete {
   opacity: 1;
 }
 
-.btnEdit:hover {
+.btnEdit:hover,
+.btnDelete:hover {
   border-color: var(--border-hover);
   color: var(--text);
+}
+
+.btnDelete:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 /* ── Delete Modal ────────────────────────────────────────────– */

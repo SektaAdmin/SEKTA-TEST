@@ -208,16 +208,25 @@ export default function RegularEnrollmentsPage() {
                       <td>{trainerName(e)}</td>
                       <td>{hallName(e)}</td>
                       <td className={styles.actionCell}>
-                        <button
-                          className={styles.btnEdit}
-                          onClick={() => {
-                            setEditEnrollment(e)
-                            setShowModal(true)
-                          }}
-                          title="Редагувати"
-                        >
-                          Редагувати
-                        </button>
+                        <div className={styles.actions}>
+                          <button
+                            className={styles.btnEdit}
+                            onClick={() => {
+                              setEditEnrollment(e)
+                              setShowModal(true)
+                            }}
+                            title="Редагувати"
+                          >
+                            Редагувати
+                          </button>
+                          <button
+                            className={styles.btnDelete}
+                            onClick={() => setDeleteId(e.id)}
+                            title="Видалити"
+                          >
+                            Видалити
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
