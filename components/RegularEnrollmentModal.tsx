@@ -249,7 +249,7 @@ export default function RegularEnrollmentModal({
       5: "П'ятниця",
       6: 'Субота',
     }
-    return dayMap[day] || '?'
+    return dayMap[day] || 'Неділя'
   }
 
   function getScheduleLabel(schedule: Schedule): string {
