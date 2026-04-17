@@ -1,0 +1,236 @@
+/* ════════════════════════════════════════════════════════════════
+   CALENDAR PAGE STYLES
+   Matches design system: dark theme, Geologica font, accent #c8f060
+   ════════════════════════════════════════════════════════════════ */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Topbar ────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Navigation buttons ────────────────────────────────────────── */
+.navBtn {
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.navBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-2);
+}
+
+/* ── Content container ─────────────────────────────────────────── */
+.content {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 60px 0;
+  text-align: center;
+}
+
+/* ── Calendar grid (7 days) ────────────────────────────────────── */
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+/* ── Day card ──────────────────────────────────────────────────── */
+.dayCard {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 400px;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.dayCard:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-3);
+}
+
+.dayCardToday {
+  border: 1px solid var(--accent);
+  background: rgba(200, 240, 96, 0.05);
+}
+
+/* ── Day header (date) ─────────────────────────────────────────── */
+.dayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.dayLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.dayCardToday .dayLabel {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── Day slots container ───────────────────────────────────────── */
+.daySlots {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-y: auto;
+}
+
+.daySlots::-webkit-scrollbar {
+  width: 4px;
+}
+
+.daySlots::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.daySlots::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ── Empty state ───────────────────────────────────────────────── */
+.noSlots {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ── Add button ────────────────────────────────────────────────── */
+.addButton {
+  width: 100%;
+  background: var(--bg-3);
+  border: 0.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.12s;
+  margin-top: auto;
+}
+
+.addButton:hover {
+  background: var(--bg-2);
+  border-color: var(--accent);
+  color: var(--accent);
+  border-style: solid;
+}
+
+/* ── Responsive design ─────────────────────────────────────────── */
+@media (max-width: 1400px) {
+  .calendarGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .content {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .calendarGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .dayCard {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+  }
+
+  .calendarGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .content {
+    padding: 12px 16px;
+  }
+
+  .dayCard {
+    min-height: 300px;
+  }
+}
