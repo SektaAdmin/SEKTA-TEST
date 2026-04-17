@@ -5,7 +5,7 @@ import SlotCard from '@/components/SlotCard'
 import CreateSlotModal from '@/components/CreateSlotModal'
 import Sidebar from '@/components/Sidebar'
 import type { ScheduleSlot } from '@/types'
-import styles from './calendar.module.css'
+import styles from '@/app/calendar/calendar.module.css'
 
 const supabase = createClient()
 
