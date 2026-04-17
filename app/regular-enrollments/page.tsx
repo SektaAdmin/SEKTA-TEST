@@ -131,27 +131,6 @@ export default function RegularEnrollmentsPage() {
     return dayMap[day] || '?'
   }
 
-  function formatDate(iso: string | null): string {
-    if (!iso) return '—'
-    const d = new Date(iso)
-    return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
-  }
-
-  function isExpiringSoon(validUntil: string | null): boolean {
-    if (!validUntil) return false
-    const now = new Date()
-    const expireDate = new Date(validUntil)
-    const daysUntilExpire = Math.floor((expireDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return daysUntilExpire >= 0 && daysUntilExpire <= 7
-  }
-
-  function isExpired(validUntil: string | null): boolean {
-    if (!validUntil) return false
-    const now = new Date()
-    const expireDate = new Date(validUntil)
-    return expireDate < now
-  }
-
   async function handleDelete() {
     if (!deleteId) return
     setDeleting(true)
@@ -164,11 +143,13 @@ export default function RegularEnrollmentsPage() {
 
     if (error) {
       setDeleteError(error.message)
-    } else {
-      setDeleteId(null)
-      await fetchEnrollments()
+      setDeleting(false)
+      return
     }
+
+    setDeleteId(null)
     setDeleting(false)
+    fetchEnrollments()
   }
 
   function handleSaved() {
@@ -187,7 +168,13 @@ export default function RegularEnrollmentsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Постійники</h1>
-          <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+          <button 
+            className={styles.btnNew} 
+            onClick={() => {
+              setEditEnrollment(null)
+              setShowModal(true)
+            }}
+          >
             + Додати постійника
           </button>
         </div>
@@ -204,40 +191,32 @@ export default function RegularEnrollmentsPage() {
                   <tr>
                     <th>Клієнт</th>
                     <th>Послуга</th>
-                    <th>Час</th>
                     <th>День</th>
+                    <th>Час</th>
                     <th>Тренер</th>
                     <th>Зала</th>
-                    <th>Діяльна до</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enrollments.map((e) => (
-                    <tr key={e.id} className={isExpired(e.valid_until) ? styles.expired : isExpiringSoon(e.valid_until) ? styles.expiringSoon : ''}>
-                      <td className={styles.clientName}>{clientName(e)}</td>
+                  {enrollments.map(e => (
+                    <tr key={e.id}>
+                      <td className={styles.name}>{clientName(e)}</td>
                       <td>{e.schedules?.title || '—'}</td>
+                      <td>{getDayName(e.schedules?.day_of_week || 0)}</td>
                       <td className={styles.time}>{formatTime(e.schedules?.start_time || '')}</td>
-                      <td className={styles.day}>{getDayName(e.schedules?.day_of_week || 0)}</td>
                       <td>{trainerName(e)}</td>
                       <td>{hallName(e)}</td>
-                      <td className={isExpired(e.valid_until) ? styles.textExpired : isExpiringSoon(e.valid_until) ? styles.textWarning : ''}>
-                        {formatDate(e.valid_until)}
-                      </td>
                       <td className={styles.actionCell}>
                         <button
                           className={styles.btnEdit}
-                          onClick={() => setEditEnrollment(e)}
+                          onClick={() => {
+                            setEditEnrollment(e)
+                            setShowModal(true)
+                          }}
                           title="Редагувати"
                         >
                           Редагувати
-                        </button>
-                        <button
-                          className={styles.btnDelete}
-                          onClick={() => setDeleteId(e.id)}
-                          title="Видалити"
-                        >
-                          Видалити
                         </button>
                       </td>
                     </tr>
@@ -261,16 +240,18 @@ export default function RegularEnrollmentsPage() {
       )}
 
       {deleteId && (
-        <div className={styles.deleteModal}>
-          <div className={styles.deleteModalContent}>
+        <div className={styles.deleteOverlay}>
+          <div className={styles.deleteModal}>
             <h3>Видалити постійника?</h3>
-            <p>Ця дія не може бути скасована.</p>
-            {deleteError && <p className={styles.error}>{deleteError}</p>}
-            <div className={styles.deleteModalButtons}>
+            <p>Цю дію неможливо скасувати.</p>
+            {deleteError && <p className={styles.deleteError}>{deleteError}</p>}
+            <div className={styles.deleteButtons}>
               <button
                 className={styles.btnCancel}
-                onClick={() => setDeleteId(null)}
-                disabled={deleting}
+                onClick={() => {
+                  setDeleteId(null)
+                  setDeleteError('')
+                }}
               >
                 Скасувати
               </button>
