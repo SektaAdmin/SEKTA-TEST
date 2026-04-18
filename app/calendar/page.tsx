@@ -1,5 +1,5 @@
-import CalendarWeek from '@/components/CalendarWeek'
+import HybridCalendar from '@/components/HybridCalendar'
 
 export default function CalendarPage() {
-  return <CalendarWeek />
+  return <HybridCalendar />
 }
