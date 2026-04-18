@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "sync:schema": "node scripts/sync-schema.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -16,6 +17,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.72.1",
+    "swr": "^2.2.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -23,9 +25,5 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "typescript": "^5"
-  },
-  "dependencies": {
-    "swr": "^2.2.4",
-    "@supabase/supabase-js": "^2.39.0"
   }
 }
