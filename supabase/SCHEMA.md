@@ -1,6 +1,6 @@
 # Database Schema
 
-**Last Synced:** 18.04.2026, 12:53:24
+**Last Synced:** 18.04.2026, 13:51:01
 
 ## 📋 Tables
 
