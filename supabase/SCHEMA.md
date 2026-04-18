@@ -1,6 +1,6 @@
 # Database Schema
 
-**Last Synced:** 18.04.2026, 13:51:01
+**Last Synced:** 18.04.2026, 13:53:41
 
 ## 📋 Tables
 
@@ -95,9 +95,13 @@ group_id
 ```
 
 ### `regular_enrollments`
-**Columns:** 0
+**Columns:** 5
 ```
-
+id
+client_id
+schedule_id
+created_at
+valid_until
 ```
 
 ### `balance_transactions`

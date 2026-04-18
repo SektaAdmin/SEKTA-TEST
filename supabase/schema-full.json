@@ -1,5 +1,5 @@
 {
-  "lastSync": "2026-04-18T10:51:01.856Z",
+  "lastSync": "2026-04-18T10:53:41.987Z",
   "supabaseUrl": "ukjdxezpfbhxytcnrggg",
   "tables": {
     "clients": [
@@ -62,7 +62,13 @@
     ],
     "schedule_slots": [],
     "enrollments": [],
-    "regular_enrollments": [],
+    "regular_enrollments": [
+      "id",
+      "client_id",
+      "schedule_id",
+      "created_at",
+      "valid_until"
+    ],
     "balance_transactions": [
       "id",
       "client_id",
