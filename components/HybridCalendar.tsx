@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import BookingModal from './BookingModal';
 import styles from './HybridCalendar.module.css';
 
 const supabase = createClient(
@@ -24,11 +25,21 @@ interface CalendarEntry {
   enrollmentStatus?: string;
 }
 
+interface BookingSlot {
+  slotId: string;
+  slotDate: string;
+  startTime: string;
+  courseName: string;
+  price?: number;
+}
+
 export default function HybridCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [entries, setEntries] = useState<CalendarEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [groupedByTime, setGroupedByTime] = useState<Record<string, CalendarEntry[]>>({});
+  const [bookingSlot, setBookingSlot] = useState<BookingSlot | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchCalendarData();
@@ -38,8 +49,8 @@ export default function HybridCalendar() {
     setLoading(true);
     try {
       const dateStr = currentDate.toISOString().split('T')[0];
+      console.log('Fetching for date:', dateStr);
 
-      // Запрос: ONE-TIME слоты
       const { data: oneTimeData, error: oneTimeError } = await supabase
         .from('schedule_slots')
         .select(`
@@ -52,7 +63,7 @@ export default function HybridCalendar() {
           trainers (name),
           halls (name),
           tickets (name, price),
-          enrollments!inner (
+          enrollments (
             id,
             status,
             clients (first_name, last_name)
@@ -61,29 +72,22 @@ export default function HybridCalendar() {
         .eq('slot_date', dateStr)
         .eq('is_cancelled', false);
 
-      if (oneTimeError) throw oneTimeError;
+      console.log('OneTimeData:', oneTimeData?.length, oneTimeError);
 
-      // Запрос: REGULAR слоты (постійні)
       const { data: regularData, error: regularError } = await supabase
         .from('regular_enrollments')
         .select(`
           id,
-          schedules (
-            title,
-            start_time,
-            trainers (name),
-            halls (name)
-          ),
-          clients (first_name, last_name)
+          client_id,
+          schedule_id,
+          valid_until
         `)
         .gt('valid_until', new Date().toISOString());
 
       if (regularError) throw regularError;
 
-      // Трансформувати дані
       const formattedEntries: CalendarEntry[] = [];
 
-      // ONE-TIME слоти
       oneTimeData?.forEach((slot: any) => {
         const enrollment = slot.enrollments?.[0];
         formattedEntries.push({
@@ -104,25 +108,83 @@ export default function HybridCalendar() {
         });
       });
 
-      // REGULAR слоты
+      // Загрузи schedules для regular_enrollments
+      let schedulesMap: Record<string, any> = {};
+      let clientsMap: Record<string, any> = {};
+      let trainersMap: Record<string, string> = {};
+      let hallsMap: Record<string, string> = {};
+
+      if (regularData && regularData.length > 0) {
+        const scheduleIds = [...new Set(regularData.map((e: any) => e.schedule_id).filter(Boolean))];
+        const clientIds = [...new Set(regularData.map((e: any) => e.client_id).filter(Boolean))];
+
+        // Загрузи schedules
+        if (scheduleIds.length > 0) {
+          const { data: schedules } = await supabase
+            .from('schedules')
+            .select('id, title, start_time, trainer_id, hall_id')
+            .in('id', scheduleIds);
+          schedules?.forEach((s: any) => {
+            schedulesMap[s.id] = s;
+          });
+        }
+
+        // Загрузи clients
+        if (clientIds.length > 0) {
+          const { data: clients } = await supabase
+            .from('clients')
+            .select('id, first_name, last_name')
+            .in('id', clientIds);
+          clients?.forEach((c: any) => {
+            clientsMap[c.id] = c;
+          });
+        }
+
+        // Загрузи trainers
+        const trainerIds = [...new Set(Object.values(schedulesMap).map((s: any) => s.trainer_id).filter(Boolean))];
+        if (trainerIds.length > 0) {
+          const { data: trainers } = await supabase
+            .from('trainers')
+            .select('id, name')
+            .in('id', trainerIds);
+          trainers?.forEach((t: any) => {
+            trainersMap[t.id] = t.name;
+          });
+        }
+
+        // Загрузи halls
+        const hallIds = [...new Set(Object.values(schedulesMap).map((s: any) => s.hall_id).filter(Boolean))];
+        if (hallIds.length > 0) {
+          const { data: halls } = await supabase
+            .from('halls')
+            .select('id, name')
+            .in('id', hallIds);
+          halls?.forEach((h: any) => {
+            hallsMap[h.id] = h.name;
+          });
+        }
+      }
+
       regularData?.forEach((enrollment: any) => {
-        if (enrollment.schedules) {
+        const schedule = schedulesMap[enrollment.schedule_id];
+        const client = clientsMap[enrollment.client_id];
+
+        if (schedule && client) {
           formattedEntries.push({
             layer: 'REGULAR',
             entryId: enrollment.id,
-            startTime: enrollment.schedules.start_time,
-            courseName: enrollment.schedules.title,
-            trainerName: enrollment.schedules.trainers?.name || 'Unknown',
-            hallName: enrollment.schedules.halls?.name || 'Unknown',
+            startTime: schedule.start_time,
+            courseName: schedule.title,
+            trainerName: trainersMap[schedule.trainer_id] || 'Unknown',
+            hallName: hallsMap[schedule.hall_id] || 'Unknown',
             serviceName: 'Regular enrollment',
             status: 'booked',
-            bookedClient: `${enrollment.clients.first_name} ${enrollment.clients.last_name}`,
+            bookedClient: `${client.first_name} ${client.last_name}`,
             enrollmentStatus: 'active',
           });
         }
       });
 
-      // Групування по часу
       const grouped: Record<string, CalendarEntry[]> = {};
       formattedEntries.forEach((entry) => {
         if (!grouped[entry.startTime]) {
@@ -162,7 +224,23 @@ export default function HybridCalendar() {
   };
 
   const formatTime = (time: string) => {
-    return time.slice(0, 5); // "14:00:00" -> "14:00"
+    return time.slice(0, 5);
+  };
+
+  const handleBookClick = (entry: CalendarEntry) => {
+    setBookingSlot({
+      slotId: entry.entryId,
+      slotDate: entry.slotDate || currentDate.toISOString().split('T')[0],
+      startTime: entry.startTime,
+      courseName: entry.courseName,
+      price: entry.price,
+    });
+    setShowModal(true);
+  };
+
+  const handleBookingSuccess = () => {
+    // Оновлюємо календар після успішного запису
+    fetchCalendarData();
   };
 
   if (loading) {
@@ -191,7 +269,7 @@ export default function HybridCalendar() {
 
       <div className={styles.legend}>
         <div className={styles.legendItem}>
-          <span className={`${styles.badge} ${styles.oneTime}`}>NEW</span>
+          <span className={`${styles.badge} ${styles.onetime}`}>NEW</span>
           <span>Разова услуга (schedule_slots)</span>
         </div>
         <div className={styles.legendItem}>
@@ -259,7 +337,10 @@ export default function HybridCalendar() {
                       </div>
 
                       {entry.status === 'free' && entry.layer === 'ONE-TIME' && (
-                        <button className={styles.bookButton}>
+                        <button
+                          className={styles.bookButton}
+                          onClick={() => handleBookClick(entry)}
+                        >
                           Записатись
                         </button>
                       )}
@@ -270,6 +351,19 @@ export default function HybridCalendar() {
             ))
         )}
       </div>
+
+      {/* Booking Modal */}
+      {showModal && bookingSlot && (
+        <BookingModal
+          slotId={bookingSlot.slotId}
+          slotDate={bookingSlot.slotDate}
+          startTime={bookingSlot.startTime}
+          courseName={bookingSlot.courseName}
+          price={bookingSlot.price}
+          onClose={() => setShowModal(false)}
+          onSuccess={handleBookingSuccess}
+        />
+      )}
     </div>
   );
 }
