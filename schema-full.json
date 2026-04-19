@@ -1,5 +1,5 @@
 {
-  "lastSync": "2026-04-18T19:00:44.503Z",
+  "lastSync": "2026-04-18T20:40:41.369Z",
   "supabaseUrl": "ukjdxezpfbhxytcnrggg",
   "tables": {
     "clients": [
@@ -60,8 +60,36 @@
       "sessions_cost",
       "group_id"
     ],
-    "schedule_slots": [],
-    "enrollments": [],
+    "schedule_slots": [
+      "id",
+      "schedule_id",
+      "hall_id",
+      "trainer_id",
+      "course_name",
+      "course_type",
+      "slot_date",
+      "start_time",
+      "capacity_override",
+      "is_cancelled",
+      "sessions_processed",
+      "created_at",
+      "updated_at",
+      "ticket_id",
+      "status"
+    ],
+    "enrollments": [
+      "id",
+      "slot_id",
+      "client_id",
+      "status",
+      "is_regular",
+      "waitlist_position",
+      "cancelled_at",
+      "cancelled_by",
+      "sessions_deducted",
+      "enrolled_at",
+      "updated_at"
+    ],
     "regular_enrollments": [
       "id",
       "client_id",
