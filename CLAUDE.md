@@ -1,270 +1,278 @@
 # sekta-crm — Supabase CRM
 
-## 📋 Проект
+## Проект
 Фитнес/танцевальная студия. CRM для управления клиентами, тренерами, абонементами и продажами.
 
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-04-14
+- **Last Updated**: 2026-04-28
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Entity Relationship
 ```
 trainers ──┐
-           ├──► sales ◄──── clients
+           ├──► sales ◄──── clients ◄──── balance_transactions
 tickets ───┘
+halls (standalone reference)
 ```
 
 ---
 
-## 📊 Tables
+## Tables
 
-### `clients` - Клиенты студии
+### `clients` — Клиенты студии
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | uuid | NO | gen_random_uuid() | PK |
 | first_name | text | YES | — | |
 | last_name | text | YES | — | |
-| phone | text | YES | — | |
-| instagram_username | text | YES | — | |
-| balance | integer | YES | 0 | Remaining sessions |
+| phone | text | YES | — | Уникальный идентификатор клиента |
+| instagram_username | text | YES | — | Без @ и домена |
+| telegram_username | text | YES | — | Без @ |
+| balance | integer | YES | 0 | Остаток занятий |
+| credit_limit | numeric | YES | 10000 | Лимит отрицательного баланса, >= 0 |
+| balance_updated_at | timestamptz | YES | now() | Обновляется через update_client_balance() |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
 
 **Indexes:**
 - `clients_pkey` (UNIQUE btree on id)
-- `idx_clients_last_name` (btree on last_name)
+- `idx_clients_balance` (btree on balance)
+- `idx_clients_last_name_trgm` (GIN gin_trgm_ops on last_name) — fuzzy search
+- `idx_clients_phone_trgm` (GIN gin_trgm_ops on phone) — fuzzy search
 
-**Triggers:**
-- `trg_clients_updated_at` — auto-update timestamp on UPDATE
-
-**RLS Policies:**
-- `authenticated can read` — SELECT for authenticated users
-- `authenticated can insert` — INSERT for authenticated users
-- `authenticated can update own` — UPDATE own records only (future)
+**RLS:** Отключён (TODO: включить с role-based политиками)
 
 ---
 
-### `tickets` - Тарифы/абонементы
+### `tickets` — Тарифы/абонементы
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | uuid | NO | gen_random_uuid() | PK |
-| name | text | NO | — | e.g. "Group Yoga" |
-| ticket_type | text | NO | — | see Enums below |
-| sessions | integer | NO | — | Number of sessions |
-| price | integer | NO | — | Price in UAH (no decimals) |
-| is_active | boolean | NO | false | Soft delete |
+| name | text | NO | — | Название тарифа |
+| ticket_type | text | NO | — | Тип занятия (не enum, свободный текст) |
+| sessions | integer | NO | — | Количество занятий, > 0 |
+| price | integer | NO | — | ⚠️ Цена в **копейках** (делить на 100 для гривен) |
+| is_active | boolean | NO | false | true = актуальный, false = архив |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
 
-**Enum: `ticket_type`**
-- `group` — Group classes
-- `individual` — 1-on-1 coaching
-- `hallrental` — Hall rental (full)
-- `smallhallrental` — Hall rental (small)
-- `individualduo` — 2-person session
-- `individualtrio` — 3-person session
-- `pylonrental` — Pole rental
-- `striprental` — Strip rental
-
 **Constraints:**
-- `price > 0` (check constraint)
-- `sessions > 0` (check constraint)
-- Max 20 active tickets at a time (business rule)
+- `price >= 0` (check)
+- `sessions > 0` (check)
+- Max 20 активных тарифов (бизнес-правило, не DB-constraint)
+
+**Известные значения `ticket_type`:** group, individual, hallrental, smallhallrental, individualduo, individualtrio, pylonrental, striprental
 
 **Indexes:**
 - `tickets_pkey` (UNIQUE btree on id)
 - `idx_tickets_type` (btree on ticket_type)
 - `idx_tickets_is_active` (btree on is_active)
 
-**Triggers:**
-- `trg_tickets_updated_at` — auto-update timestamp on UPDATE
+**RLS:** Отключён
 
 ---
 
-### `trainers` - Тренеры
+### `trainers` — Тренеры
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | uuid | NO | gen_random_uuid() | PK |
-| name | text | NO | — | Trainer name |
-| is_active | boolean | NO | true | Soft delete |
-| instagram_username | text | YES | — | |
-| telegram_username | text | YES | — | |
+| name | text | NO | — | length(trim(name)) > 0 |
+| is_active | boolean | NO | true | false = больше не работает |
+| instagram_username | text | YES | — | Без @ |
+| telegram_username | text | YES | — | Без @ |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
 
 **Indexes:**
 - `trainers_pkey` (UNIQUE btree on id)
 
-**Triggers:**
-- `trg_trainers_updated_at` — auto-update timestamp on UPDATE
+**RLS:** Отключён
 
 ---
 
-### `sales` - Продажи (денормализованные)
+### `sales` — Продажи (денормализованные)
 
 | Column | Type | Nullable | FK | Notes |
 |--------|------|----------|-----|-------|
 | id | uuid | NO | — | PK |
-| client_id | uuid | NO | → clients.id | |
-| ticket_id | uuid | NO | → tickets.id | Reference only |
-| trainer_id | uuid | NO | → trainers.id | |
-| ticket_name | text | NO | — | **Snapshot** of ticket.name |
-| ticket_price | integer | NO | — | **Snapshot** of ticket.price |
-| sessions | integer | NO | — | **Snapshot** of ticket.sessions |
-| price_paid | integer | NO | — | Actual amount paid (can differ) |
-| payment_method | text | NO | — | Cash, card, transfer, etc |
-| notes | text | YES | — | Comments |
-| created_at | timestamptz | NO | — | |
-| updated_at | timestamptz | NO | — | Auto-updated |
+| client_id | uuid | NO | → clients.id CASCADE | |
+| ticket_id | uuid | YES | → tickets.id SET NULL | |
+| trainer_id | uuid | YES | → trainers.id SET NULL | |
+| ticket_name | text | YES | — | **Snapshot** ticket.name на момент продажи |
+| ticket_price | integer | YES | — | **Snapshot** ticket.price (копейки) |
+| sessions | integer | YES | — | **Snapshot** ticket.sessions |
+| price_paid | integer | NO | — | Фактически оплачено, >= 0 |
+| amount_given | integer | NO | — | Сумма, которую дал клиент, >= 0 |
+| payment_method | text | NO | — | Enum: `cash`, `fop`, `personal_card` |
+| notes | text | YES | — | Комментарий |
+| created_at | timestamptz | NO | now() | |
+| updated_at | timestamptz | NO | now() | Auto-updated |
 
-**Denormalization Note:**
-⚠️ `ticket_name`, `ticket_price`, `sessions` are **immutable historical snapshots** taken at purchase time. **DO NOT** JOIN to `tickets` table for reporting — use the snapshot values directly.
+**Денормализация:**
+⚠️ `ticket_name`, `ticket_price`, `sessions` — **неизменяемые исторические снимки** на момент покупки. Не джоинить `tickets` для отчётов — использовать snapshot-значения напрямую.
 
 **Indexes:**
 - `sales_pkey` (UNIQUE btree on id)
-- `idx_sales_client_id` (btree on client_id) — find by client
-- `idx_sales_ticket_id` (btree on ticket_id) — find by ticket type
-- `idx_sales_trainer_id` (btree on trainer_id) — find by trainer
-- `idx_sales_created_at` (btree on created_at) — time-based queries
+- `idx_sales_client_id` (btree on client_id)
+- `idx_sales_client_created` (btree on client_id, created_at DESC)
+- `idx_sales_ticket_id` (btree on ticket_id)
+- `idx_sales_trainer_id` (btree on trainer_id)
+- `idx_sales_created_at` (btree on created_at)
+- `idx_sales_price_paid` (btree on price_paid)
 
-**Triggers:**
-- `trg_sales_updated_at` — auto-update timestamp on UPDATE
-
-**Foreign Keys:**
-- `sales.client_id` → `clients.id` (ON DELETE: CASCADE)
-- `sales.ticket_id` → `tickets.id` (ON DELETE: SET NULL)
-- `sales.trainer_id` → `trainers.id` (ON DELETE: SET NULL)
+**RLS:** Отключён
 
 ---
 
-## 🔧 Stored Procedures
+### `balance_transactions` — Лог балансовых операций
 
-### `adjust_client_balance(p_client_id uuid, p_delta integer)`
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | uuid | NO | gen_random_uuid() | PK |
+| client_id | uuid | NO | — | → clients.id |
+| amount | numeric | NO | — | Изменение баланса, ≠ 0 |
+| transaction_type | varchar | NO | — | Тип операции |
+| balance_before | numeric | NO | — | Баланс до |
+| balance_after | numeric | NO | — | Баланс после |
+| related_sale_id | uuid | YES | — | → sales.id |
+| description | text | YES | — | |
+| reason | text | YES | — | |
+| created_by | uuid | NO | gen_random_uuid() | |
+| created_at | timestamptz | YES | now() | |
+| reversed_at | timestamptz | YES | — | Если операция отменена |
+| reversed_by | uuid | YES | — | |
+| reversal_reason | text | YES | — | |
 
-Atomically adjust client's session balance. Avoids race condition from read-modify-write.
+**Indexes:**
+- `balance_transactions_pkey` (UNIQUE btree on id)
+- `idx_balance_transactions_client` (btree on client_id, created_at DESC)
+- `idx_balance_transactions_sale` (btree on related_sale_id WHERE NOT NULL)
+- `idx_balance_transactions_type` (btree on transaction_type, created_at DESC)
 
-**Signature:**
-```sql
-CREATE OR REPLACE FUNCTION adjust_client_balance(p_client_id uuid, p_delta integer)
-RETURNS void
-LANGUAGE sql
-SECURITY DEFINER
-AS $$ ... $$;
-```
-
-**Usage:**
-```sql
--- Deduct 1 session
-SELECT adjust_client_balance('client-uuid'::uuid, -1);
-
--- Add 5 sessions
-SELECT adjust_client_balance('client-uuid'::uuid, 5);
-```
-
-**Called from:**
-- API endpoint when session is marked complete
-- Manual admin adjustment
-- Refund processing
+**RLS:** Отключён
 
 ---
 
-## ⚡ Triggers
+### `halls` — Залы студии
 
-All tables have auto-updating `updated_at` field via trigger:
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | uuid | NO | gen_random_uuid() | PK |
+| name | text | NO | — | length(trim(name)) > 0 |
+| capacity | integer | NO | — | > 0 |
+| is_active | boolean | NO | true | |
+| description | text | YES | — | |
+| created_at | timestamptz | NO | now() | |
 
-```sql
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN NEW.updated_at = now(); RETURN NEW; END;
-$$ LANGUAGE plpgsql;
+**Indexes:**
+- `halls_pkey` (UNIQUE btree on id)
 
-CREATE TRIGGER trg_{table}_updated_at
-BEFORE UPDATE ON {table}
-FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-```
-
-Applied to: `clients`, `tickets`, `trainers`, `sales`
+**RLS:** Отключён
 
 ---
 
-## 🔐 Security
+## Stored Procedures
 
-### Row Level Security (RLS)
+### `update_client_balance(...)` — Атомарное изменение баланса
 
-**Status:** Enabled on all public tables
-
-**Default Policies:**
-
+**Сигнатура:**
 ```sql
--- Authenticated users can read all (future: add role-based filtering)
-CREATE POLICY "authenticated can read"
-ON {table} FOR SELECT TO authenticated USING (true);
-
--- Authenticated users can insert (future: add role validation)
-CREATE POLICY "authenticated can insert"
-ON {table} FOR INSERT TO authenticated WITH CHECK (true);
+CREATE OR REPLACE FUNCTION public.update_client_balance(
+  p_client_id       uuid,
+  p_amount          numeric,
+  p_transaction_type varchar,
+  p_description     text    DEFAULT NULL,
+  p_related_sale_id uuid    DEFAULT NULL,
+  p_reason          text    DEFAULT NULL
+)
+RETURNS TABLE(
+  success        boolean,
+  new_balance    numeric,
+  transaction_id uuid,
+  error_message  text
+)
 ```
 
-### Future Roles
-- `admin` — full access to all operations
-- `trainer` — read clients, read own sales
-- `user` — read own data only
+**Что делает:**
+1. Блокирует строку клиента (`FOR UPDATE`)
+2. Проверяет credit_limit: отказывает если `balance + amount < -credit_limit`
+3. Записывает строку в `balance_transactions`
+4. Обновляет `clients.balance` и `clients.balance_updated_at`
+5. Возвращает `success=true/false` + `error_message` при ошибке
+
+**Использование:**
+```typescript
+const { data, error } = await supabase.rpc('update_client_balance', {
+  p_client_id: clientId,
+  p_amount: -1,                    // отрицательное = списание
+  p_transaction_type: 'deduction',
+  p_description: 'Session completed',
+  p_related_sale_id: saleId,       // опционально
+  p_reason: null,                  // опционально
+});
+
+if (data?.[0]?.success === false) {
+  console.error(data[0].error_message);
+}
+```
+
+**Вызывается из:** SaleModal.tsx (при записи продажи), ручная корректировка
+
+---
+
+### `set_updated_at()` — Триггерная функция
+
+Обновляет `updated_at = now()` перед каждым UPDATE. Применена к: `clients`, `tickets`, `trainers`, `sales`.
+
+---
+
+## Security
+
+### RLS
+**Статус: Отключён на всех таблицах.** Доступ контролируется только на уровне Supabase Auth (anon vs authenticated). TODO: включить RLS с role-based политиками.
 
 ### Auth
-- JWT tokens from Supabase Auth
-- Currently: all authenticated = same permissions
-- TODO: implement row-level filtering by user_id
+- JWT токены от Supabase Auth
+- Текущее состояние: все authenticated пользователи = одинаковые права
 
 ---
 
-## 📝 Business Logic
+## Business Logic
 
-### Session Balance Management
-- `clients.balance` tracks remaining sessions
-- Updated via `adjust_client_balance()` function
-- Decrements when trainer marks session as completed
-- Increments on refunds
+### Управление балансом
+- `clients.balance` — остаток занятий (integer)
+- Менять **только через `update_client_balance()`** — атомарно + логирует в `balance_transactions`
+- Никогда не обновлять `clients.balance` напрямую через UPDATE
+- `credit_limit` = 10000 по умолчанию (позволяет уйти в минус до -10000)
 
-### Denormalization in `sales`
-Sales table denormalizes ticket info to preserve historical accuracy:
-- If ticket price changes later, old sales show original price
-- If ticket is deleted, historical record remains intact
-- Reports don't need to JOIN to tickets table
+### Деньги
+- `tickets.price` — в **копейках** (÷ 100 для отображения в гривнах)
+- `sales.price_paid`, `sales.amount_given` — предположительно тоже копейки
+- `clients.credit_limit` — тип numeric, не integer
+
+### Денормализация в `sales`
+- `ticket_name`, `ticket_price`, `sessions` — снимки на момент продажи
+- Не обновлять, не джоинить tickets для отчётов
 
 ### Ticket Management
-- Max 20 active tickets (`is_active = true`)
-- Use `is_active = false` for soft deletes
-- Never physically delete (preserves sales history)
+- Max 20 активных тарифов (`is_active = true`) — бизнес-правило
+- Мягкое удаление через `is_active = false`
+- Физически не удалять (сохраняется история продаж)
 
-### Constraints
-- Prices always in **UAH as integers** (no decimals)
-- No negative balances (enforce in app layer)
-- No negative prices
-- Sessions count > 0
+### payment_method в sales
+Допустимые значения (DB constraint): `cash`, `fop`, `personal_card`
 
 ---
 
-## 🎯 Naming Conventions
-
-- **Case**: `snake_case` everywhere
-- **PKs**: Always `id uuid DEFAULT gen_random_uuid()`
-- **Timestamps**: Always `created_at`, `updated_at` (type: `timestamptz`)
-- **Money**: Always `integer` (UAH, no decimals)
-- **Soft deletes**: Use `is_active` boolean
-- **Tables**: Plural form (`clients`, `sales`)
-- **Schema**: All in `public`
-
----
-
-## 📦 Stack
+## Stack
 
 **Frontend:**
 - Next.js 14.2.3
@@ -293,38 +301,31 @@ npm run start    # Start production server
 
 ---
 
-## 📜 Migrations
+## Pages (MVP Core)
 
-### Completed
-- `20260414000000_adjust_client_balance.sql` — Create adjust_client_balance function
-- `20260414000001_fix_adjust_client_balance.sql` — Drop ambiguous numeric overload
+| Route | Назначение |
+|-------|-----------|
+| `/login` | Авторизация |
+| `/sales` | Запись продаж, история |
+| `/clients` | База клиентов, баланс |
+| `/tickets` | Управление тарифами |
+| `/trainers` | Управление тренерами |
+| `/halls` | Управление залами |
 
----
-
-## 🚀 Roadmap (Planned)
-
-- [ ] `visits` table — track individual session attendance
-- [ ] `payments` table — detailed payment history
-- [ ] Role-based access control (admin, trainer)
-- [ ] Payment method validation (enum or reference table)
-- [ ] Cron jobs for auto-expiry of inactive sessions
-- [ ] Audit logging for financial transactions
-- [ ] Client session notifications
-- [ ] Trainer dashboard with earnings summary
+Удалено: calendar, schedule-slots, schedules, regular-enrollments (не нужны на MVP).
 
 ---
 
-## 📞 Notes for Developers
+## Notes for Developers
 
-1. **RLS is enabled** — Test all queries with authenticated context
-2. **Snapshots are immutable** — Don't update sales.ticket_price, etc.
-3. **Use adjust_client_balance()** — Don't update balance directly
-4. **Soft deletes** — Check `is_active` in WHERE clauses
-5. **Timestamps are UTC** — Always use `timestamptz`
-6. **No decimals for money** — Store UAH as integer (hryvnia only)
-7. **Indexes exist** — Leverage them in queries (client_id, created_at, etc)
+1. **RLS отключён** — авторизация только через Supabase Auth JWT
+2. **Баланс только через RPC** — `update_client_balance()`, не UPDATE напрямую
+3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
+4. **Мягкие удаления** — везде `is_active`, никогда не DELETE
+5. **Timestamps UTC** — всегда `timestamptz`
+6. **Деньги в копейках** — `tickets.price` хранится в копейках, делить на 100 при отображении
+7. **GIN-индексы на clients** — использовать для fuzzy-поиска по фамилии и телефону (`%` или `similarity()`)
 
 ---
 
-**Last Updated**: 2026-04-14
-**Auto-generated from**: Supabase PostgreSQL schemaм
+**Last Updated**: 2026-04-28
