@@ -36,8 +36,8 @@ const saleSchema = z.object({
   client_id: z.string().min(1, 'Оберіть клієнта'),
   ticket_id: z.string().optional().or(z.literal('')),
   trainer_id: z.string().optional().or(z.literal('')),
-  price_paid: z.number({ invalid_type_error: 'Вкажіть число' }).min(0),
-  amount_given: z.number({ invalid_type_error: 'Вкажіть число' }).min(0),
+  price_paid: z.number().min(0),
+  amount_given: z.number().min(0),
   payment_method: z.enum(['cash', 'fop', 'personal_card']),
   notes: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -109,7 +109,7 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       if (e.key === 'Escape') { onCloseRef.current(); return }
       if (e.key !== 'Tab') return
 
-      const focusable = Array.from(modal.querySelectorAll<HTMLElement>(
+      const focusable = Array.from(modal!.querySelectorAll<HTMLElement>(
         'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
       ))
       if (!focusable.length) return
@@ -392,7 +392,7 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       }
     }
 
-    const err = await saveSaleWithTicket(formData, ticketData)
+    const err = await saveSaleWithTicket(formData, ticketData!)
     if (err) { setError(err); setLoading(false); return }
 
     try {

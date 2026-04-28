@@ -22,17 +22,23 @@ const supabase = createClient()
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [toggling, setToggling] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
   const fetchTickets = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    setFetchError(null)
+    const { data, error } = await supabase
       .from('tickets')
       .select('id, name, ticket_type, sessions, price, is_active')
       .order('name', { ascending: true })
-    setTickets((data as Ticket[]) ?? [])
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setTickets((data as Ticket[]) ?? [])
+    }
     setLoading(false)
   }, [])
 
@@ -40,10 +46,12 @@ export default function TicketsPage() {
 
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
-    await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
-    setTickets(prev =>
-      prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
-    )
+    const { error } = await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
+    if (!error) {
+      setTickets(prev =>
+        prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
+      )
+    }
     setToggling(null)
   }
 
@@ -69,6 +77,8 @@ export default function TicketsPage() {
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
+          ) : fetchError ? (
+            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : active.length === 0 ? (
             <div className={styles.empty}>Активних абонементів немає</div>
           ) : (

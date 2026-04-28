@@ -11,17 +11,23 @@ const supabase = createClient()
 export default function TrainersPage() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [toggling, setToggling] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
   const fetchTrainers = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    setFetchError(null)
+    const { data, error } = await supabase
       .from('trainers')
       .select('id, name, is_active, instagram_username, telegram_username')
       .order('name', { ascending: true })
-    setTrainers((data as Trainer[]) ?? [])
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setTrainers((data as Trainer[]) ?? [])
+    }
     setLoading(false)
   }, [])
 
@@ -29,10 +35,12 @@ export default function TrainersPage() {
 
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
-    await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
-    setTrainers(prev =>
-      prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
-    )
+    const { error } = await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
+    if (!error) {
+      setTrainers(prev =>
+        prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
+      )
+    }
     setToggling(null)
   }
 
@@ -58,6 +66,8 @@ export default function TrainersPage() {
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
+          ) : fetchError ? (
+            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : active.length === 0 ? (
             <div className={styles.empty}>Активних тренерів немає</div>
           ) : (

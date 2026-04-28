@@ -11,17 +11,23 @@ const supabase = createClient()
 export default function HallsPage() {
   const [halls, setHalls] = useState<Hall[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [toggling, setToggling] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
   const fetchHalls = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    setFetchError(null)
+    const { data, error } = await supabase
       .from('halls')
       .select('id, name, capacity, description, is_active')
       .order('name', { ascending: true })
-    setHalls((data as Hall[]) ?? [])
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setHalls((data as Hall[]) ?? [])
+    }
     setLoading(false)
   }, [])
 
@@ -29,10 +35,12 @@ export default function HallsPage() {
 
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
-    await supabase.from('halls').update({ is_active: newValue }).eq('id', id)
-    setHalls(prev =>
-      prev.map(h => h.id === id ? { ...h, is_active: newValue } : h)
-    )
+    const { error } = await supabase.from('halls').update({ is_active: newValue }).eq('id', id)
+    if (!error) {
+      setHalls(prev =>
+        prev.map(h => h.id === id ? { ...h, is_active: newValue } : h)
+      )
+    }
     setToggling(null)
   }
 
@@ -58,6 +66,8 @@ export default function HallsPage() {
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
+          ) : fetchError ? (
+            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : active.length === 0 ? (
             <div className={styles.empty}>Активних залів немає</div>
           ) : (

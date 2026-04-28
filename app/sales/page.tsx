@@ -6,6 +6,8 @@ import SaleModal from '@/components/SaleModal'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
 
+const supabase = createClient()
+
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash: 'Готівка',
   fop: 'ФОП',
@@ -19,9 +21,9 @@ const PAYMENT_CLASS: Record<PaymentMethod, string> = {
 }
 
 export default function SalesPage() {
-  const supabase = createClient()
   const [sales, setSales] = useState<Sale[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editSale, setEditSale] = useState<Sale | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -30,7 +32,8 @@ export default function SalesPage() {
 
   const fetchSales = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    setFetchError(null)
+    const { data, error } = await supabase
       .from('sales')
       .select(`
         id, created_at, client_id, ticket_id, trainer_id,
@@ -42,7 +45,11 @@ export default function SalesPage() {
       `)
       .order('created_at', { ascending: false })
       .limit(200)
-    setSales((data as unknown as Sale[]) ?? [])
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setSales((data as unknown as Sale[]) ?? [])
+    }
     setLoading(false)
   }, [])
 
@@ -123,6 +130,8 @@ export default function SalesPage() {
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
+          ) : fetchError ? (
+            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : sales.length === 0 ? (
             <div className={styles.empty}>Продажів ще немає</div>
           ) : (
