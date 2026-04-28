@@ -1,6 +1,6 @@
 # Database Schema
 
-**Last Synced:** 4/28/2026, 10:08:32 PM
+**Last Synced:** 4/28/2026, 10:37:15 PM
 
 ## 📋 Tables
 
@@ -21,9 +21,21 @@ balance_updated_at
 ```
 
 ### `sales`
-**Columns:** 0
+**Columns:** 13
 ```
-
+id
+client_id
+ticket_id
+trainer_id
+ticket_name
+ticket_price
+sessions
+price_paid
+payment_method
+notes
+created_at
+updated_at
+amount_given
 ```
 
 ### `tickets`
@@ -60,72 +72,6 @@ capacity
 is_active
 created_at
 description
-```
-
-### `schedules`
-**Columns:** 15
-```
-id
-title
-schedule_type
-trainer_id
-hall_id
-start_time
-duration_minutes
-max_capacity
-reserve_slots
-is_active
-created_at
-updated_at
-day_of_week
-sessions_cost
-group_id
-```
-
-### `schedule_slots`
-**Columns:** 15
-```
-id
-schedule_id
-hall_id
-trainer_id
-course_name
-course_type
-slot_date
-start_time
-capacity_override
-is_cancelled
-sessions_processed
-created_at
-updated_at
-ticket_id
-status
-```
-
-### `enrollments`
-**Columns:** 11
-```
-id
-slot_id
-client_id
-status
-is_regular
-waitlist_position
-cancelled_at
-cancelled_by
-sessions_deducted
-enrolled_at
-updated_at
-```
-
-### `regular_enrollments`
-**Columns:** 5
-```
-id
-client_id
-schedule_id
-created_at
-valid_until
 ```
 
 ### `balance_transactions`
