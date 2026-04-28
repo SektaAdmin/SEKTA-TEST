@@ -254,69 +254,64 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
     }
   }
 
-  async function shiftBalance(id: string, delta: number): Promise<void> {
-    if (delta === 0) return
-    const { error } = await supabase.rpc('adjust_client_balance', { p_client_id: id, p_delta: delta })
-    if (error) throw new Error(error.message)
-  }
-
   async function updateClientBalance(newAmountGiven: number, newPricePaid: number) {
-  if (isEdit && editSale!.client_id !== clientId) {
-    // Смена клиента
-    const oldDelta = editSale!.amount_given - editSale!.price_paid
+    if (isEdit && editSale!.client_id !== clientId) {
+      const oldDelta = editSale!.amount_given - editSale!.price_paid
 
-    const { error: err1 } = await supabase.rpc('update_client_balance', {
-      p_client_id: editSale!.client_id,
-      p_amount: -oldDelta,          // ✅ Возвращаем старому клиенту (инверсия тут нужна)
-      p_transaction_type: 'refund',
-      p_description: 'Скасування продажи',
-      p_related_sale_id: editSale!.id,
-    })
-    if (err1) throw new Error(`Помилка при поверненню коштів: ${err1.message}`)
+      const { error: err1 } = await supabase.rpc('update_client_balance', {
+        p_client_id: editSale!.client_id,
+        p_amount: -oldDelta,
+        p_transaction_type: 'refund',
+        p_description: 'Скасування продажи',
+        p_reason: null,
+        p_related_sale_id: editSale!.id,
+      })
+      if (err1) throw new Error(`Помилка при поверненню коштів: ${err1.message}`)
 
-    const newDelta = newAmountGiven - newPricePaid
-    const { error: err2 } = await supabase.rpc('update_client_balance', {
-      p_client_id: clientId,
-      p_amount: newDelta,           // ✅ БЕЗ инверсии
-      p_transaction_type: 'purchase',
-      p_description: 'Передача продажи',
-      p_related_sale_id: editSale!.id,
-    })
-    if (err2) throw new Error(`Помилка при додаванню коштів: ${err2.message}`)
+      const newDelta = newAmountGiven - newPricePaid
+      const { error: err2 } = await supabase.rpc('update_client_balance', {
+        p_client_id: clientId,
+        p_amount: newDelta,
+        p_transaction_type: 'purchase',
+        p_description: 'Передача продажи',
+        p_reason: null,
+        p_related_sale_id: editSale!.id,
+      })
+      if (err2) throw new Error(`Помилка при додаванню коштів: ${err2.message}`)
 
-  } else if (isEdit) {
-    // Редактирование без смены клиента — пересчитываем разницу дельт
-    const oldDelta = editSale!.amount_given - editSale!.price_paid
-    const newDelta = newAmountGiven - newPricePaid
-    const correction = newDelta - oldDelta  // Только изменение
+    } else if (isEdit) {
+      const oldDelta = editSale!.amount_given - editSale!.price_paid
+      const newDelta = newAmountGiven - newPricePaid
+      const correction = newDelta - oldDelta
 
-    if (correction === 0) return
+      if (correction === 0) return
 
-    const { error } = await supabase.rpc('update_client_balance', {
-      p_client_id: clientId,
-      p_amount: correction,         // ✅ Только коррекция, без инверсии
-      p_transaction_type: 'adjustment',
-      p_description: 'Редагування продажи',
-      p_related_sale_id: editSale!.id,
-    })
-    if (error) throw new Error(error.message)
+      const { error } = await supabase.rpc('update_client_balance', {
+        p_client_id: clientId,
+        p_amount: correction,
+        p_transaction_type: 'adjustment',
+        p_description: 'Редагування продажи',
+        p_reason: null,
+        p_related_sale_id: editSale!.id,
+      })
+      if (error) throw new Error(error.message)
 
-  } else {
-    // Новая продажа
-    const newDelta = newAmountGiven - newPricePaid
+    } else {
+      const newDelta = newAmountGiven - newPricePaid
 
-    const { error } = await supabase.rpc('update_client_balance', {
-      p_client_id: clientId,
-      p_amount: newDelta,           // ✅ БЕЗ инверсии
-      p_transaction_type: ticketId ? 'purchase' : 'deposit_topup',
-      p_description: ticketId
-        ? `Покупка ${tickets.find(t => t.id === ticketId)?.name || 'абонемента'}`
-        : 'Поповнення депозиту',
-      p_related_sale_id: null,
-    })
-    if (error) throw new Error(error.message)
+      const { error } = await supabase.rpc('update_client_balance', {
+        p_client_id: clientId,
+        p_amount: newDelta,
+        p_transaction_type: ticketId ? 'purchase' : 'deposit_topup',
+        p_description: ticketId
+          ? `Покупка ${tickets.find(t => t.id === ticketId)?.name || 'абонемента'}`
+          : 'Поповнення депозиту',
+        p_reason: null,
+        p_related_sale_id: null,
+      })
+      if (error) throw new Error(error.message)
+    }
   }
-}
 
   async function saveDepositOnly(formData: SaleFormValues): Promise<string | null> {
     const depositData = {

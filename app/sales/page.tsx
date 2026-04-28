@@ -82,6 +82,7 @@ export default function SalesPage() {
         p_amount: -delta,
         p_transaction_type: 'admin_adjustment',
         p_description: 'Скасування продажи',
+        p_reason: null,
         p_related_sale_id: sale.id,
       })
 
