@@ -1,5 +1,18 @@
 export type PaymentMethod = 'cash' | 'fop' | 'personal_card'
 
+export const TICKET_TYPES = [
+  'group',
+  'individual',
+  'hallrental',
+  'smallhallrental',
+  'individualduo',
+  'individualtrio',
+  'pylonrental',
+  'striprental',
+] as const
+
+export type TicketType = typeof TICKET_TYPES[number]
+
 export interface Client {
   id: string
   first_name: string | null

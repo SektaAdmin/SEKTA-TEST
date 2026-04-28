@@ -1,8 +1,11 @@
 'use client'
-import { useState, useRef, useEffect, useId } from 'react'
+import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase'
+import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './TrainerModal.module.css'
+
+const supabase = createClient()
 
 interface TrainerFormValues {
   name: string
@@ -17,9 +20,7 @@ interface Props {
 
 export default function TrainerModal({ onClose, onSaved }: Props) {
   const titleId = useId()
-  const modalRef = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  const modalRef = useModalFocus(onClose)
 
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -32,40 +33,10 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
     defaultValues: { name: '', instagram_username: '', telegram_username: '' },
   })
 
-  useEffect(() => {
-    const modal = modalRef.current
-    if (!modal) return
-
-    modal.querySelector<HTMLElement>(
-      'input:not(:disabled), button:not(:disabled)'
-    )?.focus()
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') { onCloseRef.current(); return }
-      if (e.key !== 'Tab') return
-
-      const focusable = Array.from((modal as HTMLDivElement).querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])'
-      ))
-      if (!focusable.length) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus() }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus() }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   const onSubmit = async (data: TrainerFormValues) => {
     setLoading(true)
     setServerError('')
 
-    const supabase = createClient()
     const { error: insertError } = await supabase.from('trainers').insert({
       name: data.name.trim(),
       instagram_username: data.instagram_username.trim() || null,

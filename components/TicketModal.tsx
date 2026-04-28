@@ -1,19 +1,12 @@
 'use client'
-import { useState, useRef, useEffect, useId } from 'react'
+import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase'
+import { useModalFocus } from '@/hooks/useModalFocus'
+import { TICKET_TYPES } from '@/types'
 import styles from './TicketModal.module.css'
 
-const VALID_TICKET_TYPES = [
-  'group',
-  'individual',
-  'hallrental',
-  'smallhallrental',
-  'individualduo',
-  'individualtrio',
-  'pylonrental',
-  'striprental',
-]
+const supabase = createClient()
 
 interface TicketFormValues {
   name: string
@@ -29,9 +22,7 @@ interface Props {
 
 export default function TicketModal({ onClose, onSaved }: Props) {
   const titleId = useId()
-  const modalRef = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  const modalRef = useModalFocus(onClose)
 
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -44,35 +35,6 @@ export default function TicketModal({ onClose, onSaved }: Props) {
     defaultValues: { name: '', ticket_type: '', sessions: '', price: '' },
   })
 
-  useEffect(() => {
-    const modal = modalRef.current
-    if (!modal) return
-
-    modal.querySelector<HTMLElement>(
-      'input:not(:disabled), select:not(:disabled), button:not(:disabled)'
-    )?.focus()
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') { onCloseRef.current(); return }
-      if (e.key !== 'Tab') return
-
-      const focusable = Array.from((modal as HTMLDivElement).querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])'
-      ))
-      if (!focusable.length) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus() }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus() }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   const onSubmit = async (data: TicketFormValues) => {
     setLoading(true)
     setServerError('')
@@ -80,7 +42,6 @@ export default function TicketModal({ onClose, onSaved }: Props) {
     const sessionsNum = parseInt(data.sessions, 10)
     const priceNum = parseInt(data.price, 10)
 
-    const supabase = createClient()
     const { error: insertError } = await supabase.from('tickets').insert({
       name: data.name.trim(),
       ticket_type: data.ticket_type,
@@ -136,12 +97,12 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             <select
               id="ticket-type"
               {...register('ticket_type', {
-                validate: v => VALID_TICKET_TYPES.includes(v) || 'Оберіть тип абонементу',
+                validate: v => (TICKET_TYPES as readonly string[]).includes(v) || 'Оберіть тип абонементу',
               })}
               disabled={loading}
             >
               <option value="">— Оберіть тип —</option>
-              {VALID_TICKET_TYPES.map(value => (
+              {TICKET_TYPES.map(value => (
                 <option key={value} value={value}>{value}</option>
               ))}
             </select>

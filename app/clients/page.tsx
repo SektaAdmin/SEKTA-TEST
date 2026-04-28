@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
+import { formatClientName } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './clients.module.css'
 
@@ -90,10 +91,6 @@ export default function ClientsPage() {
     setPage(0)
   }
 
-  function clientName(c: Client) {
-    return [c.first_name, c.last_name].filter(Boolean).join(' ') || '—'
-  }
-
   function handleSaved() {
     setShowModal(false)
     setEditingClient(null)
@@ -163,7 +160,7 @@ export default function ClientsPage() {
                   <tbody>
                     {clients.map(c => (
                       <tr key={c.id}>
-                        <td className={styles.name}>{clientName(c)}</td>
+                        <td className={styles.name}>{formatClientName(c)}</td>
                         <td className={styles.phone}>
                           {c.phone
                             ? <a href={`tel:${c.phone}`} className={styles.link}>{c.phone}</a>
@@ -197,7 +194,7 @@ export default function ClientsPage() {
                           <button
                             className={styles.btnEdit}
                             onClick={() => setEditingClient(c)}
-                            aria-label={`Редагувати ${clientName(c)}`}
+                            aria-label={`Редагувати ${formatClientName(c)}`}
                           >
                             Редагувати
                           </button>

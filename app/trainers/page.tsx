@@ -36,10 +36,10 @@ export default function TrainersPage() {
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
     const { error } = await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
-    if (!error) {
-      setTrainers(prev =>
-        prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
-      )
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setTrainers(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
     setToggling(null)
   }

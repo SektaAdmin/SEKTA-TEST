@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
+import { formatClientName } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
 
@@ -55,61 +56,46 @@ export default function SalesPage() {
 
   useEffect(() => { fetchSales() }, [fetchSales])
 
-  function clientName(s: Sale) {
-    const { first_name, last_name } = s.clients
-    return [first_name, last_name].filter(Boolean).join(' ') || '—'
-  }
-
   function formatDate(iso: string) {
     const d = new Date(iso)
     return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`
   }
 
   async function handleDelete() {
-  if (!deleteId) return
-  setDeleting(true)
-  setDeleteError('')
+    if (!deleteId) return
+    setDeleting(true)
+    setDeleteError('')
 
-  const sale = sales.find(s => s.id === deleteId)
+    const sale = sales.find(s => s.id === deleteId)
+    const delta = sale ? sale.amount_given - sale.price_paid : 0
 
-  // Отменить баланс операцию
-  if (sale) {
-    const delta = sale.amount_given - sale.price_paid
-    
     if (delta !== 0) {
       const { error: balanceError } = await supabase.rpc('update_client_balance', {
-        p_client_id: sale.client_id,
+        p_client_id: sale!.client_id,
         p_amount: -delta,
         p_transaction_type: 'admin_adjustment',
         p_description: 'Скасування продажи',
         p_reason: null,
-        p_related_sale_id: sale.id,
+        p_related_sale_id: sale!.id,
       })
-
       if (balanceError) {
         setDeleteError('Помилка при скасуванні балансу: ' + balanceError.message)
         setDeleting(false)
         return
       }
     }
-  }
 
-  // Удалить запись
-  const { error: delError } = await supabase
-    .from('sales')
-    .delete()
-    .eq('id', deleteId)
+    const { error: delError } = await supabase.from('sales').delete().eq('id', deleteId)
+    if (delError) {
+      setDeleteError(delError.message)
+      setDeleting(false)
+      return
+    }
 
-  if (delError) {
-    setDeleteError(delError.message)
+    setDeleteId(null)
     setDeleting(false)
-    return
+    fetchSales()
   }
-
-  setDeleteId(null)
-  setDeleting(false)
-  fetchSales()
-}
 
   function handleSaved() {
     setShowModal(false)
@@ -156,7 +142,7 @@ export default function SalesPage() {
                     return (
                     <tr key={s.id}>
                       <td className={styles.date}>{formatDate(s.created_at)}</td>
-                      <td>{clientName(s)}</td>
+                      <td>{formatClientName(s.clients)}</td>
                       <td>
                         {s.ticket_name ?? <span className={styles.depositLabel}>Поповнення депозиту</span>}
                       </td>
@@ -203,7 +189,7 @@ export default function SalesPage() {
           editSale={editSale ? {
             id: editSale.id,
             client_id: editSale.client_id,
-            client_name: [editSale.clients?.first_name, editSale.clients?.last_name].filter(Boolean).join(' '),
+            client_name: formatClientName(editSale.clients),
             ticket_id: editSale.ticket_id,
             ticket_name: editSale.ticket_name,
             ticket_price: editSale.ticket_price,

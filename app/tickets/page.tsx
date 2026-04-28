@@ -6,17 +6,6 @@ import TicketModal from '@/components/TicketModal'
 import type { Ticket } from '@/types'
 import styles from './tickets.module.css'
 
-const TICKET_TYPES = [
-  'group',
-  'individual',
-  'hallrental',
-  'smallhallrental',
-  'individualduo',
-  'individualtrio',
-  'pylonrental',
-  'striprental',
-] as const
-
 const supabase = createClient()
 
 export default function TicketsPage() {
@@ -47,10 +36,10 @@ export default function TicketsPage() {
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
     const { error } = await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
-    if (!error) {
-      setTickets(prev =>
-        prev.map(t => t.id === id ? { ...t, is_active: newValue } : t)
-      )
+    if (error) {
+      setFetchError(error.message)
+    } else {
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
     setToggling(null)
   }
