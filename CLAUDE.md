@@ -59,7 +59,7 @@ halls (standalone reference)
 | name | text | NO | — | Название тарифа |
 | ticket_type | text | NO | — | Тип занятия (не enum, свободный текст) |
 | sessions | integer | NO | — | Количество занятий, > 0 |
-| price | integer | NO | — | ⚠️ Цена в **копейках** (делить на 100 для гривен) |
+| price | integer | NO | — | Цена в **гривнях** (₴) |
 | is_active | boolean | NO | false | true = актуальный, false = архив |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
@@ -108,7 +108,7 @@ halls (standalone reference)
 | ticket_id | uuid | YES | → tickets.id SET NULL | |
 | trainer_id | uuid | YES | → trainers.id SET NULL | |
 | ticket_name | text | YES | — | **Snapshot** ticket.name на момент продажи |
-| ticket_price | integer | YES | — | **Snapshot** ticket.price (копейки) |
+| ticket_price | integer | YES | — | **Snapshot** ticket.price (гривні) |
 | sessions | integer | YES | — | **Snapshot** ticket.sessions |
 | price_paid | integer | NO | — | Фактически оплачено, >= 0 |
 | amount_given | integer | NO | — | Сумма, которую дал клиент, >= 0 |
@@ -255,8 +255,8 @@ if (data?.[0]?.success === false) {
 - `credit_limit` = 10000 по умолчанию (позволяет уйти в минус до -10000)
 
 ### Деньги
-- `tickets.price` — в **копейках** (÷ 100 для отображения в гривнах)
-- `sales.price_paid`, `sales.amount_given` — предположительно тоже копейки
+- `tickets.price` — в **гривнях** (₴), відображати як є
+- `sales.price_paid`, `sales.amount_given` — також гривні (₴)
 - `clients.credit_limit` — тип numeric, не integer
 
 ### Денормализация в `sales`
@@ -324,7 +324,7 @@ npm run start    # Start production server
 3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
 4. **Мягкие удаления** — везде `is_active`, никогда не DELETE
 5. **Timestamps UTC** — всегда `timestamptz`
-6. **Деньги в копейках** — `tickets.price` хранится в копейках, делить на 100 при отображении
+6. **Деньги в гривнях** — `tickets.price`, `sales.price_paid`, `sales.amount_given` зберігаються в гривнях (₴), ділити на 100 не треба
 7. **GIN-индексы на clients** — использовать для fuzzy-поиска по фамилии и телефону (`%` или `similarity()`)
 
 ---

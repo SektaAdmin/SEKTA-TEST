@@ -321,6 +321,114 @@
 }
 .btnLoadMore:hover { border-color: var(--border-hover); color: var(--text); }
 
+/* ── Row actions (edit/delete in table) ─────────────────────── */
+.actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btnRowEdit {
+  height: 26px;
+  padding: 0 10px;
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btnRowDel {
+  height: 26px;
+  padding: 0 10px;
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btnRowDel:hover { border-color: var(--danger); background: var(--danger-dim); }
+
+/* ── Delete confirmation overlay ────────────────────────────── */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.confirmBox {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.confirmBox h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.confirmBox p {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 0 0 16px;
+}
+
+.confirmError {
+  font-size: 12px;
+  color: var(--danger);
+  margin: 0 0 12px;
+}
+
+.confirmBtns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btnConfirmCancel {
+  height: 32px;
+  padding: 0 14px;
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnConfirmCancel:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btnConfirmDel {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--danger);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btnConfirmDel:hover { opacity: 0.85; }
+.btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Accordion ──────────────────────────────────────────────── */
 .accordionToggle {
   display: flex;

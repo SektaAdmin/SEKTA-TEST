@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
-import { formatClientName } from '@/lib/formatters'
+import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
 
@@ -132,11 +132,6 @@ export default function SalesPage() {
     setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo(''); setPage(0)
   }
 
-  function formatDate(iso: string) {
-    const d = new Date(iso)
-    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`
-  }
-
   async function handleDelete() {
     if (!deleteId) return
     setDeleting(true)
@@ -245,7 +240,7 @@ export default function SalesPage() {
                     const depDelta = s.amount_given - s.price_paid
                     return (
                     <tr key={s.id}>
-                      <td className={styles.date}>{formatDate(s.created_at)}</td>
+                      <td className={styles.date}>{formatSaleDatetime(s.created_at)}</td>
                       <td>{formatClientName(s.clients)}</td>
                       <td>
                         {s.ticket_name ?? <span className={styles.depositLabel}>Поповнення депозиту</span>}
@@ -353,6 +348,7 @@ export default function SalesPage() {
             amount_given: editSale.amount_given,
             payment_method: editSale.payment_method,
             notes: editSale.notes,
+            created_at: editSale.created_at,
           } : undefined}
         />
       )}

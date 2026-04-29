@@ -1,10 +1,11 @@
 'use client'
-import { useState, useEffect, useMemo, useCallback, useId } from 'react'
+import { useState, useEffect, useMemo, useCallback, useId, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { createClient } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import { formatClientLabel, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal } from '@/lib/formatters'
 import ClientSearchCombobox from './ClientSearchCombobox'
 import type { Client, Ticket, Trainer, SaleFormData, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
@@ -26,12 +27,14 @@ export interface EditSaleSnapshot {
   amount_given: number
   payment_method: PaymentMethod
   notes: string | null
+  created_at: string
 }
 
 interface Props {
   onClose: () => void
   onSaved: () => void
   editSale?: EditSaleSnapshot
+  preselectedClient?: Client
 }
 
 const saleSchema = z.object({
@@ -39,30 +42,41 @@ const saleSchema = z.object({
   ticket_id: z.string().optional().or(z.literal('')),
   trainer_id: z.string().optional().or(z.literal('')),
   price_paid: z.number().min(0),
-  amount_given: z.number().min(0),
+  amount_given: z.number(),
   payment_method: z.enum(['cash', 'fop', 'personal_card']),
   notes: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.ticket_id && !data.trainer_id && data.payment_method === 'cash') {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Оберіть тренера', path: ['trainer_id'] })
   }
+  if (!data.ticket_id && data.amount_given === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Сума не може бути 0', path: ['amount_given'] })
+  }
+  if (!data.ticket_id && !data.notes?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Причина обов'язкова", path: ['notes'] })
+  }
 })
 
 type SaleFormValues = z.infer<typeof saleSchema>
 
 
-export default function SaleModal({ onClose, onSaved, editSale }: Props) {
+export default function SaleModal({ onClose, onSaved, editSale, preselectedClient }: Props) {
   const isEdit = !!editSale
   const titleId = useId()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      client_id: editSale?.client_id ?? '',
+      client_id: editSale?.client_id ?? preselectedClient?.id ?? '',
       ticket_id: editSale?.ticket_id ?? '',
       trainer_id: editSale?.trainer_id ?? '',
       price_paid: editSale?.price_paid ?? 0,
-      amount_given: editSale?.amount_given ?? 0,
+      // For no-ticket edits, reconstruct the signed amount (amount_given - price_paid)
+      amount_given: editSale
+        ? (editSale.ticket_id
+            ? editSale.amount_given
+            : (editSale.amount_given - editSale.price_paid))
+        : 0,
       payment_method: editSale?.payment_method ?? 'cash',
       notes: editSale?.notes ?? '',
     }
@@ -72,8 +86,22 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [clientBalance, setClientBalance] = useState<number | null>(null)
+  const [clientBalance, setClientBalance] = useState<number | null>(preselectedClient?.balance ?? null)
   const [ticketChanged, setTicketChanged] = useState(false)
+  const [saleDatetime, setSaleDatetime] = useState<string>(
+    editSale ? isoToDatetimeLocal(editSale.created_at) : nowDatetimeLocal()
+  )
+  const [displayDatetime, setDisplayDatetime] = useState<string>(
+    datetimeLocalToDisplay(editSale ? isoToDatetimeLocal(editSale.created_at) : nowDatetimeLocal())
+  )
+  const datePickerRef = useRef<HTMLInputElement>(null)
+
+  const [pricePaidText, setPricePaidText] = useState(String(editSale?.price_paid ?? 0))
+  const [amountGivenText, setAmountGivenText] = useState(
+    String(editSale
+      ? (editSale.ticket_id ? editSale.amount_given : (editSale.amount_given - editSale.price_paid))
+      : 0)
+  )
 
   const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId } = watch()
 
@@ -115,18 +143,28 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
     if (!id) {
       setValue('price_paid', 0)
       setValue('amount_given', 0)
+      setPricePaidText('0')
+      setAmountGivenText('0')
       return
     }
     const t = tickets.find(x => x.id === id)
     if (t) {
       setValue('price_paid', t.price)
       setValue('amount_given', t.price)
+      setPricePaidText(String(t.price))
+      setAmountGivenText(String(t.price))
     }
   }
 
   const onSubmit = async (formData: SaleFormValues) => {
     setLoading(true)
     setError('')
+
+    // For no-ticket ops, amount_given holds a signed value.
+    // Convert: positive → (amount_given=val, price_paid=0); negative → (amount_given=0, price_paid=abs(val))
+    const isNoTicket = !formData.ticket_id
+    const submitAmountGiven = isNoTicket && formData.amount_given < 0 ? 0 : formData.amount_given
+    const submitPricePaid   = isNoTicket && formData.amount_given < 0 ? Math.abs(formData.amount_given) : formData.price_paid
 
     // ── EDIT: single atomic RPC ───────────────────────────────────────────
     if (isEdit) {
@@ -161,10 +199,11 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
         p_ticket_price:   ticketPrice,
         p_sessions:       sessions,
         p_ticket_type:    ticketType,
-        p_price_paid:     formData.price_paid,
-        p_amount_given:   formData.amount_given,
+        p_price_paid:     submitPricePaid,
+        p_amount_given:   submitAmountGiven,
         p_payment_method: formData.payment_method,
         p_notes:          formData.notes?.trim() || '',
+        p_created_at:     new Date(saleDatetime).toISOString(),
       })
 
       if (error || !data?.[0]?.success) {
@@ -182,10 +221,11 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       p_client_id:      formData.client_id,
       p_ticket_id:      formData.ticket_id || null,
       p_trainer_id:     formData.trainer_id || null,
-      p_price_paid:     formData.price_paid,
-      p_amount_given:   formData.amount_given,
+      p_price_paid:     submitPricePaid,
+      p_amount_given:   submitAmountGiven,
       p_payment_method: formData.payment_method,
       p_notes:          formData.notes?.trim() || '',
+      p_created_at:     new Date(saleDatetime).toISOString(),
     })
 
     if (error || !data?.[0]?.success) {
@@ -218,7 +258,7 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
             <label htmlFor="sale-client">Клієнт</label>
             <ClientSearchCombobox
               inputId="sale-client"
-              initialLabel={editSale?.client_name}
+              initialLabel={editSale?.client_name ?? (preselectedClient ? formatClientLabel(preselectedClient) : undefined)}
               onSelect={(client: Client) => {
                 setValue('client_id', client.id)
                 fetchClientBalance(client.id)
@@ -264,8 +304,19 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
               <input
                 id="sale-price-paid"
                 type="number"
-                value={pricePaid}
-                onChange={e => setValue('price_paid', e.target.value === '' ? 0 : Number(e.target.value))}
+                value={pricePaidText}
+                onChange={e => {
+                  setPricePaidText(e.target.value)
+                  const n = Number(e.target.value)
+                  if (e.target.value !== '' && !isNaN(n)) setValue('price_paid', n)
+                  else if (e.target.value === '') setValue('price_paid', 0)
+                }}
+                onBlur={() => {
+                  const n = Number(pricePaidText)
+                  const val = pricePaidText === '' || isNaN(n) ? 0 : n
+                  setPricePaidText(String(val))
+                  setValue('price_paid', val)
+                }}
                 min={0}
                 step={1}
                 disabled={loading}
@@ -273,20 +324,39 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
             </div>
           )}
 
-          {/* Сума від клієнта / поповнення депозиту */}
+          {/* Сума від клієнта / операція з депозитом */}
           <div className={styles.field}>
             <label htmlFor="sale-amount-given">
-              {ticketId ? 'Сума від клієнта (₴)' : 'Сума поповнення депозиту (₴)'}
+              {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
             </label>
             <input
               id="sale-amount-given"
               type="number"
-              value={amountGiven}
-              onChange={e => setValue('amount_given', e.target.value === '' ? 0 : Number(e.target.value))}
-              min={0}
+              value={amountGivenText}
+              onChange={e => {
+                setAmountGivenText(e.target.value)
+                if (e.target.value === '' || e.target.value === '-') {
+                  setValue('amount_given', 0)
+                } else {
+                  const n = Number(e.target.value)
+                  if (!isNaN(n)) setValue('amount_given', n)
+                }
+              }}
+              onBlur={() => {
+                const n = Number(amountGivenText)
+                const val = amountGivenText === '' || isNaN(n) ? 0 : n
+                setAmountGivenText(String(val))
+                setValue('amount_given', val)
+              }}
+              min={ticketId ? 0 : undefined}
               step={1}
               disabled={loading}
             />
+            {!ticketId && (
+              <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
+                Позитивне — поповнення, негативне — списання
+              </span>
+            )}
             {ticketId && depositDelta !== 0 && (
               <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
                 {depositDelta > 0
@@ -294,9 +364,11 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
                   : `${depositDelta.toLocaleString('uk-UA')} ₴ з депозиту`}
               </span>
             )}
-            {!ticketId && amountGiven > 0 && (
-              <span className={`${styles.depositHint} ${styles.depositPos}`}>
-                +{amountGiven.toLocaleString('uk-UA')} ₴ на депозит
+            {!ticketId && amountGiven !== 0 && (
+              <span className={`${styles.depositHint} ${amountGiven > 0 ? styles.depositPos : styles.depositNeg}`}>
+                {amountGiven > 0
+                  ? `+${amountGiven.toLocaleString('uk-UA')} ₴ на депозит`
+                  : `${amountGiven.toLocaleString('uk-UA')} ₴ з депозиту`}
               </span>
             )}
           </div>
@@ -341,16 +413,69 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
             </div>
           )}
 
-          {/* Коментар */}
+          {/* Дата і час */}
           <div className={styles.field}>
-            <label htmlFor="sale-notes">Коментар</label>
+            <label htmlFor="sale-datetime-text">Дата та час</label>
+            <div className={styles.datetimeRow}>
+              <input
+                id="sale-datetime-text"
+                type="text"
+                value={displayDatetime}
+                onChange={e => {
+                  setDisplayDatetime(e.target.value)
+                  const parsed = parseDisplayToDatetimeLocal(e.target.value)
+                  if (parsed) setSaleDatetime(parsed)
+                }}
+                placeholder="ДД.ММ.РРРР ГГ:ХХ"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className={styles.calendarBtn}
+                onClick={() => {
+                  try { datePickerRef.current?.showPicker() }
+                  catch { datePickerRef.current?.focus() }
+                }}
+                disabled={loading}
+                aria-label="Відкрити календар"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1" y="3" width="14" height="12" rx="1.5"/>
+                  <line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/>
+                  <line x1="1" y1="7" x2="15" y2="7"/>
+                </svg>
+              </button>
+              <input
+                ref={datePickerRef}
+                type="datetime-local"
+                value={saleDatetime}
+                onChange={e => {
+                  setSaleDatetime(e.target.value)
+                  setDisplayDatetime(datetimeLocalToDisplay(e.target.value))
+                }}
+                disabled={loading}
+                className={styles.datetimeHidden}
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+
+          {/* Коментар / Причина */}
+          <div className={styles.field}>
+            <label htmlFor="sale-notes">
+              {ticketId ? 'Коментар' : <>Причина <span className={styles.required}>*</span></>}
+            </label>
             <textarea
               id="sale-notes"
               {...register('notes')}
-              placeholder="Необов'язково"
+              placeholder={ticketId ? "Необов'язково" : 'Поповнення, виправлення помилки...'}
               rows={2}
               disabled={loading}
             />
+            {errors.notes && (
+              <p className={styles.errorHint} role="alert">{errors.notes.message}</p>
+            )}
           </div>
 
           {error && <p className={styles.error} role="alert">{error}</p>}
