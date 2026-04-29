@@ -4,9 +4,9 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
-import BalanceAdjustModal from '@/components/BalanceAdjustModal'
 import SaleModal from '@/components/SaleModal'
-import { formatClientName } from '@/lib/formatters'
+import type { EditSaleSnapshot } from '@/components/SaleModal'
+import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
 
@@ -29,25 +29,6 @@ const PAYMENT_LABELS: Record<string, string> = {
   personal_card: 'Карта',
 }
 
-const TX_LABELS: Record<string, string> = {
-  purchase:         'Покупка',
-  deposit_topup:    'Поповнення',
-  deduction:        'Списання',
-  refund:           'Повернення',
-  adjustment:       'Коригування',
-  admin_adjustment: 'Коригування',
-}
-
-interface Transaction {
-  id: string
-  amount: number
-  transaction_type: string
-  balance_before: number
-  balance_after: number
-  description: string | null
-  created_at: string
-}
-
 const SALES_PAGE_SIZE = 20
 
 export default function ClientProfilePage() {
@@ -60,13 +41,14 @@ export default function ClientProfilePage() {
   const [sales, setSales] = useState<Sale[]>([])
   const [salesTotal, setSalesTotal] = useState(0)
   const [salesPage, setSalesPage] = useState(0)
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [txOpen, setTxOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [showBalanceModal, setShowBalanceModal] = useState(false)
   const [showSaleModal, setShowSaleModal] = useState(false)
+  const [editingSale, setEditingSale] = useState<EditSaleSnapshot | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const fetchClient = useCallback(async () => {
     const { data, error } = await supabase
@@ -108,16 +90,6 @@ export default function ClientProfilePage() {
     setSalesTotal(count ?? 0)
   }, [id])
 
-  const fetchTransactions = useCallback(async () => {
-    const { data } = await supabase
-      .from('balance_transactions')
-      .select('id, amount, transaction_type, balance_before, balance_after, description, created_at')
-      .eq('client_id', id)
-      .order('created_at', { ascending: false })
-      .limit(10)
-    setTransactions(data ?? [])
-  }, [id])
-
   useEffect(() => {
     setLoading(true)
     Promise.all([fetchClient(), fetchSessionBalances(), fetchSales(0)]).then(() => setLoading(false))
@@ -128,14 +100,27 @@ export default function ClientProfilePage() {
     fetchClient()
   }
 
-  function handleBalanceSaved() {
-    setShowBalanceModal(false)
-    fetchClient()
-    fetchTransactions()
-  }
-
   function handleSaleSaved() {
     setShowSaleModal(false)
+    setEditingSale(null)
+    setSalesPage(0)
+    fetchSales(0)
+    fetchSessionBalances()
+    fetchClient()
+  }
+
+  async function handleDelete() {
+    if (!deleteId) return
+    setDeleting(true)
+    setDeleteError('')
+    const { data, error } = await supabase.rpc('delete_sale', { p_sale_id: deleteId })
+    if (error || !data?.[0]?.success) {
+      setDeleteError(error?.message ?? data?.[0]?.error_message ?? 'Помилка видалення')
+      setDeleting(false)
+      return
+    }
+    setDeleteId(null)
+    setDeleting(false)
     setSalesPage(0)
     fetchSales(0)
     fetchSessionBalances()
@@ -146,11 +131,6 @@ export default function ClientProfilePage() {
     const next = salesPage + 1
     setSalesPage(next)
     fetchSales(next)
-  }
-
-  function handleTxToggle() {
-    if (!txOpen && transactions.length === 0) fetchTransactions()
-    setTxOpen(v => !v)
   }
 
   if (loading) return (
@@ -169,7 +149,6 @@ export default function ClientProfilePage() {
 
   const clientName = formatClientName(client)
   const balance = client.balance ?? 0
-  const creditLimit = client.credit_limit ?? 10000
 
   return (
     <div className={styles.layout}>
@@ -228,12 +207,7 @@ export default function ClientProfilePage() {
             </section>
 
             <section className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Депозит</h2>
-                <button className={styles.btnSecondary} onClick={() => setShowBalanceModal(true)}>
-                  Поповнити / Коригувати
-                </button>
-              </div>
+              <h2 className={styles.cardTitle}>Депозит</h2>
               <div className={styles.balanceRow}>
                 <span className={
                   balance > 0 ? styles.balancePos :
@@ -244,12 +218,11 @@ export default function ClientProfilePage() {
                 </span>
                 {balance < 0 && <span className={styles.warningBadge}>Від&apos;ємний депозит</span>}
               </div>
-              <div className={styles.fieldMeta}>
-                Кредитний ліміт: −{creditLimit.toLocaleString('uk-UA')} ₴
-                {client.balance_updated_at && (
-                  <> · Оновлено {new Date(client.balance_updated_at).toLocaleDateString('uk-UA')}</>
-                )}
-              </div>
+              {client.balance_updated_at && (
+                <div className={styles.fieldMeta}>
+                  Оновлено {new Date(client.balance_updated_at).toLocaleDateString('uk-UA')}
+                </div>
+              )}
             </section>
 
             <section className={styles.card}>
@@ -257,9 +230,6 @@ export default function ClientProfilePage() {
               {sessionBalances.length === 0 ? (
                 <div className={styles.emptySection}>
                   <span className={styles.empty2}>Немає активних занять</span>
-                  <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
-                    Записати продаж
-                  </button>
                 </div>
               ) : (
                 <div className={styles.sessionCards}>
@@ -307,22 +277,55 @@ export default function ClientProfilePage() {
                         <th>Оплачено</th>
                         <th>Спосіб</th>
                         <th>Тренер</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
                       {sales.map(s => (
                         <tr key={s.id}>
                           <td className={styles.dateCell}>
-                            {new Date(s.created_at).toLocaleDateString('uk-UA')}
+                            {formatSaleDatetime(s.created_at)}
                           </td>
                           <td>
                             {s.ticket_name ?? <span className={styles.depositLabel}>Поповнення депозиту</span>}
                           </td>
                           <td>{s.sessions ?? '—'}</td>
-                          <td>{s.ticket_price != null ? `${(s.ticket_price / 100).toLocaleString('uk-UA')} ₴` : '—'}</td>
+                          <td>{s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : '—'}</td>
                           <td>{s.price_paid.toLocaleString('uk-UA')} ₴</td>
                           <td>{PAYMENT_LABELS[s.payment_method] ?? s.payment_method}</td>
                           <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.btnRowEdit}
+                                onClick={() => setEditingSale({
+                                  id: s.id,
+                                  client_id: s.client_id,
+                                  client_name: formatClientName(s.clients),
+                                  ticket_id: s.ticket_id,
+                                  ticket_name: s.ticket_name,
+                                  ticket_price: s.ticket_price,
+                                  ticket_type: s.ticket_type ?? null,
+                                  sessions: s.sessions,
+                                  trainer_id: s.trainer_id,
+                                  trainer_name: s.trainers?.name ?? null,
+                                  price_paid: s.price_paid,
+                                  amount_given: s.amount_given,
+                                  payment_method: s.payment_method,
+                                  notes: s.notes,
+                                  created_at: s.created_at,
+                                })}
+                              >
+                                Змінити
+                              </button>
+                              <button
+                                className={styles.btnRowDel}
+                                onClick={() => setDeleteId(s.id)}
+                              >
+                                Видалити
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -337,50 +340,6 @@ export default function ClientProfilePage() {
             )}
           </section>
 
-          <section className={styles.card}>
-            <button className={styles.accordionToggle} onClick={handleTxToggle} aria-expanded={txOpen}>
-              <span>Транзакції депозиту</span>
-              <span className={styles.accordionIcon}>{txOpen ? '▲' : '▼'}</span>
-            </button>
-            {txOpen && (
-              transactions.length === 0 ? (
-                <div className={styles.emptySection}>
-                  <span className={styles.empty2}>Транзакцій ще не було</span>
-                </div>
-              ) : (
-                <div className={styles.tableWrap}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Дата</th>
-                        <th>Тип</th>
-                        <th>Сума</th>
-                        <th>Баланс після</th>
-                        <th>Опис</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.map(tx => (
-                        <tr key={tx.id}>
-                          <td className={styles.dateCell}>
-                            {new Date(tx.created_at).toLocaleDateString('uk-UA')}
-                          </td>
-                          <td>{TX_LABELS[tx.transaction_type] ?? tx.transaction_type}</td>
-                          <td>
-                            <span className={tx.amount > 0 ? styles.balancePos : styles.balanceNeg}>
-                              {tx.amount > 0 ? '+' : ''}{Number(tx.amount).toLocaleString('uk-UA')} ₴
-                            </span>
-                          </td>
-                          <td>{Number(tx.balance_after).toLocaleString('uk-UA')} ₴</td>
-                          <td className={styles.txDesc}>{tx.description ?? '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            )}
-          </section>
         </div>
       </main>
 
@@ -392,19 +351,45 @@ export default function ClientProfilePage() {
         />
       )}
 
-      {showBalanceModal && (
-        <BalanceAdjustModal
-          client={client}
-          onClose={() => setShowBalanceModal(false)}
-          onSaved={handleBalanceSaved}
-        />
-      )}
-
       {showSaleModal && (
         <SaleModal
+          preselectedClient={client}
           onClose={() => setShowSaleModal(false)}
           onSaved={handleSaleSaved}
         />
+      )}
+
+      {editingSale && (
+        <SaleModal
+          editSale={editingSale}
+          onClose={() => setEditingSale(null)}
+          onSaved={handleSaleSaved}
+        />
+      )}
+
+      {deleteId && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmBox}>
+            <h3>Видалити запис?</h3>
+            <p>Цю дію неможливо скасувати. Баланс клієнта буде автоматично скориговано.</p>
+            {deleteError && <p className={styles.confirmError}>{deleteError}</p>}
+            <div className={styles.confirmBtns}>
+              <button
+                className={styles.btnConfirmCancel}
+                onClick={() => { setDeleteId(null); setDeleteError('') }}
+              >
+                Скасувати
+              </button>
+              <button
+                className={styles.btnConfirmDel}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Видалення...' : 'Видалити'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
