@@ -18,6 +18,7 @@ export interface EditSaleSnapshot {
   ticket_id: string | null
   ticket_name: string | null
   ticket_price: number | null
+  ticket_type: string | null
   sessions: number | null
   trainer_id: string | null
   trainer_name: string | null
@@ -132,20 +133,22 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       let ticketName: string | null = null
       let ticketPrice = 0
       let sessions = 0
+      let ticketType: string | null = null
 
       if (formData.ticket_id) {
         const t = tickets.find(x => x.id === formData.ticket_id)
         if (t) {
-          ticketName = t.name; ticketPrice = t.price; sessions = t.sessions
+          ticketName = t.name; ticketPrice = t.price; sessions = t.sessions; ticketType = t.ticket_type
         } else if (!ticketChanged && editSale!.ticket_name != null) {
           ticketName = editSale!.ticket_name
           ticketPrice = editSale!.ticket_price ?? 0
           sessions = editSale!.sessions ?? 0
+          ticketType = editSale!.ticket_type ?? null
         } else {
           const { data: td } = await supabase
-            .from('tickets').select('name,price,sessions').eq('id', formData.ticket_id).single()
+            .from('tickets').select('name,price,sessions,ticket_type').eq('id', formData.ticket_id).single()
           if (!td) { setError('Абонемент не знайдено'); setLoading(false); return }
-          ticketName = td.name; ticketPrice = td.price; sessions = td.sessions
+          ticketName = td.name; ticketPrice = td.price; sessions = td.sessions; ticketType = td.ticket_type
         }
       }
 
@@ -157,6 +160,7 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
         p_ticket_name:    ticketName,
         p_ticket_price:   ticketPrice,
         p_sessions:       sessions,
+        p_ticket_type:    ticketType,
         p_price_paid:     formData.price_paid,
         p_amount_given:   formData.amount_given,
         p_payment_method: formData.payment_method,

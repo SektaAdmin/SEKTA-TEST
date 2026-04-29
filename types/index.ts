@@ -22,6 +22,7 @@ export interface Client {
   telegram_username: string | null
   balance?: number
   credit_limit?: number
+  balance_updated_at?: string | null
 }
 
 export interface Ticket {
@@ -49,6 +50,7 @@ export interface Sale {
   trainer_id: string | null
   ticket_name: string | null
   ticket_price: number | null
+  ticket_type: string | null
   sessions: number | null
   price_paid: number
   amount_given: number
@@ -57,6 +59,12 @@ export interface Sale {
   clients: Pick<Client, 'first_name' | 'last_name'>
   tickets: Pick<Ticket, 'name'> | null
   trainers: Pick<Trainer, 'name'> | null
+}
+
+export interface ClientSessionBalance {
+  client_id: string
+  ticket_type: string
+  sessions_balance: number
 }
 
 export interface SaleFormData {

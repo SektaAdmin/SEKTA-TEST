@@ -34,7 +34,8 @@ halls (standalone reference)
 | phone | text | YES | — | Уникальный идентификатор клиента |
 | instagram_username | text | YES | — | Без @ и домена |
 | telegram_username | text | YES | — | Без @ |
-| balance | integer | YES | 0 | Остаток занятий |
+| balance | integer | YES | 0 | Денежный депозит (₴) |
+| sessions_balance | integer | NO | 0 | Остаток занятий; меняется через create/update/delete_sale |
 | credit_limit | numeric | YES | 10000 | Лимит отрицательного баланса, >= 0 |
 | balance_updated_at | timestamptz | YES | now() | Обновляется через update_client_balance() |
 | created_at | timestamptz | NO | now() | |

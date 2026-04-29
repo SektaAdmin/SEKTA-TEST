@@ -1,0 +1,342 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  margin-left: 196px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.backBtn:hover { color: var(--text); }
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noName {
+  color: var(--text-3);
+  font-style: italic;
+}
+
+/* ── Content ────────────────────────────────────────────────── */
+.content {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty {
+  padding: 48px 28px;
+  color: var(--text-3);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ── Top grid (3 cards side by side) ───────────────────────── */
+.topGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .topGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
+  .topGrid { grid-template-columns: 1fr; }
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+}
+.cardHeader .cardTitle { margin: 0; }
+
+/* ── Contacts ───────────────────────────────────────────────── */
+.fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.field dt {
+  font-size: 12px;
+  color: var(--text-3);
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.field dd {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.fieldLink:hover { text-decoration: underline; }
+
+/* ── Deposit ────────────────────────────────────────────────── */
+.balanceRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.fieldMeta {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.warningBadge {
+  font-size: 11px;
+  background: var(--danger-dim);
+  color: var(--danger);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+/* ── Session balances ───────────────────────────────────────── */
+.sessionCards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sessionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+}
+
+.sessionType {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.emptySection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+/* ── Balance / session values ───────────────────────────────── */
+.balancePos  { color: #78d97b; font-weight: 500; font-size: 22px; font-family: var(--mono); }
+.balanceNeg  { color: var(--danger); font-weight: 500; font-size: 22px; font-family: var(--mono); }
+.balanceZero { color: var(--text-3); font-weight: 500; font-size: 22px; font-family: var(--mono); }
+
+.sessionPos  { color: #78d97b; font-weight: 600; font-size: 18px; font-family: var(--mono); }
+.sessionNeg  { color: var(--danger); font-weight: 600; font-size: 18px; font-family: var(--mono); }
+.sessionZero { color: var(--text-3); font-weight: 600; font-size: 18px; font-family: var(--mono); }
+
+/* ── Table ──────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  margin: 0 -24px;
+  padding: 0 24px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead tr { background: var(--bg-3); }
+
+.table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 12px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-3); }
+
+.dateCell {
+  color: var(--text-2);
+  font-size: 12px;
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+
+.depositLabel { color: var(--text-3); font-style: italic; }
+.txDesc       { color: var(--text-2); font-size: 12px; max-width: 240px; }
+
+.empty2 { color: var(--text-3); }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btnEdit {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btnEdit:hover { border-color: var(--border-hover); background: #242424; }
+
+.btnSecondary {
+  height: 28px;
+  padding: 0 12px;
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnSecondary:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btnPrimary {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.btnPrimary:hover { opacity: 0.88; }
+
+.btnLoadMore {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnLoadMore:hover { border-color: var(--border-hover); color: var(--text); }
+
+/* ── Accordion ──────────────────────────────────────────────── */
+.accordionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.accordionIcon {
+  font-size: 10px;
+  color: var(--text-3);
+}

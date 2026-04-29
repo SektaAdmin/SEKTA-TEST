@@ -345,6 +345,7 @@ export default function SalesPage() {
             ticket_id: editSale.ticket_id,
             ticket_name: editSale.ticket_name,
             ticket_price: editSale.ticket_price,
+            ticket_type: editSale.ticket_type,
             sessions: editSale.sessions,
             trainer_id: editSale.trainer_id,
             trainer_name: editSale.trainers?.name ?? null,

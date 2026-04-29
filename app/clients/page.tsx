@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
@@ -26,6 +27,7 @@ function getPageRange(current: number, total: number): (number | '...')[] {
 }
 
 export default function ClientsPage() {
+  const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -155,15 +157,21 @@ export default function ClientsPage() {
                       <th>Телефон</th>
                       <th>Instagram</th>
                       <th>Telegram</th>
-                      <th>Баланс</th>
-                      <th></th>
+                      <th>Депозит</th>
                     </tr>
                   </thead>
                   <tbody>
                     {clients.map(c => (
-                      <tr key={c.id}>
+                      <tr
+                        key={c.id}
+                        className={styles.clickableRow}
+                        onClick={() => router.push(`/clients/${c.id}`)}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={e => { if (e.key === 'Enter') router.push(`/clients/${c.id}`) }}
+                      >
                         <td className={styles.name}>{formatClientName(c)}</td>
-                        <td className={styles.phone}>
+                        <td className={styles.phone} onClick={e => e.stopPropagation()}>
                           {c.phone
                             ? <a href={`tel:${c.phone}`} className={styles.link}>{c.phone}</a>
                             : <span className={styles.empty2}>—</span>
@@ -189,24 +197,8 @@ export default function ClientsPage() {
                                 ? styles.balanceNeg
                                 : styles.balanceZero
                           }>
-                            {c.balance ?? 0}
+                            {c.balance ?? 0} ₴
                           </span>
-                        </td>
-                        <td className={styles.actionCell}>
-                          <button
-                            className={styles.btnBalance}
-                            onClick={() => setBalanceClient(c)}
-                            aria-label={`Коригувати баланс ${formatClientName(c)}`}
-                          >
-                            Баланс
-                          </button>
-                          <button
-                            className={styles.btnEdit}
-                            onClick={() => setEditingClient(c)}
-                            aria-label={`Редагувати ${formatClientName(c)}`}
-                          >
-                            Редагувати
-                          </button>
                         </td>
                       </tr>
                     ))}
