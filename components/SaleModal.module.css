@@ -88,45 +88,6 @@
 
 .required { color: var(--accent); font-size: 10px; margin-left: 4px; }
 
-.clientWrap { position: relative; }
-
-.clientDropdown {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 0;
-  right: 0;
-  background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  z-index: 20;
-  max-height: 192px;
-  overflow-y: auto;
-}
-
-.clientOption {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 9px 11px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text);
-  transition: background 0.1s;
-}
-.clientOption:hover { background: var(--bg-3); }
-.clientOptionActive { background: var(--bg-3); }
-
-.clientPhone {
-  font-size: 11px;
-  color: var(--text-3);
-}
-
-.clientEmpty {
-  padding: 9px 11px;
-  font-size: 12px;
-  color: var(--text-3);
-}
-
 .error {
   font-size: 12px;
   color: var(--danger);

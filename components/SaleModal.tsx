@@ -1,15 +1,14 @@
 'use client'
-import { useState, useRef, useEffect, useMemo, useCallback, useId } from 'react'
+import { useState, useEffect, useMemo, useCallback, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { createClient } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import { formatClientLabel } from '@/lib/formatters'
+import ClientSearchCombobox from './ClientSearchCombobox'
 import type { Client, Ticket, Trainer, SaleFormData, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
 
-// Supabase client at module level — not recreated on each render
 const supabase = createClient()
 
 export interface EditSaleSnapshot {
@@ -54,7 +53,6 @@ type SaleFormValues = z.infer<typeof saleSchema>
 export default function SaleModal({ onClose, onSaved, editSale }: Props) {
   const isEdit = !!editSale
   const titleId = useId()
-  const listboxId = useId()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -73,21 +71,12 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const [clientSearch, setClientSearch] = useState(editSale?.client_name ?? '')
-  const [clientResults, setClientResults] = useState<Client[]>([])
-  const [clientOpen, setClientOpen] = useState(false)
   const [clientBalance, setClientBalance] = useState<number | null>(null)
-  const [activeIndex, setActiveIndex] = useState(-1)
-
   const [ticketChanged, setTicketChanged] = useState(false)
 
   const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId } = watch()
 
-  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const blurRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const modalRef = useModalFocus(onClose)
-
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
 
   const fetchClientBalance = useCallback(async (id: string) => {
@@ -98,41 +87,6 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
   useEffect(() => {
     if (editSale?.client_id) fetchClientBalance(editSale.client_id)
   }, [editSale?.client_id, fetchClientBalance])
-
-  async function searchClients(q: string) {
-    const trimmed = q.trim()
-    if (!trimmed) { setClientResults([]); return }
-
-    const parts = trimmed.split(/\s+/)
-
-    if (parts.length === 1) {
-      const p = parts[0]
-      const { data } = await supabase
-        .from('clients')
-        .select('id,first_name,last_name,phone')
-        .or(`first_name.ilike.%${p}%,last_name.ilike.%${p}%,phone.ilike.%${p}%`)
-        .order('last_name')
-        .limit(10)
-      setClientResults(data ?? [])
-    } else {
-      const [a, b] = parts
-      const [r1, r2] = await Promise.all([
-        supabase.from('clients').select('id,first_name,last_name,phone')
-          .ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`)
-          .order('last_name').limit(10),
-        supabase.from('clients').select('id,first_name,last_name,phone')
-          .ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`)
-          .order('last_name').limit(10),
-      ])
-      const seen = new Set<string>()
-      setClientResults([...(r1.data ?? []), ...(r2.data ?? [])].filter(c => {
-        if (seen.has(c.id)) return false
-        seen.add(c.id)
-        return true
-      }))
-    }
-    setActiveIndex(-1)
-  }
 
   async function ensureTickets() {
     if (tickets.length > 0) return
@@ -169,93 +123,11 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
     }
   }
 
-  function handleClientInput(value: string) {
-    setClientSearch(value)
-    setValue('client_id', '')
-    setClientBalance(null)
-    setClientOpen(true)
-    setActiveIndex(-1)
-    if (searchRef.current) clearTimeout(searchRef.current)
-    searchRef.current = setTimeout(() => searchClients(value), 250)
-  }
-
-  const selectClient = useCallback((c: Client) => {
-    setValue('client_id', c.id)
-    setClientSearch(formatClientLabel(c))
-    setClientOpen(false)
-    setClientResults([])
-    setActiveIndex(-1)
-    fetchClientBalance(c.id)
-  }, [setValue, fetchClientBalance])
-
-  function handleClientBlur() {
-    blurRef.current = setTimeout(() => setClientOpen(false), 150)
-  }
-
-  function handleClientFocus() {
-    if (blurRef.current) clearTimeout(blurRef.current)
-    if (clientSearch.trim() && !clientId) {
-      setClientOpen(true)
-      if (!clientResults.length) searchClients(clientSearch)
-    }
-  }
-
-  function handleClientKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!clientOpen || !clientResults.length) return
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setActiveIndex(i => Math.min(i + 1, clientResults.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setActiveIndex(i => Math.max(i - 1, -1))
-    } else if (e.key === 'Enter' && activeIndex >= 0) {
-      e.preventDefault()
-      selectClient(clientResults[activeIndex])
-    } else if (e.key === 'Escape') {
-      setClientOpen(false)
-    }
-  }
-
-  async function insertDepositOnly(formData: SaleFormValues): Promise<string | null> {
-    const { error } = await supabase.from('sales').insert({
-      client_id: formData.client_id,
-      ticket_id: null,
-      trainer_id: formData.trainer_id || null,
-      ticket_name: null,
-      ticket_price: 0,
-      sessions: 0,
-      price_paid: 0,
-      amount_given: formData.amount_given,
-      payment_method: formData.payment_method,
-      notes: formData.notes?.trim() || '',
-    })
-    return error?.message ?? null
-  }
-
-  async function insertSaleWithTicket(
-    formData: SaleFormValues,
-    ticketData: { name: string; price: number; sessions: number }
-  ): Promise<string | null> {
-    const { error } = await supabase.from('sales').insert({
-      client_id: formData.client_id,
-      ticket_id: formData.ticket_id!,
-      trainer_id: formData.trainer_id || null,
-      ticket_name: ticketData.name,
-      ticket_price: ticketData.price,
-      sessions: ticketData.sessions,
-      price_paid: formData.price_paid,
-      amount_given: formData.amount_given,
-      payment_method: formData.payment_method,
-      notes: formData.notes?.trim() || '',
-    })
-    return error?.message ?? null
-  }
-
   const onSubmit = async (formData: SaleFormValues) => {
     setLoading(true)
     setError('')
 
-    // ── EDIT: single atomic RPC (balance + row update in one transaction) ──
+    // ── EDIT: single atomic RPC ───────────────────────────────────────────
     if (isEdit) {
       let ticketName: string | null = null
       let ticketPrice = 0
@@ -301,53 +173,19 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       return
     }
 
-    // ── CREATE: insert row, then update balance ────────────────────────────
-    if (!formData.ticket_id) {
-      const err = await insertDepositOnly(formData)
-      if (err) { setError(err); setLoading(false); return }
-
-      const { error } = await supabase.rpc('update_client_balance', {
-        p_client_id: formData.client_id,
-        p_amount: formData.amount_given,
-        p_transaction_type: 'deposit_topup',
-        p_description: 'Поповнення депозиту',
-        p_reason: null,
-        p_related_sale_id: null,
-      })
-      if (error) {
-        setError('Запис збережено, але баланс не оновлено: ' + error.message)
-        setLoading(false)
-        return
-      }
-
-      onSaved()
-      return
-    }
-
-    // CREATE with ticket — resolve snapshot
-    let ticketData: { name: string; price: number; sessions: number } | null =
-      tickets.find(t => t.id === formData.ticket_id) ?? null
-
-    if (!ticketData) {
-      const { data: td } = await supabase
-        .from('tickets').select('name,price,sessions').eq('id', formData.ticket_id).single()
-      if (!td) { setError('Абонемент не знайдено'); setLoading(false); return }
-      ticketData = td
-    }
-
-    const err = await insertSaleWithTicket(formData, ticketData!)
-    if (err) { setError(err); setLoading(false); return }
-
-    const { error } = await supabase.rpc('update_client_balance', {
-      p_client_id: formData.client_id,
-      p_amount: formData.amount_given - formData.price_paid,
-      p_transaction_type: 'purchase',
-      p_description: `Покупка ${ticketData!.name}`,
-      p_reason: null,
-      p_related_sale_id: null,
+    // ── CREATE: single atomic RPC (insert + balance in one transaction) ───
+    const { data, error } = await supabase.rpc('create_sale', {
+      p_client_id:      formData.client_id,
+      p_ticket_id:      formData.ticket_id || null,
+      p_trainer_id:     formData.trainer_id || null,
+      p_price_paid:     formData.price_paid,
+      p_amount_given:   formData.amount_given,
+      p_payment_method: formData.payment_method,
+      p_notes:          formData.notes?.trim() || '',
     })
-    if (error) {
-      setError('Продажу збережено, але баланс не оновлено: ' + error.message)
+
+    if (error || !data?.[0]?.success) {
+      setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
       setLoading(false)
       return
     }
@@ -374,52 +212,20 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
           {/* Клієнт */}
           <div className={styles.field}>
             <label htmlFor="sale-client">Клієнт</label>
-            <div className={styles.clientWrap}>
-              <input
-                id="sale-client"
-                type="text"
-                value={clientSearch}
-                onChange={e => handleClientInput(e.target.value)}
-                onFocus={handleClientFocus}
-                onBlur={handleClientBlur}
-                onKeyDown={handleClientKeyDown}
-                placeholder="Пошук за іменем або телефоном..."
-                autoComplete="off"
-                role="combobox"
-                aria-expanded={clientOpen}
-                aria-autocomplete="list"
-                aria-controls={listboxId}
-                aria-activedescendant={activeIndex >= 0 ? `client-opt-${activeIndex}` : undefined}
-                disabled={loading}
-              />
-              {clientOpen && clientSearch.trim() && (
-                <div
-                  id={listboxId}
-                  className={styles.clientDropdown}
-                  role="listbox"
-                  aria-label="Результати пошуку"
-                >
-                  {clientResults.length === 0 ? (
-                    <div className={styles.clientEmpty}>Нічого не знайдено</div>
-                  ) : clientResults.map((c, i) => (
-                    <div
-                      key={c.id}
-                      id={`client-opt-${i}`}
-                      className={`${styles.clientOption}${i === activeIndex ? ` ${styles.clientOptionActive}` : ''}`}
-                      onMouseDown={() => selectClient(c)}
-                      role="option"
-                      aria-selected={i === activeIndex}
-                    >
-                      {formatClientLabel(c)}
-                      {c.phone && <span className={styles.clientPhone}>{c.phone}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {errors.client_id && (
-                <p className={styles.errorHint} role="alert">{errors.client_id.message}</p>
-              )}
-            </div>
+            <ClientSearchCombobox
+              inputId="sale-client"
+              initialLabel={editSale?.client_name}
+              onSelect={(client: Client) => {
+                setValue('client_id', client.id)
+                fetchClientBalance(client.id)
+              }}
+              onClear={() => {
+                setValue('client_id', '')
+                setClientBalance(null)
+              }}
+              error={errors.client_id?.message}
+              disabled={loading}
+            />
             {clientId && clientBalance !== null && (
               <span className={`${styles.depositHint} ${clientBalance > 0 ? styles.depositPos : clientBalance < 0 ? styles.depositNeg : styles.depositZero}`}>
                 Депозит: {clientBalance > 0 ? '+' : ''}{clientBalance.toLocaleString('uk-UA')} ₴
