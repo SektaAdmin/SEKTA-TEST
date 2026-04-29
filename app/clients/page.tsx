@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
+import BalanceAdjustModal from '@/components/BalanceAdjustModal'
 import { formatClientName } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './clients.module.css'
@@ -30,6 +31,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [balanceClient, setBalanceClient] = useState<Client | null>(null)
 
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
@@ -192,6 +194,13 @@ export default function ClientsPage() {
                         </td>
                         <td className={styles.actionCell}>
                           <button
+                            className={styles.btnBalance}
+                            onClick={() => setBalanceClient(c)}
+                            aria-label={`Коригувати баланс ${formatClientName(c)}`}
+                          >
+                            Баланс
+                          </button>
+                          <button
                             className={styles.btnEdit}
                             onClick={() => setEditingClient(c)}
                             aria-label={`Редагувати ${formatClientName(c)}`}
@@ -268,6 +277,17 @@ export default function ClientsPage() {
           client={editingClient}
           onClose={handleEditClose}
           onSaved={handleSaved}
+        />
+      )}
+
+      {balanceClient && (
+        <BalanceAdjustModal
+          client={balanceClient}
+          onClose={() => setBalanceClient(null)}
+          onSaved={() => {
+            setBalanceClient(null)
+            fetchClients(search, page, pageSize)
+          }}
         />
       )}
     </div>

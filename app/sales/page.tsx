@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
@@ -21,8 +21,24 @@ const PAYMENT_CLASS: Record<PaymentMethod, string> = {
   personal_card: styles.badgeCard,
 }
 
+const PAGE_SIZES = [20, 50, 100] as const
+type PageSize = typeof PAGE_SIZES[number]
+
+function getPageRange(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i)
+  const pages: (number | '...')[] = [0]
+  if (current > 2) pages.push('...')
+  const start = Math.max(1, current - 1)
+  const end = Math.min(total - 2, current + 1)
+  for (let i = start; i <= end; i++) pages.push(i)
+  if (current < total - 3) pages.push('...')
+  pages.push(total - 1)
+  return pages
+}
+
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
@@ -31,10 +47,48 @@ export default function SalesPage() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
-  const fetchSales = useCallback(async () => {
+  const [page, setPage] = useState(0)
+  const [pageSize, setPageSize] = useState<PageSize>(20)
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const totalPages = Math.ceil(total / pageSize)
+  const from = page * pageSize
+  const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== ''
+
+  const fetchSales = useCallback(async (
+    p: number, size: number, q: string, from: string, to: string
+  ) => {
     setLoading(true)
     setFetchError(null)
-    const { data, error } = await supabase
+
+    let clientIds: string[] | null = null
+
+    if (q.trim()) {
+      const s = q.trim()
+      const parts = s.split(/\s+/)
+      let cq = supabase.from('clients').select('id')
+      if (parts.length === 1) {
+        cq = cq.or(`first_name.ilike.%${parts[0]}%,last_name.ilike.%${parts[0]}%`)
+      } else {
+        const [a, b] = parts
+        cq = cq.or(
+          `first_name.ilike.%${a}%,last_name.ilike.%${b}%,` +
+          `first_name.ilike.%${b}%,last_name.ilike.%${a}%`
+        )
+      }
+      const { data: matched } = await cq.limit(200)
+      clientIds = (matched ?? []).map((c: { id: string }) => c.id)
+      if (clientIds.length === 0) {
+        setSales([]); setTotal(0); setLoading(false); return
+      }
+    }
+
+    const rangeFrom = p * size
+    let query = supabase
       .from('sales')
       .select(`
         id, created_at, client_id, ticket_id, trainer_id,
@@ -43,18 +97,40 @@ export default function SalesPage() {
         clients(first_name, last_name),
         tickets(name),
         trainers(name)
-      `)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
-      .limit(200)
+      .range(rangeFrom, rangeFrom + size - 1)
+
+    if (clientIds !== null) query = query.in('client_id', clientIds)
+    if (from) query = query.gte('created_at', `${from}T00:00:00`)
+    if (to)   query = query.lte('created_at', `${to}T23:59:59`)
+
+    const { data, count, error } = await query
     if (error) {
       setFetchError(error.message)
     } else {
       setSales((data as unknown as Sale[]) ?? [])
+      setTotal(count ?? 0)
     }
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchSales() }, [fetchSales])
+  useEffect(() => {
+    fetchSales(page, pageSize, search, dateFrom, dateTo)
+  }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
+
+  function handleSearchInput(value: string) {
+    setSearchInput(value)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => { setSearch(value); setPage(0) }, 300)
+  }
+
+  function handleDateFrom(value: string) { setDateFrom(value); setPage(0) }
+  function handleDateTo(value: string)   { setDateTo(value);   setPage(0) }
+
+  function clearFilters() {
+    setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo(''); setPage(0)
+  }
 
   function formatDate(iso: string) {
     const d = new Date(iso)
@@ -66,41 +142,27 @@ export default function SalesPage() {
     setDeleting(true)
     setDeleteError('')
 
-    const sale = sales.find(s => s.id === deleteId)
-    const delta = sale ? sale.amount_given - sale.price_paid : 0
-
-    if (delta !== 0) {
-      const { error: balanceError } = await supabase.rpc('update_client_balance', {
-        p_client_id: sale!.client_id,
-        p_amount: -delta,
-        p_transaction_type: 'admin_adjustment',
-        p_description: 'Скасування продажи',
-        p_reason: null,
-        p_related_sale_id: sale!.id,
-      })
-      if (balanceError) {
-        setDeleteError('Помилка при скасуванні балансу: ' + balanceError.message)
-        setDeleting(false)
-        return
-      }
-    }
-
-    const { error: delError } = await supabase.from('sales').delete().eq('id', deleteId)
-    if (delError) {
-      setDeleteError(delError.message)
+    const { data, error } = await supabase.rpc('delete_sale', { p_sale_id: deleteId })
+    if (error || !data?.[0]?.success) {
+      setDeleteError(error?.message ?? data?.[0]?.error_message ?? 'Помилка видалення')
       setDeleting(false)
       return
     }
 
     setDeleteId(null)
     setDeleting(false)
-    fetchSales()
+    fetchSales(page, pageSize, search, dateFrom, dateTo)
   }
 
   function handleSaved() {
     setShowModal(false)
     setEditSale(null)
-    fetchSales()
+    fetchSales(page, pageSize, search, dateFrom, dateTo)
+  }
+
+  function handlePageSize(size: PageSize) {
+    setPageSize(size)
+    setPage(0)
   }
 
   return (
@@ -114,6 +176,47 @@ export default function SalesPage() {
           </button>
         </div>
 
+        <div className={styles.filters}>
+          <div className={styles.filterSearch}>
+            <svg className={styles.filterSearchIcon} width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+            </svg>
+            <input
+              className={styles.filterSearchInput}
+              type="text"
+              value={searchInput}
+              onChange={e => handleSearchInput(e.target.value)}
+              placeholder="Пошук за клієнтом..."
+              aria-label="Пошук за клієнтом"
+            />
+          </div>
+
+          <div className={styles.filterDates}>
+            <span className={styles.filterLabel}>Від</span>
+            <input
+              className={styles.filterDate}
+              type="date"
+              value={dateFrom}
+              onChange={e => handleDateFrom(e.target.value)}
+              aria-label="Дата від"
+            />
+            <span className={styles.filterLabel}>До</span>
+            <input
+              className={styles.filterDate}
+              type="date"
+              value={dateTo}
+              onChange={e => handleDateTo(e.target.value)}
+              aria-label="Дата до"
+            />
+          </div>
+
+          {hasFilters && (
+            <button className={styles.filterClear} onClick={clearFilters}>
+              Скинути
+            </button>
+          )}
+        </div>
+
         <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
@@ -122,6 +225,7 @@ export default function SalesPage() {
           ) : sales.length === 0 ? (
             <div className={styles.empty}>Продажів ще немає</div>
           ) : (
+            <>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
@@ -178,6 +282,54 @@ export default function SalesPage() {
                 </tbody>
               </table>
             </div>
+
+            <div className={styles.pagination}>
+              <div className={styles.paginationLeft}>
+                <select
+                  className={styles.pageSizeSelect}
+                  value={pageSize}
+                  onChange={e => handlePageSize(Number(e.target.value) as PageSize)}
+                  aria-label="Продажів на сторінці"
+                >
+                  {PAGE_SIZES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <span className={styles.paginationInfo}>
+                  {total === 0 ? '0' : `${from + 1}–${Math.min(from + pageSize, total)}`} з {total}
+                </span>
+              </div>
+
+              {totalPages > 1 ? (
+                <div className={styles.paginationBtns}>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setPage(p => p - 1)}
+                    disabled={page === 0}
+                    aria-label="Попередня сторінка"
+                  >←</button>
+
+                  {getPageRange(page, totalPages).map((p, i) =>
+                    p === '...'
+                      ? <span key={`el-${i}`} className={styles.pageEllipsis}>…</span>
+                      : <button
+                          key={p}
+                          className={`${styles.pageBtn}${p === page ? ` ${styles.pageBtnActive}` : ''}`}
+                          onClick={() => setPage(p as number)}
+                          aria-current={p === page ? 'page' : undefined}
+                        >{(p as number) + 1}</button>
+                  )}
+
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={page >= totalPages - 1}
+                    aria-label="Наступна сторінка"
+                  >→</button>
+                </div>
+              ) : <div />}
+            </div>
+            </>
           )}
         </div>
       </main>

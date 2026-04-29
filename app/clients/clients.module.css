@@ -195,6 +195,7 @@
   padding-right: 12px !important;
 }
 
+.btnBalance,
 .btnEdit {
   background: transparent;
   border: 0.5px solid var(--border);
@@ -208,8 +209,14 @@
   transition: opacity 0.12s, border-color 0.12s, color 0.12s;
 }
 
+.table tbody tr:hover .btnBalance,
 .table tbody tr:hover .btnEdit {
   opacity: 1;
+}
+
+.btnBalance:hover {
+  border-color: rgba(200,240,96,0.4);
+  color: var(--accent);
 }
 
 .btnEdit:hover {

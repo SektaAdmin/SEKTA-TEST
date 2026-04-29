@@ -216,67 +216,8 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
     }
   }
 
-  async function updateClientBalance(newAmountGiven: number, newPricePaid: number) {
-    if (isEdit && editSale!.client_id !== clientId) {
-      const oldDelta = editSale!.amount_given - editSale!.price_paid
-
-      const { error: err1 } = await supabase.rpc('update_client_balance', {
-        p_client_id: editSale!.client_id,
-        p_amount: -oldDelta,
-        p_transaction_type: 'refund',
-        p_description: 'Скасування продажи',
-        p_reason: null,
-        p_related_sale_id: editSale!.id,
-      })
-      if (err1) throw new Error(`Помилка при поверненню коштів: ${err1.message}`)
-
-      const newDelta = newAmountGiven - newPricePaid
-      const { error: err2 } = await supabase.rpc('update_client_balance', {
-        p_client_id: clientId,
-        p_amount: newDelta,
-        p_transaction_type: 'purchase',
-        p_description: 'Передача продажи',
-        p_reason: null,
-        p_related_sale_id: editSale!.id,
-      })
-      if (err2) throw new Error(`Помилка при додаванню коштів: ${err2.message}`)
-
-    } else if (isEdit) {
-      const oldDelta = editSale!.amount_given - editSale!.price_paid
-      const newDelta = newAmountGiven - newPricePaid
-      const correction = newDelta - oldDelta
-
-      if (correction === 0) return
-
-      const { error } = await supabase.rpc('update_client_balance', {
-        p_client_id: clientId,
-        p_amount: correction,
-        p_transaction_type: 'adjustment',
-        p_description: 'Редагування продажи',
-        p_reason: null,
-        p_related_sale_id: editSale!.id,
-      })
-      if (error) throw new Error(error.message)
-
-    } else {
-      const newDelta = newAmountGiven - newPricePaid
-
-      const { error } = await supabase.rpc('update_client_balance', {
-        p_client_id: clientId,
-        p_amount: newDelta,
-        p_transaction_type: ticketId ? 'purchase' : 'deposit_topup',
-        p_description: ticketId
-          ? `Покупка ${tickets.find(t => t.id === ticketId)?.name || 'абонемента'}`
-          : 'Поповнення депозиту',
-        p_reason: null,
-        p_related_sale_id: null,
-      })
-      if (error) throw new Error(error.message)
-    }
-  }
-
-  async function saveDepositOnly(formData: SaleFormValues): Promise<string | null> {
-    const depositData = {
+  async function insertDepositOnly(formData: SaleFormValues): Promise<string | null> {
+    const { error } = await supabase.from('sales').insert({
       client_id: formData.client_id,
       ticket_id: null,
       trainer_id: formData.trainer_id || null,
@@ -287,18 +228,15 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       amount_given: formData.amount_given,
       payment_method: formData.payment_method,
       notes: formData.notes?.trim() || '',
-    }
-    const { error } = isEdit
-      ? await supabase.from('sales').update(depositData).eq('id', editSale!.id)
-      : await supabase.from('sales').insert(depositData)
+    })
     return error?.message ?? null
   }
 
-  async function saveSaleWithTicket(
+  async function insertSaleWithTicket(
     formData: SaleFormValues,
     ticketData: { name: string; price: number; sessions: number }
   ): Promise<string | null> {
-    const data: SaleFormData & { ticket_name: string; ticket_price: number; sessions: number } = {
+    const { error } = await supabase.from('sales').insert({
       client_id: formData.client_id,
       ticket_id: formData.ticket_id!,
       trainer_id: formData.trainer_id || null,
@@ -309,10 +247,7 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
       amount_given: formData.amount_given,
       payment_method: formData.payment_method,
       notes: formData.notes?.trim() || '',
-    }
-    const { error } = isEdit
-      ? await supabase.from('sales').update(data).eq('id', editSale!.id)
-      : await supabase.from('sales').insert(data)
+    })
     return error?.message ?? null
   }
 
@@ -320,42 +255,99 @@ export default function SaleModal({ onClose, onSaved, editSale }: Props) {
     setLoading(true)
     setError('')
 
-    if (!formData.ticket_id) {
-      const err = await saveDepositOnly(formData)
-      if (err) { setError(err); setLoading(false); return }
-      try {
-        await updateClientBalance(formData.amount_given, 0)
-      } catch (e) {
-        setError('Запис збережено, але баланс не оновлено: ' + (e as Error).message)
+    // ── EDIT: single atomic RPC (balance + row update in one transaction) ──
+    if (isEdit) {
+      let ticketName: string | null = null
+      let ticketPrice = 0
+      let sessions = 0
+
+      if (formData.ticket_id) {
+        const t = tickets.find(x => x.id === formData.ticket_id)
+        if (t) {
+          ticketName = t.name; ticketPrice = t.price; sessions = t.sessions
+        } else if (!ticketChanged && editSale!.ticket_name != null) {
+          ticketName = editSale!.ticket_name
+          ticketPrice = editSale!.ticket_price ?? 0
+          sessions = editSale!.sessions ?? 0
+        } else {
+          const { data: td } = await supabase
+            .from('tickets').select('name,price,sessions').eq('id', formData.ticket_id).single()
+          if (!td) { setError('Абонемент не знайдено'); setLoading(false); return }
+          ticketName = td.name; ticketPrice = td.price; sessions = td.sessions
+        }
+      }
+
+      const { data, error } = await supabase.rpc('update_sale', {
+        p_sale_id:        editSale!.id,
+        p_client_id:      formData.client_id,
+        p_ticket_id:      formData.ticket_id || null,
+        p_trainer_id:     formData.trainer_id || null,
+        p_ticket_name:    ticketName,
+        p_ticket_price:   ticketPrice,
+        p_sessions:       sessions,
+        p_price_paid:     formData.price_paid,
+        p_amount_given:   formData.amount_given,
+        p_payment_method: formData.payment_method,
+        p_notes:          formData.notes?.trim() || '',
+      })
+
+      if (error || !data?.[0]?.success) {
+        setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
         setLoading(false)
         return
       }
+
       onSaved()
       return
     }
 
-    // Resolve ticket snapshot: loaded list → edit snapshot → DB fetch
+    // ── CREATE: insert row, then update balance ────────────────────────────
+    if (!formData.ticket_id) {
+      const err = await insertDepositOnly(formData)
+      if (err) { setError(err); setLoading(false); return }
+
+      const { error } = await supabase.rpc('update_client_balance', {
+        p_client_id: formData.client_id,
+        p_amount: formData.amount_given,
+        p_transaction_type: 'deposit_topup',
+        p_description: 'Поповнення депозиту',
+        p_reason: null,
+        p_related_sale_id: null,
+      })
+      if (error) {
+        setError('Запис збережено, але баланс не оновлено: ' + error.message)
+        setLoading(false)
+        return
+      }
+
+      onSaved()
+      return
+    }
+
+    // CREATE with ticket — resolve snapshot
     let ticketData: { name: string; price: number; sessions: number } | null =
       tickets.find(t => t.id === formData.ticket_id) ?? null
 
     if (!ticketData) {
-      if (isEdit && !ticketChanged && editSale!.ticket_name && editSale!.ticket_price != null && editSale!.sessions != null) {
-        ticketData = { name: editSale!.ticket_name, price: editSale!.ticket_price, sessions: editSale!.sessions }
-      } else {
-        const { data: td } = await supabase
-          .from('tickets').select('id,name,price,sessions').eq('id', formData.ticket_id).single()
-        if (!td) { setError('Абонемент не знайдено'); setLoading(false); return }
-        ticketData = td
-      }
+      const { data: td } = await supabase
+        .from('tickets').select('name,price,sessions').eq('id', formData.ticket_id).single()
+      if (!td) { setError('Абонемент не знайдено'); setLoading(false); return }
+      ticketData = td
     }
 
-    const err = await saveSaleWithTicket(formData, ticketData!)
+    const err = await insertSaleWithTicket(formData, ticketData!)
     if (err) { setError(err); setLoading(false); return }
 
-    try {
-      await updateClientBalance(formData.amount_given, formData.price_paid)
-    } catch (e) {
-      setError('Продажу збережено, але баланс не оновлено: ' + (e as Error).message)
+    const { error } = await supabase.rpc('update_client_balance', {
+      p_client_id: formData.client_id,
+      p_amount: formData.amount_given - formData.price_paid,
+      p_transaction_type: 'purchase',
+      p_description: `Покупка ${ticketData!.name}`,
+      p_reason: null,
+      p_related_sale_id: null,
+    })
+    if (error) {
+      setError('Продажу збережено, але баланс не оновлено: ' + error.message)
       setLoading(false)
       return
     }

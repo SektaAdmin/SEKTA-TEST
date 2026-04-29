@@ -10,6 +10,30 @@ import styles from './ClientModal.module.css'
 
 const supabase = createClient()
 
+interface Transaction {
+  id: string
+  amount: number
+  transaction_type: string
+  balance_before: number
+  balance_after: number
+  description: string | null
+  created_at: string
+}
+
+const TX_LABELS: Record<string, string> = {
+  purchase:         'Покупка',
+  deposit_topup:    'Поповнення',
+  deduction:        'Списання',
+  refund:           'Повернення',
+  adjustment:       'Коригування',
+  admin_adjustment: 'Коригування',
+}
+
+function formatTxDate(iso: string) {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(2)}`
+}
+
 const clientSchema = z.object({
   first_name: z.string().min(1, "Ім'я обов'язкове"),
   last_name: z.string().min(1, "Прізвище обов'язкове"),
@@ -33,6 +57,28 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+
+  async function loadHistory() {
+    if (transactions.length > 0) { setShowHistory(true); return }
+    setHistoryLoading(true)
+    const { data } = await supabase
+      .from('balance_transactions')
+      .select('id, amount, transaction_type, balance_before, balance_after, description, created_at')
+      .eq('client_id', client!.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    setTransactions((data as Transaction[]) ?? [])
+    setHistoryLoading(false)
+    setShowHistory(true)
+  }
+
+  function toggleHistory() {
+    if (showHistory) { setShowHistory(false); return }
+    loadHistory()
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -216,6 +262,57 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
               />
             </div>
           </div>
+
+          {isEdit && (
+            <>
+              <button
+                type="button"
+                className={styles.historyToggle}
+                onClick={toggleHistory}
+              >
+                {showHistory ? '▲' : '▼'} Історія транзакцій
+              </button>
+
+              {(showHistory || historyLoading) && (
+                <div className={styles.historySection}>
+                  {historyLoading ? (
+                    <p className={styles.historyLoading}>Завантаження...</p>
+                  ) : transactions.length === 0 ? (
+                    <p className={styles.historyEmpty}>Транзакцій немає</p>
+                  ) : (
+                    <table className={styles.historyTable}>
+                      <thead>
+                        <tr>
+                          <th>Дата</th>
+                          <th>Тип</th>
+                          <th>Сума</th>
+                          <th>Баланс</th>
+                          <th>Опис</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.map(tx => (
+                          <tr key={tx.id}>
+                            <td className={styles.txDate}>{formatTxDate(tx.created_at)}</td>
+                            <td className={styles.txType}>
+                              {TX_LABELS[tx.transaction_type] ?? tx.transaction_type}
+                            </td>
+                            <td className={`${styles.txAmount} ${tx.amount > 0 ? styles.txPos : styles.txNeg}`}>
+                              {tx.amount > 0 ? '+' : ''}{Number(tx.amount).toLocaleString('uk-UA')}
+                            </td>
+                            <td className={styles.txBalance}>
+                              {Number(tx.balance_after).toLocaleString('uk-UA')}
+                            </td>
+                            <td className={styles.txDesc}>{tx.description ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           {error && <p className={styles.error} role="alert">{error}</p>}
         </div>
