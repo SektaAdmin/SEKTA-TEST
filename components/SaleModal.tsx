@@ -271,6 +271,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
         </div>
 
+        <form onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.body}>
 
           {/* Клієнт */}
@@ -533,11 +534,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         </div>
 
         <div className={styles.footer}>
-          <button className={styles.btnCancel} onClick={onClose} disabled={loading}>Скасувати</button>
-          <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
+          <button type="button" className={styles.btnCancel} onClick={onClose} disabled={loading}>Скасувати</button>
+          <button type="submit" className={styles.btnSave} disabled={loading}>
             {loading ? 'Збереження...' : 'Зберегти'}
           </button>
         </div>
+        </form>
       </div>
     </div>
   )
