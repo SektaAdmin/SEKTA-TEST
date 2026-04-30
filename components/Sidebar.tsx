@@ -39,6 +39,14 @@ const nav = [
       <path d="M6 5V3.5a2 2 0 014 0V5"/>
     </svg>
   )},
+  { href: '/accounting', label: 'Звітність', icon: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <line x1="3" y1="12" x2="3" y2="7"/>
+      <line x1="7" y1="12" x2="7" y2="4"/>
+      <line x1="11" y1="12" x2="11" y2="9"/>
+      <line x1="1" y1="12" x2="15" y2="12"/>
+    </svg>
+  )},
 ]
 
 export default function Sidebar() {
