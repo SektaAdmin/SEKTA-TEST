@@ -429,6 +429,31 @@
 .btnConfirmDel:hover { opacity: 0.85; }
 .btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Payment badges ─────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badgeCash    { background: rgba(200,240,96,0.12); color: var(--accent); }
+.badgeFop     { background: rgba(96,160,240,0.1);  color: #60a0f0; }
+.badgeCard    { background: rgba(240,180,96,0.1);  color: #f0b460; }
+.badgeDeposit { background: rgba(168,85,247,0.1);  color: #a855f7; }
+
+/* ── Table number cells ─────────────────────────────────────── */
+.numCell { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+
+/* ── Deposit delta & balance-after ─────────────────────────── */
+.deltaPos  { color: #22c55e; font-weight: 500; }
+.deltaNeg  { color: var(--danger); font-weight: 500; }
+
+/* ── Operation type labels (no-ticket rows) ─────────────────── */
+.opTopup     { color: #22c55e; font-size: 12px; }
+.opDeduction { color: var(--danger); font-size: 12px; }
+
 /* ── Accordion ──────────────────────────────────────────────── */
 .accordionToggle {
   display: flex;

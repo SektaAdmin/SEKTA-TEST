@@ -43,7 +43,7 @@ const saleSchema = z.object({
   trainer_id: z.string().optional().or(z.literal('')),
   price_paid: z.number().min(0),
   amount_given: z.number(),
-  payment_method: z.enum(['cash', 'fop', 'personal_card']),
+  payment_method: z.enum(['cash', 'fop', 'personal_card', 'deposit']),
   notes: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.ticket_id && !data.trainer_id && data.payment_method === 'cash') {
@@ -52,9 +52,7 @@ const saleSchema = z.object({
   if (!data.ticket_id && data.amount_given === 0) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Сума не може бути 0', path: ['amount_given'] })
   }
-  if (!data.ticket_id && !data.notes?.trim()) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Причина обов'язкова", path: ['notes'] })
-  }
+
 })
 
 type SaleFormValues = z.infer<typeof saleSchema>
@@ -88,6 +86,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
   const [error, setError] = useState('')
   const [clientBalance, setClientBalance] = useState<number | null>(preselectedClient?.balance ?? null)
   const [ticketChanged, setTicketChanged] = useState(false)
+  const [payFromDeposit, setPayFromDeposit] = useState(editSale?.payment_method === 'deposit')
   const [saleDatetime, setSaleDatetime] = useState<string>(
     editSale ? isoToDatetimeLocal(editSale.created_at) : nowDatetimeLocal()
   )
@@ -107,6 +106,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
 
   const modalRef = useModalFocus(onClose)
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
+  const isDeduction = !ticketId && amountGiven < 0
 
   const fetchClientBalance = useCallback(async (id: string) => {
     const { data } = await supabase.from('clients').select('balance').eq('id', id).single()
@@ -137,12 +137,27 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     setTrainers(data ?? [])
   }
 
+  function handleDepositToggle(on: boolean) {
+    setPayFromDeposit(on)
+    if (on) {
+      setValue('amount_given', 0)
+      setAmountGivenText('0')
+      setValue('payment_method', 'deposit')
+    } else {
+      setValue('amount_given', pricePaid)
+      setAmountGivenText(String(pricePaid))
+      setValue('payment_method', 'cash')
+    }
+  }
+
   function handleTicketChange(id: string) {
     setValue('ticket_id', id)
     setTicketChanged(true)
     if (!id) {
+      setPayFromDeposit(false)
       setValue('price_paid', 0)
       setValue('amount_given', 0)
+      setValue('payment_method', 'cash')
       setPricePaidText('0')
       setAmountGivenText('0')
       return
@@ -150,9 +165,14 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     const t = tickets.find(x => x.id === id)
     if (t) {
       setValue('price_paid', t.price)
-      setValue('amount_given', t.price)
       setPricePaidText(String(t.price))
-      setAmountGivenText(String(t.price))
+      if (payFromDeposit) {
+        setValue('amount_given', 0)
+        setAmountGivenText('0')
+      } else {
+        setValue('amount_given', t.price)
+        setAmountGivenText(String(t.price))
+      }
     }
   }
 
@@ -297,14 +317,37 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             </select>
           </div>
 
+          {/* Оплата з депозиту */}
+          {ticketId && (
+            <div className={styles.checkboxField}>
+              <label className={styles.checkboxRow}>
+                <input
+                  type="checkbox"
+                  checked={payFromDeposit}
+                  onChange={e => handleDepositToggle(e.target.checked)}
+                  disabled={loading}
+                />
+                Оплата з депозиту
+              </label>
+              {payFromDeposit && clientBalance !== null && clientBalance < pricePaid && (
+                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
+                  На депозиті {clientBalance.toLocaleString('uk-UA')} ₴ — може не вистачити
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Фактична сума */}
           {ticketId && (
             <div className={styles.field}>
-              <label htmlFor="sale-price-paid">Фактична сума (₴)</label>
+              <label htmlFor="sale-price-paid">
+                {payFromDeposit ? 'Сума списання (₴)' : 'Фактична сума (₴)'}
+              </label>
               <input
                 id="sale-price-paid"
                 type="number"
                 value={pricePaidText}
+                onFocus={e => e.target.select()}
                 onChange={e => {
                   setPricePaidText(e.target.value)
                   const n = Number(e.target.value)
@@ -321,11 +364,16 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
                 step={1}
                 disabled={loading}
               />
+              {payFromDeposit && pricePaid > 0 && (
+                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
+                  −{pricePaid.toLocaleString('uk-UA')} ₴ з депозиту
+                </span>
+              )}
             </div>
           )}
 
           {/* Сума від клієнта / операція з депозитом */}
-          <div className={styles.field}>
+          {!(ticketId && payFromDeposit) && <div className={styles.field}>
             <label htmlFor="sale-amount-given">
               {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
             </label>
@@ -333,6 +381,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               id="sale-amount-given"
               type="number"
               value={amountGivenText}
+              onFocus={e => e.target.select()}
               onChange={e => {
                 setAmountGivenText(e.target.value)
                 if (e.target.value === '' || e.target.value === '-') {
@@ -371,25 +420,27 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
                   : `${amountGiven.toLocaleString('uk-UA')} ₴ з депозиту`}
               </span>
             )}
-          </div>
+          </div>}
 
           {/* Спосіб оплати */}
-          <div className={styles.field}>
-            <label htmlFor="sale-payment">Спосіб оплати</label>
-            <select
-              id="sale-payment"
-              value={payment}
-              onChange={e => setValue('payment_method', e.target.value as PaymentMethod)}
-              disabled={loading}
-            >
-              <option value="cash">Готівка</option>
-              <option value="fop">ФОП</option>
-              <option value="personal_card">Особиста карта</option>
-            </select>
-          </div>
+          {!isDeduction && !payFromDeposit && (
+            <div className={styles.field}>
+              <label htmlFor="sale-payment">Спосіб оплати</label>
+              <select
+                id="sale-payment"
+                value={payment}
+                onChange={e => setValue('payment_method', e.target.value as PaymentMethod)}
+                disabled={loading}
+              >
+                <option value="cash">Готівка</option>
+                <option value="fop">ФОП</option>
+                <option value="personal_card">Особиста карта</option>
+              </select>
+            </div>
+          )}
 
           {/* Тренер (тільки для готівки) */}
-          {payment === 'cash' && (
+          {!isDeduction && payment === 'cash' && (
             <div className={styles.field}>
               <label htmlFor="sale-trainer">
                 Тренер {ticketId && <span className={styles.required}>* обов'язково</span>}
@@ -464,7 +515,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           {/* Коментар / Причина */}
           <div className={styles.field}>
             <label htmlFor="sale-notes">
-              {ticketId ? 'Коментар' : <>Причина <span className={styles.required}>*</span></>}
+              Коментар
             </label>
             <textarea
               id="sale-notes"

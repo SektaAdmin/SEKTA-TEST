@@ -27,6 +27,14 @@ const PAYMENT_LABELS: Record<string, string> = {
   cash:          'Готівка',
   fop:           'ФОП',
   personal_card: 'Карта',
+  deposit:       'Депозит',
+}
+
+const PAYMENT_CLASS: Record<string, string> = {
+  cash:          'badgeCash',
+  fop:           'badgeFop',
+  personal_card: 'badgeCard',
+  deposit:       'badgeDeposit',
 }
 
 const SALES_PAGE_SIZE = 20
@@ -49,6 +57,7 @@ export default function ClientProfilePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [balanceAfterMap, setBalanceAfterMap] = useState<Map<string, number>>(new Map())
 
   const fetchClient = useCallback(async () => {
     const { data, error } = await supabase
@@ -82,17 +91,52 @@ export default function ClientProfilePage() {
       .eq('client_id', id)
       .order('created_at', { ascending: false })
       .range(from, to)
+
+    const salesData = (data as Sale[]) ?? []
     if (page === 0) {
-      setSales((data as Sale[]) ?? [])
+      setSales(salesData)
     } else {
-      setSales(prev => [...prev, ...((data as Sale[]) ?? [])])
+      setSales(prev => [...prev, ...salesData])
     }
     setSalesTotal(count ?? 0)
+
+    if (salesData.length > 0) {
+      const saleIds = salesData.map(s => s.id)
+      const { data: txData } = await supabase
+        .from('balance_transactions')
+        .select('related_sale_id, balance_after')
+        .in('related_sale_id', saleIds)
+        .order('created_at', { ascending: false })
+      const newMap = new Map<string, number>()
+      ;((txData ?? []) as { related_sale_id: string; balance_after: number }[])
+        .filter(tx => tx.related_sale_id != null)
+        .forEach(tx => { if (!newMap.has(tx.related_sale_id)) newMap.set(tx.related_sale_id, tx.balance_after) })
+      setBalanceAfterMap(prev => {
+        const base = page === 0 ? new Map<string, number>() : new Map(prev)
+        newMap.forEach((v, k) => base.set(k, v))
+        return base
+      })
+    } else if (page === 0) {
+      setBalanceAfterMap(new Map())
+    }
   }, [id])
 
   useEffect(() => {
     setLoading(true)
     Promise.all([fetchClient(), fetchSessionBalances(), fetchSales(0)]).then(() => setLoading(false))
+  }, [fetchClient, fetchSessionBalances, fetchSales])
+
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        fetchClient()
+        fetchSessionBalances()
+        setSalesPage(0)
+        fetchSales(0)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [fetchClient, fetchSessionBalances, fetchSales])
 
   function handleClientSaved() {
@@ -271,28 +315,62 @@ export default function ClientProfilePage() {
                     <thead>
                       <tr>
                         <th>Дата</th>
-                        <th>Абонемент</th>
+                        <th>Операція</th>
                         <th>Занять</th>
                         <th>Ціна</th>
                         <th>Оплачено</th>
+                        <th>Δ Депозит</th>
+                        <th>Депозит після</th>
                         <th>Спосіб</th>
                         <th>Тренер</th>
                         <th></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {sales.map(s => (
+                      {sales.map(s => {
+                        const delta = s.amount_given - s.price_paid
+                        const balAfter = balanceAfterMap.get(s.id)
+                        return (
                         <tr key={s.id}>
                           <td className={styles.dateCell}>
                             {formatSaleDatetime(s.created_at)}
                           </td>
                           <td>
-                            {s.ticket_name ?? <span className={styles.depositLabel}>Поповнення депозиту</span>}
+                            {s.ticket_name
+                              ? s.ticket_name
+                              : delta >= 0
+                                ? <span className={styles.opTopup}>↑ Поповнення</span>
+                                : <span className={styles.opDeduction}>↓ Списання</span>
+                            }
                           </td>
-                          <td>{s.sessions ?? '—'}</td>
-                          <td>{s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : '—'}</td>
-                          <td>{s.price_paid.toLocaleString('uk-UA')} ₴</td>
-                          <td>{PAYMENT_LABELS[s.payment_method] ?? s.payment_method}</td>
+                          <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
+                          <td className={styles.numCell}>
+                            {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : <span className={styles.empty2}>—</span>}
+                          </td>
+                          <td className={styles.numCell}>
+                            {s.ticket_id != null && s.payment_method !== 'deposit'
+                              ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
+                              : <span className={styles.empty2}>—</span>}
+                          </td>
+                          <td className={styles.numCell}>
+                            {delta > 0
+                              ? <span className={styles.deltaPos}>+{delta.toLocaleString('uk-UA')} ₴</span>
+                              : delta < 0
+                                ? <span className={styles.deltaNeg}>{delta.toLocaleString('uk-UA')} ₴</span>
+                                : <span className={styles.empty2}>—</span>
+                            }
+                          </td>
+                          <td className={styles.numCell}>
+                            {balAfter !== undefined
+                              ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
+                              : <span className={styles.empty2}>—</span>
+                            }
+                          </td>
+                          <td>
+                            <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
+                              {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
+                            </span>
+                          </td>
                           <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                           <td>
                             <div className={styles.actions}>
@@ -327,7 +405,8 @@ export default function ClientProfilePage() {
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>

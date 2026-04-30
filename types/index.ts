@@ -1,4 +1,4 @@
-export type PaymentMethod = 'cash' | 'fop' | 'personal_card'
+export type PaymentMethod = 'cash' | 'fop' | 'personal_card' | 'deposit'
 
 export const TICKET_TYPES = [
   'group',

@@ -62,7 +62,6 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
 
   async function loadHistory() {
-    if (transactions.length > 0) { setShowHistory(true); return }
     setHistoryLoading(true)
     const { data } = await supabase
       .from('balance_transactions')

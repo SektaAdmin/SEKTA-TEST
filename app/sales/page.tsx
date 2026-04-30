@@ -13,12 +13,14 @@ const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash: 'Готівка',
   fop: 'ФОП',
   personal_card: 'Особиста карта',
+  deposit: 'Депозит',
 }
 
 const PAYMENT_CLASS: Record<PaymentMethod, string> = {
   cash: styles.badgeCash,
   fop: styles.badgeFop,
   personal_card: styles.badgeCard,
+  deposit: styles.badgeDeposit,
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
@@ -92,7 +94,7 @@ export default function SalesPage() {
       .from('sales')
       .select(`
         id, created_at, client_id, ticket_id, trainer_id,
-        ticket_name, ticket_price, sessions, price_paid, amount_given,
+        ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given,
         payment_method, notes,
         clients(first_name, last_name),
         tickets(name),
@@ -118,6 +120,16 @@ export default function SalesPage() {
   useEffect(() => {
     fetchSales(page, pageSize, search, dateFrom, dateTo)
   }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
+
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        fetchSales(page, pageSize, search, dateFrom, dateTo)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [fetchSales, page, pageSize, search, dateFrom, dateTo])
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -227,9 +239,11 @@ export default function SalesPage() {
                   <tr>
                     <th>Дата</th>
                     <th>Клієнт</th>
-                    <th>Абонемент</th>
-                    <th>Сума</th>
-                    <th>Депозит</th>
+                    <th>Операція</th>
+                    <th>Занять</th>
+                    <th>Ціна</th>
+                    <th>Оплачено</th>
+                    <th>Δ Депозит</th>
                     <th>Оплата</th>
                     <th>Тренер</th>
                     <th></th>
@@ -243,10 +257,21 @@ export default function SalesPage() {
                       <td className={styles.date}>{formatSaleDatetime(s.created_at)}</td>
                       <td>{formatClientName(s.clients)}</td>
                       <td>
-                        {s.ticket_name ?? <span className={styles.depositLabel}>Поповнення депозиту</span>}
+                        {s.ticket_name
+                          ? s.ticket_name
+                          : depDelta >= 0
+                            ? <span className={styles.opTopup}>↑ Поповнення</span>
+                            : <span className={styles.opDeduction}>↓ Списання</span>
+                        }
+                      </td>
+                      <td className={styles.sessions}>{s.sessions ?? '—'}</td>
+                      <td className={styles.price}>
+                        {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : '—'}
                       </td>
                       <td className={styles.price}>
-                        {s.ticket_name ? `${s.price_paid.toLocaleString('uk-UA')} ₴` : '—'}
+                        {s.ticket_id != null && s.payment_method !== 'deposit'
+                          ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
+                          : '—'}
                       </td>
                       <td className={styles.deposit}>
                         {depDelta !== 0 ? (
