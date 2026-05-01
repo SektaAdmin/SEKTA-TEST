@@ -58,7 +58,9 @@ export default function ClassDetailPage() {
   const [enrollError, setEnrollError] = useState<string | null>(null)
 
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
+  const [confirmCancelClass, setConfirmCancelClass] = useState(false)
 
   const fetchClass = useCallback(async () => {
     const { data, error } = await supabase
@@ -161,12 +163,13 @@ export default function ClassDetailPage() {
 
   async function handleMarkAttended(enrollmentId: string) {
     setActionLoading(enrollmentId)
+    setActionError(prev => { const n = { ...prev }; delete n[enrollmentId]; return n })
     const { data, error } = await supabase.rpc('mark_attendance', {
       p_enrollment_id: enrollmentId,
       p_sessions_used: 1,
     })
     if (error || data?.[0]?.success === false) {
-      alert(data?.[0]?.error_message ?? error?.message ?? 'Помилка')
+      setActionError(prev => ({ ...prev, [enrollmentId]: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }))
     } else if (cls) {
       await fetchEnrollments(cls.ticket_type)
     }
@@ -182,9 +185,9 @@ export default function ClassDetailPage() {
 
   async function handleCancelClass() {
     if (!cls) return
-    if (!confirm('Скасувати заняття? Клієнти не будуть сповіщені автоматично.')) return
     setCancellingClass(true)
     await supabase.from('classes').update({ is_cancelled: true }).eq('id', cls.id)
+    setConfirmCancelClass(false)
     await fetchClass()
     setCancellingClass(false)
   }
@@ -220,6 +223,8 @@ export default function ClassDetailPage() {
   }
 
   const activeCount = enrollments.filter(e => e.status === 'enrolled' || e.status === 'attended').length
+  const stillEnrolled = enrollments.filter(e => e.status === 'enrolled')
+  const classIsPast = new Date(cls.starts_at) < new Date()
   const startDate = new Date(cls.starts_at)
   const endDate = new Date(startDate.getTime() + cls.duration_min * 60000)
   const timeRange = `${formatTime(startDate)}–${formatTime(endDate)}`
@@ -245,8 +250,18 @@ export default function ClassDetailPage() {
               <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
                 Відновити
               </button>
+            ) : confirmCancelClass ? (
+              <>
+                <span className={styles.confirmPrompt}>Скасувати заняття?</span>
+                <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                  Так
+                </button>
+                <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
+                  Ні
+                </button>
+              </>
             ) : (
-              <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+              <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
                 Скасувати заняття
               </button>
             )}
@@ -254,6 +269,20 @@ export default function ClassDetailPage() {
         </div>
 
         <div className={styles.content}>
+          {/* Callout: клієнти без балансу після auto-close */}
+          {classIsPast && !cls.is_cancelled && stillEnrolled.length > 0 && (
+            <div className={styles.callout}>
+              <span className={styles.calloutIcon}>⚠</span>
+              <span>
+                {stillEnrolled.length === 1
+                  ? '1 клієнт не відмічений'
+                  : `${stillEnrolled.length} клієнти не відмічені`}
+                {' '}&mdash; немає балансу або auto-close ще не спрацював.
+                Відмітьте вручну через ✓ / ✗ у таблиці нижче.
+              </span>
+            </div>
+          )}
+
           {/* Class info */}
           <div className={styles.infoCard}>
             <div className={styles.infoRow}>
@@ -436,6 +465,9 @@ export default function ClassDetailPage() {
                                 >
                                   Повернути
                                 </button>
+                              )}
+                              {actionError[e.id] && (
+                                <span className={styles.rowError}>{actionError[e.id]}</span>
                               )}
                             </div>
                           </td>

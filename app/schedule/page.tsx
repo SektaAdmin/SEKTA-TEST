@@ -23,6 +23,23 @@ type ClassWithJoins = Class & {
   enrollments: { id: string; status: string }[]
 }
 
+const TYPE_COLORS = [
+  '#5b8af5', // blue
+  '#c8f060', // lime (accent)
+  '#f07850', // orange
+  '#a06cf0', // purple
+  '#50c8d8', // teal
+  '#f0c840', // yellow
+  '#e05080', // pink
+  '#60d890', // green
+]
+
+function typeColor(code: string): string {
+  let h = 0
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
+  return TYPE_COLORS[h % TYPE_COLORS.length]
+}
+
 function getWeekDays(base: Date): Date[] {
   const d = new Date(base)
   const day = d.getDay()
@@ -59,6 +76,41 @@ function getCardHeight(durationMin: number): number {
   return Math.max((durationMin / 60) * HOUR_HEIGHT, 52)
 }
 
+type LaneInfo = { laneIndex: number; laneCount: number }
+
+function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
+  if (classes.length === 0) return new Map()
+  const sorted = [...classes].sort(
+    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+  )
+  const laneAssignments = new Map<string, number>()
+  const laneEndTimes: number[] = []
+  for (const cls of sorted) {
+    const start = new Date(cls.starts_at).getTime()
+    const end = start + cls.duration_min * 60000
+    let assigned = -1
+    for (let i = 0; i < laneEndTimes.length; i++) {
+      if (laneEndTimes[i] <= start) { assigned = i; laneEndTimes[i] = end; break }
+    }
+    if (assigned === -1) { assigned = laneEndTimes.length; laneEndTimes.push(end) }
+    laneAssignments.set(cls.id, assigned)
+  }
+  const result = new Map<string, LaneInfo>()
+  for (const cls of sorted) {
+    const start = new Date(cls.starts_at).getTime()
+    const end = start + cls.duration_min * 60000
+    let maxLane = laneAssignments.get(cls.id)!
+    for (const other of sorted) {
+      if (other.id === cls.id) continue
+      const os = new Date(other.starts_at).getTime()
+      const oe = os + other.duration_min * 60000
+      if (os < end && oe > start) maxLane = Math.max(maxLane, laneAssignments.get(other.id)!)
+    }
+    result.set(cls.id, { laneIndex: laneAssignments.get(cls.id)!, laneCount: maxLane + 1 })
+  }
+  return result
+}
+
 function formatWeekRange(days: Date[]) {
   const s = days[0], e = days[6]
   if (s.getMonth() === e.getMonth()) {
@@ -74,6 +126,7 @@ export default function SchedulePage() {
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [nowTop, setNowTop] = useState<number | null>(null)
 
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
     const days = getWeekDays(baseDate)
@@ -114,6 +167,21 @@ export default function SchedulePage() {
     })
   }, [])
 
+  useEffect(() => {
+    function updateNow() {
+      const now = new Date()
+      const h = now.getHours() + now.getMinutes() / 60
+      if (h >= MIN_HOUR && h < MAX_HOUR) {
+        setNowTop((h - MIN_HOUR) * HOUR_HEIGHT)
+      } else {
+        setNowTop(null)
+      }
+    }
+    updateNow()
+    const id = setInterval(updateNow, 60000)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <div className={styles.layout}>
       <Sidebar />
@@ -138,6 +206,13 @@ export default function SchedulePage() {
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
               </svg>
+            </button>
+            <button
+              className={styles.todayBtn}
+              onClick={() => setBaseDate(new Date())}
+              aria-label="Сьогодні"
+            >
+              Сьогодні
             </button>
           </div>
           <button className={styles.btnNew} onClick={() => setShowModal(true)}>
@@ -175,6 +250,7 @@ export default function SchedulePage() {
           {/* Day columns */}
           {weekDays.map((day, di) => {
             const dayClasses = classes.filter(c => isSameDay(new Date(c.starts_at), day))
+            const lanes = computeLanes(dayClasses)
             return (
               <div key={di} className={styles.dayCol}>
                 {/* Hour lines */}
@@ -186,11 +262,17 @@ export default function SchedulePage() {
                   />
                 ))}
 
+                {/* Current time indicator */}
+                {nowTop !== null && isSameDay(day, today) && (
+                  <div className={styles.nowLine} style={{ top: `${nowTop}px` }} />
+                )}
+
                 {/* Cards */}
                 {!loading && dayClasses.map(cls => {
                   const activeCount = cls.enrollments.filter(
                     e => e.status === 'enrolled' || e.status === 'attended'
                   ).length
+                  const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }
                   return (
                     <button
                       key={cls.id}
@@ -198,6 +280,9 @@ export default function SchedulePage() {
                       style={{
                         top: `${getCardTop(cls.starts_at)}px`,
                         height: `${getCardHeight(cls.duration_min)}px`,
+                        left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
+                        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
+                        ['--card-color' as string]: typeColor(cls.ticket_type),
                       }}
                       onClick={() => router.push(`/schedule/${cls.id}`)}
                     >
@@ -212,7 +297,7 @@ export default function SchedulePage() {
                       {cls.halls && (
                         <span className={styles.cardMeta}>{cls.halls.name}</span>
                       )}
-                      <span className={styles.cardCount}>
+                      <span className={`${styles.cardCount} ${cls.capacity != null && activeCount >= cls.capacity ? styles.cardCountFull : cls.capacity != null && activeCount >= cls.capacity * 0.8 ? styles.cardCountAlmost : ''}`}>
                         {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
                       </span>
                       {cls.is_cancelled && (
