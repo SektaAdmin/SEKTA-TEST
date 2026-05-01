@@ -9,8 +9,8 @@
   margin-left: 196px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  overflow: hidden;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -24,6 +24,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .weekNav {
@@ -73,40 +74,35 @@
 }
 .btnNew:hover { opacity: 0.88; }
 
-/* ── Week grid ───────────────────────────────────────────────── */
-.grid {
+/* ── Sticky week header ─────────────────────────────────────── */
+.weekHeader {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  flex: 1;
-  overflow: hidden;
-  border-top: none;
+  grid-template-columns: 48px repeat(7, 1fr);
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg-2);
+  position: sticky;
+  top: 57px;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
-.dayCol {
-  display: flex;
-  flex-direction: column;
+.gutterCorner {
   border-right: 0.5px solid var(--border);
-  min-height: calc(100vh - 57px);
 }
-.dayCol:last-child { border-right: none; }
 
-/* ── Day header ─────────────────────────────────────────────── */
 .dayHeader {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
   padding: 10px 4px;
-  border-bottom: 0.5px solid var(--border);
+  border-right: 0.5px solid var(--border);
   background: var(--bg-2);
-  position: sticky;
-  top: 57px;
-  z-index: 5;
 }
+.dayHeader:last-child { border-right: none; }
 
 .dayHeaderToday {
   background: var(--accent-dim);
-  border-bottom-color: rgba(200,240,96,0.2);
 }
 
 .dayName {
@@ -126,40 +122,74 @@
 
 .dayHeaderToday .dayDate { color: var(--accent); }
 
-/* ── Day body ───────────────────────────────────────────────── */
-.dayBody {
+/* ── Calendar body grid ─────────────────────────────────────── */
+.bodyGrid {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
   flex: 1;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow-y: auto;
 }
 
-.placeholder {
+/* ── Time gutter ────────────────────────────────────────────── */
+.timeGutter {
+  border-right: 0.5px solid var(--border);
+}
+
+.timeRow {
+  height: 80px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 3px 6px 0 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.timeLabel {
+  font-size: 10px;
   color: var(--text-3);
-  font-size: 12px;
-  text-align: center;
-  padding: 20px 0;
+  font-family: var(--mono);
+  line-height: 1;
+  user-select: none;
+}
+
+/* ── Day column ─────────────────────────────────────────────── */
+.dayCol {
+  position: relative;
+  height: calc(16 * 80px); /* 07:00–23:00 */
+  border-right: 0.5px solid var(--border);
+}
+.dayCol:last-child { border-right: none; }
+
+.hourLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0.5px;
+  background: var(--border);
+  pointer-events: none;
 }
 
 /* ── Class card ─────────────────────────────────────────────── */
 .card {
+  position: absolute;
+  left: 4px;
+  right: 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 9px;
+  gap: 1px;
+  padding: 4px 6px;
   background: var(--bg-2);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
+  overflow: hidden;
   transition: border-color 0.12s, background 0.12s;
-  width: 100%;
+  z-index: 1;
 }
 .card:hover {
   border-color: var(--border-hover);
   background: var(--bg-3);
+  z-index: 2;
 }
 
 .cardCancelled {
@@ -167,22 +197,26 @@
 }
 
 .cardTime {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--accent);
   font-family: var(--mono);
   letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 .cardType {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text);
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cardMeta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-3);
   white-space: nowrap;
   overflow: hidden;
@@ -193,7 +227,6 @@
   font-size: 10px;
   color: var(--text-3);
   font-family: var(--mono);
-  margin-top: 2px;
 }
 
 .cancelledBadge {
@@ -203,5 +236,5 @@
   padding: 1px 5px;
   border-radius: 3px;
   width: fit-content;
-  margin-top: 2px;
+  flex-shrink: 0;
 }

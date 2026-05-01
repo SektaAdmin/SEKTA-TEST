@@ -12,6 +12,11 @@ const supabase = createClient()
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const MONTHS_UA = ['Січ', 'Лют', 'Бер', 'Квіт', 'Трав', 'Черв', 'Лип', 'Серп', 'Вер', 'Жовт', 'Лист', 'Груд']
 
+const MIN_HOUR = 7
+const MAX_HOUR = 23
+const HOUR_HEIGHT = 80 // px per hour
+const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
+
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
   halls: { name: string } | null
@@ -43,6 +48,15 @@ function formatTime(iso: string) {
 
 function formatDayDate(d: Date) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+function getCardTop(iso: string): number {
+  const d = new Date(iso)
+  return (d.getHours() - MIN_HOUR + d.getMinutes() / 60) * HOUR_HEIGHT
+}
+
+function getCardHeight(durationMin: number): number {
+  return Math.max((durationMin / 60) * HOUR_HEIGHT, 52)
 }
 
 function formatWeekRange(days: Date[]) {
@@ -131,54 +145,82 @@ export default function SchedulePage() {
           </button>
         </div>
 
-        <div className={styles.grid}>
+        {/* Sticky week header */}
+        <div className={styles.weekHeader}>
+          <div className={styles.gutterCorner} />
           {weekDays.map((day, di) => {
-            const dayClasses = classes.filter(c => isSameDay(new Date(c.starts_at), day))
             const isToday = isSameDay(day, today)
             return (
+              <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
+                <span className={styles.dayName}>{DAYS_UA[di]}</span>
+                <span className={styles.dayDate}>{formatDayDate(day)}</span>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Calendar body: time gutter + day columns */}
+        <div className={styles.bodyGrid}>
+          {/* Time gutter */}
+          <div className={styles.timeGutter}>
+            {HOURS.map(h => (
+              <div key={h} className={styles.timeRow}>
+                <span className={styles.timeLabel}>
+                  {String(h).padStart(2, '0')}:00
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Day columns */}
+          {weekDays.map((day, di) => {
+            const dayClasses = classes.filter(c => isSameDay(new Date(c.starts_at), day))
+            return (
               <div key={di} className={styles.dayCol}>
-                <div className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                  <span className={styles.dayName}>{DAYS_UA[di]}</span>
-                  <span className={styles.dayDate}>{formatDayDate(day)}</span>
-                </div>
-                <div className={styles.dayBody}>
-                  {loading ? (
-                    <div className={styles.placeholder}>···</div>
-                  ) : dayClasses.length === 0 ? (
-                    <div className={styles.placeholder}>—</div>
-                  ) : (
-                    dayClasses.map(cls => {
-                      const activeCount = cls.enrollments.filter(
-                        e => e.status === 'enrolled' || e.status === 'attended'
-                      ).length
-                      return (
-                        <button
-                          key={cls.id}
-                          className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
-                          onClick={() => router.push(`/schedule/${cls.id}`)}
-                        >
-                          <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
-                          <span className={styles.cardType}>
-                            {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-                            {cls.title ? ` · ${cls.title}` : ''}
-                          </span>
-                          {cls.trainers && (
-                            <span className={styles.cardMeta}>{cls.trainers.name}</span>
-                          )}
-                          {cls.halls && (
-                            <span className={styles.cardMeta}>{cls.halls.name}</span>
-                          )}
-                          <span className={styles.cardCount}>
-                            {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
-                          </span>
-                          {cls.is_cancelled && (
-                            <span className={styles.cancelledBadge}>скасовано</span>
-                          )}
-                        </button>
-                      )
-                    })
-                  )}
-                </div>
+                {/* Hour lines */}
+                {HOURS.slice(1).map(h => (
+                  <div
+                    key={h}
+                    className={styles.hourLine}
+                    style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }}
+                  />
+                ))}
+
+                {/* Cards */}
+                {!loading && dayClasses.map(cls => {
+                  const activeCount = cls.enrollments.filter(
+                    e => e.status === 'enrolled' || e.status === 'attended'
+                  ).length
+                  return (
+                    <button
+                      key={cls.id}
+                      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
+                      style={{
+                        top: `${getCardTop(cls.starts_at)}px`,
+                        height: `${getCardHeight(cls.duration_min)}px`,
+                      }}
+                      onClick={() => router.push(`/schedule/${cls.id}`)}
+                    >
+                      <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
+                      <span className={styles.cardType}>
+                        {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+                        {cls.title ? ` · ${cls.title}` : ''}
+                      </span>
+                      {cls.trainers && (
+                        <span className={styles.cardMeta}>{cls.trainers.name}</span>
+                      )}
+                      {cls.halls && (
+                        <span className={styles.cardMeta}>{cls.halls.name}</span>
+                      )}
+                      <span className={styles.cardCount}>
+                        {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
+                      </span>
+                      {cls.is_cancelled && (
+                        <span className={styles.cancelledBadge}>скасовано</span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             )
           })}
