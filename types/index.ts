@@ -1,17 +1,13 @@
 export type PaymentMethod = 'cash' | 'fop' | 'personal_card' | 'deposit'
 
-export const TICKET_TYPES = [
-  'group',
-  'individual',
-  'hallrental',
-  'smallhallrental',
-  'individualduo',
-  'individualtrio',
-  'pylonrental',
-  'striprental',
-] as const
-
-export type TicketType = typeof TICKET_TYPES[number]
+export interface TrainingType {
+  id: string
+  code: string
+  label: string
+  is_active: boolean
+  sort_order: number
+  created_at: string
+}
 
 export interface Client {
   id: string
@@ -83,4 +79,31 @@ export interface Hall {
   capacity: number
   description: string | null
   is_active: boolean
+}
+
+export interface Class {
+  id: string
+  trainer_id: string | null
+  hall_id: string | null
+  ticket_type: string
+  title: string | null
+  starts_at: string
+  duration_min: number
+  capacity: number | null
+  is_cancelled: boolean
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Enrollment {
+  id: string
+  class_id: string
+  client_id: string
+  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow'
+  sessions_used: number
+  sale_id: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
 }

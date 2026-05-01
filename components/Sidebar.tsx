@@ -24,11 +24,26 @@ const nav = [
       <line x1="5" y1="10" x2="8.5" y2="10"/>
     </svg>
   )},
+  { href: '/training-types', label: 'Типи тренувань', icon: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <circle cx="8" cy="8" r="5.5"/>
+      <line x1="8" y1="5" x2="8" y2="8.5"/>
+      <line x1="8" y1="10.5" x2="8" y2="11"/>
+    </svg>
+  )},
   { href: '/trainers', label: 'Тренери', icon: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
       <circle cx="5.5" cy="5.5" r="2.5"/>
       <path d="M1 13.5c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/>
       <path d="M11 7.5l1.5 1.5L15 6"/>
+    </svg>
+  )},
+  { href: '/schedule', label: 'Розклад', icon: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <rect x="2" y="3" width="12" height="11" rx="1.5"/>
+      <line x1="2" y1="7" x2="14" y2="7"/>
+      <line x1="5.5" y1="1.5" x2="5.5" y2="4.5"/>
+      <line x1="10.5" y1="1.5" x2="10.5" y2="4.5"/>
     </svg>
   )},
   { href: '/halls', label: 'Зали', icon: (

@@ -122,6 +122,9 @@ export default function AccountingPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Звітність</h1>
+          <a href="/accounting/trainers" className={styles.trainerReportLink}>
+            Звіт по тренерах →
+          </a>
         </div>
 
         <div className={styles.filters}>

@@ -1,9 +1,9 @@
 'use client'
-import { useState, useId } from 'react'
+import { useState, useEffect, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import { TICKET_TYPES } from '@/types'
+import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
 
 const supabase = createClient()
@@ -24,8 +24,18 @@ export default function TicketModal({ onClose, onSaved }: Props) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
 
+  const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
+
+  useEffect(() => {
+    supabase
+      .from('training_types')
+      .select('id, code, label, is_active, sort_order, created_at')
+      .eq('is_active', true)
+      .order('sort_order')
+      .then(({ data }) => setTrainingTypes((data ?? []) as TrainingType[]))
+  }, [])
 
   const {
     register,
@@ -97,13 +107,13 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             <select
               id="ticket-type"
               {...register('ticket_type', {
-                validate: v => (TICKET_TYPES as readonly string[]).includes(v) || 'Оберіть тип абонементу',
+                validate: v => trainingTypes.some(t => t.code === v) || 'Оберіть тип абонементу',
               })}
               disabled={loading}
             >
               <option value="">— Оберіть тип —</option>
-              {TICKET_TYPES.map(value => (
-                <option key={value} value={value}>{value}</option>
+              {trainingTypes.map(t => (
+                <option key={t.code} value={t.code}>{t.label}</option>
               ))}
             </select>
             {errors.ticket_type && (

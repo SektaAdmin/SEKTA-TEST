@@ -12,17 +12,6 @@ import styles from './client-profile.module.css'
 
 const supabase = createClient()
 
-const TICKET_TYPE_LABELS: Record<string, string> = {
-  group:           'Групові',
-  individual:      'Індивідуальні',
-  individualduo:   'Індивід. дует',
-  individualtrio:  'Індивід. тріо',
-  hallrental:      'Оренда залу',
-  smallhallrental: 'Мала зала',
-  pylonrental:     'Пілон',
-  striprental:     'Стрип',
-}
-
 const PAYMENT_LABELS: Record<string, string> = {
   cash:          'Готівка',
   fop:           'ФОП',
@@ -46,6 +35,7 @@ export default function ClientProfilePage() {
 
   const [client, setClient] = useState<Client | null>(null)
   const [sessionBalances, setSessionBalances] = useState<ClientSessionBalance[]>([])
+  const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [sales, setSales] = useState<Sale[]>([])
   const [salesTotal, setSalesTotal] = useState(0)
   const [salesPage, setSalesPage] = useState(0)
@@ -123,6 +113,11 @@ export default function ClientProfilePage() {
 
   useEffect(() => {
     setLoading(true)
+    supabase.from('training_types').select('code, label').then(({ data }) => {
+      const map: Record<string, string> = {}
+      for (const t of data ?? []) map[t.code] = t.label
+      setTypeLabels(map)
+    })
     Promise.all([fetchClient(), fetchSessionBalances(), fetchSales(0)]).then(() => setLoading(false))
   }, [fetchClient, fetchSessionBalances, fetchSales])
 
@@ -280,7 +275,7 @@ export default function ClientProfilePage() {
                   {sessionBalances.map(b => (
                     <div key={b.ticket_type} className={styles.sessionCard}>
                       <span className={styles.sessionType}>
-                        {TICKET_TYPE_LABELS[b.ticket_type] ?? b.ticket_type}
+                        {typeLabels[b.ticket_type] ?? b.ticket_type}
                       </span>
                       <span className={
                         b.sessions_balance > 0 ? styles.sessionPos :
