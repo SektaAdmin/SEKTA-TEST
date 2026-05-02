@@ -61,6 +61,8 @@ export default function ClassDetailPage() {
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
+  const [confirmDeleteClass, setConfirmDeleteClass] = useState(false)
+  const [deletingClass, setDeletingClass] = useState(false)
 
   const fetchClass = useCallback(async () => {
     const { data, error } = await supabase
@@ -200,6 +202,14 @@ export default function ClassDetailPage() {
     setCancellingClass(false)
   }
 
+  async function handleDeleteClass() {
+    if (!cls) return
+    setDeletingClass(true)
+    await supabase.from('enrollments').delete().eq('class_id', cls.id)
+    await supabase.from('classes').delete().eq('id', cls.id)
+    router.push('/schedule')
+  }
+
   if (loading) {
     return (
       <div className={styles.layout}>
@@ -243,26 +253,43 @@ export default function ClassDetailPage() {
             Розклад
           </button>
           <div className={styles.topbarActions}>
-            <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
+            <button className={styles.btnEdit} onClick={() => setShowEditModal(true)} disabled={deletingClass}>
               Редагувати
             </button>
-            {cls.is_cancelled ? (
-              <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
-                Відновити
-              </button>
-            ) : confirmCancelClass ? (
-              <>
-                <span className={styles.confirmPrompt}>Скасувати заняття?</span>
-                <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
-                  Так
+            {!confirmDeleteClass && (
+              cls.is_cancelled ? (
+                <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass || deletingClass}>
+                  Відновити
                 </button>
-                <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
+              ) : confirmCancelClass ? (
+                <>
+                  <span className={styles.confirmPrompt}>Скасувати заняття?</span>
+                  <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                    Так
+                  </button>
+                  <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
+                    Ні
+                  </button>
+                </>
+              ) : (
+                <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)} disabled={deletingClass}>
+                  Скасувати заняття
+                </button>
+              )
+            )}
+            {confirmDeleteClass ? (
+              <>
+                <span className={styles.confirmPrompt}>Видалити тренування?</span>
+                <button className={styles.btnCancel} onClick={handleDeleteClass} disabled={deletingClass}>
+                  {deletingClass ? 'Видалення...' : 'Так'}
+                </button>
+                <button className={styles.btnEdit} onClick={() => setConfirmDeleteClass(false)} disabled={deletingClass}>
                   Ні
                 </button>
               </>
             ) : (
-              <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
-                Скасувати заняття
+              <button className={styles.btnCancel} onClick={() => { setConfirmCancelClass(false); setConfirmDeleteClass(true) }} disabled={cancellingClass || deletingClass}>
+                Видалити
               </button>
             )}
           </div>
