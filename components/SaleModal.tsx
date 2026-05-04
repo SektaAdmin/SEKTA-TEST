@@ -393,8 +393,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           </div>
 
           {/* Таб-переключатель: Звичайна оплата / Депозит */}
-          {ticketId && (
-            <div className={styles.field}>
+          <div className={styles.field}>
               <div className={styles.paymentTabs}>
                 <button
                   type="button"
@@ -419,7 +418,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
                 </span>
               )}
             </div>
-          )}
 
           {/* Спосіб оплати — кнопки */}
           {!isDeduction && !payFromDeposit && (
