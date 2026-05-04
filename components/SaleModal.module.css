@@ -151,16 +151,18 @@
 
 .calendarBtn {
   flex-shrink: 0;
+  align-self: stretch;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 9px 10px;
+  padding: 0 10px;
   color: var(--text-2);
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
+  box-sizing: border-box;
 }
 .calendarBtn:hover { border-color: var(--accent); color: var(--text); }
 .calendarBtn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -184,27 +186,31 @@
 .depositNeg { color: var(--danger); }
 .depositZero { color: var(--text-3); }
 
-.checkboxField {
+.paymentTabs {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 2px 0;
+  gap: 6px;
 }
 
-.checkboxRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
+.paymentTab {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
   color: var(--text-2);
   cursor: pointer;
-  user-select: none;
+  transition: all 0.12s;
+  text-align: center;
 }
 
-.checkboxRow input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--accent);
-  cursor: pointer;
-  flex-shrink: 0;
+.paymentTab:hover { border-color: var(--accent); color: var(--text); }
+.paymentTab:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.paymentTabActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 500;
 }
+.paymentTabActive:hover { border-color: var(--accent); color: var(--accent-text); opacity: 0.88; }

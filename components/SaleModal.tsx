@@ -7,10 +7,41 @@ import { createClient } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import { formatClientLabel, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal } from '@/lib/formatters'
 import ClientSearchCombobox from './ClientSearchCombobox'
-import type { Client, Ticket, Trainer, SaleFormData, PaymentMethod } from '@/types'
+import type { Client, Ticket, Trainer, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
 
 const supabase = createClient()
+
+const PAYMENT_LABELS: Record<string, string> = {
+  cash: 'Готівка',
+  fop: 'ФОП',
+  personal_card: 'Особиста карта',
+}
+
+function resolveSubmitValues(formData: SaleFormValues) {
+  const isNoTicket = !formData.ticket_id
+  return {
+    submitAmountGiven: isNoTicket && formData.amount_given < 0 ? 0 : formData.amount_given,
+    submitPricePaid:   isNoTicket && formData.amount_given < 0 ? Math.abs(formData.amount_given) : formData.price_paid,
+  }
+}
+
+function useNumberField(initial: number) {
+  const [text, setText] = useState(String(initial))
+  function onChange(e: React.ChangeEvent<HTMLInputElement>, set: (n: number) => void) {
+    setText(e.target.value)
+    if (e.target.value === '' || e.target.value === '-') { set(0); return }
+    const n = Number(e.target.value)
+    if (!isNaN(n)) set(n)
+  }
+  function onBlur(set: (n: number) => void) {
+    const n = Number(text)
+    const val = text === '' || isNaN(n) ? 0 : n
+    setText(String(val))
+    set(val)
+  }
+  return { text, setText, onChange, onBlur }
+}
 
 export interface EditSaleSnapshot {
   id: string
@@ -95,11 +126,11 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
   )
   const datePickerRef = useRef<HTMLInputElement>(null)
 
-  const [pricePaidText, setPricePaidText] = useState(String(editSale?.price_paid ?? 0))
-  const [amountGivenText, setAmountGivenText] = useState(
-    String(editSale
+  const pricePaid$ = useNumberField(editSale?.price_paid ?? 0)
+  const amountGiven$ = useNumberField(
+    editSale
       ? (editSale.ticket_id ? editSale.amount_given : (editSale.amount_given - editSale.price_paid))
-      : 0)
+      : 0
   )
 
   const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId } = watch()
@@ -141,11 +172,11 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     setPayFromDeposit(on)
     if (on) {
       setValue('amount_given', 0)
-      setAmountGivenText('0')
+      amountGiven$.setText('0')
       setValue('payment_method', 'deposit')
     } else {
       setValue('amount_given', pricePaid)
-      setAmountGivenText(String(pricePaid))
+      amountGiven$.setText(String(pricePaid))
       setValue('payment_method', 'cash')
     }
   }
@@ -158,20 +189,20 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
       setValue('price_paid', 0)
       setValue('amount_given', 0)
       setValue('payment_method', 'cash')
-      setPricePaidText('0')
-      setAmountGivenText('0')
+      pricePaid$.setText('0')
+      amountGiven$.setText('0')
       return
     }
     const t = tickets.find(x => x.id === id)
     if (t) {
       setValue('price_paid', t.price)
-      setPricePaidText(String(t.price))
+      pricePaid$.setText(String(t.price))
       if (payFromDeposit) {
         setValue('amount_given', 0)
-        setAmountGivenText('0')
+        amountGiven$.setText('0')
       } else {
         setValue('amount_given', t.price)
-        setAmountGivenText(String(t.price))
+        amountGiven$.setText(String(t.price))
       }
     }
   }
@@ -179,12 +210,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
   const onSubmit = async (formData: SaleFormValues) => {
     setLoading(true)
     setError('')
-
-    // For no-ticket ops, amount_given holds a signed value.
-    // Convert: positive → (amount_given=val, price_paid=0); negative → (amount_given=0, price_paid=abs(val))
-    const isNoTicket = !formData.ticket_id
-    const submitAmountGiven = isNoTicket && formData.amount_given < 0 ? 0 : formData.amount_given
-    const submitPricePaid   = isNoTicket && formData.amount_given < 0 ? Math.abs(formData.amount_given) : formData.price_paid
+    const { submitAmountGiven, submitPricePaid } = resolveSubmitValues(formData)
 
     // ── EDIT: single atomic RPC ───────────────────────────────────────────
     if (isEdit) {
@@ -274,197 +300,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         <form onSubmit={handleSubmit(onSubmit)}>
         <div className={styles.body}>
 
-          {/* Клієнт */}
-          <div className={styles.field}>
-            <label htmlFor="sale-client">Клієнт</label>
-            <ClientSearchCombobox
-              inputId="sale-client"
-              initialLabel={editSale?.client_name ?? (preselectedClient ? formatClientLabel(preselectedClient) : undefined)}
-              onSelect={(client: Client) => {
-                setValue('client_id', client.id)
-                fetchClientBalance(client.id)
-              }}
-              onClear={() => {
-                setValue('client_id', '')
-                setClientBalance(null)
-              }}
-              error={errors.client_id?.message}
-              disabled={loading}
-            />
-            {clientId && clientBalance !== null && (
-              <span className={`${styles.depositHint} ${clientBalance > 0 ? styles.depositPos : clientBalance < 0 ? styles.depositNeg : styles.depositZero}`}>
-                Депозит: {clientBalance > 0 ? '+' : ''}{clientBalance.toLocaleString('uk-UA')} ₴
-              </span>
-            )}
-          </div>
-
-          {/* Абонемент */}
-          <div className={styles.field}>
-            <label htmlFor="sale-ticket">Абонемент</label>
-            <select
-              id="sale-ticket"
-              value={ticketId}
-              onFocus={ensureTickets}
-              onChange={e => handleTicketChange(e.target.value)}
-              disabled={loading}
-            >
-              <option value="">— Оберіть абонемент —</option>
-              {isEdit && ticketId && !tickets.find(t => t.id === ticketId) && (
-                <option value={ticketId}>{editSale!.ticket_name}</option>
-              )}
-              {tickets.map(t => (
-                <option key={t.id} value={t.id}>{t.name} — {t.price.toLocaleString('uk-UA')} ₴</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Оплата з депозиту */}
-          {ticketId && (
-            <div className={styles.checkboxField}>
-              <label className={styles.checkboxRow}>
-                <input
-                  type="checkbox"
-                  checked={payFromDeposit}
-                  onChange={e => handleDepositToggle(e.target.checked)}
-                  disabled={loading}
-                />
-                Оплата з депозиту
-              </label>
-              {payFromDeposit && clientBalance !== null && clientBalance < pricePaid && (
-                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
-                  На депозиті {clientBalance.toLocaleString('uk-UA')} ₴ — може не вистачити
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Фактична сума */}
-          {ticketId && (
-            <div className={styles.field}>
-              <label htmlFor="sale-price-paid">
-                {payFromDeposit ? 'Сума списання (₴)' : 'Фактична сума (₴)'}
-              </label>
-              <input
-                id="sale-price-paid"
-                type="number"
-                value={pricePaidText}
-                onFocus={e => e.target.select()}
-                onChange={e => {
-                  setPricePaidText(e.target.value)
-                  const n = Number(e.target.value)
-                  if (e.target.value !== '' && !isNaN(n)) setValue('price_paid', n)
-                  else if (e.target.value === '') setValue('price_paid', 0)
-                }}
-                onBlur={() => {
-                  const n = Number(pricePaidText)
-                  const val = pricePaidText === '' || isNaN(n) ? 0 : n
-                  setPricePaidText(String(val))
-                  setValue('price_paid', val)
-                }}
-                min={0}
-                step={1}
-                disabled={loading}
-              />
-              {payFromDeposit && pricePaid > 0 && (
-                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
-                  −{pricePaid.toLocaleString('uk-UA')} ₴ з депозиту
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Сума від клієнта / операція з депозитом */}
-          {!(ticketId && payFromDeposit) && <div className={styles.field}>
-            <label htmlFor="sale-amount-given">
-              {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
-            </label>
-            <input
-              id="sale-amount-given"
-              type="number"
-              value={amountGivenText}
-              onFocus={e => e.target.select()}
-              onChange={e => {
-                setAmountGivenText(e.target.value)
-                if (e.target.value === '' || e.target.value === '-') {
-                  setValue('amount_given', 0)
-                } else {
-                  const n = Number(e.target.value)
-                  if (!isNaN(n)) setValue('amount_given', n)
-                }
-              }}
-              onBlur={() => {
-                const n = Number(amountGivenText)
-                const val = amountGivenText === '' || isNaN(n) ? 0 : n
-                setAmountGivenText(String(val))
-                setValue('amount_given', val)
-              }}
-              min={ticketId ? 0 : undefined}
-              step={1}
-              disabled={loading}
-            />
-            {!ticketId && (
-              <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
-                Позитивне — поповнення, негативне — списання
-              </span>
-            )}
-            {ticketId && depositDelta !== 0 && (
-              <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
-                {depositDelta > 0
-                  ? `+${depositDelta.toLocaleString('uk-UA')} ₴ на депозит`
-                  : `${depositDelta.toLocaleString('uk-UA')} ₴ з депозиту`}
-              </span>
-            )}
-            {!ticketId && amountGiven !== 0 && (
-              <span className={`${styles.depositHint} ${amountGiven > 0 ? styles.depositPos : styles.depositNeg}`}>
-                {amountGiven > 0
-                  ? `+${amountGiven.toLocaleString('uk-UA')} ₴ на депозит`
-                  : `${amountGiven.toLocaleString('uk-UA')} ₴ з депозиту`}
-              </span>
-            )}
-          </div>}
-
-          {/* Спосіб оплати */}
-          {!isDeduction && !payFromDeposit && (
-            <div className={styles.field}>
-              <label htmlFor="sale-payment">Спосіб оплати</label>
-              <select
-                id="sale-payment"
-                value={payment}
-                onChange={e => setValue('payment_method', e.target.value as PaymentMethod)}
-                disabled={loading}
-              >
-                <option value="cash">Готівка</option>
-                <option value="fop">ФОП</option>
-                <option value="personal_card">Особиста карта</option>
-              </select>
-            </div>
-          )}
-
-          {/* Тренер (тільки для готівки) */}
-          {!isDeduction && payment === 'cash' && (
-            <div className={styles.field}>
-              <label htmlFor="sale-trainer">
-                Тренер {ticketId && <span className={styles.required}>* обов'язково</span>}
-              </label>
-              <select
-                id="sale-trainer"
-                value={trainerId}
-                onFocus={ensureTrainers}
-                onChange={e => setValue('trainer_id', e.target.value)}
-                disabled={loading}
-              >
-                <option value="">— Оберіть тренера —</option>
-                {isEdit && trainerId && !trainers.find(t => t.id === trainerId) && (
-                  <option value={trainerId}>{editSale!.trainer_name}</option>
-                )}
-                {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              {errors.trainer_id && (
-                <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
-              )}
-            </div>
-          )}
-
           {/* Дата і час */}
           <div className={styles.field}>
             <label htmlFor="sale-datetime-text">Дата та час</label>
@@ -512,6 +347,186 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               />
             </div>
           </div>
+
+          {/* Клієнт */}
+          <div className={styles.field}>
+            <label htmlFor="sale-client">Клієнт</label>
+            <ClientSearchCombobox
+              inputId="sale-client"
+              initialLabel={editSale?.client_name ?? (preselectedClient ? formatClientLabel(preselectedClient) : undefined)}
+              onSelect={(client: Client) => {
+                setValue('client_id', client.id)
+                fetchClientBalance(client.id)
+              }}
+              onClear={() => {
+                setValue('client_id', '')
+                setClientBalance(null)
+              }}
+              error={errors.client_id?.message}
+              disabled={loading}
+            />
+            {clientId && clientBalance !== null && (
+              <span className={`${styles.depositHint} ${clientBalance > 0 ? styles.depositPos : clientBalance < 0 ? styles.depositNeg : styles.depositZero}`}>
+                Депозит: {clientBalance > 0 ? '+' : ''}{clientBalance.toLocaleString('uk-UA')} ₴
+              </span>
+            )}
+          </div>
+
+          {/* Абонемент */}
+          <div className={styles.field}>
+            <label htmlFor="sale-ticket">Абонемент</label>
+            <select
+              id="sale-ticket"
+              value={ticketId}
+              onFocus={ensureTickets}
+              onChange={e => handleTicketChange(e.target.value)}
+              disabled={loading}
+            >
+              <option value="">— Оберіть абонемент —</option>
+              {isEdit && ticketId && !tickets.find(t => t.id === ticketId) && (
+                <option value={ticketId}>{editSale!.ticket_name}</option>
+              )}
+              {tickets.map(t => (
+                <option key={t.id} value={t.id}>{t.name} — {t.price.toLocaleString('uk-UA')} ₴</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Таб-переключатель: Звичайна оплата / Депозит */}
+          {ticketId && (
+            <div className={styles.field}>
+              <div className={styles.paymentTabs}>
+                <button
+                  type="button"
+                  className={`${styles.paymentTab} ${!payFromDeposit ? styles.paymentTabActive : ''}`}
+                  onClick={() => handleDepositToggle(false)}
+                  disabled={loading}
+                >
+                  Звичайна оплата
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.paymentTab} ${payFromDeposit ? styles.paymentTabActive : ''}`}
+                  onClick={() => handleDepositToggle(true)}
+                  disabled={loading}
+                >
+                  Депозит
+                </button>
+              </div>
+              {payFromDeposit && clientBalance !== null && clientBalance < pricePaid && (
+                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
+                  На депозиті {clientBalance.toLocaleString('uk-UA')} ₴ — може не вистачити
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Спосіб оплати — кнопки */}
+          {!isDeduction && !payFromDeposit && (
+            <div className={styles.field}>
+              <label>Спосіб оплати</label>
+              <div className={styles.paymentTabs}>
+                {(['cash', 'fop', 'personal_card'] as PaymentMethod[]).map((method) => (
+                  <button
+                    key={method}
+                    type="button"
+                    className={`${styles.paymentTab} ${payment === method ? styles.paymentTabActive : ''}`}
+                    onClick={() => setValue('payment_method', method)}
+                    disabled={loading}
+                  >
+                    {PAYMENT_LABELS[method]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Тренер (тільки для готівки) */}
+          {!isDeduction && payment === 'cash' && (
+            <div className={styles.field}>
+              <label htmlFor="sale-trainer">
+                Тренер {ticketId && <span className={styles.required}>* обов'язково</span>}
+              </label>
+              <select
+                id="sale-trainer"
+                value={trainerId}
+                onFocus={ensureTrainers}
+                onChange={e => setValue('trainer_id', e.target.value)}
+                disabled={loading}
+              >
+                <option value="">— Оберіть тренера —</option>
+                {isEdit && trainerId && !trainers.find(t => t.id === trainerId) && (
+                  <option value={trainerId}>{editSale!.trainer_name}</option>
+                )}
+                {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              {errors.trainer_id && (
+                <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
+              )}
+            </div>
+          )}
+
+          {/* Фактична сума */}
+          {ticketId && (
+            <div className={styles.field}>
+              <label htmlFor="sale-price-paid">
+                {payFromDeposit ? 'Сума списання (₴)' : 'Фактична сума (₴)'}
+              </label>
+              <input
+                id="sale-price-paid"
+                type="number"
+                value={pricePaid$.text}
+                onFocus={e => e.target.select()}
+                onChange={e => pricePaid$.onChange(e, n => setValue('price_paid', n))}
+                onBlur={() => pricePaid$.onBlur(n => setValue('price_paid', n))}
+                min={0}
+                step={1}
+                disabled={loading}
+              />
+              {payFromDeposit && pricePaid > 0 && (
+                <span className={`${styles.depositHint} ${styles.depositNeg}`}>
+                  −{pricePaid.toLocaleString('uk-UA')} ₴ з депозиту
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Сума від клієнта / операція з депозитом */}
+          {!(ticketId && payFromDeposit) && <div className={styles.field}>
+            <label htmlFor="sale-amount-given">
+              {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
+            </label>
+            <input
+              id="sale-amount-given"
+              type="number"
+              value={amountGiven$.text}
+              onFocus={e => e.target.select()}
+              onChange={e => amountGiven$.onChange(e, n => setValue('amount_given', n))}
+              onBlur={() => amountGiven$.onBlur(n => setValue('amount_given', n))}
+              min={ticketId ? 0 : undefined}
+              step={1}
+              disabled={loading}
+            />
+            {!ticketId && (
+              <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
+                Позитивне — поповнення, негативне — списання
+              </span>
+            )}
+            {ticketId && depositDelta !== 0 && (
+              <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
+                {depositDelta > 0
+                  ? `+${depositDelta.toLocaleString('uk-UA')} ₴ на депозит`
+                  : `${depositDelta.toLocaleString('uk-UA')} ₴ з депозиту`}
+              </span>
+            )}
+            {!ticketId && amountGiven !== 0 && (
+              <span className={`${styles.depositHint} ${amountGiven > 0 ? styles.depositPos : styles.depositNeg}`}>
+                {amountGiven > 0
+                  ? `+${amountGiven.toLocaleString('uk-UA')} ₴ на депозит`
+                  : `${amountGiven.toLocaleString('uk-UA')} ₴ з депозиту`}
+              </span>
+            )}
+          </div>}
 
           {/* Коментар / Причина */}
           <div className={styles.field}>
