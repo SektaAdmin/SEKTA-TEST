@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import SaleModal from '@/components/SaleModal'
+import SaleModal from '@/components/features/SaleModal'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'

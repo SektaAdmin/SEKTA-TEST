@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import ClassModal from '@/components/ClassModal'
+import ClassModal from '@/components/features/ClassModal'
 import type { Class } from '@/types'
 import styles from './schedule.module.css'
 

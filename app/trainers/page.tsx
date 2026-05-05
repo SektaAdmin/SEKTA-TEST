@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import TrainerModal from '@/components/TrainerModal'
+import TrainerModal from '@/components/features/TrainerModal'
 import type { Trainer } from '@/types'
 import styles from './trainers.module.css'
 

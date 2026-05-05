@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import TicketModal from '@/components/TicketModal'
+import TicketModal from '@/components/features/TicketModal'
 import type { Ticket } from '@/types'
 import styles from './tickets.module.css'
 

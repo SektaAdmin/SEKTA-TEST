@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import TrainingTypeModal from '@/components/TrainingTypeModal'
+import TrainingTypeModal from '@/components/features/TrainingTypeModal'
 import type { TrainingType } from '@/types'
 import styles from './training-types.module.css'
 
