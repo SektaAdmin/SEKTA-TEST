@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/oleksandr/Documents/sekta-crm add app/error.tsx app/globals.css app/layout.tsx app/accounting/accounting.module.css app/halls/page.tsx app/tickets/page.tsx app/trainers/page.tsx app/training-types/page.tsx app/clients/page.tsx app/sales/page.tsx app/sales/sales.module.css app/schedule/page.tsx \"app/schedule/[classId]/page.tsx\" components/HallModal.tsx components/HallModal.module.css components/ClientModal.module.css components/ClientModal.tsx components/SaleModal.tsx components/SaleModal.module.css components/TrainerModal.tsx components/TrainerModal.module.css components/TicketModal.tsx components/TicketModal.module.css components/ClassModal.tsx components/ClassModal.module.css components/TrainingTypeModal.tsx components/TrainingTypeModal.module.css components/ClientSearchCombobox.tsx lib/supabase.ts hooks/useTickets.ts hooks/useTrainers.ts hooks/useClientBalance.ts package.json package-lock.json)",
+      "Bash(git -C /Users/oleksandr/Documents/sekta-crm status --short)"
+    ]
+  }
+}
