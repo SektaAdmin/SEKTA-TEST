@@ -89,7 +89,7 @@ const saleSchema = z.object({
 
 type SaleFormValues = z.infer<typeof saleSchema>
 
-const fieldCls = 'w-full px-3 py-[9px] bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
+const fieldCls = 'w-full px-3 py-[10px] bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
 const labelCls = 'text-[11px] text-[var(--text-2)] tracking-[0.04em] uppercase'
 const errorHintCls = 'text-[11px] text-[var(--danger)] mt-0.5'
 const depositHintCls = 'text-[11px] font-medium tracking-[0.02em]'
@@ -240,18 +240,18 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     >
       <div
         ref={modalRef}
-        className="flex flex-col w-[400px] max-h-[90vh] bg-[var(--bg-2)] border border-[0.5px] border-[var(--border-hover)] rounded-[var(--radius)]"
+        className="flex flex-col w-[460px] max-h-[90vh] bg-[var(--bg-2)] border border-[0.5px] border-[var(--border-hover)] rounded-[var(--radius)]"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[0.5px] border-[var(--border)]">
+        <div className="flex items-center justify-between px-6 py-[22px] border-b border-[0.5px] border-[var(--border)]">
           <h2 id={titleId} className="text-[14px] font-medium text-[var(--text)] m-0">{isEdit ? 'Редагувати продажу' : 'Нова продажа'}</h2>
           <button onClick={onClose} aria-label="Закрити" className="text-[var(--text-3)] hover:text-[var(--text)] transition-colors text-[14px] leading-none cursor-pointer bg-transparent border-none">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col min-h-0 flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-5">
 
             {/* Дата та час */}
             <div className="flex flex-col gap-1.5">
@@ -458,7 +458,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               <label htmlFor="sale-notes" className={labelCls}>Коментар</label>
               <textarea
                 id="sale-notes"
-                className={`${fieldCls} resize-y min-h-[60px] font-[var(--font)] leading-[1.4]`}
+                className={`${fieldCls} resize-y min-h-[80px] font-[var(--font)] leading-[1.4]`}
                 {...register('notes')}
                 placeholder={ticketId ? "Необов'язково" : 'Поповнення, виправлення помилки...'}
                 rows={2}
@@ -470,7 +470,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             {error && <p className="text-[12px] text-[var(--danger)] bg-[var(--danger-dim)] px-3 py-2 rounded-[var(--radius-sm)]" role="alert">{error}</p>}
           </div>
 
-          <div className="flex gap-2 justify-end px-6 py-4 border-t border-[0.5px] border-[var(--border)]">
+          <div className="flex gap-2 justify-end px-6 py-5 border-t border-[0.5px] border-[var(--border)]">
             <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>Скасувати</Button>
             <Button type="submit" variant="primary" loading={loading}>Зберегти</Button>
           </div>
