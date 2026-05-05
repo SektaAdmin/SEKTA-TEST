@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: var(--topbar-py) var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
@@ -65,7 +65,7 @@
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  height: var(--control-h); padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
