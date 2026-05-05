@@ -1,12 +1,11 @@
 'use client'
 import { useState, useEffect, useId } from 'react'
 import { useForm } from 'react-hook-form'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
 
-const supabase = createClient()
 
 interface TicketFormValues {
   name: string

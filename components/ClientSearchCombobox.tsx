@@ -1,11 +1,10 @@
 'use client'
 import { useState, useRef, useCallback, useId } from 'react'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { formatClientLabel } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './ClientSearchCombobox.module.css'
 
-const supabase = createClient()
 
 interface Props {
   inputId?: string

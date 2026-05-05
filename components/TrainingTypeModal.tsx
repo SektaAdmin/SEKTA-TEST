@@ -1,12 +1,11 @@
 'use client'
 import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import type { TrainingType } from '@/types'
 import styles from './TrainingTypeModal.module.css'
 
-const supabase = createClient()
 
 interface FormValues {
   code: string

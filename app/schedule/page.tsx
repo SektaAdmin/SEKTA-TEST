@@ -1,13 +1,13 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
 import type { Class } from '@/types'
 import styles from './schedule.module.css'
 
-const supabase = createClient()
 
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const MONTHS_UA = ['Січ', 'Лют', 'Бер', 'Квіт', 'Трав', 'Черв', 'Лип', 'Серп', 'Вер', 'Жовт', 'Лист', 'Груд']
@@ -147,13 +147,17 @@ export default function SchedulePage() {
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('classes')
       .select('*, trainers(name), halls(name), enrollments(id, status)')
       .gte('starts_at', weekStartISO)
       .lte('starts_at', weekEndISO)
       .order('starts_at')
-    setClasses((data ?? []) as ClassWithJoins[])
+    if (error) {
+      toast.error('Не вдалося завантажити розклад')
+    } else {
+      setClasses((data ?? []) as ClassWithJoins[])
+    }
     setLoading(false)
   }, [weekStartISO, weekEndISO])
 

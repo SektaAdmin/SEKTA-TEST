@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import TicketModal from '@/components/TicketModal'
 import type { Ticket } from '@/types'
 import styles from './tickets.module.css'
 
-const supabase = createClient()
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -37,7 +37,7 @@ export default function TicketsPage() {
     setToggling(id)
     const { error } = await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
     if (error) {
-      setFetchError(error.message)
+      toast.error('Не вдалося змінити статус')
     } else {
       setTickets(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
@@ -46,6 +46,7 @@ export default function TicketsPage() {
 
   function handleSaved() {
     setShowModal(false)
+    toast.success('Збережено')
     fetchTickets()
   }
 

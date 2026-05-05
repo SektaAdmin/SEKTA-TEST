@@ -1,13 +1,13 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
 
-const supabase = createClient()
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash: 'Готівка',
@@ -164,6 +164,7 @@ export default function SalesPage() {
   function handleSaved() {
     setShowModal(false)
     setEditSale(null)
+    toast.success('Збережено')
     fetchSales(page, pageSize, search, dateFrom, dateTo)
   }
 

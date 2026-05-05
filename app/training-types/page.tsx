@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import TrainingTypeModal from '@/components/TrainingTypeModal'
 import type { TrainingType } from '@/types'
 import styles from './training-types.module.css'
 
-const supabase = createClient()
 
 export default function TrainingTypesPage() {
   const [types, setTypes] = useState<TrainingType[]>([])
@@ -41,7 +41,7 @@ export default function TrainingTypesPage() {
       .update({ is_active: newValue })
       .eq('id', id)
     if (error) {
-      setFetchError(error.message)
+      toast.error('Не вдалося змінити статус')
     } else {
       setTypes(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
@@ -61,6 +61,7 @@ export default function TrainingTypesPage() {
   function handleSaved() {
     setShowModal(false)
     setEditing(null)
+    toast.success('Збережено')
     fetchTypes()
   }
 

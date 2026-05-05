@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import TrainerModal from '@/components/TrainerModal'
 import type { Trainer } from '@/types'
 import styles from './trainers.module.css'
 
-const supabase = createClient()
 
 export default function TrainersPage() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
@@ -37,7 +37,7 @@ export default function TrainersPage() {
     setToggling(id)
     const { error } = await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
     if (error) {
-      setFetchError(error.message)
+      toast.error('Не вдалося змінити статус')
     } else {
       setTrainers(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
@@ -46,6 +46,7 @@ export default function TrainersPage() {
 
   function handleSaved() {
     setShowModal(false)
+    toast.success('Збережено')
     fetchTrainers()
   }
 

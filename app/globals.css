@@ -19,6 +19,13 @@
   --radius-sm: 6px;
   --font: 'Geologica', sans-serif;
   --mono: 'JetBrains Mono', monospace;
+  --motion-fast:     0.12s ease-out;
+  --motion-standard: 0.18s ease-in-out;
+  --color-positive: #22c55e;
+  --color-fop:      #60a0f0;
+  --color-card:     #f0b460;
+  --color-deposit:  #a855f7;
+  --overlay-bg:     rgba(0, 0, 0, 0.6);
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -30,3 +37,12 @@ input, select, textarea, button { font-family: var(--font); font-size: 14px; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

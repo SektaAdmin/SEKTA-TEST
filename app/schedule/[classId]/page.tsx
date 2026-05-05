@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/ClientSearchCombobox'
@@ -9,7 +10,6 @@ import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Class, Client } from '@/types'
 import styles from './class-detail.module.css'
 
-const supabase = createClient()
 
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -180,33 +180,50 @@ export default function ClassDetailPage() {
 
   async function handleUpdateStatus(enrollmentId: string, status: 'noshow' | 'cancelled') {
     setActionLoading(enrollmentId)
-    await supabase.from('enrollments').update({ status }).eq('id', enrollmentId)
-    if (cls) await fetchEnrollments(cls.ticket_type)
+    const { error } = await supabase.from('enrollments').update({ status }).eq('id', enrollmentId)
+    if (error) {
+      toast.error('Не вдалося оновити статус')
+    } else if (cls) {
+      await fetchEnrollments(cls.ticket_type)
+    }
     setActionLoading(null)
   }
 
   async function handleCancelClass() {
     if (!cls) return
     setCancellingClass(true)
-    await supabase.from('classes').update({ is_cancelled: true }).eq('id', cls.id)
-    setConfirmCancelClass(false)
-    await fetchClass()
+    const { error } = await supabase.from('classes').update({ is_cancelled: true }).eq('id', cls.id)
+    if (error) {
+      toast.error('Не вдалося скасувати заняття')
+    } else {
+      setConfirmCancelClass(false)
+      await fetchClass()
+    }
     setCancellingClass(false)
   }
 
   async function handleRestoreClass() {
     if (!cls) return
     setCancellingClass(true)
-    await supabase.from('classes').update({ is_cancelled: false }).eq('id', cls.id)
-    await fetchClass()
+    const { error } = await supabase.from('classes').update({ is_cancelled: false }).eq('id', cls.id)
+    if (error) {
+      toast.error('Не вдалося відновити заняття')
+    } else {
+      await fetchClass()
+    }
     setCancellingClass(false)
   }
 
   async function handleDeleteClass() {
     if (!cls) return
     setDeletingClass(true)
-    await supabase.from('enrollments').delete().eq('class_id', cls.id)
-    await supabase.from('classes').delete().eq('id', cls.id)
+    const { error: e1 } = await supabase.from('enrollments').delete().eq('class_id', cls.id)
+    const { error: e2 } = await supabase.from('classes').delete().eq('id', cls.id)
+    if (e1 || e2) {
+      toast.error('Не вдалося видалити заняття')
+      setDeletingClass(false)
+      return
+    }
     router.push('/schedule')
   }
 

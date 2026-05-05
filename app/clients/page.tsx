@@ -1,14 +1,14 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
 import { formatClientName } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './clients.module.css'
 
-const supabase = createClient()
 
 const PAGE_SIZES = [20, 50, 100] as const
 type PageSize = typeof PAGE_SIZES[number]
@@ -95,6 +95,7 @@ export default function ClientsPage() {
   function handleSaved() {
     setShowModal(false)
     setEditingClient(null)
+    toast.success('Збережено')
     fetchClients(search, page, pageSize)
   }
 

@@ -3,12 +3,11 @@ import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
-const supabase = createClient()
 
 interface Transaction {
   id: string

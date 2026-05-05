@@ -1,9 +1,9 @@
 'use client'
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { useState, useId } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useModalFocus } from '@/hooks/useModalFocus'
 import styles from './HallModal.module.css'
 
-const supabase = createClient()
 
 interface Props {
   onClose: () => void
@@ -11,6 +11,8 @@ interface Props {
 }
 
 export default function HallModal({ onClose, onSaved }: Props) {
+  const titleId = useId()
+  const modalRef = useModalFocus(onClose)
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState('')
   const [description, setDescription] = useState('')
@@ -48,9 +50,9 @@ export default function HallModal({ onClose, onSaved }: Props) {
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal}>
+      <div className={styles.modal} ref={modalRef} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Новий зал</h2>
+          <h2 id={titleId} className={styles.title}>Новий зал</h2>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 2l12 12M14 2L2 14"/>

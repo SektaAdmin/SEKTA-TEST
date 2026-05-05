@@ -15,8 +15,8 @@ export default function Error({
 
   return (
     <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h2>Что-то пошло не так</h2>
-      <button onClick={reset}>Попробовать снова</button>
+      <h2>Щось пішло не так</h2>
+      <button onClick={reset}>Спробувати знову</button>
     </div>
   );
 }

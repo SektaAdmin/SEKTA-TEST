@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import HallModal from '@/components/HallModal'
 import type { Hall } from '@/types'
 import styles from './halls.module.css'
 
-const supabase = createClient()
 
 export default function HallsPage() {
   const [halls, setHalls] = useState<Hall[]>([])
@@ -36,7 +36,9 @@ export default function HallsPage() {
   async function handleToggle(id: string, newValue: boolean) {
     setToggling(id)
     const { error } = await supabase.from('halls').update({ is_active: newValue }).eq('id', id)
-    if (!error) {
+    if (error) {
+      toast.error('Не вдалося змінити статус')
+    } else {
       setHalls(prev =>
         prev.map(h => h.id === id ? { ...h, is_active: newValue } : h)
       )
@@ -46,6 +48,7 @@ export default function HallsPage() {
 
   function handleSaved() {
     setShowModal(false)
+    toast.success('Збережено')
     fetchHalls()
   }
 

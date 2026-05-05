@@ -3,14 +3,16 @@ import { useState, useEffect, useMemo, useCallback, useId, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import { useTickets } from '@/hooks/useTickets'
+import { useTrainers } from '@/hooks/useTrainers'
+import { fetchClientBalance } from '@/hooks/useClientBalance'
 import { formatClientLabel, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal } from '@/lib/formatters'
 import ClientSearchCombobox from './ClientSearchCombobox'
 import type { Client, Ticket, Trainer, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
 
-const supabase = createClient()
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash: 'Готівка',
@@ -111,8 +113,8 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     }
   })
 
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const { tickets, ensureTickets } = useTickets()
+  const { trainers, ensureTrainers } = useTrainers()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [clientBalance, setClientBalance] = useState<number | null>(preselectedClient?.balance ?? null)
@@ -139,34 +141,14 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
   const isDeduction = !ticketId && amountGiven < 0
 
-  const fetchClientBalance = useCallback(async (id: string) => {
-    const { data } = await supabase.from('clients').select('balance').eq('id', id).single()
-    setClientBalance(data?.balance ?? 0)
+  const loadClientBalance = useCallback(async (id: string) => {
+    const balance = await fetchClientBalance(id)
+    setClientBalance(balance ?? 0)
   }, [])
 
   useEffect(() => {
-    if (editSale?.client_id) fetchClientBalance(editSale.client_id)
-  }, [editSale?.client_id, fetchClientBalance])
-
-  async function ensureTickets() {
-    if (tickets.length > 0) return
-    const { data } = await supabase
-      .from('tickets')
-      .select('id,name,ticket_type,sessions,price')
-      .eq('is_active', true)
-      .order('name')
-    setTickets(data ?? [])
-  }
-
-  async function ensureTrainers() {
-    if (trainers.length > 0) return
-    const { data } = await supabase
-      .from('trainers')
-      .select('id,name')
-      .eq('is_active', true)
-      .order('name')
-    setTrainers(data ?? [])
-  }
+    if (editSale?.client_id) loadClientBalance(editSale.client_id)
+  }, [editSale?.client_id, loadClientBalance])
 
   function handleDepositToggle(on: boolean) {
     setPayFromDeposit(on)
@@ -356,7 +338,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               initialLabel={editSale?.client_name ?? (preselectedClient ? formatClientLabel(preselectedClient) : undefined)}
               onSelect={(client: Client) => {
                 setValue('client_id', client.id)
-                fetchClientBalance(client.id)
+                loadClientBalance(client.id)
               }}
               onClear={() => {
                 setValue('client_id', '')

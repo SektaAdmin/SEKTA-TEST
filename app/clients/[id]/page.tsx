@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
@@ -10,7 +10,6 @@ import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
 
-const supabase = createClient()
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash:          'Готівка',
