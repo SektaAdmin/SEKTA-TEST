@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import HallModal from '@/components/HallModal'
+import HallModal from '@/components/features/HallModal'
 import type { Hall } from '@/types'
 import styles from './halls.module.css'
 

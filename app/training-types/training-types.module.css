@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  padding: var(--topbar-py) var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
@@ -37,7 +37,7 @@
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  height: var(--control-h); padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -167,27 +167,27 @@
 }
 
 .toggleTrue:hover:not(:disabled):not(.toggleActiveTrue) {
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
   background: var(--accent-dim);
 }
 
 .toggleFalse:hover:not(:disabled):not(.toggleActiveFalse) {
-  border-color: rgba(255,92,92,0.4);
+  border-color: var(--danger-border-hover);
   color: var(--danger);
   background: var(--danger-dim);
 }
 
 .toggleActiveTrue {
   background: var(--accent-dim) !important;
-  border-color: rgba(200,240,96,0.5) !important;
+  border-color: var(--accent-border-strong) !important;
   color: var(--accent) !important;
   cursor: default;
 }
 
 .toggleActiveFalse {
   background: var(--danger-dim) !important;
-  border-color: rgba(255,92,92,0.5) !important;
+  border-color: var(--danger-border-strong) !important;
   color: var(--danger) !important;
   cursor: default;
 }
@@ -265,7 +265,7 @@
 }
 .archivedRow:hover .restoreBtn { opacity: 1; }
 .restoreBtn:hover {
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
   background: var(--accent-dim);
 }

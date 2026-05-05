@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 28px;
+  padding: var(--topbar-py) var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
@@ -205,11 +205,11 @@
 }
 
 /* ── Balance / session values ───────────────────────────────── */
-.balancePos  { color: #78d97b; font-weight: 500; font-size: 22px; font-family: var(--mono); }
+.balancePos  { color: var(--success); font-weight: 500; font-size: 22px; font-family: var(--mono); }
 .balanceNeg  { color: var(--danger); font-weight: 500; font-size: 22px; font-family: var(--mono); }
 .balanceZero { color: var(--text-3); font-weight: 500; font-size: 22px; font-family: var(--mono); }
 
-.sessionPos  { color: #78d97b; font-weight: 600; font-size: 18px; font-family: var(--mono); }
+.sessionPos  { color: var(--success); font-weight: 600; font-size: 18px; font-family: var(--mono); }
 .sessionNeg  { color: var(--danger); font-weight: 600; font-size: 18px; font-family: var(--mono); }
 .sessionZero { color: var(--text-3); font-weight: 600; font-size: 18px; font-family: var(--mono); }
 
@@ -275,7 +275,7 @@
   white-space: nowrap;
   transition: border-color 0.15s, background 0.15s;
 }
-.btnEdit:hover { border-color: var(--border-hover); background: #242424; }
+.btnEdit:hover { border-color: var(--border-hover); background: var(--bg-3); }
 
 .btnSecondary {
   height: 28px;
@@ -360,7 +360,7 @@
 .confirmOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -420,7 +420,7 @@
   background: var(--danger);
   border: none;
   border-radius: var(--radius-sm);
-  color: #fff;
+  color: var(--white);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -439,19 +439,19 @@
   white-space: nowrap;
 }
 .badgeCash    { background: rgba(200,240,96,0.12); color: var(--accent); }
-.badgeFop     { background: rgba(96,160,240,0.1);  color: #60a0f0; }
-.badgeCard    { background: rgba(240,180,96,0.1);  color: #f0b460; }
-.badgeDeposit { background: rgba(168,85,247,0.1);  color: #a855f7; }
+.badgeFop     { background: var(--fop-dim);  color: var(--fop); }
+.badgeCard    { background: var(--card-dim);  color: var(--card); }
+.badgeDeposit { background: var(--deposit-dim);  color: var(--deposit); }
 
 /* ── Table number cells ─────────────────────────────────────── */
 .numCell { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
 
 /* ── Deposit delta & balance-after ─────────────────────────── */
-.deltaPos  { color: #22c55e; font-weight: 500; }
+.deltaPos  { color: var(--success); font-weight: 500; }
 .deltaNeg  { color: var(--danger); font-weight: 500; }
 
 /* ── Operation type labels (no-ticket rows) ─────────────────── */
-.opTopup     { color: #22c55e; font-size: 12px; }
+.opTopup     { color: var(--success); font-size: 12px; }
 .opDeduction { color: var(--danger); font-size: 12px; }
 
 /* ── Accordion ──────────────────────────────────────────────── */

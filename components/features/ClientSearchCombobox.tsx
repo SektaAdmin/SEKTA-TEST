@@ -3,7 +3,6 @@ import { useState, useRef, useCallback, useId } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatClientLabel } from '@/lib/formatters'
 import type { Client } from '@/types'
-import styles from './ClientSearchCombobox.module.css'
 
 
 interface Props {
@@ -34,12 +33,8 @@ async function searchClients(q: string): Promise<Client[]> {
 
   const [a, b] = parts
   const [r1, r2] = await Promise.all([
-    supabase.from('clients').select('id,first_name,last_name,phone')
-      .ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`)
-      .order('last_name').limit(10),
-    supabase.from('clients').select('id,first_name,last_name,phone')
-      .ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`)
-      .order('last_name').limit(10),
+    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`).order('last_name').limit(10),
+    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`).order('last_name').limit(10),
   ])
   const seen = new Set<string>()
   return [...(r1.data ?? []), ...(r2.data ?? [])].filter(c => {
@@ -49,14 +44,9 @@ async function searchClients(q: string): Promise<Client[]> {
   })
 }
 
-export default function ClientSearchCombobox({
-  inputId,
-  initialLabel = '',
-  onSelect,
-  onClear,
-  error,
-  disabled,
-}: Props) {
+const inputCls = 'w-full px-3 py-2 bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
+
+export default function ClientSearchCombobox({ inputId, initialLabel = '', onSelect, onClear, error, disabled }: Props) {
   const listboxId = useId()
   const [search, setSearch] = useState(initialLabel)
   const [results, setResults] = useState<Client[]>([])
@@ -93,9 +83,7 @@ export default function ClientSearchCombobox({
     if (blurTimer.current) clearTimeout(blurTimer.current)
     if (search.trim() && !isSelected) {
       setIsOpen(true)
-      if (!results.length) {
-        searchClients(search).then(r => { setResults(r); setActiveIndex(-1) })
-      }
+      if (!results.length) searchClients(search).then(r => { setResults(r); setActiveIndex(-1) })
     }
   }
 
@@ -105,25 +93,18 @@ export default function ClientSearchCombobox({
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!isOpen || !results.length) return
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setActiveIndex(i => Math.min(i + 1, results.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setActiveIndex(i => Math.max(i - 1, -1))
-    } else if (e.key === 'Enter' && activeIndex >= 0) {
-      e.preventDefault()
-      handleSelect(results[activeIndex])
-    } else if (e.key === 'Escape') {
-      setIsOpen(false)
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(i => Math.min(i + 1, results.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(i => Math.max(i - 1, -1)) }
+    else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); handleSelect(results[activeIndex]) }
+    else if (e.key === 'Escape') setIsOpen(false)
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className="relative">
       <input
         id={inputId}
         type="text"
+        className={inputCls}
         value={search}
         onChange={e => handleInput(e.target.value)}
         onFocus={handleFocus}
@@ -141,28 +122,28 @@ export default function ClientSearchCombobox({
       {isOpen && search.trim() && (
         <div
           id={listboxId}
-          className={styles.dropdown}
+          className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-2)] border border-[0.5px] border-[var(--border-hover)] rounded-[var(--radius-sm)] shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-50 max-h-[200px] overflow-y-auto"
           role="listbox"
           aria-label="Результати пошуку"
         >
           {results.length === 0 ? (
-            <div className={styles.empty}>Нічого не знайдено</div>
+            <div className="px-3 py-2.5 text-[12px] text-[var(--text-3)]">Нічого не знайдено</div>
           ) : results.map((c, i) => (
             <div
               key={c.id}
               id={`csc-opt-${i}`}
-              className={`${styles.option}${i === activeIndex ? ` ${styles.optionActive}` : ''}`}
+              className={`flex items-center justify-between px-3 py-2.5 text-[13px] cursor-pointer transition-colors duration-100 ${i === activeIndex ? 'bg-[var(--accent-dim)] text-[var(--accent)]' : 'text-[var(--text)] hover:bg-[var(--bg-3)]'}`}
               onMouseDown={() => handleSelect(c)}
               role="option"
               aria-selected={i === activeIndex}
             >
-              {formatClientLabel(c)}
-              {c.phone && <span className={styles.phone}>{c.phone}</span>}
+              <span>{formatClientLabel(c)}</span>
+              {c.phone && <span className="text-[11px] text-[var(--text-3)] ml-2">{c.phone}</span>}
             </div>
           ))}
         </div>
       )}
-      {error && <p className={styles.errorHint} role="alert">{error}</p>}
+      {error && <p className="text-[11px] text-[var(--danger)] mt-0.5" role="alert">{error}</p>}
     </div>
   )
 }

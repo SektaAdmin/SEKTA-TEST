@@ -1,21 +1,28 @@
 'use client'
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+=======
+import { useState } from 'react'
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
 import Sidebar from '@/components/Sidebar'
-import TicketModal from '@/components/TicketModal'
-import type { Ticket } from '@/types'
+import TicketModal from '@/components/features/TicketModal'
+import { useTickets } from '@/hooks/useTickets'
+import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import styles from './tickets.module.css'
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
 export default function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
+  const { tickets, loading, fetchError, toggling, toggle, refetch } = useTickets()
+  const { trainingTypes } = useTrainingTypes()
   const [showModal, setShowModal] = useState(false)
-  const [toggling, setToggling] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
+<<<<<<< HEAD
   const fetchTickets = useCallback(async () => {
     setLoading(true)
     setFetchError(null)
@@ -42,12 +49,20 @@ export default function TicketsPage() {
       setTickets(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }
     setToggling(null)
+=======
+  function handleToggle(id: string, newValue: boolean) {
+    toggle(id, newValue)
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
   }
 
   function handleSaved() {
     setShowModal(false)
+<<<<<<< HEAD
     toast.success('Збережено')
     fetchTickets()
+=======
+    refetch()
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
   }
 
   const active = tickets.filter(t => t.is_active)
@@ -187,6 +202,7 @@ export default function TicketsPage() {
         <TicketModal
           onClose={() => setShowModal(false)}
           onSaved={handleSaved}
+          trainingTypes={trainingTypes.filter(t => t.is_active)}
         />
       )}
     </div>

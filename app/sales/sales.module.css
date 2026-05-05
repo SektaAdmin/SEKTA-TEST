@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  padding: var(--topbar-py) var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
@@ -36,7 +36,7 @@
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  height: var(--control-h); padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -73,7 +73,7 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 12px 7px 30px;
+  height: var(--control-h); padding: 0 12px 0 30px;
   color: var(--text);
   font-size: 13px;
   font-family: var(--font);
@@ -99,7 +99,7 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
+  height: var(--control-h); padding: 0 10px;
   color: var(--text);
   font-size: 13px;
   font-family: var(--font);
@@ -177,27 +177,41 @@
 .trainer { color: var(--text-2) !important; }
 
 .deposit { font-family: var(--mono); font-size: 13px !important; white-space: nowrap; }
+<<<<<<< HEAD
 .depositPos { color: var(--color-positive); font-weight: 500; }
 .depositNeg { color: var(--danger); font-weight: 500; }
 .depositZero { color: var(--text-3); }
 .depositLabel { color: var(--text-3); font-style: italic; font-size: 12px; }
 .opTopup     { color: var(--color-positive); font-size: 12px; }
+=======
+.depositPos { color: var(--success); font-weight: 500; }
+.depositNeg { color: var(--danger); font-weight: 500; }
+.depositZero { color: var(--text-3); }
+.depositLabel { color: var(--text-3); font-style: italic; font-size: 12px; }
+.opTopup     { color: var(--success); font-size: 12px; }
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
 .opDeduction { color: var(--danger); font-size: 12px; }
 .sessions    { font-family: var(--mono); font-size: 13px !important; }
 
 .badge {
   display: inline-block;
   padding: 3px 9px;
-  border-radius: 20px;
+  border-radius: var(--badge-radius);
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .badgeCash { background: rgba(200,240,96,0.12); color: var(--accent); }
+<<<<<<< HEAD
 .badgeFop { background: rgba(96,160,240,0.1); color: var(--color-fop); }
 .badgeCard { background: rgba(240,180,96,0.1); color: var(--color-card); }
 .badgeDeposit { background: rgba(168,85,247,0.1); color: var(--color-deposit); }
+=======
+.badgeFop { background: var(--fop-dim); color: var(--fop); }
+.badgeCard { background: var(--card-dim); color: var(--card); }
+.badgeDeposit { background: var(--deposit-dim); color: var(--deposit); }
+>>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
 
 .actions { display: flex; gap: 6px; }
 
@@ -205,8 +219,8 @@
   background: transparent;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: var(--btn-sm-py) var(--btn-sm-px);
+  font-size: var(--btn-sm-font);
   cursor: pointer;
   color: var(--text-2);
   transition: border-color 0.12s, color 0.12s, background 0.12s;
@@ -218,7 +232,7 @@
 .confirmOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,7 +289,7 @@
   border: none;
   border-radius: var(--radius-sm);
   padding: 7px 14px;
-  color: #fff;
+  color: var(--white);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -331,7 +345,7 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
+  height: var(--control-h); padding: 0 10px;
   color: var(--text-2);
   font-size: 13px;
   font-family: var(--font);
@@ -363,7 +377,7 @@
 
 .pageBtnActive {
   background: var(--accent-dim) !important;
-  border-color: rgba(200,240,96,0.35) !important;
+  border-color: var(--accent-border-hover) !important;
   color: var(--accent) !important;
   font-weight: 500;
 }

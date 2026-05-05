@@ -4,34 +4,40 @@
 
 .main {
   flex: 1;
-  margin-left: 196px;
-  padding: 32px 40px;
-  overflow-y: auto;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  padding: var(--topbar-py) var(--topbar-px);
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .title { font-size: 16px; font-weight: 500; color: var(--text); margin: 0; }
 
 .btnNew {
-  padding: 8px 16px;
+  height: var(--control-h); padding: 0 14px;
   background: var(--accent);
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: opacity 0.15s;
 }
 .btnNew:hover { opacity: 0.85; }
 
-.content { display: flex; flex-direction: column; gap: 24px; }
+.content { display: flex; flex-direction: column; gap: 24px; padding: 24px 28px; }
 
 .empty { color: var(--text-2); font-size: 14px; padding: 32px 0; }
 
@@ -47,7 +53,7 @@
 .table thead tr { background: var(--bg-2); }
 
 .table th {
-  padding: 11px 16px;
+  padding: 10px 16px;
   text-align: left;
   color: var(--text-2);
   font-weight: 500;
@@ -62,9 +68,9 @@
   transition: background 0.1s;
 }
 .table tbody tr:last-child { border-bottom: none; }
-.table tbody tr:hover { background: var(--bg-2); }
+.table tbody tr:hover { background: var(--table-hover-bg); }
 
-.table td { padding: 13px 16px; color: var(--text); vertical-align: middle; }
+.table td { padding: 12px 16px; color: var(--text); vertical-align: middle; }
 
 .name { font-weight: 500; }
 .mono { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
@@ -80,7 +86,7 @@
 .toggleBtns { display: flex; gap: 4px; }
 
 .toggleBtn {
-  padding: 3px 9px;
+  padding: var(--btn-sm-py) var(--btn-sm-px);
   border-radius: var(--radius-sm);
   border: 0.5px solid transparent;
   font-size: 11px;
@@ -91,13 +97,13 @@
   transition: all 0.15s;
 }
 
-.toggleTrue { color: var(--accent); border-color: rgba(200,240,96,0.25); }
+.toggleTrue { color: var(--accent); border-color: var(--accent-border); }
 .toggleTrue:hover:not(:disabled) { background: var(--accent-dim); }
 .toggleActiveTrue { background: var(--accent-dim); border-color: var(--accent); cursor: default; }
 
 .toggleFalse { color: var(--text-3); border-color: var(--border); }
-.toggleFalse:hover:not(:disabled) { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); }
-.toggleActiveFalse { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); cursor: default; }
+.toggleFalse:hover:not(:disabled) { color: var(--danger); border-color: var(--danger-border-hover); background: var(--danger-dim); }
+.toggleActiveFalse { color: var(--danger); border-color: var(--danger-border-hover); background: var(--danger-dim); cursor: default; }
 
 .toggleBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -106,12 +112,12 @@
 .archivedRow .name { color: var(--text-2); }
 
 .restoreBtn {
-  padding: 3px 10px;
+  padding: var(--btn-sm-py) var(--btn-sm-px);
   border-radius: var(--radius-sm);
   border: 0.5px solid var(--border);
   background: transparent;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--btn-sm-font);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -144,9 +150,8 @@
   align-items: center;
   justify-content: center;
   min-width: 20px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 10px;
+  padding: 1px 7px;
+  border-radius: var(--badge-radius);
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   font-size: 11px;

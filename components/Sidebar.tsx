@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import styles from './Sidebar.module.css'
@@ -80,14 +81,14 @@ export default function Sidebar() {
       <div className={styles.logo}>SEKTA</div>
       <nav className={styles.nav}>
         {nav.map(item => (
-          <a
+          <Link
             key={item.href}
             href={item.href}
             className={`${styles.item} ${pathname.startsWith(item.href) ? styles.active : ''}`}
           >
             <span className={styles.icon}>{item.icon}</span>
             {item.label}
-          </a>
+          </Link>
         ))}
       </nav>
       <button className={styles.logout} onClick={handleLogout}>
