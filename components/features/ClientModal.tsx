@@ -10,8 +10,8 @@ import type { Client } from '@/types'
 
 const supabase = createClient()
 
-const inputCls = 'w-full px-3 py-[9px] bg-[var(--bg)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
-const labelCls = 'text-[12px] font-medium text-[var(--text-2)]'
+const inputCls = 'w-full px-3 py-2 bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] font-[var(--font)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
+const labelCls = 'text-[11px] text-[var(--text-2)] uppercase tracking-[0.04em]'
 const errorHintCls = 'text-[11px] text-[var(--danger)] mt-0.5'
 
 interface Transaction {
@@ -157,14 +157,14 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[0.5px] border-[var(--border)]">
-          <h2 id={titleId} className="text-[15px] font-semibold text-[var(--text)] m-0">
+        <div className="flex items-center justify-between px-5 pt-[18px] pb-4 border-b border-[0.5px] border-[var(--border)]">
+          <h2 id={titleId} className="text-[14px] font-medium text-[var(--text)] m-0">
             {isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
           </h2>
-          <button onClick={onClose} aria-label="Закрити" className="text-[var(--text-3)] hover:text-[var(--text)] transition-colors text-[16px] leading-none cursor-pointer bg-transparent border-none">✕</button>
+          <button onClick={onClose} aria-label="Закрити" className="border-none bg-transparent text-[var(--text-3)] cursor-pointer text-[14px] leading-none p-[2px] transition-colors duration-[120ms] hover:text-[var(--text)]">✕</button>
         </div>
 
-        <div className="flex flex-col gap-4 px-6 py-5 overflow-y-auto">
+        <div className="flex flex-col gap-4 px-5 py-4 overflow-y-auto">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="client-first-name" className={labelCls}>Ім'я <span className="text-[var(--danger)]">*</span></label>
@@ -247,7 +247,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
           {error && <p className="text-[12px] text-[var(--danger)] bg-[var(--danger-dim)] px-3 py-2 rounded-[var(--radius-sm)]" role="alert">{error}</p>}
         </div>
 
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-[0.5px] border-[var(--border)]">
+        <div className="flex justify-end gap-2 px-5 py-4 border-t border-[0.5px] border-[var(--border)]">
           <Button variant="secondary" onClick={onClose} disabled={loading}>Скасувати</Button>
           <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={loading}>
             {isEdit ? 'Оновити' : 'Зберегти'}

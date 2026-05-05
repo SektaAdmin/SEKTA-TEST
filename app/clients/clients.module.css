@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 28px;
+  padding: var(--topbar-py) var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
@@ -59,7 +59,7 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 30px 7px 30px;
+  height: var(--control-h); padding: 0 30px;
   color: var(--text);
   font-size: 13px;
   font-family: var(--font);
@@ -92,7 +92,7 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
+  height: var(--control-h); padding: 0 10px;
   color: var(--text-2);
   font-size: 13px;
   font-family: var(--font);
@@ -108,7 +108,7 @@
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  height: var(--control-h); padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -203,9 +203,9 @@
   background: transparent;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 5px 12px;
+  padding: var(--btn-sm-py) var(--btn-sm-px);
   color: var(--text-3);
-  font-size: 12px;
+  font-size: var(--btn-sm-font);
   font-family: var(--font);
   cursor: pointer;
   opacity: 0;
@@ -232,7 +232,7 @@
   display: inline-block;
   background: rgba(200,240,96,0.1);
   color: var(--accent);
-  border-radius: 20px;
+  border-radius: var(--badge-radius);
   padding: 2px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -243,7 +243,7 @@
   display: inline-block;
   background: var(--danger-dim);
   color: var(--danger);
-  border-radius: 20px;
+  border-radius: var(--badge-radius);
   padding: 2px 10px;
   font-size: 12px;
   font-weight: 500;

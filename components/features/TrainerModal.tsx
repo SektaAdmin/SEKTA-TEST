@@ -7,8 +7,8 @@ import Button from '@/components/ui/Button'
 
 const supabase = createClient()
 
-const inputCls = 'w-full px-3 py-2 bg-[var(--bg)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
-const labelCls = 'text-[12px] font-medium text-[var(--text-2)]'
+const inputCls = 'w-full px-3 py-2 bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] font-[var(--font)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
+const labelCls = 'text-[11px] text-[var(--text-2)] uppercase tracking-[0.04em]'
 const errorHintCls = 'text-[11px] text-[var(--danger)] mt-0.5'
 
 interface TrainerFormValues {
@@ -47,7 +47,7 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
@@ -58,8 +58,8 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
         aria-labelledby={titleId}
       >
         <div className="flex items-center justify-between px-5 py-[18px] border-b border-[0.5px] border-[var(--border)]">
-          <h2 id={titleId} className="text-[15px] font-semibold text-[var(--text)] m-0">Новий тренер</h2>
-          <button onClick={onClose} aria-label="Закрити" className="text-[var(--text-3)] hover:text-[var(--text)] transition-colors text-[16px] leading-none cursor-pointer bg-transparent border-none">✕</button>
+          <h2 id={titleId} className="text-[14px] font-medium text-[var(--text)] m-0">Новий тренер</h2>
+          <button onClick={onClose} aria-label="Закрити" className="border-none bg-transparent text-[var(--text-3)] cursor-pointer text-[14px] leading-none p-[2px] transition-colors duration-[120ms] hover:text-[var(--text)]">✕</button>
         </div>
 
         <div className="flex flex-col gap-4 px-5 py-4 overflow-y-auto">

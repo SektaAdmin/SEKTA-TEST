@@ -19,6 +19,14 @@
   --radius-sm: 6px;
   --font: 'Geologica', sans-serif;
   --mono: 'JetBrains Mono', monospace;
+  --control-h: 32px;
+  --topbar-py: 16px;
+  --topbar-px: 28px;
+  --btn-sm-py: 4px;
+  --btn-sm-px: 10px;
+  --btn-sm-font: 12px;
+  --table-hover-bg: var(--bg-3);
+  --badge-radius: 20px;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }

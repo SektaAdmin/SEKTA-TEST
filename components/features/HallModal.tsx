@@ -6,8 +6,8 @@ import Button from '@/components/ui/Button'
 
 const supabase = createClient()
 
-const inputCls = 'w-full px-3 py-2 bg-[var(--bg)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)]'
-const labelCls = 'text-[11px] font-medium text-[var(--text-2)] uppercase tracking-[0.06em]'
+const inputCls = 'w-full px-3 py-2 bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] font-[var(--font)] outline-none transition-colors duration-[120ms] placeholder:text-[var(--text-3)] focus:border-[var(--accent)]'
+const labelCls = 'text-[11px] text-[var(--text-2)] uppercase tracking-[0.04em]'
 
 interface Props {
   onClose: () => void
@@ -41,7 +41,7 @@ export default function HallModal({ onClose, onSaved }: Props) {
 
   return (
     <Modal onClose={onClose} title="Новий зал">
-      <div className="flex flex-col gap-4 px-6 py-5">
+      <div className="flex flex-col gap-4 px-5 py-4">
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>Назва залу *</label>
           <input className={inputCls} type="text" placeholder="Наприклад: Великий зал" value={name} onChange={e => setName(e.target.value)} autoFocus />
@@ -58,13 +58,11 @@ export default function HallModal({ onClose, onSaved }: Props) {
         </div>
 
         {error && (
-          <div className="text-[12px] text-[var(--danger)] px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--danger-dim)] border border-[0.5px] border-[rgba(255,92,92,0.25)]">
-            {error}
-          </div>
+          <p className="text-[12px] text-[var(--danger)] bg-[var(--danger-dim)] px-3 py-2 rounded-[var(--radius-sm)]" role="alert">{error}</p>
         )}
       </div>
 
-      <div className="flex justify-end gap-2 px-6 pb-5">
+      <div className="flex justify-end gap-2 px-5 py-4 border-t border-[0.5px] border-[var(--border)]">
         <Button variant="secondary" onClick={onClose} disabled={saving}>Скасувати</Button>
         <Button variant="primary" onClick={handleSubmit} loading={saving}>Зберегти</Button>
       </div>
