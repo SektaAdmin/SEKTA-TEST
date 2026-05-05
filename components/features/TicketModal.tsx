@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useId } from 'react'
+import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
@@ -22,23 +22,15 @@ interface TicketFormValues {
 interface Props {
   onClose: () => void
   onSaved: () => void
+  trainingTypes?: TrainingType[]
 }
 
-export default function TicketModal({ onClose, onSaved }: Props) {
+export default function TicketModal({ onClose, onSaved, trainingTypes: trainingTypesProp }: Props) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
-  const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
+  const [trainingTypes] = useState<TrainingType[]>(trainingTypesProp ?? [])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
-
-  useEffect(() => {
-    supabase
-      .from('training_types')
-      .select('id, code, label, is_active, sort_order, created_at')
-      .eq('is_active', true)
-      .order('sort_order')
-      .then(({ data }) => setTrainingTypes((data ?? []) as TrainingType[]))
-  }, [])
 
   const { register, handleSubmit, formState: { errors } } = useForm<TicketFormValues>({
     defaultValues: { name: '', ticket_type: '', sessions: '', price: '' },

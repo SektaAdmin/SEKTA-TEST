@@ -27,6 +27,9 @@ interface Props {
   onClose: () => void
   onSaved: () => void
   existing?: Class | null
+  trainers?: Trainer[]
+  halls?: Hall[]
+  trainingTypes?: TrainingType[]
 }
 
 function todayAt10(): string {
@@ -35,26 +38,14 @@ function todayAt10(): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T10:00`
 }
 
-export default function ClassModal({ onClose, onSaved, existing }: Props) {
+export default function ClassModal({ onClose, onSaved, existing, trainers: trainersProp, halls: hallsProp, trainingTypes: trainingTypesProp }: Props) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
-  const [trainers, setTrainers] = useState<Trainer[]>([])
-  const [halls, setHalls] = useState<Hall[]>([])
-  const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
+  const [trainers] = useState<Trainer[]>(trainersProp ?? [])
+  const [halls] = useState<Hall[]>(hallsProp ?? [])
+  const [trainingTypes] = useState<TrainingType[]>(trainingTypesProp ?? [])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
-
-  useEffect(() => {
-    Promise.all([
-      supabase.from('trainers').select('id, name, is_active, instagram_username, telegram_username').eq('is_active', true).order('name'),
-      supabase.from('halls').select('id, name, capacity, description, is_active').eq('is_active', true).order('name'),
-      supabase.from('training_types').select('id, code, label, is_active, sort_order, created_at').eq('is_active', true).order('sort_order'),
-    ]).then(([t, h, tt]) => {
-      setTrainers((t.data ?? []) as Trainer[])
-      setHalls((h.data ?? []) as Hall[])
-      setTrainingTypes((tt.data ?? []) as TrainingType[])
-    })
-  }, [])
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: existing ? {

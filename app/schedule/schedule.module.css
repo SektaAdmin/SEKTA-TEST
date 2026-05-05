@@ -266,7 +266,7 @@
   font-family: var(--mono);
 }
 
-.cardCountAlmost { color: #e0a040; }
+.cardCountAlmost { color: var(--warning); }
 .cardCountFull   { color: var(--danger); font-weight: 600; }
 
 .cancelledBadge {

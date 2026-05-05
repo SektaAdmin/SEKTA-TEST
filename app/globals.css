@@ -27,6 +27,31 @@
   --btn-sm-font: 12px;
   --table-hover-bg: var(--bg-3);
   --badge-radius: 20px;
+
+  /* Семантичні кольори */
+  --success: #22c55e;
+  --success-dim: rgba(34,197,94,0.1);
+  --warning: #e0a040;
+  --warning-dim: rgba(224,160,64,0.08);
+  --overlay-bg: rgba(0,0,0,0.6);
+  --white: #ffffff;
+
+  /* Кольори методів оплати */
+  --fop: #60a0f0;
+  --fop-dim: rgba(96,160,240,0.1);
+  --card: #f0b460;
+  --card-dim: rgba(240,180,96,0.1);
+  --deposit: #a855f7;
+  --deposit-dim: rgba(168,85,247,0.1);
+
+  /* Accent з різними прозорістю */
+  --accent-border: rgba(200,240,96,0.25);
+  --accent-border-hover: rgba(200,240,96,0.4);
+  --accent-border-strong: rgba(200,240,96,0.5);
+  --danger-border: rgba(255,92,92,0.3);
+  --danger-border-hover: rgba(255,92,92,0.4);
+  --danger-border-strong: rgba(255,92,92,0.5);
+  --border-strong: rgba(255,255,255,0.12);
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }

@@ -67,7 +67,7 @@
 
 .btnCancel {
   background: transparent;
-  border: 0.5px solid rgba(255,92,92,0.3);
+  border: 0.5px solid var(--danger-border);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--danger);
@@ -81,7 +81,7 @@
 
 .btnRestore {
   background: var(--accent-dim);
-  border: 0.5px solid rgba(200,240,96,0.3);
+  border: 0.5px solid var(--accent-border);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--accent);
@@ -108,8 +108,8 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: rgba(224, 160, 64, 0.08);
-  border: 0.5px solid rgba(224, 160, 64, 0.35);
+  background: var(--warning-dim);
+  border: 0.5px solid rgba(224,160,64,0.35);
   border-radius: var(--radius);
   padding: 12px 16px;
   font-size: 13px;
@@ -118,7 +118,7 @@
 }
 
 .calloutIcon {
-  color: #e0a040;
+  color: var(--warning);
   font-size: 14px;
   flex-shrink: 0;
   margin-top: 1px;
@@ -350,7 +350,7 @@
   white-space: nowrap;
 }
 
-.badgeEnrolled  { background: rgba(100,160,255,0.12); color: #64a0ff; }
+.badgeEnrolled  { background: rgba(100,160,255,0.12); color: var(--fop); }
 .badgeAttended  { background: var(--accent-dim); color: var(--accent); }
 .badgeCancelled { background: rgba(255,255,255,0.05); color: var(--text-3); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
@@ -381,13 +381,13 @@
 }
 .btnAttend:hover:not(:disabled) {
   background: var(--accent-dim);
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
 }
 
 .btnNoshow:hover:not(:disabled) {
   background: var(--danger-dim);
-  border-color: rgba(255,92,92,0.4);
+  border-color: var(--danger-border-hover);
   color: var(--danger);
 }
 
@@ -397,9 +397,9 @@
 }
 
 .btnReEnroll:hover:not(:disabled) {
-  background: rgba(100,160,255,0.1);
+  background: var(--fop-dim);
   border-color: rgba(100,160,255,0.3);
-  color: #64a0ff;
+  color: var(--fop);
 }
 
 .btnAttend:disabled,

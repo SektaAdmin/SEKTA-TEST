@@ -1,52 +1,24 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import TicketModal from '@/components/features/TicketModal'
-import type { Ticket } from '@/types'
+import { useTickets } from '@/hooks/useTickets'
+import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import styles from './tickets.module.css'
 
-const supabase = createClient()
-
 export default function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
+  const { tickets, loading, fetchError, toggling, toggle, refetch } = useTickets()
+  const { trainingTypes } = useTrainingTypes()
   const [showModal, setShowModal] = useState(false)
-  const [toggling, setToggling] = useState<string | null>(null)
   const [archiveOpen, setArchiveOpen] = useState(false)
 
-  const fetchTickets = useCallback(async () => {
-    setLoading(true)
-    setFetchError(null)
-    const { data, error } = await supabase
-      .from('tickets')
-      .select('id, name, ticket_type, sessions, price, is_active')
-      .order('name', { ascending: true })
-    if (error) {
-      setFetchError(error.message)
-    } else {
-      setTickets((data as Ticket[]) ?? [])
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchTickets() }, [fetchTickets])
-
-  async function handleToggle(id: string, newValue: boolean) {
-    setToggling(id)
-    const { error } = await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
-    if (error) {
-      setFetchError(error.message)
-    } else {
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
-    }
-    setToggling(null)
+  function handleToggle(id: string, newValue: boolean) {
+    toggle(id, newValue)
   }
 
   function handleSaved() {
     setShowModal(false)
-    fetchTickets()
+    refetch()
   }
 
   const active = tickets.filter(t => t.is_active)
@@ -186,6 +158,7 @@ export default function TicketsPage() {
         <TicketModal
           onClose={() => setShowModal(false)}
           onSaved={handleSaved}
+          trainingTypes={trainingTypes.filter(t => t.is_active)}
         />
       )}
     </div>

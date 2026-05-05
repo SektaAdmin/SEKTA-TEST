@@ -218,7 +218,7 @@
 }
 
 .btnBalance:hover {
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
 }
 
@@ -230,7 +230,7 @@
 /* ── Balance badges ──────────────────────────────────────────── */
 .balancePos {
   display: inline-block;
-  background: rgba(200,240,96,0.1);
+  background: var(--accent-dim);
   color: var(--accent);
   border-radius: var(--badge-radius);
   padding: 2px 10px;
@@ -304,7 +304,7 @@
 
 .pageBtnActive {
   background: var(--accent-dim) !important;
-  border-color: rgba(200,240,96,0.35) !important;
+  border-color: var(--accent-border-hover) !important;
   color: var(--accent) !important;
   font-weight: 500;
 }

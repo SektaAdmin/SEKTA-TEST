@@ -66,6 +66,8 @@ interface Props {
   onSaved: () => void
   editSale?: EditSaleSnapshot
   preselectedClient?: Client
+  tickets?: Ticket[]
+  trainers?: Trainer[]
 }
 
 const saleSchema = z.object({
@@ -92,7 +94,7 @@ const labelCls = 'text-[11px] text-[var(--text-2)] tracking-[0.04em] uppercase'
 const errorHintCls = 'text-[11px] text-[var(--danger)] mt-0.5'
 const depositHintCls = 'text-[11px] font-medium tracking-[0.02em]'
 
-export default function SaleModal({ onClose, onSaved, editSale, preselectedClient }: Props) {
+export default function SaleModal({ onClose, onSaved, editSale, preselectedClient, tickets: ticketsProp, trainers: trainersProp }: Props) {
   const isEdit = !!editSale
   const titleId = useId()
 
@@ -111,8 +113,8 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     }
   })
 
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [tickets, setTickets] = useState<Ticket[]>(ticketsProp ?? [])
+  const [trainers, setTrainers] = useState<Trainer[]>(trainersProp ?? [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [clientBalance, setClientBalance] = useState<number | null>(preselectedClient?.balance ?? null)
@@ -148,12 +150,14 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
 
   async function ensureTickets() {
     if (tickets.length > 0) return
+    if (ticketsProp) return
     const { data } = await supabase.from('tickets').select('id,name,ticket_type,sessions,price').eq('is_active', true).order('name')
     setTickets(data ?? [])
   }
 
   async function ensureTrainers() {
     if (trainers.length > 0) return
+    if (trainersProp) return
     const { data } = await supabase.from('trainers').select('id,name').eq('is_active', true).order('name')
     setTrainers(data ?? [])
   }

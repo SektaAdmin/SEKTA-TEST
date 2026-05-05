@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/features/ClassModal'
+import { useTrainers } from '@/hooks/useTrainers'
+import { useHalls } from '@/hooks/useHalls'
+import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import type { Class } from '@/types'
 import styles from './schedule.module.css'
 
@@ -121,6 +124,13 @@ function formatWeekRange(days: Date[]) {
 
 export default function SchedulePage() {
   const router = useRouter()
+  const { trainers } = useTrainers()
+  const { halls } = useHalls()
+  const { trainingTypes } = useTrainingTypes()
+  const activeTrainers = trainers.filter(t => t.is_active)
+  const activeHalls = halls.filter(h => h.is_active)
+  const activeTrainingTypes = trainingTypes.filter(t => t.is_active)
+
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
@@ -160,12 +170,10 @@ export default function SchedulePage() {
   useEffect(() => { fetchClasses() }, [fetchClasses])
 
   useEffect(() => {
-    supabase.from('training_types').select('code, label').then(({ data }) => {
-      const map: Record<string, string> = {}
-      for (const t of data ?? []) map[t.code] = t.label
-      setTypeLabels(map)
-    })
-  }, [])
+    const map: Record<string, string> = {}
+    for (const t of trainingTypes) map[t.code] = t.label
+    setTypeLabels(map)
+  }, [trainingTypes])
 
   useEffect(() => {
     function updateNow() {
@@ -316,6 +324,9 @@ export default function SchedulePage() {
         <ClassModal
           onClose={() => setShowModal(false)}
           onSaved={() => { setShowModal(false); fetchClasses() }}
+          trainers={activeTrainers}
+          halls={activeHalls}
+          trainingTypes={activeTrainingTypes}
         />
       )}
     </div>

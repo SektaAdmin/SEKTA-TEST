@@ -97,13 +97,13 @@
   transition: all 0.15s;
 }
 
-.toggleTrue { color: var(--accent); border-color: rgba(200,240,96,0.25); }
+.toggleTrue { color: var(--accent); border-color: var(--accent-border); }
 .toggleTrue:hover:not(:disabled) { background: var(--accent-dim); }
 .toggleActiveTrue { background: var(--accent-dim); border-color: var(--accent); cursor: default; }
 
 .toggleFalse { color: var(--text-3); border-color: var(--border); }
-.toggleFalse:hover:not(:disabled) { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); }
-.toggleActiveFalse { color: var(--danger); border-color: rgba(255,92,92,0.4); background: var(--danger-dim); cursor: default; }
+.toggleFalse:hover:not(:disabled) { color: var(--danger); border-color: var(--danger-border-hover); background: var(--danger-dim); }
+.toggleActiveFalse { color: var(--danger); border-color: var(--danger-border-hover); background: var(--danger-dim); cursor: default; }
 
 .toggleBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 

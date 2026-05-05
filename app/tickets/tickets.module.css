@@ -142,27 +142,27 @@
 }
 
 .toggleTrue:hover:not(:disabled):not(.toggleActiveTrue) {
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
   background: var(--accent-dim);
 }
 
 .toggleFalse:hover:not(:disabled):not(.toggleActiveFalse) {
-  border-color: rgba(255,92,92,0.4);
+  border-color: var(--danger-border-hover);
   color: var(--danger);
   background: var(--danger-dim);
 }
 
 .toggleActiveTrue {
   background: var(--accent-dim) !important;
-  border-color: rgba(200,240,96,0.5) !important;
+  border-color: var(--accent-border-strong) !important;
   color: var(--accent) !important;
   cursor: default;
 }
 
 .toggleActiveFalse {
   background: var(--danger-dim) !important;
-  border-color: rgba(255,92,92,0.5) !important;
+  border-color: var(--danger-border-strong) !important;
   color: var(--danger) !important;
   cursor: default;
 }
@@ -250,7 +250,7 @@
 }
 .archivedRow:hover .restoreBtn { opacity: 1; }
 .restoreBtn:hover {
-  border-color: rgba(200,240,96,0.4);
+  border-color: var(--accent-border-hover);
   color: var(--accent);
   background: var(--accent-dim);
 }

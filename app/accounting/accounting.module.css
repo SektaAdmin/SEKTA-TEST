@@ -68,7 +68,7 @@
 .preset:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
 .presetActive {
   background: var(--accent-dim) !important;
-  border-color: rgba(200, 240, 96, 0.35) !important;
+  border-color: var(--accent-border-hover) !important;
   color: var(--accent) !important;
 }
 
@@ -128,7 +128,7 @@
 }
 
 .cardTotal {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-strong);
   background: var(--bg-3);
 }
 
@@ -149,9 +149,9 @@
 }
 
 .valCash    { color: var(--accent); }
-.valFop     { color: #60a0f0; }
-.valCard    { color: #f0b460; }
-.valDeposit { color: #a855f7; }
+.valFop     { color: var(--fop); }
+.valCard    { color: var(--card); }
+.valDeposit { color: var(--deposit); }
 
 /* ── Table ───────────────────────────────────────────────────── */
 .tableWrap {

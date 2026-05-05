@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/features/SaleModal'
+import { useTickets } from '@/hooks/useTickets'
+import { useTrainers } from '@/hooks/useTrainers'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
@@ -39,6 +41,11 @@ function getPageRange(current: number, total: number): (number | '...')[] {
 }
 
 export default function SalesPage() {
+  const { tickets } = useTickets()
+  const { trainers } = useTrainers()
+  const activeTickets = tickets.filter(t => t.is_active)
+  const activeTrainers = trainers.filter(t => t.is_active)
+
   const [sales, setSales] = useState<Sale[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -358,6 +365,8 @@ export default function SalesPage() {
         <SaleModal
           onClose={() => { setShowModal(false); setEditSale(null) }}
           onSaved={handleSaved}
+          tickets={activeTickets}
+          trainers={activeTrainers}
           editSale={editSale ? {
             id: editSale.id,
             client_id: editSale.client_id,
