@@ -165,6 +165,7 @@ export default function SalesPage() {
 
     setDeleteId(null)
     setDeleting(false)
+    toast.success('Продаж видалено')
     fetchSales(page, pageSize, search, dateFrom, dateTo)
   }
 
@@ -234,11 +235,16 @@ export default function SalesPage() {
 
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.empty}>Завантаження...</div>
+            <div className={styles.loading}><span /><span /><span /></div>
           ) : fetchError ? (
             <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : sales.length === 0 ? (
-            <div className={styles.empty}>Продажів ще немає</div>
+            <div className={styles.empty}>
+              <span>{search || dateFrom || dateTo ? 'За вашим фільтром нічого не знайдено' : 'Продажів ще немає'}</span>
+              {!search && !dateFrom && !dateTo && (
+                <button className={styles.btnNew} onClick={() => { setEditSale(null); setShowModal(true) }}>+ Записати продаж</button>
+              )}
+            </div>
           ) : (
             <>
             <div className={styles.tableWrap}>

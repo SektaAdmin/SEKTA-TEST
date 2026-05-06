@@ -140,10 +140,18 @@ export default function ClientsPage() {
 
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.empty}>Завантаження...</div>
+            <div className={styles.loading}>
+              <span /><span /><span />
+            </div>
           ) : clients.length === 0 ? (
             <div className={styles.empty}>
-              {search ? `За запитом «${search}» нічого не знайдено` : 'Клієнтів ще немає'}
+              {search
+                ? `За запитом «${search}» нічого не знайдено`
+                : <>
+                    <span>Клієнтів ще немає</span>
+                    <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати клієнта</button>
+                  </>
+              }
             </div>
           ) : (
             <>

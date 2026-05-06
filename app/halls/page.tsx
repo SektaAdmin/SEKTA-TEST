@@ -68,11 +68,14 @@ export default function HallsPage() {
 
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.empty}>Завантаження...</div>
+            <div className={styles.loading}><span /><span /><span /></div>
           ) : fetchError ? (
             <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : active.length === 0 ? (
-            <div className={styles.empty}>Активних залів немає</div>
+            <div className={styles.empty}>
+              <span>Активних залів немає</span>
+              <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати зал</button>
+            </div>
           ) : (
             <div className={styles.tableWrap}>
               <table className={styles.table}>

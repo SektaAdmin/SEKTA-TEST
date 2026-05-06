@@ -69,6 +69,11 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
 
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1); }
+}
+
 @keyframes overlayIn {
   from { opacity: 0; }
   to   { opacity: 1; }

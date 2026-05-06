@@ -39,7 +39,34 @@
 
 .content { display: flex; flex-direction: column; gap: 24px; padding: 24px 28px; }
 
-.empty { color: var(--text-2); font-size: 14px; padding: 32px 0; }
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 40px 0;
+}
+
+.loading span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+.loading span:nth-child(2) { animation-delay: 0.2s; }
+.loading span:nth-child(3) { animation-delay: 0.4s; }
 
 /* ── Table ── */
 .tableWrap {
