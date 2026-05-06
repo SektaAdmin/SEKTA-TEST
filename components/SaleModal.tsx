@@ -1,8 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect, useId, useRef } from 'react'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import { useTickets } from '@/hooks/useTickets'
-import { useTrainers } from '@/hooks/useTrainers'
+import { useRefs } from '@/contexts/RefsContext'
 import { useSaleForm, resolveSubmitValues } from '@/hooks/useSaleForm'
 import { useSaleSubmit } from '@/hooks/useSaleSubmit'
 import { formatClientLabel, parseDisplayToDatetimeLocal, datetimeLocalToDisplay } from '@/lib/formatters'
@@ -47,8 +46,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
   const datePickerRef = useRef<HTMLInputElement>(null)
   const modalRef = useModalFocus(onClose)
 
-  const { tickets, ensureTickets } = useTickets()
-  const { trainers, ensureTrainers } = useTrainers()
+  const { tickets, trainers } = useRefs()
   const [error, setError] = useState('')
 
   const {
@@ -183,7 +181,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             <select
               id="sale-ticket"
               value={ticketId}
-              onFocus={ensureTickets}
               onChange={e => handleTicketChange(e.target.value, tickets, payFromDeposit)}
               disabled={busy}
             >
@@ -253,7 +250,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               <select
                 id="sale-trainer"
                 value={trainerId}
-                onFocus={ensureTrainers}
                 onChange={e => setValue('trainer_id', e.target.value)}
                 disabled={busy}
               >

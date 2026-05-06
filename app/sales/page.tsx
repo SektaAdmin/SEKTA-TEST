@@ -4,8 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
-import { useTickets } from '@/hooks/useTickets'
-import { useTrainers } from '@/hooks/useTrainers'
+import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
@@ -39,8 +38,7 @@ function getPageRange(current: number, total: number): (number | '...')[] {
 }
 
 export default function SalesPage() {
-  const { tickets } = useTickets()
-  const { trainers } = useTrainers()
+  const { tickets, trainers } = useRefs()
   const activeTickets = tickets.filter(t => t.is_active)
   const activeTrainers = trainers.filter(t => t.is_active)
 

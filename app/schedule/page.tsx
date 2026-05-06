@@ -5,9 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
-import { useTrainers } from '@/hooks/useTrainers'
-import { useHalls } from '@/hooks/useHalls'
-import { useTrainingTypes } from '@/hooks/useTrainingTypes'
+import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import styles from './schedule.module.css'
 
@@ -124,9 +122,7 @@ function formatWeekRange(days: Date[]) {
 
 export default function SchedulePage() {
   const router = useRouter()
-  const { trainers } = useTrainers()
-  const { halls } = useHalls()
-  const { trainingTypes } = useTrainingTypes()
+  const { trainers, halls, trainingTypes } = useRefs()
   const activeTrainers = trainers.filter(t => t.is_active)
   const activeHalls = halls.filter(h => h.is_active)
   const activeTrainingTypes = trainingTypes.filter(t => t.is_active)
