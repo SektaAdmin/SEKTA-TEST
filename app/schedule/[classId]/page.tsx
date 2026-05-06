@@ -217,8 +217,14 @@ export default function ClassDetailPage() {
   async function handleDeleteClass() {
     if (!cls) return
     setDeletingClass(true)
-    const { error: e1 } = await supabase.from('enrollments').delete().eq('class_id', cls.id)
-    const { error: e2 } = await supabase.from('classes').delete().eq('id', cls.id)
+    const { error: e1 } = await supabase
+      .from('enrollments')
+      .update({ status: 'cancelled' })
+      .eq('class_id', cls.id)
+    const { error: e2 } = await supabase
+      .from('classes')
+      .update({ is_cancelled: true })
+      .eq('id', cls.id)
     if (e1 || e2) {
       toast.error('Не вдалося видалити заняття')
       setDeletingClass(false)
