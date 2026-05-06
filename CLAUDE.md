@@ -417,6 +417,7 @@ hooks/
 
 ## Notes for Developers
 
+0. **CLAUDE.md завжди актуальний** — після кожної задачі що змінює архітектуру, компоненти, хуки або DB — оновлювати CLAUDE.md в тому ж коміті.
 1. **RLS увімкнено** — authenticated = повний доступ. При нових таблицях: додавати GRANT + policy.
 2. **Грошовий баланс тільки через RPC** — `update_client_balance()`, не UPDATE напрямую. **Залишок занять тільки через `mark_attendance()`**.
 3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
