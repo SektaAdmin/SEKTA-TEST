@@ -123,7 +123,7 @@ halls (standalone reference)
 | sessions | integer | YES | — | **Snapshot** ticket.sessions |
 | price_paid | integer | NO | — | Фактически оплачено, >= 0 |
 | amount_given | integer | NO | — | Сумма, которую дал клиент, >= 0 |
-| payment_method | text | NO | — | Enum: `cash`, `fop`, `personal_card` |
+| payment_method | text | NO | — | Enum: `cash`, `fop`, `personal_card`, `deposit` |
 | notes | text | YES | — | Комментарий |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
@@ -193,56 +193,58 @@ halls (standalone reference)
 
 ## Stored Procedures
 
-### `update_client_balance(...)` — Атомарное изменение баланса
+### `create_sale(...)` — Атомарне створення продажу
 
-**Сигнатура:**
-```sql
-CREATE OR REPLACE FUNCTION public.update_client_balance(
-  p_client_id       uuid,
-  p_amount          numeric,
-  p_transaction_type varchar,
-  p_description     text    DEFAULT NULL,
-  p_related_sale_id uuid    DEFAULT NULL,
-  p_reason          text    DEFAULT NULL
-)
-RETURNS TABLE(
-  success        boolean,
-  new_balance    numeric,
-  transaction_id uuid,
-  error_message  text
-)
 ```
-
-**Что делает:**
-1. Блокирует строку клиента (`FOR UPDATE`)
-2. Проверяет credit_limit: отказывает если `balance + amount < -credit_limit`
-3. Записывает строку в `balance_transactions`
-4. Обновляет `clients.balance` и `clients.balance_updated_at`
-5. Возвращает `success=true/false` + `error_message` при ошибке
-
-**Использование:**
-```typescript
-const { data, error } = await supabase.rpc('update_client_balance', {
-  p_client_id: clientId,
-  p_amount: -1,                    // отрицательное = списание
-  p_transaction_type: 'deduction',
-  p_description: 'Session completed',
-  p_related_sale_id: saleId,       // опционально
-  p_reason: null,                  // опционально
-});
-
-if (data?.[0]?.success === false) {
-  console.error(data[0].error_message);
-}
+create_sale(p_client_id, p_ticket_id, p_trainer_id, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)
 ```
-
-**Вызывается из:** SaleModal.tsx (при записи продажи), ручная корректировка
+INSERT у `sales` + `update_client_balance` в одній транзакції.
 
 ---
 
-### `set_updated_at()` — Триггерная функция
+### `update_sale(...)` — Атомарне редагування продажу
 
-Обновляет `updated_at = now()` перед каждым UPDATE. Применена к: `clients`, `tickets`, `trainers`, `sales`.
+```
+update_sale(p_sale_id, p_client_id, p_ticket_id, p_trainer_id, p_ticket_name, p_ticket_price, p_sessions, p_ticket_type, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)
+```
+Реверс старого балансу + застосування нового в одній транзакції.
+
+---
+
+### `delete_sale(p_sale_id)` — Атомарне видалення продажу
+
+Видаляє запис + реверсує зміну балансу.
+
+---
+
+### `update_client_balance(...)` — Атомарне змінення балансу
+
+```
+update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, p_related_sale_id, p_reason)
+→ TABLE(success boolean, new_balance numeric, transaction_id uuid, error_message text)
+```
+
+1. Блокує рядок клієнта (`FOR UPDATE`)
+2. Перевіряє credit_limit: відмовляє якщо `balance + amount < -credit_limit`
+3. Записує рядок у `balance_transactions`
+4. Оновлює `clients.balance` і `clients.balance_updated_at`
+
+**Ніколи не UPDATE clients.balance напряму — тільки через цю функцію.**
+
+---
+
+### `mark_attendance(p_enrollment_id, p_sessions_used DEFAULT 1)` — Відвідуваність
+
+```
+→ TABLE(success boolean, error_message text)
+```
+Атомарно: перевіряє `client_session_balances`, декрементує сесії, ставить `status='attended'`. Повертає `success=false` якщо балансу недостатньо.
+
+---
+
+### `set_updated_at()` — Тригерна функція
+
+Оновлює `updated_at = now()` перед кожним UPDATE. Застосована до: `clients`, `tickets`, `trainers`, `sales`.
 
 ---
 
@@ -309,6 +311,88 @@ npm run dev      # Start dev server (localhost:3000)
 npm run build    # Build for production
 npm run start    # Start production server
 ```
+
+---
+
+## Pages (MVP Core)
+
+| Route | Назначение |
+|-------|-----------|
+## Frontend Architecture
+
+### Components
+
+```
+components/
+  Sidebar.tsx + Sidebar.module.css       — навігація (fixed, CSS Modules)
+  ClassModal.tsx + .module.css
+  ClientModal.tsx + .module.css
+  HallModal.tsx + .module.css
+  SaleModal.tsx + .module.css
+  TicketModal.tsx + .module.css
+  TrainerModal.tsx + .module.css
+  TrainingTypeModal.tsx + .module.css
+  features/
+    ClientSearchCombobox.tsx + .module.css  — використовується в /schedule/[classId]
+  ui/  — ВИДАЛЕНО (були Tailwind-версії, не використовувались)
+```
+
+**Правила:**
+- Модалки отримують довідникові дані (tickets, trainers, halls, trainingTypes) через props зі сторінок
+- Мутації (INSERT/UPDATE/RPC) залишаються всередині модалок
+- `ClientModal` і `ClientSearchCombobox` — виняток: їхній fetch специфічний і залишається всередині
+
+### Hooks
+
+```
+hooks/
+  useClients.ts       — список клієнтів
+  useClientBalance.ts — баланс конкретного клієнта
+  useSales.ts         — продажі
+  useTickets.ts       — тарифи
+  useTrainers.ts      — тренери
+  useHalls.ts         — зали
+  useTrainingTypes.ts — типи занять
+  useSaleForm.ts      — стан форми SaleModal
+  useSaleSubmit.ts    — сабміт SaleModal (create/update/delete)
+  useModalFocus.ts    — focus trap + Escape для всіх модалок
+```
+
+### CSS Design System
+
+Всі стилі через CSS Modules + змінні з `app/globals.css`. Жодних HEX/rgba напряму в `*.module.css`.
+
+**Розміри:**
+- `--control-h: 32px` — висота всіх inputs і кнопок
+- `--topbar-py: 16px`, `--topbar-px: 28px` — padding топбара (64px висота скрізь)
+- `--radius: 10px`, `--radius-sm: 6px`
+
+**Фони:**
+- `--bg: #0e0e0e`, `--bg-2: #161616`, `--bg-3: #1e1e1e`
+
+**Бордери:**
+- `--border`, `--border-hover`, `--border-strong`
+
+**Текст:**
+- `--text`, `--text-2`, `--text-3`
+
+**Акцент** (лаймовий `#c8f060`):
+- `--accent`, `--accent-dim`, `--accent-text`
+- `--accent-border`, `--accent-border-hover`, `--accent-border-strong`
+
+**Стани:**
+- `--danger` / `--danger-dim` / `--danger-border*`
+- `--success` / `--success-dim`
+- `--warning` / `--warning-dim`
+
+**Кольори методів оплати:**
+- `--fop` / `--fop-dim` — синій (ФОП)
+- `--card` / `--card-dim` — жовтогарячий (особиста картка)
+- `--deposit` / `--deposit-dim` — фіолетовий (депозит)
+
+**Анімації:**
+- `--motion-fast: 0.12s ease-out`, `--motion-standard: 0.18s ease-in-out`
+- `@keyframes overlayIn`, `@keyframes modalIn` — для модалок
 
 ---
 
