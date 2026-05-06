@@ -152,7 +152,13 @@ export default function ClassDetailPage() {
     })
 
     if (error) {
-      setEnrollError(error.message)
+      if (error.code === '23505') {
+        setEnrollError('Клієнт вже записаний на це заняття')
+      } else if (error.message?.includes('capacity_exceeded')) {
+        setEnrollError('Заняття вже заповнене')
+      } else {
+        setEnrollError('Помилка при записі клієнта')
+      }
       setEnrolling(false)
       return
     }
