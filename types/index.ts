@@ -73,6 +73,31 @@ export interface SaleFormData {
   notes: string
 }
 
+export interface ClassSeries {
+  id: string
+  type: 'template' | 'series'
+  ticket_type: string
+  trainer_id: string | null
+  hall_id: string | null
+  title: string | null
+  notes: string | null
+  capacity: number | null
+  duration_min: number
+  day_of_week: number   // 0=Нд..6=Сб
+  time_of_day: string   // HH:mm
+  created_at: string
+  trainers?: { name: string } | null
+  halls?: { name: string } | null
+  series_clients?: { count: number }[]
+}
+
+export interface SeriesClient {
+  id: string
+  series_id: string
+  client_id: string
+  created_at: string
+}
+
 export interface Hall {
   id: string
   name: string
@@ -92,6 +117,7 @@ export interface Class {
   capacity: number | null
   is_cancelled: boolean
   notes: string | null
+  series_id: string | null
   created_at: string
   updated_at: string
 }
@@ -100,7 +126,7 @@ export interface Enrollment {
   id: string
   class_id: string
   client_id: string
-  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow'
+  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
   sessions_used: number
   sale_id: string | null
   notes: string | null

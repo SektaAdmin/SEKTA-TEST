@@ -47,6 +47,15 @@ const nav = [
       <line x1="10.5" y1="1.5" x2="10.5" y2="4.5"/>
     </svg>
   )},
+  { href: '/schedule/templates', label: 'Шаблони', icon: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <rect x="2" y="2" width="12" height="12" rx="1.5"/>
+      <line x1="5" y1="6" x2="11" y2="6"/>
+      <line x1="5" y1="9" x2="9" y2="9"/>
+      <line x1="11" y1="9" x2="11" y2="13"/>
+      <line x1="9" y1="11" x2="13" y2="11"/>
+    </svg>
+  )},
   { href: '/halls', label: 'Зали', icon: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="1" y="5" width="14" height="9" rx="1.5"/>
@@ -84,7 +93,7 @@ export default function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
-            className={`${styles.item} ${pathname.startsWith(item.href) ? styles.active : ''}`}
+            className={`${styles.item} ${pathname === item.href || (item.href !== '/schedule' && pathname.startsWith(item.href)) ? styles.active : ''}`}
           >
             <span className={styles.icon}>{item.icon}</span>
             {item.label}

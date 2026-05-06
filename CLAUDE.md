@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-06
+- **Last Updated**: 2026-05-07 (recurring classes, waitlist, client enrollment from profile)
 
 ---
 
@@ -18,6 +18,8 @@ trainers ──┐
            ├──► sales ◄──── clients ◄──── balance_transactions
 tickets ───┘
 halls (standalone reference)
+class_series ──► classes ──► enrollments ◄──── clients
+training_types (standalone reference)
 ```
 
 ---
@@ -191,6 +193,70 @@ halls (standalone reference)
 
 ---
 
+### `class_series` — Шаблони серій занять
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| id | uuid | NO | gen_random_uuid() | PK |
+| type | text | NO | 'series' | `'template'` = постійний шаблон тижня; `'series'` = разова серія |
+| ticket_type | text | NO | — | |
+| trainer_id | uuid | YES | — | → trainers.id SET NULL |
+| hall_id | uuid | YES | — | → halls.id SET NULL |
+| title | text | YES | — | |
+| notes | text | YES | — | |
+| capacity | integer | YES | — | |
+| duration_min | integer | NO | 60 | |
+| day_of_week | smallint | NO | — | 0=Нд..6=Сб |
+| time_of_day | time | NO | — | |
+| created_at | timestamptz | NO | now() | |
+
+**RLS:** Відключено. GRANT на anon, authenticated.
+
+### `series_clients` — Постійники шаблонів
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| series_id | uuid | NO | → class_series.id CASCADE |
+| client_id | uuid | NO | → clients.id CASCADE |
+| created_at | timestamptz | NO | now() |
+
+**UNIQUE(series_id, client_id).** Використовується `generate_week()` для автозапису при виставленні тижня.
+
+**RLS:** Увімкнено. authenticated = повний доступ.
+
+### `classes` — Заняття
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| series_id | uuid | YES | → class_series.id SET NULL |
+| trainer_id | uuid | YES | → trainers.id |
+| hall_id | uuid | YES | → halls.id |
+| ticket_type | text | NO | |
+| title | text | YES | |
+| starts_at | timestamptz | NO | |
+| duration_min | integer | NO | default 60 |
+| capacity | integer | YES | |
+| is_cancelled | boolean | NO | default false |
+| notes | text | YES | |
+
+### `enrollments` — Записи клієнтів на заняття
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| class_id | uuid | NO | → classes.id |
+| client_id | uuid | NO | → clients.id |
+| status | text | NO | enrolled / attended / cancelled / noshow / **waitlist** |
+| sessions_used | integer | NO | default 0 |
+| sale_id | uuid | YES | |
+| notes | text | YES | |
+
+**Waitlist:** якщо зал повний при INSERT зі статусом `enrolled` — тригер `check_class_capacity` автоматично змінює статус на `waitlist`. Адмін вручну переводить в `enrolled`.
+
+---
+
 ## Stored Procedures
 
 ### `create_sale(...)` — Атомарне створення продажу
@@ -245,6 +311,17 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 ### `set_updated_at()` — Тригерна функція
 
 Оновлює `updated_at = now()` перед кожним UPDATE. Застосована до: `clients`, `tickets`, `trainers`, `sales`.
+
+---
+
+### `generate_week(p_start_date date, p_weeks int DEFAULT 1)` — Генерація тижня
+
+```
+→ TABLE(classes_created int, enrollments_created int)
+```
+Бере **тільки** `class_series WHERE type='template'`, генерує заняття на `p_weeks` тижнів починаючи з `p_start_date` (має бути понеділок). Ідемпотентна: повторний виклик на ту саму дату не створює дублікатів (UNIQUE index `uq_classes_series_date`). Автоматично записує `series_clients` в `enrollments` зі статусом `enrolled` (тригер `check_class_capacity` може перевести частину у `waitlist`).
+
+**GRANT EXECUTE** на authenticated, anon.
 
 ---
 
@@ -409,6 +486,7 @@ hooks/
 | `/halls` | Управление залами |
 | `/training-types` | Типи занять (довідник) |
 | `/schedule` | Розклад занять |
+| `/schedule/templates` | Шаблони тижня: create/edit class_series type='template', постійники, кнопка "Виставити тиждень" |
 | `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність |
 | `/accounting` | Облік надходжень |
 | `/accounting/trainers` | Розрахунок з тренерами |
@@ -428,4 +506,4 @@ hooks/
 
 ---
 
-**Last Updated**: 2026-05-06
+**Last Updated**: 2026-05-07
