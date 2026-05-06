@@ -9,7 +9,7 @@ import { useTickets } from '@/hooks/useTickets'
 import { useTrainers } from '@/hooks/useTrainers'
 import { fetchClientBalance } from '@/hooks/useClientBalance'
 import { formatClientLabel, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal } from '@/lib/formatters'
-import ClientSearchCombobox from './ClientSearchCombobox'
+import ClientSearchCombobox from './features/ClientSearchCombobox'
 import type { Client, Ticket, Trainer, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
 

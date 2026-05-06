@@ -19,15 +19,6 @@
   --radius-sm: 6px;
   --font: 'Geologica', sans-serif;
   --mono: 'JetBrains Mono', monospace;
-<<<<<<< HEAD
-  --motion-fast:     0.12s ease-out;
-  --motion-standard: 0.18s ease-in-out;
-  --color-positive: #22c55e;
-  --color-fop:      #60a0f0;
-  --color-card:     #f0b460;
-  --color-deposit:  #a855f7;
-  --overlay-bg:     rgba(0, 0, 0, 0.6);
-=======
   --control-h: 32px;
   --topbar-py: 16px;
   --topbar-px: 28px;
@@ -61,12 +52,16 @@
   --danger-border-hover: rgba(255,92,92,0.4);
   --danger-border-strong: rgba(255,92,92,0.5);
   --border-strong: rgba(255,255,255,0.12);
->>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
+
+  /* Анімації */
+  --motion-fast:     0.12s ease-out;
+  --motion-standard: 0.18s ease-in-out;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
 input, select, textarea, button { font-family: var(--font); font-size: 14px; }
+input, select, textarea { border: 0.5px solid var(--border); background: var(--bg-3); color: var(--text); border-radius: var(--radius-sm); }
 
 ::selection { background: var(--accent); color: var(--accent-text); }
 

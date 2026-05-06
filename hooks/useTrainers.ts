@@ -1,29 +1,7 @@
 'use client'
-<<<<<<< HEAD
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Trainer } from '@/types'
-
-export function useTrainers() {
-  const [trainers, setTrainers] = useState<Trainer[]>([])
-
-  const ensureTrainers = useCallback(async () => {
-    if (trainers.length > 0) return
-    const { data } = await supabase
-      .from('trainers')
-      .select('id,name')
-      .eq('is_active', true)
-      .order('name')
-    setTrainers(data ?? [])
-  }, [trainers.length])
-
-  return { trainers, ensureTrainers }
-=======
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
-import type { Trainer } from '@/types'
-
-const supabase = createClient()
 
 export function useTrainers() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
@@ -48,6 +26,12 @@ export function useTrainers() {
 
   useEffect(() => { fetchTrainers() }, [fetchTrainers])
 
+  // lazy load for modals — only fetches if not yet loaded
+  const ensureTrainers = useCallback(async () => {
+    if (trainers.length > 0) return
+    await fetchTrainers()
+  }, [trainers.length, fetchTrainers])
+
   async function toggle(id: string, newValue: boolean) {
     setToggling(id)
     const { error } = await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
@@ -59,6 +43,5 @@ export function useTrainers() {
     setToggling(null)
   }
 
-  return { trainers, loading, fetchError, toggling, toggle, refetch: fetchTrainers }
->>>>>>> ec0caa22057a2670095a5e3877fe9f98ecc07f42
+  return { trainers, loading, fetchError, toggling, toggle, refetch: fetchTrainers, ensureTrainers }
 }

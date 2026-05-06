@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import SaleModal from '@/components/features/SaleModal'
+import SaleModal from '@/components/SaleModal'
 import { useTickets } from '@/hooks/useTickets'
 import { useTrainers } from '@/hooks/useTrainers'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
@@ -366,8 +366,6 @@ export default function SalesPage() {
         <SaleModal
           onClose={() => { setShowModal(false); setEditSale(null) }}
           onSaved={handleSaved}
-          tickets={activeTickets}
-          trainers={activeTrainers}
           editSale={editSale ? {
             id: editSale.id,
             client_id: editSale.client_id,

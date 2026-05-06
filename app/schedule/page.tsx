@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
-import ClassModal from '@/components/features/ClassModal'
+import ClassModal from '@/components/ClassModal'
 import { useTrainers } from '@/hooks/useTrainers'
 import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
@@ -328,9 +328,6 @@ export default function SchedulePage() {
         <ClassModal
           onClose={() => setShowModal(false)}
           onSaved={() => { setShowModal(false); fetchClasses() }}
-          trainers={activeTrainers}
-          halls={activeHalls}
-          trainingTypes={activeTrainingTypes}
         />
       )}
     </div>
