@@ -1,9 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { TrainingType } from '@/types'
-
-const supabase = createClient()
 
 export function useTrainingTypes() {
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])

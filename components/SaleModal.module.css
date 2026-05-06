@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,7 +190,7 @@
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-.depositPos { color: #22c55e; }
+.depositPos { color: var(--success); }
 .depositNeg { color: var(--danger); }
 .depositZero { color: var(--text-3); }
 

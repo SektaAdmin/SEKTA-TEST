@@ -1,9 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Sale } from '@/types'
-
-const supabase = createClient()
 
 export const PAGE_SIZES = [20, 50, 100] as const
 export type PageSize = typeof PAGE_SIZES[number]

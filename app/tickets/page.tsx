@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import Sidebar from '@/components/Sidebar'
 import TicketModal from '@/components/TicketModal'
 import { useTickets } from '@/hooks/useTickets'
@@ -17,6 +18,7 @@ export default function TicketsPage() {
   function handleSaved() {
     setShowModal(false)
     refetch()
+    toast.success('Збережено')
   }
 
   const active = tickets.filter(t => t.is_active)
