@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-04-28
+- **Last Updated**: 2026-05-06
 
 ---
 
@@ -35,7 +35,6 @@ halls (standalone reference)
 | instagram_username | text | YES | — | Без @ и домена |
 | telegram_username | text | YES | — | Без @ |
 | balance | integer | YES | 0 | Денежный депозит (₴) |
-| sessions_balance | integer | NO | 0 | Остаток занятий; меняется через create/update/delete_sale |
 | credit_limit | numeric | YES | 10000 | Лимит отрицательного баланса, >= 0 |
 | balance_updated_at | timestamptz | YES | now() | Обновляется через update_client_balance() |
 | created_at | timestamptz | NO | now() | |
@@ -47,7 +46,19 @@ halls (standalone reference)
 - `idx_clients_last_name_trgm` (GIN gin_trgm_ops on last_name) — fuzzy search
 - `idx_clients_phone_trgm` (GIN gin_trgm_ops on phone) — fuzzy search
 
-**RLS:** Отключён (TODO: включить с role-based политиками)
+**RLS:** Увімкнено. Політика `authenticated_all`: authenticated = повний доступ, anon = нічого.
+
+---
+
+### `client_session_balances` — Залишки занять по типах
+
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| client_id | uuid | NO | — | → clients.id |
+| ticket_type | text | NO | — | Тип заняття (відповідає tickets.ticket_type) |
+| sessions_balance | integer | NO | 0 | Залишок занять; змінюється через mark_attendance |
+
+**Змінювати тільки через `mark_attendance()` RPC.**
 
 ---
 
@@ -238,7 +249,7 @@ if (data?.[0]?.success === false) {
 ## Security
 
 ### RLS
-**Статус: Отключён на всех таблицах.** Доступ контролируется только на уровне Supabase Auth (anon vs authenticated). TODO: включить RLS с role-based политиками.
+**Статус: Увімкнено на всіх таблицях.** Політика `authenticated_all`: authenticated = повний доступ, anon = нічого. При нових таблицях через міграцію — додавати `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO anon, authenticated`.
 
 ### Auth
 - JWT токены от Supabase Auth
@@ -249,10 +260,9 @@ if (data?.[0]?.success === false) {
 ## Business Logic
 
 ### Управление балансом
-- `clients.balance` — остаток занятий (integer)
-- Менять **только через `update_client_balance()`** — атомарно + логирует в `balance_transactions`
-- Никогда не обновлять `clients.balance` напрямую через UPDATE
-- `credit_limit` = 10000 по умолчанию (позволяет уйти в минус до -10000)
+- `clients.balance` — грошовий депозит (₴, integer). Змінювати **тільки через `update_client_balance()`** — атомарно + логує в `balance_transactions`. Ніколи не UPDATE напряму.
+- `client_session_balances` — залишки занять по типу (`ticket_type`). Змінювати **тільки через `mark_attendance()` RPC**.
+- `credit_limit` = 10000 по замовчуванню (дозволяє депозит до -10000)
 
 ### Деньги
 - `tickets.price` — в **гривнях** (₴), відображати як є
@@ -269,7 +279,7 @@ if (data?.[0]?.success === false) {
 - Физически не удалять (сохраняется история продаж)
 
 ### payment_method в sales
-Допустимые значения (DB constraint): `cash`, `fop`, `personal_card`
+Допустимые значения: `cash`, `fop`, `personal_card`, `deposit`
 
 ---
 
@@ -309,18 +319,22 @@ npm run start    # Start production server
 | `/login` | Авторизация |
 | `/sales` | Запись продаж, история |
 | `/clients` | База клиентов, баланс |
+| `/clients/[id]` | Профіль клієнта: контакти, депозит, залишок занять, історія покупок |
 | `/tickets` | Управление тарифами |
 | `/trainers` | Управление тренерами |
 | `/halls` | Управление залами |
-
-Удалено: calendar, schedule-slots, schedules, regular-enrollments (не нужны на MVP).
+| `/training-types` | Типи занять (довідник) |
+| `/schedule` | Розклад занять |
+| `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність |
+| `/accounting` | Облік надходжень |
+| `/accounting/trainers` | Розрахунок з тренерами |
 
 ---
 
 ## Notes for Developers
 
-1. **RLS отключён** — авторизация только через Supabase Auth JWT
-2. **Баланс только через RPC** — `update_client_balance()`, не UPDATE напрямую
+1. **RLS увімкнено** — authenticated = повний доступ. При нових таблицях: додавати GRANT + policy.
+2. **Грошовий баланс тільки через RPC** — `update_client_balance()`, не UPDATE напрямую. **Залишок занять тільки через `mark_attendance()`**.
 3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
 4. **Мягкие удаления** — везде `is_active`, никогда не DELETE
 5. **Timestamps UTC** — всегда `timestamptz`
@@ -329,4 +343,4 @@ npm run start    # Start production server
 
 ---
 
-**Last Updated**: 2026-04-28
+**Last Updated**: 2026-05-06
