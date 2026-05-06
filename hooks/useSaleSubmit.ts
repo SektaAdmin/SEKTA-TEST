@@ -1,0 +1,100 @@
+'use client'
+import { supabase } from '@/lib/supabase'
+import type { SaleFormValues, resolveSubmitValues } from '@/hooks/useSaleForm'
+import type { EditSaleSnapshot } from '@/components/SaleModal'
+import type { Ticket } from '@/types'
+
+interface SubmitOptions {
+  editSale?: EditSaleSnapshot
+  tickets: Ticket[]
+  ticketChanged: boolean
+  saleDatetime: string
+  resolveValues: typeof resolveSubmitValues
+  onSaved: () => void
+  setError: (msg: string) => void
+}
+
+export function useSaleSubmit({
+  editSale,
+  tickets,
+  ticketChanged,
+  saleDatetime,
+  resolveValues,
+  onSaved,
+  setError,
+}: SubmitOptions) {
+  const isEdit = !!editSale
+
+  async function onSubmit(formData: SaleFormValues) {
+    setError('')
+    const { submitAmountGiven, submitPricePaid } = resolveValues(formData)
+
+    if (isEdit) {
+      let ticketName: string | null = null
+      let ticketPrice = 0
+      let sessions = 0
+      let ticketType: string | null = null
+
+      if (formData.ticket_id) {
+        const t = tickets.find(x => x.id === formData.ticket_id)
+        if (t) {
+          ticketName = t.name; ticketPrice = t.price; sessions = t.sessions; ticketType = t.ticket_type
+        } else if (!ticketChanged && editSale!.ticket_name != null) {
+          ticketName = editSale!.ticket_name
+          ticketPrice = editSale!.ticket_price ?? 0
+          sessions = editSale!.sessions ?? 0
+          ticketType = editSale!.ticket_type ?? null
+        } else {
+          const { data: td } = await supabase
+            .from('tickets').select('name,price,sessions,ticket_type').eq('id', formData.ticket_id).single()
+          if (!td) { setError('Абонемент не знайдено'); return }
+          ticketName = td.name; ticketPrice = td.price; sessions = td.sessions; ticketType = td.ticket_type
+        }
+      }
+
+      const { data, error } = await supabase.rpc('update_sale', {
+        p_sale_id:        editSale!.id,
+        p_client_id:      formData.client_id,
+        p_ticket_id:      formData.ticket_id || null,
+        p_trainer_id:     formData.trainer_id || null,
+        p_ticket_name:    ticketName,
+        p_ticket_price:   ticketPrice,
+        p_sessions:       sessions,
+        p_ticket_type:    ticketType,
+        p_price_paid:     submitPricePaid,
+        p_amount_given:   submitAmountGiven,
+        p_payment_method: formData.payment_method,
+        p_notes:          formData.notes?.trim() || '',
+        p_created_at:     new Date(saleDatetime).toISOString(),
+      })
+
+      if (error || !data?.[0]?.success) {
+        setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
+        return
+      }
+
+      onSaved()
+      return
+    }
+
+    const { data, error } = await supabase.rpc('create_sale', {
+      p_client_id:      formData.client_id,
+      p_ticket_id:      formData.ticket_id || null,
+      p_trainer_id:     formData.trainer_id || null,
+      p_price_paid:     submitPricePaid,
+      p_amount_given:   submitAmountGiven,
+      p_payment_method: formData.payment_method,
+      p_notes:          formData.notes?.trim() || '',
+      p_created_at:     new Date(saleDatetime).toISOString(),
+    })
+
+    if (error || !data?.[0]?.success) {
+      setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
+      return
+    }
+
+    onSaved()
+  }
+
+  return { onSubmit }
+}

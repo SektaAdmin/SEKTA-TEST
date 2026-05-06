@@ -21,7 +21,8 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchSales = useCallback(async (
-    p: number, size: number, q: string, from: string, to: string
+    p: number, size: number, q: string, from: string, to: string,
+    signal?: { cancelled: boolean }
   ) => {
     setLoading(true)
     setFetchError(null)
@@ -42,6 +43,7 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
         )
       }
       const { data: matched } = await cq.limit(200)
+      if (signal?.cancelled) return
       clientIds = (matched ?? []).map((c: { id: string }) => c.id)
       if (clientIds.length === 0) {
         setSales([]); setTotal(0); setLoading(false); return
@@ -67,6 +69,7 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
     if (to)   query = query.lte('created_at', `${to}T23:59:59`)
 
     const { data, count, error } = await query
+    if (signal?.cancelled) return
     if (error) {
       setFetchError(error.message)
     } else {
@@ -77,7 +80,9 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
   }, [])
 
   useEffect(() => {
-    fetchSales(page, pageSize, search, dateFrom, dateTo)
+    const signal = { cancelled: false }
+    fetchSales(page, pageSize, search, dateFrom, dateTo, signal)
+    return () => { signal.cancelled = true }
   }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
 
   useEffect(() => {

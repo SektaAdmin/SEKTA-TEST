@@ -17,7 +17,10 @@ export function useClients({ search, page, pageSize }: UseClientsParams) {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  const fetchClients = useCallback(async (q: string, p: number, size: number) => {
+  const fetchClients = useCallback(async (
+    q: string, p: number, size: number,
+    signal?: { cancelled: boolean }
+  ) => {
     setLoading(true)
 
     let query = supabase
@@ -37,13 +40,16 @@ export function useClients({ search, page, pageSize }: UseClientsParams) {
     query = query.range(rangeFrom, rangeFrom + size - 1)
 
     const { data, count } = await query
+    if (signal?.cancelled) return
     setClients((data as Client[]) ?? [])
     setTotal(count ?? 0)
     setLoading(false)
   }, [])
 
   useEffect(() => {
-    fetchClients(search, page, pageSize)
+    const signal = { cancelled: false }
+    fetchClients(search, page, pageSize, signal)
+    return () => { signal.cancelled = true }
   }, [search, page, pageSize, fetchClients])
 
   const refetch = () => fetchClients(search, page, pageSize)
