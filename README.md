@@ -33,28 +33,17 @@ npm run dev
 
 Відкрий http://localhost:3000
 
-## Структура проекту
+## Команди
 
-```
-app/
-  login/        — сторінка авторизації
-  sales/        — сторінка продажів
-components/
-  Sidebar       — бічне меню
-  SaleModal     — модалка нової/редагування продажі
-lib/
-  supabase.ts   — клієнт Supabase
-types/
-  index.ts      — TypeScript типи
+```bash
+npm run dev      # localhost:3000
+npm run build    # production build
+npm run start    # production server
 ```
 
-## Таблиці Supabase
+## Документація
 
-Проект використовує:
-- `public.clients` — клієнти
-- `public.tickets` — абонементи (is_active = true)
-- `public.trainers` — тренери (is_active = true)
-- `public.sales` — продажі
+Детальна документація: [CLAUDE.md](./CLAUDE.md)
 
 ## Деплой на Vercel
 
@@ -62,4 +51,4 @@ types/
 npx vercel
 ```
 
-Додай змінні оточення NEXT_PUBLIC_SUPABASE_URL і NEXT_PUBLIC_SUPABASE_ANON_KEY у налаштуваннях Vercel.
+Додай змінні оточення `NEXT_PUBLIC_SUPABASE_URL` і `NEXT_PUBLIC_SUPABASE_ANON_KEY` у налаштуваннях Vercel.
