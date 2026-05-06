@@ -21,8 +21,7 @@ export default function LoginPage() {
       setError('Невірний email або пароль')
       setLoading(false)
     } else {
-      router.push('/sales')
-      router.refresh()
+      window.location.href = '/sales'
     }
   }
 

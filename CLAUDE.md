@@ -300,7 +300,7 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 **Backend & Database:**
 - Supabase PostgreSQL
 - @supabase/supabase-js 2.43.4
-- @supabase/ssr 0.3.0
+- @supabase/ssr 0.10.2
 
 **Environment:**
 - dotenv 17.4.2

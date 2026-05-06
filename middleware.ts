@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isLoginPage = request.nextUrl.pathname === '/login'
+
+  if (user && isLoginPage) {
+    const redirectResponse = NextResponse.redirect(new URL('/sales', request.url))
+    response.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+
   if (!user && !isLoginPage) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
