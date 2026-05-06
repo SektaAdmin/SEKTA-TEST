@@ -1,11 +1,12 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
 import { useTickets } from '@/hooks/useTickets'
 import { useTrainers } from '@/hooks/useTrainers'
+import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Sale, PaymentMethod } from '@/types'
 import styles from './sales.module.css'
@@ -25,9 +26,6 @@ const PAYMENT_CLASS: Record<PaymentMethod, string> = {
   deposit: styles.badgeDeposit,
 }
 
-const PAGE_SIZES = [20, 50, 100] as const
-type PageSize = typeof PAGE_SIZES[number]
-
 function getPageRange(current: number, total: number): (number | '...')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i)
   const pages: (number | '...')[] = [0]
@@ -46,10 +44,6 @@ export default function SalesPage() {
   const activeTickets = tickets.filter(t => t.is_active)
   const activeTrainers = trainers.filter(t => t.is_active)
 
-  const [sales, setSales] = useState<Sale[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editSale, setEditSale] = useState<Sale | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -64,79 +58,11 @@ export default function SalesPage() {
   const [dateTo, setDateTo] = useState('')
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo })
+
   const totalPages = Math.ceil(total / pageSize)
   const from = page * pageSize
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== ''
-
-  const fetchSales = useCallback(async (
-    p: number, size: number, q: string, from: string, to: string
-  ) => {
-    setLoading(true)
-    setFetchError(null)
-
-    let clientIds: string[] | null = null
-
-    if (q.trim()) {
-      const s = q.trim()
-      const parts = s.split(/\s+/)
-      let cq = supabase.from('clients').select('id')
-      if (parts.length === 1) {
-        cq = cq.or(`first_name.ilike.%${parts[0]}%,last_name.ilike.%${parts[0]}%`)
-      } else {
-        const [a, b] = parts
-        cq = cq.or(
-          `first_name.ilike.%${a}%,last_name.ilike.%${b}%,` +
-          `first_name.ilike.%${b}%,last_name.ilike.%${a}%`
-        )
-      }
-      const { data: matched } = await cq.limit(200)
-      clientIds = (matched ?? []).map((c: { id: string }) => c.id)
-      if (clientIds.length === 0) {
-        setSales([]); setTotal(0); setLoading(false); return
-      }
-    }
-
-    const rangeFrom = p * size
-    let query = supabase
-      .from('sales')
-      .select(`
-        id, created_at, client_id, ticket_id, trainer_id,
-        ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given,
-        payment_method, notes,
-        clients(first_name, last_name),
-        tickets(name),
-        trainers(name)
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(rangeFrom, rangeFrom + size - 1)
-
-    if (clientIds !== null) query = query.in('client_id', clientIds)
-    if (from) query = query.gte('created_at', `${from}T00:00:00`)
-    if (to)   query = query.lte('created_at', `${to}T23:59:59`)
-
-    const { data, count, error } = await query
-    if (error) {
-      setFetchError(error.message)
-    } else {
-      setSales((data as unknown as Sale[]) ?? [])
-      setTotal(count ?? 0)
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchSales(page, pageSize, search, dateFrom, dateTo)
-  }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
-
-  useEffect(() => {
-    function onVisible() {
-      if (document.visibilityState === 'visible') {
-        fetchSales(page, pageSize, search, dateFrom, dateTo)
-      }
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchSales, page, pageSize, search, dateFrom, dateTo])
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -166,14 +92,14 @@ export default function SalesPage() {
     setDeleteId(null)
     setDeleting(false)
     toast.success('Продаж видалено')
-    fetchSales(page, pageSize, search, dateFrom, dateTo)
+    refetch()
   }
 
   function handleSaved() {
     setShowModal(false)
     setEditSale(null)
     toast.success('Збережено')
-    fetchSales(page, pageSize, search, dateFrom, dateTo)
+    refetch()
   }
 
   function handlePageSize(size: PageSize) {
