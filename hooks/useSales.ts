@@ -44,8 +44,9 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
       }
       const { data: matched } = await cq.limit(200)
       if (signal?.cancelled) return
-      clientIds = (matched ?? []).map((c: { id: string }) => c.id)
-      if (clientIds.length === 0) {
+      const ids = (matched ?? []).map((c: { id: string }) => c.id)
+      clientIds = ids
+      if (ids.length === 0) {
         setSales([]); setTotal(0); setLoading(false); return
       }
     }

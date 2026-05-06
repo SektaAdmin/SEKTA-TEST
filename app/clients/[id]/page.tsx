@@ -112,7 +112,7 @@ export default function ClientProfilePage() {
 
   useEffect(() => {
     setLoading(true)
-    supabase.from('training_types').select('code, label').then(({ data }) => {
+    supabase.from('training_types').select('code, label').then(({ data }: { data: { code: string; label: string }[] | null }) => {
       const map: Record<string, string> = {}
       for (const t of data ?? []) map[t.code] = t.label
       setTypeLabels(map)

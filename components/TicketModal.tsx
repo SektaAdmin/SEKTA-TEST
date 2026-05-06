@@ -33,7 +33,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
       .select('id, code, label, is_active, sort_order, created_at')
       .eq('is_active', true)
       .order('sort_order')
-      .then(({ data }) => setTrainingTypes((data ?? []) as TrainingType[]))
+      .then(({ data }: { data: TrainingType[] | null }) => setTrainingTypes(data ?? []))
   }, [])
 
   const {
