@@ -3,6 +3,7 @@ import { useState, useRef, useCallback, useId } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatClientLabel } from '@/lib/formatters'
 import type { Client } from '@/types'
+import styles from './ClientSearchCombobox.module.css'
 
 
 interface Props {
@@ -43,8 +44,6 @@ async function searchClients(q: string): Promise<Client[]> {
     return true
   })
 }
-
-const inputCls = 'w-full px-3 py-2 bg-[var(--bg-3)] border border-[0.5px] border-[var(--border)] rounded-[var(--radius-sm)] text-[var(--text)] text-[13px] outline-none transition-colors duration-150 placeholder:text-[var(--text-3)] focus:border-[var(--accent)] disabled:opacity-50'
 
 export default function ClientSearchCombobox({ inputId, initialLabel = '', onSelect, onClear, error, disabled }: Props) {
   const listboxId = useId()
@@ -100,11 +99,11 @@ export default function ClientSearchCombobox({ inputId, initialLabel = '', onSel
   }
 
   return (
-    <div className="relative">
+    <div className={styles.wrapper}>
       <input
         id={inputId}
         type="text"
-        className={inputCls}
+        className={styles.input}
         value={search}
         onChange={e => handleInput(e.target.value)}
         onFocus={handleFocus}
@@ -122,28 +121,28 @@ export default function ClientSearchCombobox({ inputId, initialLabel = '', onSel
       {isOpen && search.trim() && (
         <div
           id={listboxId}
-          className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-2)] border border-[0.5px] border-[var(--border-hover)] rounded-[var(--radius-sm)] shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-50 max-h-[200px] overflow-y-auto"
+          className={styles.dropdown}
           role="listbox"
           aria-label="Результати пошуку"
         >
           {results.length === 0 ? (
-            <div className="px-3 py-2.5 text-[12px] text-[var(--text-3)]">Нічого не знайдено</div>
+            <div className={styles.empty}>Нічого не знайдено</div>
           ) : results.map((c, i) => (
             <div
               key={c.id}
               id={`csc-opt-${i}`}
-              className={`flex items-center justify-between px-3 py-2.5 text-[13px] cursor-pointer transition-colors duration-100 ${i === activeIndex ? 'bg-[var(--accent-dim)] text-[var(--accent)]' : 'text-[var(--text)] hover:bg-[var(--bg-3)]'}`}
+              className={`${styles.option}${i === activeIndex ? ' ' + styles.optionActive : ''}`}
               onMouseDown={() => handleSelect(c)}
               role="option"
               aria-selected={i === activeIndex}
             >
               <span>{formatClientLabel(c)}</span>
-              {c.phone && <span className="text-[11px] text-[var(--text-3)] ml-2">{c.phone}</span>}
+              {c.phone && <span className={styles.phone}>{c.phone}</span>}
             </div>
           ))}
         </div>
       )}
-      {error && <p className="text-[11px] text-[var(--danger)] mt-0.5" role="alert">{error}</p>}
+      {error && <p className={styles.error} role="alert">{error}</p>}
     </div>
   )
 }
