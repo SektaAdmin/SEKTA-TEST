@@ -402,36 +402,43 @@ export default function SchedulePage() {
         {/* Filter bar — only for schedule tab */}
         {tab === 'schedule' && (
           <div className={styles.filterBar}>
-            <select
-              className={styles.filterSelect}
-              value={filterHall}
-              onChange={e => setFilterHall(e.target.value)}
-            >
-              <option value="">Всі зали</option>
+            <div className={styles.filterGroup}>
+              <button
+                className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFilterHall('')}
+              >
+                Всі зали
+              </button>
               {activeHalls.map(h => (
-                <option key={h.id} value={h.id}>{h.name}</option>
+                <button
+                  key={h.id}
+                  className={`${styles.filterBtn} ${filterHall === h.id ? styles.filterBtnActive : ''}`}
+                  onClick={() => setFilterHall(f => f === h.id ? '' : h.id)}
+                >
+                  {h.name}
+                </button>
               ))}
-            </select>
-            <select
-              className={styles.filterSelect}
-              value={filterTrainer}
-              onChange={e => setFilterTrainer(e.target.value)}
-            >
-              <option value="">Всі тренери</option>
+            </div>
+            <div className={styles.filterDivider} />
+            <div className={styles.filterGroup}>
+              <button
+                className={`${styles.filterBtn} ${filterTrainer === '' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFilterTrainer('')}
+              >
+                Всі тренери
+              </button>
               {(trainers as { id: string; name: string; is_active: boolean }[])
                 .filter(t => t.is_active)
                 .map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+                  <button
+                    key={t.id}
+                    className={`${styles.filterBtn} ${filterTrainer === t.id ? styles.filterBtnActive : ''}`}
+                    onClick={() => setFilterTrainer(f => f === t.id ? '' : t.id)}
+                  >
+                    {t.name}
+                  </button>
                 ))}
-            </select>
-            {(filterHall || filterTrainer) && (
-              <button
-                className={styles.filterClear}
-                onClick={() => { setFilterHall(''); setFilterTrainer('') }}
-              >
-                Скинути
-              </button>
-            )}
+            </div>
           </div>
         )}
 
