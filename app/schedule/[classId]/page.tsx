@@ -145,6 +145,18 @@ export default function ClassDetailPage() {
       return
     }
 
+    const { data: clientConflict } = await supabase.rpc('check_client_conflict', {
+      p_client_id: selectedClient.id,
+      p_class_id: cls.id,
+    })
+    if (clientConflict && clientConflict.length > 0) {
+      const c = clientConflict[0]
+      const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
+      setEnrollError(`Клієнт вже записаний на інше заняття о ${when}`)
+      setEnrolling(false)
+      return
+    }
+
     const { error } = await supabase.from('enrollments').insert({
       class_id: cls.id,
       client_id: selectedClient.id,
@@ -209,6 +221,24 @@ export default function ClassDetailPage() {
   async function handleRestoreClass() {
     if (!cls) return
     setCancellingClass(true)
+
+    const { data: conflicts } = await supabase.rpc('check_class_conflicts', {
+      p_starts_at: cls.starts_at,
+      p_duration_min: cls.duration_min,
+      p_hall_id: cls.hall_id ?? null,
+      p_trainer_id: cls.trainer_id ?? null,
+      p_exclude_id: cls.id,
+    })
+    if (conflicts && conflicts.length > 0) {
+      const c = conflicts[0]
+      const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
+      const who = c.conflict_type === 'hall' ? 'Зал' : 'Тренер'
+      const label = c.title || c.ticket_type
+      toast.error(`${who} зайнятий — конфлікт із «${label}» о ${when}`)
+      setCancellingClass(false)
+      return
+    }
+
     const { error } = await supabase.from('classes').update({ is_cancelled: false }).eq('id', cls.id)
     if (error) {
       toast.error('Не вдалося відновити заняття')

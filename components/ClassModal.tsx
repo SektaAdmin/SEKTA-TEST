@@ -8,6 +8,8 @@ import type { Class, Trainer, Hall, TrainingType } from '@/types'
 import styles from './ClassModal.module.css'
 
 
+const DAY_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
 interface FormValues {
   ticket_type: string
   trainer_id: string
@@ -17,6 +19,10 @@ interface FormValues {
   capacity: string
   title: string
   notes: string
+  // series fields
+  weeks: number
+  day_of_week: string
+  time_of_day: string
 }
 
 interface Props {
@@ -25,10 +31,19 @@ interface Props {
   existing?: Class | null
 }
 
+type EditScope = 'this' | 'future'
+
 function todayAt10(): string {
   const d = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T10:00`
+}
+
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+function isoToTimeLocal(iso: string): string {
+  const d = new Date(iso)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 export default function ClassModal({ onClose, onSaved, existing }: Props) {
@@ -40,6 +55,15 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
+
+  const [isSeries, setIsSeries] = useState(false)
+  const [editScope, setEditScope] = useState<EditScope | null>(
+    existing?.series_id ? null : 'this'
+  )
+
+  const isEdit = !!existing
+  const hasSeries = !!existing?.series_id
+  const scopeChosen = !hasSeries || editScope !== null
 
   useEffect(() => {
     Promise.all([
@@ -53,7 +77,11 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
     })
   }, [])
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
+  const startsAt = existing ? new Date(existing.starts_at) : new Date()
+  const defaultDayOfWeek = startsAt.getDay()
+  const defaultTimeOfDay = existing ? isoToTimeLocal(existing.starts_at) : '10:00'
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     defaultValues: existing ? {
       ticket_type: existing.ticket_type,
       trainer_id: existing.trainer_id ?? '',
@@ -63,6 +91,9 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
       capacity: existing.capacity?.toString() ?? '',
       title: existing.title ?? '',
       notes: existing.notes ?? '',
+      weeks: 4,
+      day_of_week: String(defaultDayOfWeek),
+      time_of_day: defaultTimeOfDay,
     } : {
       ticket_type: '',
       trainer_id: '',
@@ -72,6 +103,9 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
       capacity: '',
       title: '',
       notes: '',
+      weeks: 4,
+      day_of_week: String(new Date().getDay()),
+      time_of_day: '10:00',
     },
   })
 
@@ -81,7 +115,43 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
     }
   }, [trainingTypes, existing, setValue])
 
+  // sync day_of_week when starts_at changes (new series only)
+  const startsAtVal = watch('starts_at')
+  useEffect(() => {
+    if (!isEdit && isSeries && startsAtVal) {
+      const d = new Date(startsAtVal)
+      if (!isNaN(d.getTime())) {
+        setValue('day_of_week', String(d.getDay()))
+        setValue('time_of_day', `${pad(d.getHours())}:${pad(d.getMinutes())}`)
+      }
+    }
+  }, [startsAtVal, isSeries, isEdit, setValue])
+
+  async function checkConflicts(
+    starts_at: string,
+    duration_min: number,
+    hall_id: string | null,
+    trainer_id: string | null,
+    exclude_id?: string,
+  ): Promise<string | null> {
+    if (!hall_id && !trainer_id) return null
+    const { data } = await supabase.rpc('check_class_conflicts', {
+      p_starts_at: starts_at,
+      p_duration_min: duration_min,
+      p_hall_id: hall_id ?? null,
+      p_trainer_id: trainer_id ?? null,
+      p_exclude_id: exclude_id ?? null,
+    })
+    if (!data || data.length === 0) return null
+    const c = data[0]
+    const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
+    const who = c.conflict_type === 'hall' ? 'Зал' : 'Тренер'
+    const label = c.title || c.ticket_type
+    return `${who} зайнятий — конфлікт із заняттям «${label}» о ${when}`
+  }
+
   const onSubmit = async (values: FormValues) => {
+    if (!scopeChosen) return
     setLoading(true)
     setServerError('')
 
@@ -96,16 +166,173 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
       notes: values.notes.trim() || null,
     }
 
-    const { error } = existing
-      ? await supabase.from('classes').update(payload).eq('id', existing.id)
-      : await supabase.from('classes').insert(payload)
+    // ── Edit existing single class ────────────────────────────
+    if (isEdit && (!hasSeries || editScope === 'this')) {
+      const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id, existing!.id)
+      if (conflict) { setServerError(conflict); setLoading(false); return }
+      const { error } = await supabase.from('classes').update(payload).eq('id', existing!.id)
+      if (error) { setServerError(error.message); setLoading(false); return }
+      onSaved()
+      return
+    }
 
-    if (error) {
-      setServerError(error.message)
+    // ── Edit all future in series ─────────────────────────────
+    if (isEdit && hasSeries && editScope === 'future') {
+      const now = new Date().toISOString()
+      // Fetch all future non-cancelled classes in this series to check each for conflicts
+      const { data: futureCls } = await supabase
+        .from('classes')
+        .select('id, starts_at')
+        .eq('series_id', existing!.series_id)
+        .gte('starts_at', now)
+        .eq('is_cancelled', false)
+      for (const fc of futureCls ?? []) {
+        const startsAtForClass = new Date(fc.starts_at)
+        // Use the new time from payload but keep original date shifted by series offset
+        const newStartsAt = new Date(payload.starts_at)
+        startsAtForClass.setHours(newStartsAt.getHours(), newStartsAt.getMinutes(), 0, 0)
+        const conflict = await checkConflicts(
+          startsAtForClass.toISOString(),
+          payload.duration_min,
+          payload.hall_id,
+          payload.trainer_id,
+          fc.id,
+        )
+        if (conflict) {
+          const dateStr = startsAtForClass.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' })
+          setServerError(`${dateStr}: ${conflict}`)
+          setLoading(false)
+          return
+        }
+      }
+      const { error } = await supabase
+        .from('classes')
+        .update(payload)
+        .eq('series_id', existing!.series_id)
+        .gte('starts_at', now)
+        .eq('is_cancelled', false)
+      if (error) { setServerError(error.message); setLoading(false); return }
+
+      // update series template too
+      const seriesPayload = {
+        ticket_type: values.ticket_type,
+        trainer_id: values.trainer_id || null,
+        hall_id: values.hall_id || null,
+        duration_min: Number(values.duration_min),
+        capacity: values.capacity ? Number(values.capacity) : null,
+        title: values.title.trim() || null,
+        notes: values.notes.trim() || null,
+      }
+      await supabase.from('class_series').update(seriesPayload).eq('id', existing!.series_id)
+      onSaved()
+      return
+    }
+
+    // ── Create single class ───────────────────────────────────
+    if (!isSeries) {
+      const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id)
+      if (conflict) { setServerError(conflict); setLoading(false); return }
+      const { error } = await supabase.from('classes').insert(payload)
+      if (error) { setServerError(error.message); setLoading(false); return }
+      onSaved()
+      return
+    }
+
+    // ── Create series ─────────────────────────────────────────
+    const weeks = Number(values.weeks)
+    const dayOfWeek = Number(values.day_of_week)
+    const [hh, mm] = values.time_of_day.split(':').map(Number)
+    const durationMin = Number(values.duration_min)
+    const capacity = values.capacity ? Number(values.capacity) : null
+
+    // insert class_series row
+    const { data: seriesData, error: seriesError } = await supabase
+      .from('class_series')
+      .insert({
+        ticket_type: values.ticket_type,
+        trainer_id: values.trainer_id || null,
+        hall_id: values.hall_id || null,
+        title: values.title.trim() || null,
+        notes: values.notes.trim() || null,
+        capacity,
+        duration_min: durationMin,
+        day_of_week: dayOfWeek,
+        time_of_day: values.time_of_day,
+      })
+      .select('id')
+      .single()
+
+    if (seriesError || !seriesData) {
+      setServerError(seriesError?.message ?? 'Помилка створення серії')
       setLoading(false)
       return
     }
+
+    const seriesId = seriesData.id
+
+    // generate N classes
+    const firstDate = new Date(values.starts_at)
+    const classes = []
+    for (let i = 0; i < weeks; i++) {
+      const d = new Date(firstDate)
+      d.setDate(d.getDate() + i * 7)
+      d.setHours(hh, mm, 0, 0)
+      classes.push({
+        ...payload,
+        starts_at: d.toISOString(),
+        series_id: seriesId,
+      })
+    }
+
+    // Check conflicts for each class in the series before inserting
+    for (const cls of classes) {
+      const conflict = await checkConflicts(cls.starts_at, cls.duration_min, cls.hall_id, cls.trainer_id)
+      if (conflict) {
+        await supabase.from('class_series').delete().eq('id', seriesId)
+        const dateStr = new Date(cls.starts_at).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' })
+        setServerError(`${dateStr}: ${conflict}`)
+        setLoading(false)
+        return
+      }
+    }
+
+    const { error: insertError } = await supabase.from('classes').insert(classes)
+    if (insertError) {
+      // rollback series row
+      await supabase.from('class_series').delete().eq('id', seriesId)
+      setServerError(insertError.message)
+      setLoading(false)
+      return
+    }
+
     onSaved()
+  }
+
+  // ── If editing a series class — show scope picker first ──────
+  if (hasSeries && editScope === null) {
+    return (
+      <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+        <div ref={modalRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+          <div className={styles.header}>
+            <h2 id={titleId}>Редагування заняття</h2>
+            <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
+          </div>
+          <div className={styles.body}>
+            <p className={styles.scopePrompt}>Це заняття входить до серії. Що змінити?</p>
+            <div className={styles.scopeBtns}>
+              <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('this')}>
+                <span className={styles.scopeTitle}>Тільки це заняття</span>
+                <span className={styles.scopeDesc}>Зміни торкнуться лише цієї дати</span>
+              </button>
+              <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('future')}>
+                <span className={styles.scopeTitle}>Це і всі майбутні</span>
+                <span className={styles.scopeDesc}>Зміни торкнуться цього і всіх наступних занять серії</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -118,12 +345,37 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
         aria-labelledby={titleId}
       >
         <div className={styles.header}>
-          <h2 id={titleId}>{existing ? 'Редагування заняття' : 'Нове заняття'}</h2>
+          <h2 id={titleId}>
+            {isEdit
+              ? editScope === 'future' ? 'Редагування серії' : 'Редагування заняття'
+              : isSeries ? 'Нова серія занять' : 'Нове заняття'}
+          </h2>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.body}>
+
+            {/* Series toggle (only for new classes) */}
+            {!isEdit && (
+              <div className={styles.toggleRow}>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${!isSeries ? styles.toggleActive : ''}`}
+                  onClick={() => setIsSeries(false)}
+                >
+                  Одне заняття
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${isSeries ? styles.toggleActive : ''}`}
+                  onClick={() => setIsSeries(true)}
+                >
+                  Серія
+                </button>
+              </div>
+            )}
+
             <div className={styles.field}>
               <label htmlFor="cm-type">Тип заняття <span className={styles.required}>*</span></label>
               <select id="cm-type" {...register('ticket_type', { required: true })} disabled={loading}>
@@ -150,9 +402,13 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
               </div>
             </div>
 
+            {/* Date/time — single class or first occurrence */}
             <div className={styles.row}>
               <div className={styles.field}>
-                <label htmlFor="cm-starts">Дата і час <span className={styles.required}>*</span></label>
+                <label htmlFor="cm-starts">
+                  {isSeries ? 'Перше заняття' : 'Дата і час'}
+                  {' '}<span className={styles.required}>*</span>
+                </label>
                 <input
                   id="cm-starts"
                   type="datetime-local"
@@ -173,6 +429,31 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
                 />
               </div>
             </div>
+
+            {/* Series-specific fields */}
+            {isSeries && !isEdit && (
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label htmlFor="cm-dow">День тижня</label>
+                  <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
+                    {DAY_LABELS.map((label, i) => (
+                      <option key={i} value={i}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.field}>
+                  <label htmlFor="cm-weeks">Кількість тижнів <span className={styles.required}>*</span></label>
+                  <input
+                    id="cm-weeks"
+                    type="number"
+                    min={1}
+                    max={52}
+                    {...register('weeks', { min: 1, max: 52, valueAsNumber: true })}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className={styles.row}>
               <div className={styles.field}>
@@ -217,7 +498,11 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
               Скасувати
             </button>
             <button type="submit" className={styles.btnSave} disabled={loading}>
-              {loading ? 'Збереження...' : 'Зберегти'}
+              {loading
+                ? 'Збереження...'
+                : isSeries && !isEdit
+                  ? `Створити серію`
+                  : 'Зберегти'}
             </button>
           </div>
         </form>
