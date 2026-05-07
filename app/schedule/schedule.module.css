@@ -25,6 +25,7 @@
   z-index: 10;
   flex-shrink: 0;
   height: 57px;
+  gap: 12px;
 }
 
 .weekNav {
@@ -68,12 +69,14 @@
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius-sm);
-  height: var(--control-h); padding: 0 14px;
+  height: var(--control-h);
+  padding: 0 14px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.12s;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 .btnNew:hover { opacity: 0.88; }
 
@@ -102,9 +105,15 @@
   flex: 1;
 }
 
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .tabs {
   display: flex;
-  gap: 0;
 }
 
 .tab {
@@ -127,6 +136,73 @@
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+/* ── View toggle (Week / Day) ────────────────────────────────── */
+.viewToggle {
+  display: flex;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.viewBtn {
+  background: transparent;
+  border: none;
+  padding: 0 12px;
+  height: var(--control-h);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+.viewBtn + .viewBtn {
+  border-left: 0.5px solid var(--border);
+}
+.viewBtn:hover { color: var(--text); background: var(--bg-3); }
+.viewBtnActive {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ── Filter bar ─────────────────────────────────────────────── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--topbar-px);
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.filterSelect {
+  height: 28px;
+  padding: 0 8px;
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+.filterSelect:hover { border-color: var(--border-hover); }
+.filterSelect:focus { outline: none; border-color: var(--accent-border); }
+
+.filterClear {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 4px;
+  font-family: var(--font);
+  transition: color var(--motion-fast);
+}
+.filterClear:hover { color: var(--text); }
 
 /* ── Archive list ────────────────────────────────────────────── */
 .archiveList {
@@ -162,35 +238,11 @@
   background: var(--bg-3);
 }
 
-.archiveDate {
-  font-size: 12px;
-  color: var(--text-2);
-  min-width: 80px;
-}
-
-.archiveTime {
-  font-size: 12px;
-  color: var(--text-2);
-  min-width: 100px;
-}
-
-.archiveType {
-  font-size: 13px;
-  font-weight: 500;
-  flex: 1;
-}
-
-.archiveMeta {
-  font-size: 12px;
-  color: var(--text-2);
-  white-space: nowrap;
-}
-
-.archiveMetaSep {
-  font-size: 12px;
-  color: var(--text-3);
-}
-
+.archiveDate { font-size: 12px; color: var(--text-2); min-width: 80px; }
+.archiveTime { font-size: 12px; color: var(--text-2); min-width: 100px; }
+.archiveType { font-size: 13px; font-weight: 500; flex: 1; }
+.archiveMeta { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.archiveMetaSep { font-size: 12px; color: var(--text-3); }
 .archiveCount {
   font-size: 12px;
   color: var(--text-3);
@@ -202,7 +254,6 @@
 /* ── Sticky week header ─────────────────────────────────────── */
 .weekHeader {
   display: grid;
-  grid-template-columns: 48px repeat(7, 1fr);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg-2);
   position: sticky;
@@ -211,6 +262,8 @@
   flex-shrink: 0;
 }
 
+/* sticky offset applied via inline style when filter bar is visible */
+
 .gutterCorner {
   border-right: 0.5px solid var(--border);
 }
@@ -218,17 +271,35 @@
 .dayHeader {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  padding: 10px 4px;
+  align-items: stretch;
   border-right: 0.5px solid var(--border);
   background: var(--bg-2);
+  overflow: hidden;
 }
 .dayHeader:last-child { border-right: none; }
 
 .dayHeaderToday {
   background: var(--accent-dim);
 }
+
+.dayHeadTop {
+  display: flex;
+  justify-content: center;
+}
+
+.dayHeadBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 4px 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  width: 100%;
+}
+.dayHeadBtn:hover .dayDate { color: var(--accent); }
 
 .dayName {
   font-size: 10px;
@@ -243,14 +314,36 @@
   font-weight: 500;
   color: var(--text);
   font-family: var(--mono);
+  transition: color var(--motion-fast);
 }
 
 .dayHeaderToday .dayDate { color: var(--accent); }
 
+/* Hall label row inside day header */
+.dayHallsRow {
+  display: flex;
+  border-top: 0.5px solid var(--border);
+}
+
+.dayHallLabel {
+  flex: 1;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 3px 2px;
+  border-right: 0.5px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dayHallLabel:last-child { border-right: none; }
+
 /* ── Calendar body grid ─────────────────────────────────────── */
 .bodyGrid {
   display: grid;
-  grid-template-columns: 48px repeat(7, 1fr);
   flex: 1;
 }
 
@@ -278,11 +371,23 @@
 
 /* ── Day column ─────────────────────────────────────────────── */
 .dayCol {
-  position: relative;
-  height: calc(16 * 80px); /* 07:00–23:00 */
+  display: flex;
+  flex-direction: row;
+  height: calc(16 * 80px);
   border-right: 0.5px solid var(--border);
+  overflow: hidden;
 }
 .dayCol:last-child { border-right: none; }
+
+/* ── Hall sub-column ─────────────────────────────────────────── */
+.hallSubCol {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  border-right: 0.5px solid var(--border);
+  height: 100%;
+}
+.hallSubCol:last-child { border-right: none; }
 
 .hourLine {
   position: absolute;
@@ -336,9 +441,7 @@
   z-index: 2;
 }
 
-.cardCancelled {
-  opacity: 0.45;
-}
+.cardCancelled { opacity: 0.45; }
 
 .cardTime {
   font-size: 11px;

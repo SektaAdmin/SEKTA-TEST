@@ -15,8 +15,10 @@ const MONTHS_UA = ['Січ', 'Лют', 'Бер', 'Квіт', 'Трав', 'Чер
 
 const MIN_HOUR = 7
 const MAX_HOUR = 23
-const HOUR_HEIGHT = 80 // px per hour
+const HOUR_HEIGHT = 80
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
+
+type ViewMode = 'week' | 'day'
 
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -24,15 +26,17 @@ type ClassWithJoins = Class & {
   enrollments: { id: string; status: string }[]
 }
 
+type Hall = { id: string; name: string; capacity: number; description: string | null; is_active: boolean }
+
 const TYPE_COLORS = [
-  '#5b8af5', // blue
-  '#c8f060', // lime (accent)
-  '#f07850', // orange
-  '#a06cf0', // purple
-  '#50c8d8', // teal
-  '#f0c840', // yellow
-  '#e05080', // pink
-  '#60d890', // green
+  '#5b8af5',
+  '#c8f060',
+  '#f07850',
+  '#a06cf0',
+  '#50c8d8',
+  '#f0c840',
+  '#e05080',
+  '#60d890',
 ]
 
 function typeColor(code: string): string {
@@ -120,14 +124,97 @@ function formatWeekRange(days: Date[]) {
   return `${s.getDate()} ${MONTHS_UA[s.getMonth()]} – ${e.getDate()} ${MONTHS_UA[e.getMonth()]} ${e.getFullYear()}`
 }
 
+function formatDayFull(d: Date) {
+  return `${DAYS_UA[(d.getDay() + 6) % 7]}, ${d.getDate()} ${MONTHS_UA[d.getMonth()]} ${d.getFullYear()}`
+}
+
+// ── Card component ────────────────────────────────────────────────
+interface CardProps {
+  cls: ClassWithJoins
+  typeLabels: Record<string, string>
+  laneIndex?: number
+  laneCount?: number
+  onClick: () => void
+}
+
+function ClassCard({ cls, typeLabels, laneIndex = 0, laneCount = 1, onClick }: CardProps) {
+  const activeCount = cls.enrollments.filter(
+    e => e.status === 'enrolled' || e.status === 'attended'
+  ).length
+  const color = typeColor(cls.ticket_type)
+  const isFull = cls.capacity != null && activeCount >= cls.capacity
+  const isAlmost = !isFull && cls.capacity != null && activeCount >= cls.capacity * 0.8
+
+  return (
+    <button
+      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
+      style={{
+        top: `${getCardTop(cls.starts_at)}px`,
+        height: `${getCardHeight(cls.duration_min)}px`,
+        left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
+        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
+        ['--card-color' as string]: color,
+      }}
+      onClick={onClick}
+    >
+      <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
+      <span className={styles.cardType}>
+        {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+        {cls.title ? ` · ${cls.title}` : ''}
+      </span>
+      {cls.trainers && <span className={styles.cardMeta}>{cls.trainers.name}</span>}
+      <span className={`${styles.cardCount} ${isFull ? styles.cardCountFull : isAlmost ? styles.cardCountAlmost : ''}`}>
+        {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
+      </span>
+      {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
+    </button>
+  )
+}
+
+// ── Hall sub-column with lane fallback ────────────────────────────
+interface HallColProps {
+  classes: ClassWithJoins[]
+  typeLabels: Record<string, string>
+  isToday: boolean
+  nowTop: number | null
+  onCardClick: (id: string) => void
+}
+
+function HallSubCol({ classes, typeLabels, isToday, nowTop, onCardClick }: HallColProps) {
+  const lanes = computeLanes(classes)
+  return (
+    <div className={styles.hallSubCol}>
+      {HOURS.slice(1).map(h => (
+        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }} />
+      ))}
+      {nowTop !== null && isToday && (
+        <div className={styles.nowLine} style={{ top: `${nowTop}px` }} />
+      )}
+      {classes.map(cls => {
+        const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }
+        return (
+          <ClassCard
+            key={cls.id}
+            cls={cls}
+            typeLabels={typeLabels}
+            laneIndex={laneIndex}
+            laneCount={laneCount}
+            onClick={() => onCardClick(cls.id)}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Main page ─────────────────────────────────────────────────────
 export default function SchedulePage() {
   const router = useRouter()
   const { trainers, halls, trainingTypes } = useRefs()
-  const activeTrainers = trainers.filter(t => t.is_active)
-  const activeHalls = halls.filter(h => h.is_active)
-  const activeTrainingTypes = trainingTypes.filter(t => t.is_active)
+  const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
   const [tab, setTab] = useState<'schedule' | 'archive'>('schedule')
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [cancelledClasses, setCancelledClasses] = useState<ClassWithJoins[]>([])
@@ -135,23 +222,24 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [nowTop, setNowTop] = useState<number | null>(null)
-
-  const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
-    const days = getWeekDays(baseDate)
-    const end = new Date(days[6])
-    end.setHours(23, 59, 59, 999)
-    return {
-      weekDays: days,
-      weekStartISO: days[0].toISOString(),
-      weekEndISO: end.toISOString(),
-    }
-  }, [baseDate])
+  const [filterHall, setFilterHall] = useState('')
+  const [filterTrainer, setFilterTrainer] = useState('')
 
   const today = useMemo(() => {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    return d
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
+
+  // For week view: derive the week; for day view: single day
+  const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
+    if (viewMode === 'day') {
+      const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
+      const end = new Date(d); end.setHours(23, 59, 59, 999)
+      return { weekDays: [d], weekStartISO: d.toISOString(), weekEndISO: end.toISOString() }
+    }
+    const days = getWeekDays(baseDate)
+    const end = new Date(days[6]); end.setHours(23, 59, 59, 999)
+    return { weekDays: days, weekStartISO: days[0].toISOString(), weekEndISO: end.toISOString() }
+  }, [baseDate, viewMode])
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
@@ -189,21 +277,68 @@ export default function SchedulePage() {
     function updateNow() {
       const now = new Date()
       const h = now.getHours() + now.getMinutes() / 60
-      if (h >= MIN_HOUR && h < MAX_HOUR) {
-        setNowTop((h - MIN_HOUR) * HOUR_HEIGHT)
-      } else {
-        setNowTop(null)
-      }
+      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * HOUR_HEIGHT : null)
     }
     updateNow()
     const id = setInterval(updateNow, 60000)
     return () => clearInterval(id)
   }, [])
 
+  // Apply filters
+  const filteredClasses = useMemo(() => {
+    let result = classes
+    if (filterHall) result = result.filter(c => c.hall_id === filterHall)
+    if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
+    return result
+  }, [classes, filterHall, filterTrainer])
+
+  // Halls that appear in the current view (filtered)
+  const visibleHalls = useMemo(() => {
+    const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
+    const visHalls = filterHall
+      ? activeHalls.filter(h => h.id === filterHall)
+      : activeHalls.filter(h => hallIds.has(h.id))
+    const hasNoHall = filteredClasses.some(c => !c.hall_id)
+    return { halls: visHalls, hasNoHall }
+  }, [filteredClasses, activeHalls, filterHall])
+
+  const hallColumns = useMemo(() => [
+    ...visibleHalls.halls,
+    ...(visibleHalls.hasNoHall ? [null as null] : []),
+  ], [visibleHalls])
+
+  // Navigation
+  function goNext() {
+    setBaseDate(d => {
+      const n = new Date(d)
+      n.setDate(d.getDate() + (viewMode === 'day' ? 1 : 7))
+      return n
+    })
+  }
+  function goPrev() {
+    setBaseDate(d => {
+      const n = new Date(d)
+      n.setDate(d.getDate() - (viewMode === 'day' ? 1 : 7))
+      return n
+    })
+  }
+
+  function switchToDay(day: Date) {
+    setBaseDate(day)
+    setViewMode('day')
+  }
+
+  const navLabel = viewMode === 'day'
+    ? formatDayFull(weekDays[0])
+    : formatWeekRange(weekDays)
+
+  // ── Render ────────────────────────────────────────────────────
   return (
     <div className={styles.layout}>
       <Sidebar />
       <main className={styles.main}>
+
+        {/* Topbar row 1 */}
         <div className={styles.topbar}>
           <div className={styles.topbarLeft}>
             <div className={styles.tabs}>
@@ -221,40 +356,84 @@ export default function SchedulePage() {
               </button>
             </div>
           </div>
+
           <div className={styles.weekNav}>
-            <button
-              className={styles.navBtn}
-              onClick={() => setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() - 7); return n })}
-              aria-label="Попередній тиждень"
-            >
+            <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
             </button>
-            <span className={styles.weekRange}>{formatWeekRange(weekDays)}</span>
-            <button
-              className={styles.navBtn}
-              onClick={() => setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + 7); return n })}
-              aria-label="Наступний тиждень"
-            >
+            <span className={styles.weekRange}>{navLabel}</span>
+            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
               </svg>
             </button>
-            <button
-              className={styles.todayBtn}
-              onClick={() => setBaseDate(new Date())}
-              aria-label="Сьогодні"
-            >
+            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
               Сьогодні
             </button>
           </div>
-          {tab === 'schedule' && (
-            <button className={styles.btnNew} onClick={() => setShowModal(true)}>
-              + Заняття
-            </button>
-          )}
+
+          <div className={styles.topbarRight}>
+            {tab === 'schedule' && (
+              <div className={styles.viewToggle}>
+                <button
+                  className={`${styles.viewBtn} ${viewMode === 'week' ? styles.viewBtnActive : ''}`}
+                  onClick={() => setViewMode('week')}
+                >
+                  Тиждень
+                </button>
+                <button
+                  className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`}
+                  onClick={() => setViewMode('day')}
+                >
+                  День
+                </button>
+              </div>
+            )}
+            {tab === 'schedule' && (
+              <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+                + Заняття
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Filter bar — only for schedule tab */}
+        {tab === 'schedule' && (
+          <div className={styles.filterBar}>
+            <select
+              className={styles.filterSelect}
+              value={filterHall}
+              onChange={e => setFilterHall(e.target.value)}
+            >
+              <option value="">Всі зали</option>
+              {activeHalls.map(h => (
+                <option key={h.id} value={h.id}>{h.name}</option>
+              ))}
+            </select>
+            <select
+              className={styles.filterSelect}
+              value={filterTrainer}
+              onChange={e => setFilterTrainer(e.target.value)}
+            >
+              <option value="">Всі тренери</option>
+              {(trainers as { id: string; name: string; is_active: boolean }[])
+                .filter(t => t.is_active)
+                .map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+            </select>
+            {(filterHall || filterTrainer) && (
+              <button
+                className={styles.filterClear}
+                onClick={() => { setFilterHall(''); setFilterTrainer('') }}
+              >
+                Скинути
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Archive tab */}
         {tab === 'archive' && (
@@ -262,7 +441,7 @@ export default function SchedulePage() {
             {loading ? (
               <div className={styles.archiveEmpty}>Завантаження...</div>
             ) : cancelledClasses.length === 0 ? (
-              <div className={styles.archiveEmpty}>Скасованих занять за цей тиждень немає</div>
+              <div className={styles.archiveEmpty}>Скасованих занять за цей період немає</div>
             ) : cancelledClasses.map(cls => {
               const activeCount = cls.enrollments.filter(
                 e => e.status === 'enrolled' || e.status === 'attended'
@@ -293,98 +472,119 @@ export default function SchedulePage() {
           </div>
         )}
 
-        {tab === 'schedule' && <>
-        {/* Sticky week header */}
-        <div className={styles.weekHeader}>
-          <div className={styles.gutterCorner} />
-          {weekDays.map((day, di) => {
-            const isToday = isSameDay(day, today)
-            return (
-              <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                <span className={styles.dayName}>{DAYS_UA[di]}</span>
-                <span className={styles.dayDate}>{formatDayDate(day)}</span>
-              </div>
-            )
-          })}
-        </div>
+        {/* Schedule grid */}
+        {tab === 'schedule' && (
+          <>
+            {/* Week header */}
+            <div className={styles.weekHeader} style={
+              viewMode === 'week'
+                ? { gridTemplateColumns: `48px repeat(7, 1fr)`, top: tab === 'schedule' ? '102px' : '57px' }
+                : { gridTemplateColumns: `48px 1fr`, top: tab === 'schedule' ? '102px' : '57px' }
+            }>
+              <div className={styles.gutterCorner} />
+              {weekDays.map((day, di) => {
+                const isToday = isSameDay(day, today)
+                const dayHalls = viewMode === 'week'
+                  ? hallColumns.filter(h => {
+                      const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
+                      return h === null
+                        ? dayClasses.some(c => !c.hall_id)
+                        : dayClasses.some(c => c.hall_id === h.id)
+                    })
+                  : hallColumns
+                return (
+                  <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
+                    <div className={styles.dayHeadTop}>
+                      <button
+                        className={styles.dayHeadBtn}
+                        onClick={() => viewMode === 'week' && switchToDay(day)}
+                        title={viewMode === 'week' ? 'Перейти до дня' : undefined}
+                      >
+                        <span className={styles.dayName}>{DAYS_UA[di]}</span>
+                        <span className={styles.dayDate}>{formatDayDate(day)}</span>
+                      </button>
+                    </div>
+                    {dayHalls.length > 1 && (
+                      <div className={styles.dayHallsRow}>
+                        {dayHalls.map(h => (
+                          <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                            {h ? h.name : '—'}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
 
-        {/* Calendar body: time gutter + day columns */}
-        <div className={styles.bodyGrid}>
-          {/* Time gutter */}
-          <div className={styles.timeGutter}>
-            {HOURS.map(h => (
-              <div key={h} className={styles.timeRow}>
-                <span className={styles.timeLabel}>
-                  {String(h).padStart(2, '0')}:00
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Day columns */}
-          {weekDays.map((day, di) => {
-            const dayClasses = classes.filter(c => isSameDay(new Date(c.starts_at), day))
-            const lanes = computeLanes(dayClasses)
-            return (
-              <div key={di} className={styles.dayCol}>
-                {/* Hour lines */}
-                {HOURS.slice(1).map(h => (
-                  <div
-                    key={h}
-                    className={styles.hourLine}
-                    style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }}
-                  />
+            {/* Body grid */}
+            <div className={styles.bodyGrid} style={
+              viewMode === 'week'
+                ? { gridTemplateColumns: `48px repeat(7, 1fr)` }
+                : { gridTemplateColumns: `48px 1fr` }
+            }>
+              {/* Time gutter */}
+              <div className={styles.timeGutter}>
+                {HOURS.map(h => (
+                  <div key={h} className={styles.timeRow}>
+                    <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
+                  </div>
                 ))}
-
-                {/* Current time indicator */}
-                {nowTop !== null && isSameDay(day, today) && (
-                  <div className={styles.nowLine} style={{ top: `${nowTop}px` }} />
-                )}
-
-                {/* Cards */}
-                {!loading && dayClasses.map(cls => {
-                  const activeCount = cls.enrollments.filter(
-                    e => e.status === 'enrolled' || e.status === 'attended'
-                  ).length
-                  const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }
-                  return (
-                    <button
-                      key={cls.id}
-                      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
-                      style={{
-                        top: `${getCardTop(cls.starts_at)}px`,
-                        height: `${getCardHeight(cls.duration_min)}px`,
-                        left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
-                        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
-                        ['--card-color' as string]: typeColor(cls.ticket_type),
-                      }}
-                      onClick={() => router.push(`/schedule/${cls.id}`)}
-                    >
-                      <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
-                      <span className={styles.cardType}>
-                        {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-                        {cls.title ? ` · ${cls.title}` : ''}
-                      </span>
-                      {cls.trainers && (
-                        <span className={styles.cardMeta}>{cls.trainers.name}</span>
-                      )}
-                      {cls.halls && (
-                        <span className={styles.cardMeta}>{cls.halls.name}</span>
-                      )}
-                      <span className={`${styles.cardCount} ${cls.capacity != null && activeCount >= cls.capacity ? styles.cardCountFull : cls.capacity != null && activeCount >= cls.capacity * 0.8 ? styles.cardCountAlmost : ''}`}>
-                        {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
-                      </span>
-                      {cls.is_cancelled && (
-                        <span className={styles.cancelledBadge}>скасовано</span>
-                      )}
-                    </button>
-                  )
-                })}
               </div>
-            )
-          })}
-        </div>
-        </>}
+
+              {/* Day columns */}
+              {weekDays.map((day, di) => {
+                const isToday = isSameDay(day, today)
+                const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
+
+                // Which hall columns to show for this day
+                const dayHallCols = viewMode === 'week'
+                  ? hallColumns.filter(h => {
+                      return h === null
+                        ? dayClasses.some(c => !c.hall_id)
+                        : dayClasses.some(c => c.hall_id === h.id)
+                    })
+                  : hallColumns
+
+                const showHallCols = dayHallCols.length > 0
+
+                return (
+                  <div key={di} className={styles.dayCol}>
+                    {showHallCols ? (
+                      // Hall sub-columns
+                      dayHallCols.map(hall => {
+                        const hallClasses = hall === null
+                          ? dayClasses.filter(c => !c.hall_id)
+                          : dayClasses.filter(c => c.hall_id === hall.id)
+                        return (
+                          <HallSubCol
+                            key={hall?.id ?? 'no-hall'}
+                            classes={hallClasses}
+                            typeLabels={typeLabels}
+                            isToday={isToday}
+                            nowTop={nowTop}
+                            onCardClick={id => router.push(`/schedule/${id}`)}
+                          />
+                        )
+                      })
+                    ) : (
+                      // Empty day — single sub-col for hour lines + now line
+                      <HallSubCol
+                        key="empty"
+                        classes={[]}
+                        typeLabels={typeLabels}
+                        isToday={isToday}
+                        nowTop={nowTop}
+                        onCardClick={() => {}}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
       </main>
 
       {showModal && (
