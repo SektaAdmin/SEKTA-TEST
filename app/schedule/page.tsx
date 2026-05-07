@@ -132,15 +132,12 @@ function formatDayFull(d: Date) {
 function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date): string {
   const rect = e.currentTarget.getBoundingClientRect()
   const relY = e.clientY - rect.top
-  const totalMinutes = (relY / HOUR_HEIGHT) * 60 + MIN_HOUR * 60
-  const rounded = Math.round(totalMinutes / 15) * 15
-  const h = Math.floor(rounded / 60)
-  const m = rounded % 60
-  const clampedH = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, h))
+  const hour = Math.floor(relY / HOUR_HEIGHT) + MIN_HOUR
+  const clampedH = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, hour))
   const d = new Date(day)
-  d.setHours(clampedH, m, 0, 0)
+  d.setHours(clampedH, 0, 0, 0)
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:${pad(m)}`
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:00`
 }
 
 // ── Card component ────────────────────────────────────────────────
