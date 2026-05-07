@@ -19,7 +19,7 @@ type ClassWithJoins = Class & {
 type EnrollmentRow = {
   id: string
   client_id: string
-  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow'
+  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
   sessions_used: number
   created_at: string
   clients: { first_name: string | null; last_name: string | null } | null
@@ -30,6 +30,7 @@ const STATUS_LABELS: Record<string, string> = {
   attended:  'Відвідав',
   cancelled: 'Скасовано',
   noshow:    'Не прийшов',
+  waitlist:  'Черга',
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -37,6 +38,7 @@ const STATUS_STYLES: Record<string, string> = {
   attended:  'badgeAttended',
   cancelled: 'badgeCancelled',
   noshow:    'badgeNoshow',
+  waitlist:  'badgeWaitlist',
 }
 
 export default function ClassDetailPage() {
@@ -61,8 +63,6 @@ export default function ClassDetailPage() {
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
-  const [confirmDeleteClass, setConfirmDeleteClass] = useState(false)
-  const [deletingClass, setDeletingClass] = useState(false)
 
   const fetchClass = useCallback(async () => {
     const { data, error } = await supabase
@@ -154,8 +154,6 @@ export default function ClassDetailPage() {
     if (error) {
       if (error.code === '23505') {
         setEnrollError('Клієнт вже записаний на це заняття')
-      } else if (error.message?.includes('capacity_exceeded')) {
-        setEnrollError('Заняття вже заповнене')
       } else {
         setEnrollError('Помилка при записі клієнта')
       }
@@ -220,26 +218,7 @@ export default function ClassDetailPage() {
     setCancellingClass(false)
   }
 
-  async function handleDeleteClass() {
-    if (!cls) return
-    setDeletingClass(true)
-    const { error: e1 } = await supabase
-      .from('enrollments')
-      .update({ status: 'cancelled' })
-      .eq('class_id', cls.id)
-    const { error: e2 } = await supabase
-      .from('classes')
-      .update({ is_cancelled: true })
-      .eq('id', cls.id)
-    if (e1 || e2) {
-      toast.error('Не вдалося видалити заняття')
-      setDeletingClass(false)
-      return
-    }
-    router.push('/schedule')
-  }
-
-  if (loading) {
+if (loading) {
     return (
       <div className={styles.layout}>
         <Sidebar />
@@ -262,6 +241,8 @@ export default function ClassDetailPage() {
   }
 
   const activeCount = enrollments.filter(e => e.status === 'enrolled' || e.status === 'attended').length
+  const waitlist = enrollments.filter(e => e.status === 'waitlist')
+  const mainEnrollments = enrollments.filter(e => e.status !== 'waitlist')
   const stillEnrolled = enrollments.filter(e => e.status === 'enrolled')
   const classIsPast = new Date(cls.starts_at) < new Date()
   const startDate = new Date(cls.starts_at)
@@ -282,43 +263,26 @@ export default function ClassDetailPage() {
             Розклад
           </button>
           <div className={styles.topbarActions}>
-            <button className={styles.btnEdit} onClick={() => setShowEditModal(true)} disabled={deletingClass}>
+            <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
               Редагувати
             </button>
-            {!confirmDeleteClass && (
-              cls.is_cancelled ? (
-                <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass || deletingClass}>
-                  Відновити
-                </button>
-              ) : confirmCancelClass ? (
-                <>
-                  <span className={styles.confirmPrompt}>Скасувати заняття?</span>
-                  <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
-                    Так
-                  </button>
-                  <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
-                    Ні
-                  </button>
-                </>
-              ) : (
-                <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)} disabled={deletingClass}>
-                  Скасувати заняття
-                </button>
-              )
-            )}
-            {confirmDeleteClass ? (
+            {cls.is_cancelled ? (
+              <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                Відновити
+              </button>
+            ) : confirmCancelClass ? (
               <>
-                <span className={styles.confirmPrompt}>Видалити тренування?</span>
-                <button className={styles.btnCancel} onClick={handleDeleteClass} disabled={deletingClass}>
-                  {deletingClass ? 'Видалення...' : 'Так'}
+                <span className={styles.confirmPrompt}>Скасувати заняття?</span>
+                <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                  Так
                 </button>
-                <button className={styles.btnEdit} onClick={() => setConfirmDeleteClass(false)} disabled={deletingClass}>
+                <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
                   Ні
                 </button>
               </>
             ) : (
-              <button className={styles.btnCancel} onClick={() => { setConfirmCancelClass(false); setConfirmDeleteClass(true) }} disabled={cancellingClass || deletingClass}>
-                Видалити
+              <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
+                Скасувати заняття
               </button>
             )}
           </div>
@@ -434,7 +398,7 @@ export default function ClassDetailPage() {
             )}
 
             {/* Enrollments table */}
-            {enrollments.length === 0 ? (
+            {mainEnrollments.length === 0 ? (
               <div className={styles.empty}>Нікого не записано</div>
             ) : (
               <div className={styles.tableWrap}>
@@ -449,7 +413,7 @@ export default function ClassDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {enrollments.map(e => {
+                    {mainEnrollments.map(e => {
                       const name = e.clients
                         ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                         : '—'
@@ -458,10 +422,7 @@ export default function ClassDetailPage() {
                       return (
                         <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
                           <td>
-                            <a
-                              href={`/clients/${e.client_id}`}
-                              className={styles.clientLink}
-                            >
+                            <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                               {name}
                             </a>
                           </td>
@@ -532,6 +493,78 @@ export default function ClassDetailPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Waitlist */}
+            {waitlist.length > 0 && (
+              <div className={styles.waitlistSection}>
+                <h3 className={styles.waitlistTitle}>Список очікування ({waitlist.length})</h3>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Клієнт</th>
+                        <th>Баланс год.</th>
+                        <th>Дата запису</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {waitlist.map(e => {
+                        const name = e.clients
+                          ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
+                          : '—'
+                        const bal = balanceMap[e.client_id]
+                        const isLoading = actionLoading === e.id
+                        return (
+                          <tr key={e.id}>
+                            <td>
+                              <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
+                                {name}
+                              </a>
+                            </td>
+                            <td className={styles.balanceCell}>
+                              {bal != null ? (
+                                <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
+                              ) : '—'}
+                            </td>
+                            <td className={styles.dateCell}>
+                              {formatSaleDatetime(e.created_at)}
+                            </td>
+                            <td>
+                              <div className={styles.actions}>
+                                <button
+                                  className={styles.btnReEnroll}
+                                  onClick={async () => {
+                                    setActionLoading(e.id)
+                                    await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
+                                    if (cls) await fetchEnrollments(cls.ticket_type)
+                                    setActionLoading(null)
+                                  }}
+                                  disabled={isLoading}
+                                >
+                                  Підтвердити
+                                </button>
+                                <button
+                                  className={styles.btnCancelEnroll}
+                                  onClick={() => handleUpdateStatus(e.id, 'cancelled')}
+                                  disabled={isLoading}
+                                  title="Скасувати"
+                                >
+                                  —
+                                </button>
+                                {actionError[e.id] && (
+                                  <span className={styles.rowError}>{actionError[e.id]}</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

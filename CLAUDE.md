@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-07 (recurring classes, waitlist, client enrollment from profile)
+- **Last Updated**: 2026-05-07 (archive tab, cancel/restore flow, soft delete clarified) (recurring classes, waitlist, client enrollment from profile)
 
 ---
 
@@ -487,7 +487,7 @@ hooks/
 | `/training-types` | Типи занять (довідник) |
 | `/schedule` | Розклад занять |
 | `/schedule/templates` | Шаблони тижня: create/edit class_series type='template', постійники, кнопка "Виставити тиждень" |
-| `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність |
+| `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність. Кнопки: «Редагувати», «Скасувати заняття» / «Відновити» (soft delete через `is_cancelled`) |
 | `/accounting` | Облік надходжень |
 | `/accounting/trainers` | Розрахунок з тренерами |
 
@@ -499,11 +499,11 @@ hooks/
 1. **RLS увімкнено** — authenticated = повний доступ. При нових таблицях: додавати GRANT + policy.
 2. **Грошовий баланс тільки через RPC** — `update_client_balance()`, не UPDATE напрямую. **Залишок занять тільки через `mark_attendance()`**.
 3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
-4. **Мягкие удаления** — везде `is_active`, никогда не DELETE
+4. **Мягкие удаления** — везде `is_active` або `is_cancelled`, никогда не DELETE. `classes` використовує `is_cancelled=true`. Розклад фільтрує `is_cancelled=false`; архів показує `is_cancelled=true`.
 5. **Timestamps UTC** — всегда `timestamptz`
 6. **Деньги в гривнях** — `tickets.price`, `sales.price_paid`, `sales.amount_given` зберігаються в гривнях (₴), ділити на 100 не треба
 7. **GIN-индексы на clients** — использовать для fuzzy-поиска по фамилии и телефону (`%` или `similarity()`)
 
 ---
 
-**Last Updated**: 2026-05-07
+**Last Updated**: 2026-05-07 (archive tab, cancel/restore flow, soft delete clarified)

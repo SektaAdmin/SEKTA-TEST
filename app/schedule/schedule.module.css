@@ -17,20 +17,23 @@
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--topbar-py) var(--topbar-px);
+  padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 10;
   flex-shrink: 0;
+  height: 57px;
 }
 
 .weekNav {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .weekRange {
@@ -90,6 +93,110 @@
   border-color: var(--border-hover);
   color: var(--text);
   background: var(--bg-3);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+.topbarLeft {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0 14px;
+  height: 57px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+  display: flex;
+  align-items: center;
+}
+.tab:hover { color: var(--text); }
+.tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Archive list ────────────────────────────────────────────── */
+.archiveList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px var(--topbar-px);
+}
+
+.archiveEmpty {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 48px 0;
+}
+
+.archiveRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font);
+  transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+.archiveRow:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-3);
+}
+
+.archiveDate {
+  font-size: 12px;
+  color: var(--text-2);
+  min-width: 80px;
+}
+
+.archiveTime {
+  font-size: 12px;
+  color: var(--text-2);
+  min-width: 100px;
+}
+
+.archiveType {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.archiveMeta {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.archiveMetaSep {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.archiveCount {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* ── Sticky week header ─────────────────────────────────────── */

@@ -127,8 +127,10 @@ export default function SchedulePage() {
   const activeHalls = halls.filter(h => h.is_active)
   const activeTrainingTypes = trainingTypes.filter(t => t.is_active)
 
+  const [tab, setTab] = useState<'schedule' | 'archive'>('schedule')
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
+  const [cancelledClasses, setCancelledClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -153,17 +155,25 @@ export default function SchedulePage() {
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('classes')
-      .select('*, trainers(name), halls(name), enrollments(id, status)')
-      .gte('starts_at', weekStartISO)
-      .lte('starts_at', weekEndISO)
-      .order('starts_at')
-    if (error) {
-      toast.error('Не вдалося завантажити розклад')
-    } else {
-      setClasses((data ?? []) as ClassWithJoins[])
-    }
+    const [activeRes, cancelledRes] = await Promise.all([
+      supabase
+        .from('classes')
+        .select('*, trainers(name), halls(name), enrollments(id, status)')
+        .gte('starts_at', weekStartISO)
+        .lte('starts_at', weekEndISO)
+        .eq('is_cancelled', false)
+        .order('starts_at'),
+      supabase
+        .from('classes')
+        .select('*, trainers(name), halls(name), enrollments(id, status)')
+        .gte('starts_at', weekStartISO)
+        .lte('starts_at', weekEndISO)
+        .eq('is_cancelled', true)
+        .order('starts_at'),
+    ])
+    if (activeRes.error) toast.error('Не вдалося завантажити розклад')
+    else setClasses((activeRes.data ?? []) as ClassWithJoins[])
+    if (!cancelledRes.error) setCancelledClasses((cancelledRes.data ?? []) as ClassWithJoins[])
     setLoading(false)
   }, [weekStartISO, weekEndISO])
 
@@ -195,6 +205,22 @@ export default function SchedulePage() {
       <Sidebar />
       <main className={styles.main}>
         <div className={styles.topbar}>
+          <div className={styles.topbarLeft}>
+            <div className={styles.tabs}>
+              <button
+                className={`${styles.tab} ${tab === 'schedule' ? styles.tabActive : ''}`}
+                onClick={() => setTab('schedule')}
+              >
+                Розклад
+              </button>
+              <button
+                className={`${styles.tab} ${tab === 'archive' ? styles.tabActive : ''}`}
+                onClick={() => setTab('archive')}
+              >
+                Архів
+              </button>
+            </div>
+          </div>
           <div className={styles.weekNav}>
             <button
               className={styles.navBtn}
@@ -223,11 +249,51 @@ export default function SchedulePage() {
               Сьогодні
             </button>
           </div>
-          <button className={styles.btnNew} onClick={() => setShowModal(true)}>
-            + Заняття
-          </button>
+          {tab === 'schedule' && (
+            <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+              + Заняття
+            </button>
+          )}
         </div>
 
+        {/* Archive tab */}
+        {tab === 'archive' && (
+          <div className={styles.archiveList}>
+            {loading ? (
+              <div className={styles.archiveEmpty}>Завантаження...</div>
+            ) : cancelledClasses.length === 0 ? (
+              <div className={styles.archiveEmpty}>Скасованих занять за цей тиждень немає</div>
+            ) : cancelledClasses.map(cls => {
+              const activeCount = cls.enrollments.filter(
+                e => e.status === 'enrolled' || e.status === 'attended'
+              ).length
+              const start = new Date(cls.starts_at)
+              const end = new Date(start.getTime() + cls.duration_min * 60000)
+              const timeStr = `${formatTime(cls.starts_at)}–${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`
+              const dayStr = `${DAYS_UA[(start.getDay() + 6) % 7]}, ${formatDayDate(start)}`
+              return (
+                <button
+                  key={cls.id}
+                  className={styles.archiveRow}
+                  onClick={() => router.push(`/schedule/${cls.id}`)}
+                >
+                  <span className={styles.archiveDate}>{dayStr}</span>
+                  <span className={styles.archiveTime}>{timeStr}</span>
+                  <span className={styles.archiveType} style={{ color: typeColor(cls.ticket_type) }}>
+                    {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+                    {cls.title ? ` · ${cls.title}` : ''}
+                  </span>
+                  {cls.trainers && <span className={styles.archiveMeta}>{cls.trainers.name}</span>}
+                  {cls.trainers && cls.halls && <span className={styles.archiveMetaSep}>·</span>}
+                  {cls.halls && <span className={styles.archiveMeta}>{cls.halls.name}</span>}
+                  <span className={styles.archiveCount}>{activeCount} записані</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {tab === 'schedule' && <>
         {/* Sticky week header */}
         <div className={styles.weekHeader}>
           <div className={styles.gutterCorner} />
@@ -318,6 +384,7 @@ export default function SchedulePage() {
             )
           })}
         </div>
+        </>}
       </main>
 
       {showModal && (
