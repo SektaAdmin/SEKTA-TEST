@@ -8,6 +8,7 @@ import { useTrainers } from '@/hooks/useTrainers'
 import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import SeriesModal from '@/components/SeriesModal'
+import HallWeekGrid from '@/components/HallWeekGrid'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
@@ -42,21 +43,28 @@ interface SeriesClientRow {
 
 export default function TemplatesPage() {
   const { templates: rawTemplates, loading, fetchError, refetch } = useSeriesTemplates()
-  // Sort Mon(1)–Sun(0): map 0→7 so Sunday sorts last
-  const templates = useMemo(() =>
-    [...rawTemplates].sort((a, b) => {
-      const sa = a.day_of_week === 0 ? 7 : a.day_of_week
-      const sb = b.day_of_week === 0 ? 7 : b.day_of_week
-      return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
-    }),
-  [rawTemplates])
   const { trainers } = useTrainers()
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()
 
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [filterTrainer, setFilterTrainer] = useState('')
+
+  // Sort Mon(1)–Sun(0): map 0→7 so Sunday sorts last
+  const templates = useMemo(() => {
+    let result = [...rawTemplates]
+    if (filterTrainer) result = result.filter(s => s.trainer_id === filterTrainer)
+    return result.sort((a, b) => {
+      const sa = a.day_of_week === 0 ? 7 : a.day_of_week
+      const sb = b.day_of_week === 0 ? 7 : b.day_of_week
+      return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
+    })
+  }, [rawTemplates, filterTrainer])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingSeries, setEditingSeries] = useState<ClassSeries | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [clientsDrawerSeries, setClientsDrawerSeries] = useState<ClassSeries | null>(null)
+  const [searchKey, setSearchKey] = useState(0)
 
   // Generate week dialog
   const [showGenerate, setShowGenerate] = useState(false)
@@ -68,6 +76,7 @@ export default function TemplatesPage() {
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
   const [seriesClients, setSeriesClients] = useState<Record<string, SeriesClientRow[]>>({})
   const [clientsLoading, setClientsLoading] = useState<string | null>(null)
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
 
   const loadSeriesClients = useCallback(async (seriesId: string) => {
     if (seriesClients[seriesId]) return
@@ -147,6 +156,13 @@ export default function TemplatesPage() {
     }
   }
 
+  const openClientsDrawer = (s: ClassSeries) => {
+    setClientsDrawerSeries(s)
+    loadSeriesClients(s.id)
+  }
+
+  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null) }
+
   if (fetchError) toast.error(fetchError)
 
   return (
@@ -159,6 +175,20 @@ export default function TemplatesPage() {
           <h1 className={styles.title}>Шаблони тижня</h1>
         </div>
         <div className={styles.topbarRight}>
+          <div className={styles.viewToggle}>
+            <button
+              className={viewMode === 'grid' ? styles.toggleActive : styles.toggleBtn}
+              onClick={() => setViewMode('grid')}
+            >
+              Сітка
+            </button>
+            <button
+              className={viewMode === 'list' ? styles.toggleActive : styles.toggleBtn}
+              onClick={() => setViewMode('list')}
+            >
+              Список
+            </button>
+          </div>
           <div className={styles.generateWrap}>
             <button
               className={styles.btnGenerate}
@@ -208,11 +238,38 @@ export default function TemplatesPage() {
         </div>
       </div>
 
+      <div className={styles.filterBar}>
+        <div className={styles.filterGroup}>
+          <button
+            className={`${styles.filterBtn} ${filterTrainer === '' ? styles.filterBtnActive : ''}`}
+            onClick={() => setFilterTrainer('')}
+          >
+            Всі тренери
+          </button>
+          {trainers.filter(t => t.is_active).map(t => (
+            <button
+              key={t.id}
+              className={`${styles.filterBtn} ${filterTrainer === t.id ? styles.filterBtnActive : ''}`}
+              onClick={() => setFilterTrainer(f => f === t.id ? '' : t.id)}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className={styles.content}>
         {loading ? (
           <p className={styles.loading}>...</p>
         ) : templates.length === 0 ? (
           <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
+        ) : viewMode === 'grid' ? (
+          <HallWeekGrid
+            series={templates}
+            halls={halls}
+            trainingTypes={trainingTypes}
+            onCardClick={openClientsDrawer}
+          />
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -293,7 +350,7 @@ export default function TemplatesPage() {
                                     )}
                                     {clients.map(row => (
                                       <span key={row.id} className={styles.clientChip}>
-                                        {[row.clients.last_name, row.clients.first_name].filter(Boolean).join(' ') || 'Клієнт'}
+                                        {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
                                         <button
                                           className={styles.btnRemove}
                                           onClick={() => removeSeriesClient(series.id, row.id)}
@@ -333,6 +390,74 @@ export default function TemplatesPage() {
           trainingTypes={trainingTypes}
         />
       )}
+
+      {/* Drawer: постійники обраного шаблону */}
+      {clientsDrawerSeries && (() => {
+        const s = clientsDrawerSeries
+        const clients = seriesClients[s.id] ?? []
+        const trainerName = (s.trainers as { name: string } | null)?.name
+        const hallName = (s.halls as { name: string } | null)?.name
+        return (
+          <>
+            <div className={styles.drawerOverlay} onClick={closeClientsDrawer} />
+            <div className={styles.drawer}>
+              <div className={styles.drawerHeader}>
+                <div className={styles.drawerMeta}>
+                  <span className={styles.drawerTime}>{DAY_LABELS[s.day_of_week]}, {s.time_of_day.slice(0, 5)}</span>
+                  <span className={styles.drawerTitle}>
+                    {trainingTypes.find(t => t.code === s.ticket_type)?.label ?? s.ticket_type}
+                  </span>
+                  {(trainerName || hallName) && (
+                    <span className={styles.drawerSub}>
+                      {[trainerName, hallName].filter(Boolean).join(' · ')}
+                    </span>
+                  )}
+                </div>
+                <button className={styles.drawerClose} onClick={closeClientsDrawer}>✕</button>
+              </div>
+
+              <div className={styles.drawerBody}>
+                <div className={styles.addClientRow}>
+                  <ClientSearchCombobox
+                    key={searchKey}
+                    onSelect={client => { addSeriesClient(s.id, client); setSearchKey(k => k + 1) }}
+                    onClear={() => {}}
+                  />
+                </div>
+
+                <p className={styles.drawerLabel}>Постійники</p>
+                {clientsLoading === s.id ? (
+                  <span className={styles.loading}>...</span>
+                ) : clients.length === 0 ? (
+                  <span className={styles.noClients}>Немає постійників</span>
+                ) : (
+                  <div className={styles.drawerClientList}>
+                    {clients.map((row, i) => (
+                      <div key={row.id} className={styles.drawerClientRow}>
+                        <span className={styles.drawerClientNum}>{i + 1}</span>
+                        <span className={styles.drawerClientName}>
+                          {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
+                        </span>
+                        {confirmRemoveId === row.id ? (
+                          <button
+                            className={styles.btnRemoveConfirm}
+                            onClick={() => { removeSeriesClient(s.id, row.id); setConfirmRemoveId(null) }}
+                          >Підтвердити</button>
+                        ) : (
+                          <button
+                            className={styles.btnRemove}
+                            onClick={() => setConfirmRemoveId(row.id)}
+                          >Видалити</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )
+      })()}
     </div>
     </div>
   )

@@ -101,6 +101,39 @@
   flex: 1;
 }
 
+/* ── View toggle ─────────────────────────────────────────── */
+.viewToggle {
+  display: flex;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.toggleBtn {
+  height: var(--control-h);
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+.toggleBtn:hover { color: var(--text); background: var(--bg-2); }
+
+.toggleActive {
+  height: var(--control-h);
+  padding: 0 12px;
+  background: var(--bg-2);
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: default;
+}
+
 /* ── Buttons ─────────────────────────────────────────────── */
 .btnGenerate {
   height: var(--control-h);
@@ -163,6 +196,50 @@
 }
 .btnConfirm:hover { opacity: 0.88; }
 .btnConfirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--topbar-px);
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  height: 26px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+  white-space: nowrap;
+}
+.filterBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+.filterBtnActive {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.filterBtnActive:hover {
+  border-color: var(--accent-border-hover);
+  background: var(--accent-dim);
+}
 
 /* ── Content ─────────────────────────────────────────────── */
 .content {
@@ -311,20 +388,160 @@
 }
 
 .btnRemove {
-  background: none;
-  border: none;
-  color: var(--text-3);
+  background: transparent;
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  color: var(--danger);
+  font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 0;
-  transition: color var(--motion-fast);
+  opacity: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: opacity var(--motion-fast), background var(--motion-fast);
 }
-.btnRemove:hover { color: var(--danger); }
+.btnRemove:hover { background: var(--danger-dim); }
+.drawerClientRow:hover .btnRemove { opacity: 1; }
+
+.btnRemoveConfirm {
+  background: var(--danger-dim);
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  color: var(--danger);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background var(--motion-fast);
+}
+.btnRemoveConfirm:hover { background: var(--danger-border); }
 
 .addClientRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 360px;
+}
+
+/* ── Clients drawer ───────────────────────────────────────── */
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  z-index: 50;
+  background: var(--bg-2);
+  border-left: 0.5px solid var(--border-hover);
+  display: flex;
+  flex-direction: column;
+  animation: drawerIn var(--motion-standard) both;
+}
+
+@keyframes drawerIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.drawerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.drawerTime {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.drawerTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.drawerSub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.drawerClose {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color var(--motion-fast);
+}
+.drawerClose:hover { color: var(--text); }
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.drawerLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.drawerClientList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawerClientRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--motion-fast);
+}
+.drawerClientRow:hover { border-color: var(--border-hover); }
+
+.drawerClientNum {
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 18px;
+  flex-shrink: 0;
+}
+
+.drawerClientName {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
 }
