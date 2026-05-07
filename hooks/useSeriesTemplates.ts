@@ -13,7 +13,7 @@ export function useSeriesTemplates() {
     setFetchError(null)
     const { data, error } = await supabase
       .from('class_series')
-      .select('*, trainers(name), halls(name), series_clients(count)')
+      .select('*, trainers(name), halls(name), series_clients(id, client_id)')
       .eq('type', 'template')
       .order('day_of_week')
       .order('time_of_day')

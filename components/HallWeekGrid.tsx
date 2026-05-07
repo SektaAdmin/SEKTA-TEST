@@ -118,7 +118,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                       {/* Cards */}
                       {items.map(s => {
                         const trainerName = (s.trainers as { name: string } | null)?.name
-                        const clientCount = (s.series_clients?.[0] as unknown as { count: number } | undefined)?.count ?? 0
+                        const clientCount = s.series_clients?.length ?? 0
                         const capacity = s.capacity
                         return (
                           <button

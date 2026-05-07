@@ -88,7 +88,7 @@ export interface ClassSeries {
   created_at: string
   trainers?: { name: string } | null
   halls?: { name: string } | null
-  series_clients?: { count: number }[]
+  series_clients?: { id: string; client_id: string }[]
 }
 
 export interface SeriesClient {

@@ -241,6 +241,44 @@
   background: var(--accent-dim);
 }
 
+/* ── Client filter ───────────────────────────────────────── */
+.clientFilterWrap {
+  margin-left: auto;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.clientFilterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 6px 0 10px;
+  background: var(--accent-dim);
+  border: 0.5px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 12px;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clientFilterClear {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity var(--motion-fast);
+}
+.clientFilterClear:hover { opacity: 1; }
+
 /* ── Content ─────────────────────────────────────────────── */
 .content {
   flex: 1;

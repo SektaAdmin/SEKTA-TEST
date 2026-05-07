@@ -49,17 +49,20 @@ export default function TemplatesPage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [filterClient, setFilterClient] = useState<Client | null>(null)
+  const [clientFilterKey, setClientFilterKey] = useState(0)
 
   // Sort Mon(1)–Sun(0): map 0→7 so Sunday sorts last
   const templates = useMemo(() => {
     let result = [...rawTemplates]
     if (filterTrainer) result = result.filter(s => s.trainer_id === filterTrainer)
+    if (filterClient) result = result.filter(s => (s.series_clients ?? []).some(sc => sc.client_id === filterClient.id))
     return result.sort((a, b) => {
       const sa = a.day_of_week === 0 ? 7 : a.day_of_week
       const sb = b.day_of_week === 0 ? 7 : b.day_of_week
       return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
     })
-  }, [rawTemplates, filterTrainer])
+  }, [rawTemplates, filterTrainer, filterClient])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingSeries, setEditingSeries] = useState<ClassSeries | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -256,6 +259,25 @@ export default function TemplatesPage() {
             </button>
           ))}
         </div>
+        <div className={styles.clientFilterWrap}>
+          {filterClient ? (
+            <span className={styles.clientFilterChip}>
+              {[filterClient.first_name, filterClient.last_name].filter(Boolean).join(' ') || filterClient.phone || 'Клієнт'}
+              <button
+                className={styles.clientFilterClear}
+                onClick={() => { setFilterClient(null); setClientFilterKey(k => k + 1) }}
+                aria-label="Скинути фільтр по клієнту"
+              >×</button>
+            </span>
+          ) : (
+            <ClientSearchCombobox
+              key={clientFilterKey}
+              onSelect={client => setFilterClient(client)}
+              onClear={() => {}}
+              inputId="client-filter"
+            />
+          )}
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -287,9 +309,7 @@ export default function TemplatesPage() {
               </thead>
               <tbody>
                 {templates.map(series => {
-                  const clientCount = series.series_clients?.[0]
-                    ? (series.series_clients[0] as unknown as { count: number }).count
-                    : 0
+                  const clientCount = series.series_clients?.length ?? 0
                   const isExpanded = expandedSeriesId === series.id
                   const clients = seriesClients[series.id] ?? []
                   const trainerName = (series.trainers as { name: string } | null)?.name
