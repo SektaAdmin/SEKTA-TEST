@@ -10,6 +10,7 @@ import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import SeriesModal from '@/components/SeriesModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
+import Sidebar from '@/components/Sidebar'
 import styles from './page.module.css'
 
 const DAY_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -140,6 +141,8 @@ export default function TemplatesPage() {
   if (fetchError) toast.error(fetchError)
 
   return (
+    <div className={styles.layout}>
+    <Sidebar />
     <div className={styles.page}>
       <div className={styles.topbar}>
         <div className={styles.topbarLeft}>
@@ -321,6 +324,7 @@ export default function TemplatesPage() {
           trainingTypes={trainingTypes}
         />
       )}
+    </div>
     </div>
   )
 }

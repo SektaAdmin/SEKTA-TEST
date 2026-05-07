@@ -1,7 +1,15 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
 .page {
+  flex: 1;
+  margin-left: 196px;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100vh;
 }
 
 /* ── Topbar ──────────────────────────────────────────────── */
