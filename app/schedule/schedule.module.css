@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -175,6 +175,9 @@
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
+  position: sticky;
+  top: 57px;
+  z-index: 8;
 }
 
 .filterGroup {
@@ -368,7 +371,6 @@
 }
 
 .timeRow {
-  height: 80px;
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
@@ -388,7 +390,6 @@
 .dayCol {
   display: flex;
   flex-direction: row;
-  height: calc(16 * 80px);
   border-right: 0.5px solid var(--border);
   overflow: hidden;
 }

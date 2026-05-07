@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -15,7 +15,6 @@ const MONTHS_UA = ['Січ', 'Лют', 'Бер', 'Квіт', 'Трав', 'Чер
 
 const MIN_HOUR = 7
 const MAX_HOUR = 23
-const HOUR_HEIGHT = 80
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 
 type ViewMode = 'week' | 'day'
@@ -72,13 +71,13 @@ function formatDayDate(d: Date) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-function getCardTop(iso: string): number {
+function getCardTop(iso: string, hourHeight: number): number {
   const d = new Date(iso)
-  return (d.getHours() - MIN_HOUR + d.getMinutes() / 60) * HOUR_HEIGHT
+  return (d.getHours() - MIN_HOUR + d.getMinutes() / 60) * hourHeight
 }
 
-function getCardHeight(durationMin: number): number {
-  return Math.max((durationMin / 60) * HOUR_HEIGHT, 52)
+function getCardHeight(durationMin: number, hourHeight: number): number {
+  return Math.max((durationMin / 60) * hourHeight, 36)
 }
 
 type LaneInfo = { laneIndex: number; laneCount: number }
@@ -129,10 +128,10 @@ function formatDayFull(d: Date) {
 }
 
 // ── Slot click → time calculation ────────────────────────────────
-function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date): string {
+function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date, hourHeight: number): string {
   const rect = e.currentTarget.getBoundingClientRect()
   const relY = e.clientY - rect.top
-  const hour = Math.floor(relY / HOUR_HEIGHT) + MIN_HOUR
+  const hour = Math.floor(relY / hourHeight) + MIN_HOUR
   const clampedH = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, hour))
   const d = new Date(day)
   d.setHours(clampedH, 0, 0, 0)
@@ -144,12 +143,13 @@ function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date): stri
 interface CardProps {
   cls: ClassWithJoins
   typeLabels: Record<string, string>
+  hourHeight: number
   laneIndex?: number
   laneCount?: number
   onClick: () => void
 }
 
-function ClassCard({ cls, typeLabels, laneIndex = 0, laneCount = 1, onClick }: CardProps) {
+function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick }: CardProps) {
   const activeCount = cls.enrollments.filter(
     e => e.status === 'enrolled' || e.status === 'attended'
   ).length
@@ -161,8 +161,8 @@ function ClassCard({ cls, typeLabels, laneIndex = 0, laneCount = 1, onClick }: C
     <button
       className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
       style={{
-        top: `${getCardTop(cls.starts_at)}px`,
-        height: `${getCardHeight(cls.duration_min)}px`,
+        top: `${getCardTop(cls.starts_at, hourHeight)}px`,
+        height: `${getCardHeight(cls.duration_min, hourHeight)}px`,
         left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
         right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
         ['--card-color' as string]: color,
@@ -187,6 +187,7 @@ function ClassCard({ cls, typeLabels, laneIndex = 0, laneCount = 1, onClick }: C
 interface HallColProps {
   classes: ClassWithJoins[]
   typeLabels: Record<string, string>
+  hourHeight: number
   isToday: boolean
   nowTop: number | null
   day: Date
@@ -194,15 +195,15 @@ interface HallColProps {
   onSlotClick: (startsAt: string) => void
 }
 
-function HallSubCol({ classes, typeLabels, isToday, nowTop, day, onCardClick, onSlotClick }: HallColProps) {
+function HallSubCol({ classes, typeLabels, hourHeight, isToday, nowTop, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
   return (
     <div
       className={styles.hallSubCol}
-      onClick={e => onSlotClick(slotTimeFromClick(e, day))}
+      onClick={e => onSlotClick(slotTimeFromClick(e, day, hourHeight))}
     >
       {HOURS.slice(1).map(h => (
-        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }} />
+        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
       ))}
       {nowTop !== null && isToday && (
         <div className={styles.nowLine} style={{ top: `${nowTop}px` }} />
@@ -214,6 +215,7 @@ function HallSubCol({ classes, typeLabels, isToday, nowTop, day, onCardClick, on
             key={cls.id}
             cls={cls}
             typeLabels={typeLabels}
+            hourHeight={hourHeight}
             laneIndex={laneIndex}
             laneCount={laneCount}
             onClick={() => onCardClick(cls.id)}
@@ -242,6 +244,9 @@ export default function SchedulePage() {
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [hourHeight, setHourHeight] = useState(60)
+  const filterBarRef = useRef<HTMLDivElement>(null)
+  const weekHeaderRef = useRef<HTMLDivElement>(null)
 
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
@@ -292,15 +297,30 @@ export default function SchedulePage() {
   }, [trainingTypes])
 
   useEffect(() => {
+    function calcHourHeight() {
+      const topbarH = 57
+      const filterH = filterBarRef.current?.offsetHeight ?? 0
+      const weekH = weekHeaderRef.current?.offsetHeight ?? 0
+      const totalHours = MAX_HOUR - MIN_HOUR
+      const available = window.innerHeight - topbarH - filterH - weekH
+      setHourHeight(Math.max(32, Math.floor(available / totalHours)))
+    }
+    // rAF ensures refs are populated after paint
+    const raf = requestAnimationFrame(calcHourHeight)
+    window.addEventListener('resize', calcHourHeight)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', calcHourHeight) }
+  }, [tab, loading])
+
+  useEffect(() => {
     function updateNow() {
       const now = new Date()
       const h = now.getHours() + now.getMinutes() / 60
-      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * HOUR_HEIGHT : null)
+      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * hourHeight : null)
     }
     updateNow()
     const id = setInterval(updateNow, 60000)
     return () => clearInterval(id)
-  }, [])
+  }, [hourHeight])
 
   // Apply filters
   const filteredClasses = useMemo(() => {
@@ -419,7 +439,7 @@ export default function SchedulePage() {
 
         {/* Filter bar — only for schedule tab */}
         {tab === 'schedule' && (
-          <div className={styles.filterBar}>
+          <div className={styles.filterBar} ref={filterBarRef}>
             <div className={styles.filterGroup}>
               <button
                 className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
@@ -501,7 +521,7 @@ export default function SchedulePage() {
         {tab === 'schedule' && (
           <>
             {/* Week header */}
-            <div className={styles.weekHeader} style={
+            <div className={styles.weekHeader} ref={weekHeaderRef} style={
               viewMode === 'week'
                 ? { gridTemplateColumns: `48px repeat(7, 1fr)`, top: tab === 'schedule' ? '102px' : '57px' }
                 : { gridTemplateColumns: `48px 1fr`, top: tab === 'schedule' ? '102px' : '57px' }
@@ -552,7 +572,7 @@ export default function SchedulePage() {
               {/* Time gutter */}
               <div className={styles.timeGutter}>
                 {HOURS.map(h => (
-                  <div key={h} className={styles.timeRow}>
+                  <div key={h} className={styles.timeRow} style={{ height: `${hourHeight}px` }}>
                     <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
                   </div>
                 ))}
@@ -575,7 +595,7 @@ export default function SchedulePage() {
                 const showHallCols = dayHallCols.length > 0
 
                 return (
-                  <div key={di} className={styles.dayCol}>
+                  <div key={di} className={styles.dayCol} style={{ height: `${(MAX_HOUR - MIN_HOUR) * hourHeight}px` }}>
                     {showHallCols ? (
                       // Hall sub-columns
                       dayHallCols.map(hall => {
@@ -587,6 +607,7 @@ export default function SchedulePage() {
                             key={hall?.id ?? 'no-hall'}
                             classes={hallClasses}
                             typeLabels={typeLabels}
+                            hourHeight={hourHeight}
                             isToday={isToday}
                             nowTop={nowTop}
                             day={day}
@@ -604,6 +625,7 @@ export default function SchedulePage() {
                         key="empty"
                         classes={[]}
                         typeLabels={typeLabels}
+                        hourHeight={hourHeight}
                         isToday={isToday}
                         nowTop={nowTop}
                         day={day}
