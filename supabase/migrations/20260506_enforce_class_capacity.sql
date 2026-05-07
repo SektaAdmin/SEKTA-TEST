@@ -21,7 +21,7 @@ BEGIN
     AND id != NEW.id;
 
   IF v_active_count >= v_capacity THEN
-    RAISE EXCEPTION 'capacity_exceeded: class is full (% / %)', v_active_count, v_capacity;
+    NEW.status := 'waitlist';
   END IF;
 
   RETURN NEW;

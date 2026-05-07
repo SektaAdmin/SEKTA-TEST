@@ -149,6 +149,44 @@
 }
 .btnGenerate:hover { border-color: var(--accent-border-hover); background: var(--accent-dim); }
 
+.btnDeleteSchedule {
+  height: var(--control-h);
+  padding: 0 14px;
+  background: transparent;
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+.btnDeleteSchedule:hover { background: var(--danger-dim); }
+
+.deleteWarning {
+  font-size: 12px;
+  color: var(--danger);
+  margin: 0;
+  opacity: 0.8;
+}
+
+.btnDelete {
+  height: var(--control-h);
+  padding: 0 14px;
+  background: var(--danger-dim);
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+  white-space: nowrap;
+}
+.btnDelete:hover { background: var(--danger-border); }
+.btnDelete:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .btnNew {
   height: var(--control-h);
   padding: 0 14px;

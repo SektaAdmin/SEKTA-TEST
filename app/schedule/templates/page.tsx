@@ -75,6 +75,11 @@ export default function TemplatesPage() {
   const [generating, setGenerating] = useState(false)
   const nextMonday = nextMondayKyiv()
 
+  // Delete schedule dialog
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleteWeeks, setDeleteWeeks] = useState(1)
+  const [deleting, setDeleting] = useState(false)
+
   // Expandable series clients
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
   const [seriesClients, setSeriesClients] = useState<Record<string, SeriesClientRow[]>>({})
@@ -159,6 +164,39 @@ export default function TemplatesPage() {
     }
   }
 
+  const handleDelete = async () => {
+    setDeleting(true)
+    const { data: series } = await supabase
+      .from('class_series')
+      .select('id')
+      .eq('type', 'template')
+
+    const seriesIds = (series ?? []).map((s: { id: string }) => s.id)
+    if (seriesIds.length === 0) {
+      setDeleting(false)
+      setShowDelete(false)
+      toast.success('Немає шаблонів для видалення')
+      return
+    }
+
+    const [y, m, d] = nextMonday.split('-').map(Number)
+    const startDate = new Date(y, m - 1, d)
+    const endDate = new Date(startDate)
+    endDate.setDate(endDate.getDate() + deleteWeeks * 7)
+
+    const { error } = await supabase
+      .from('classes')
+      .delete()
+      .in('series_id', seriesIds)
+      .gte('starts_at', startDate.toISOString())
+      .lt('starts_at', endDate.toISOString())
+
+    setDeleting(false)
+    setShowDelete(false)
+    if (error) toast.error(error.message)
+    else toast.success('Розклад видалено')
+  }
+
   const openClientsDrawer = (s: ClassSeries) => {
     setClientsDrawerSeries(s)
     loadSeriesClients(s.id)
@@ -227,6 +265,50 @@ export default function TemplatesPage() {
                     disabled={generating}
                   >
                     {generating ? 'Генерую...' : 'Виставити'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className={styles.generateWrap}>
+            <button
+              className={styles.btnDeleteSchedule}
+              onClick={() => { setShowDelete(v => !v); setShowGenerate(false) }}
+            >
+              Видалити розклад
+            </button>
+            {showDelete && (
+              <div className={styles.generateDialog}>
+                <p className={styles.generateLabel}>
+                  Видалити заняття з шаблонів з{' '}
+                  <strong>{formatMonday(nextMonday)}</strong>
+                </p>
+                <p className={styles.deleteWarning}>
+                  Буде видалено заняття та записи клієнтів за {deleteWeeks} тижн. Ручні заняття залишаться.
+                </p>
+                <div className={styles.generateRow}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={deleteWeeks}
+                    onChange={e => setDeleteWeeks(Number(e.target.value))}
+                    className={styles.generateInput}
+                  />
+                  <span className={styles.generateUnit}>тижн.</span>
+                  <button
+                    className={styles.btnCancel}
+                    onClick={() => setShowDelete(false)}
+                    disabled={deleting}
+                  >
+                    Скасувати
+                  </button>
+                  <button
+                    className={styles.btnDelete}
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Видаляю...' : 'Видалити'}
                   </button>
                 </div>
               </div>
