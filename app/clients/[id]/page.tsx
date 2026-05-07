@@ -7,8 +7,39 @@ import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import EnrollClientModal from '@/components/EnrollClientModal'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
+
+const DOW_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
+type PermanentEnrollment = {
+  id: string
+  series_id: string
+  class_series: {
+    title: string | null
+    ticket_type: string
+    day_of_week: number
+    time_of_day: string
+    duration_min: number
+    trainers: { name: string } | null
+    halls: { name: string } | null
+  } | null
+}
+
+type UpcomingEnrollment = {
+  id: string
+  class_id: string
+  status: string
+  classes: {
+    ticket_type: string
+    title: string | null
+    starts_at: string
+    duration_min: number
+    trainers: { name: string } | null
+    halls: { name: string } | null
+  } | null
+}
 
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -47,6 +78,9 @@ export default function ClientProfilePage() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [balanceAfterMap, setBalanceAfterMap] = useState<Map<string, number>>(new Map())
+  const [upcomingEnrollments, setUpcomingEnrollments] = useState<UpcomingEnrollment[]>([])
+  const [permanentEnrollments, setPermanentEnrollments] = useState<PermanentEnrollment[]>([])
+  const [showEnrollModal, setShowEnrollModal] = useState(false)
 
   const fetchClient = useCallback(async () => {
     const { data, error } = await supabase
@@ -66,6 +100,28 @@ export default function ClientProfilePage() {
       .neq('sessions_balance', 0)
       .order('ticket_type')
     setSessionBalances((data as ClientSessionBalance[]) ?? [])
+  }, [id])
+
+  const fetchPermanentEnrollments = useCallback(async () => {
+    const { data } = await supabase
+      .from('series_clients')
+      .select('id, series_id, class_series(title, ticket_type, day_of_week, time_of_day, duration_min, trainers(name), halls(name))')
+      .eq('client_id', id)
+      .order('day_of_week', { referencedTable: 'class_series', ascending: true })
+      .order('time_of_day', { referencedTable: 'class_series', ascending: true })
+    setPermanentEnrollments((data as PermanentEnrollment[]) ?? [])
+  }, [id])
+
+  const fetchUpcomingEnrollments = useCallback(async () => {
+    const now = new Date().toISOString()
+    const { data } = await supabase
+      .from('enrollments')
+      .select('id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))')
+      .eq('client_id', id)
+      .eq('status', 'enrolled')
+      .gt('classes.starts_at', now)
+      .order('starts_at', { referencedTable: 'classes', ascending: true })
+    setUpcomingEnrollments((data as UpcomingEnrollment[]) ?? [])
   }, [id])
 
   const fetchSales = useCallback(async (page: number) => {
@@ -117,8 +173,8 @@ export default function ClientProfilePage() {
       for (const t of data ?? []) map[t.code] = t.label
       setTypeLabels(map)
     })
-    Promise.all([fetchClient(), fetchSessionBalances(), fetchSales(0)]).then(() => setLoading(false))
-  }, [fetchClient, fetchSessionBalances, fetchSales])
+    Promise.all([fetchClient(), fetchSessionBalances(), fetchSales(0), fetchUpcomingEnrollments(), fetchPermanentEnrollments()]).then(() => setLoading(false))
+  }, [fetchClient, fetchSessionBalances, fetchSales, fetchUpcomingEnrollments, fetchPermanentEnrollments])
 
   useEffect(() => {
     function onVisible() {
@@ -127,11 +183,13 @@ export default function ClientProfilePage() {
         fetchSessionBalances()
         setSalesPage(0)
         fetchSales(0)
+        fetchUpcomingEnrollments()
+        fetchPermanentEnrollments()
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchClient, fetchSessionBalances, fetchSales])
+  }, [fetchClient, fetchSessionBalances, fetchSales, fetchUpcomingEnrollments, fetchPermanentEnrollments])
 
   function handleClientSaved() {
     setShowEditModal(false)
@@ -289,7 +347,93 @@ export default function ClientProfilePage() {
               )}
             </section>
 
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Постійні записи</h2>
+                <button className={styles.btnPrimary} onClick={() => router.push('/schedule/templates')}>
+                  Шаблони →
+                </button>
+              </div>
+              {permanentEnrollments.length === 0 ? (
+                <div className={styles.emptySection}>
+                  <span className={styles.empty2}>Немає постійних записів</span>
+                </div>
+              ) : (
+                <div className={styles.sessionCards}>
+                  {permanentEnrollments.filter(e => e.class_series).map(e => {
+                    const s = e.class_series!
+                    const [h, m] = s.time_of_day.split(':')
+                    const startMin = parseInt(h) * 60 + parseInt(m)
+                    const endMin = startMin + s.duration_min
+                    const timeStr = `${pad(Math.floor(startMin / 60))}:${pad(startMin % 60)}–${pad(Math.floor(endMin / 60))}:${pad(endMin % 60)}`
+                    return (
+                      <div key={e.id} className={styles.sessionCard}>
+                        <span className={styles.sessionType}>
+                          {DOW_LABELS[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
+                          {s.trainers?.name ? ` · ${s.trainers.name}` : ''}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+
           </div>
+
+          <section className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.cardTitle}>Майбутні записи</h2>
+              <button className={styles.btnPrimary} onClick={() => setShowEnrollModal(true)}>
+                Записати на заняття
+              </button>
+            </div>
+            {upcomingEnrollments.length === 0 ? (
+              <div className={styles.emptySection}>
+                <span className={styles.empty2}>Немає майбутніх записів</span>
+              </div>
+            ) : (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Дата і час</th>
+                      <th>Тип</th>
+                      <th>Тренер</th>
+                      <th>Зал</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcomingEnrollments.filter(e => e.classes).map(e => {
+                      const cls = e.classes!
+                      const start = new Date(cls.starts_at)
+                      const end = new Date(start.getTime() + cls.duration_min * 60000)
+                      const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                      return (
+                        <tr key={e.id}>
+                          <td className={styles.dateCell}>
+                            {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                          </td>
+                          <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                          <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                          <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                          <td>
+                            <button
+                              className={styles.btnRowEdit}
+                              onClick={() => router.push(`/schedule/${e.class_id}`)}
+                            >
+                              Перейти
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
 
           <section className={styles.card}>
             <div className={styles.cardHeader}>
@@ -416,6 +560,15 @@ export default function ClientProfilePage() {
         </div>
       </main>
 
+      {showEnrollModal && (
+        <EnrollClientModal
+          client={client}
+          typeLabels={typeLabels}
+          onClose={() => setShowEnrollModal(false)}
+          onSaved={() => { setShowEnrollModal(false); fetchUpcomingEnrollments() }}
+        />
+      )}
+
       {showEditModal && (
         <ClientModal
           client={client}
@@ -467,3 +620,5 @@ export default function ClientProfilePage() {
     </div>
   )
 }
+
+function pad(n: number) { return String(n).padStart(2, '0') }

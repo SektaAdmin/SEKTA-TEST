@@ -77,11 +77,11 @@
 /* ── Top grid (3 cards side by side) ───────────────────────── */
 .topGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 16px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1300px) {
   .topGrid { grid-template-columns: 1fr 1fr; }
 }
 
