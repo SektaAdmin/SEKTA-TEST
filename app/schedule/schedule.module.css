@@ -401,6 +401,7 @@
   min-width: 0;
   border-right: 0.5px solid var(--border);
   height: 100%;
+  cursor: cell;
 }
 .hallSubCol:last-child { border-right: none; }
 

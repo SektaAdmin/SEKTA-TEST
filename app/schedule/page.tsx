@@ -128,6 +128,21 @@ function formatDayFull(d: Date) {
   return `${DAYS_UA[(d.getDay() + 6) % 7]}, ${d.getDate()} ${MONTHS_UA[d.getMonth()]} ${d.getFullYear()}`
 }
 
+// ── Slot click → time calculation ────────────────────────────────
+function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date): string {
+  const rect = e.currentTarget.getBoundingClientRect()
+  const relY = e.clientY - rect.top
+  const totalMinutes = (relY / HOUR_HEIGHT) * 60 + MIN_HOUR * 60
+  const rounded = Math.round(totalMinutes / 15) * 15
+  const h = Math.floor(rounded / 60)
+  const m = rounded % 60
+  const clampedH = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, h))
+  const d = new Date(day)
+  d.setHours(clampedH, m, 0, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:${pad(m)}`
+}
+
 // ── Card component ────────────────────────────────────────────────
 interface CardProps {
   cls: ClassWithJoins
@@ -155,7 +170,7 @@ function ClassCard({ cls, typeLabels, laneIndex = 0, laneCount = 1, onClick }: C
         right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
         ['--card-color' as string]: color,
       }}
-      onClick={onClick}
+      onClick={e => { e.stopPropagation(); onClick() }}
     >
       <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
       <span className={styles.cardType}>
@@ -177,13 +192,18 @@ interface HallColProps {
   typeLabels: Record<string, string>
   isToday: boolean
   nowTop: number | null
+  day: Date
   onCardClick: (id: string) => void
+  onSlotClick: (startsAt: string) => void
 }
 
-function HallSubCol({ classes, typeLabels, isToday, nowTop, onCardClick }: HallColProps) {
+function HallSubCol({ classes, typeLabels, isToday, nowTop, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
   return (
-    <div className={styles.hallSubCol}>
+    <div
+      className={styles.hallSubCol}
+      onClick={e => onSlotClick(slotTimeFromClick(e, day))}
+    >
       {HOURS.slice(1).map(h => (
         <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }} />
       ))}
@@ -221,6 +241,7 @@ export default function SchedulePage() {
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
@@ -392,7 +413,7 @@ export default function SchedulePage() {
               </div>
             )}
             {tab === 'schedule' && (
-              <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+              <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
               </button>
             )}
@@ -571,7 +592,12 @@ export default function SchedulePage() {
                             typeLabels={typeLabels}
                             isToday={isToday}
                             nowTop={nowTop}
+                            day={day}
                             onCardClick={id => router.push(`/schedule/${id}`)}
+                            onSlotClick={startsAt => {
+                              setPrefill({ starts_at: startsAt, hall_id: hall?.id })
+                              setShowModal(true)
+                            }}
                           />
                         )
                       })
@@ -583,7 +609,12 @@ export default function SchedulePage() {
                         typeLabels={typeLabels}
                         isToday={isToday}
                         nowTop={nowTop}
+                        day={day}
                         onCardClick={() => {}}
+                        onSlotClick={startsAt => {
+                          setPrefill({ starts_at: startsAt })
+                          setShowModal(true)
+                        }}
                       />
                     )}
                   </div>
@@ -596,8 +627,9 @@ export default function SchedulePage() {
 
       {showModal && (
         <ClassModal
-          onClose={() => setShowModal(false)}
-          onSaved={() => { setShowModal(false); fetchClasses() }}
+          onClose={() => { setShowModal(false); setPrefill(undefined) }}
+          onSaved={() => { setShowModal(false); setPrefill(undefined); fetchClasses() }}
+          prefill={prefill}
         />
       )}
     </div>

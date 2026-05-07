@@ -29,6 +29,7 @@ interface Props {
   onClose: () => void
   onSaved: () => void
   existing?: Class | null
+  prefill?: { starts_at: string; hall_id?: string }
 }
 
 type EditScope = 'this' | 'future'
@@ -46,7 +47,7 @@ function isoToTimeLocal(iso: string): string {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export default function ClassModal({ onClose, onSaved, existing }: Props) {
+export default function ClassModal({ onClose, onSaved, existing, prefill }: Props) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
 
@@ -97,8 +98,8 @@ export default function ClassModal({ onClose, onSaved, existing }: Props) {
     } : {
       ticket_type: '',
       trainer_id: '',
-      hall_id: '',
-      starts_at: todayAt10(),
+      hall_id: prefill?.hall_id ?? '',
+      starts_at: prefill?.starts_at ?? todayAt10(),
       duration_min: 60,
       capacity: '',
       title: '',
