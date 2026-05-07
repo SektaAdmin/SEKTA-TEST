@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -13,7 +13,8 @@ import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import styles from './page.module.css'
 
-const DAY_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+// indexed by JS getDay(): 0=Нд, 1=Пн...6=Сб
+const DAY_LABELS: Record<number, string> = { 0: 'Нд', 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' }
 
 // Рахує наступний понеділок у київському часі (навіть якщо сьогодні пн → +7)
 function nextMondayKyiv(): string {
@@ -40,7 +41,15 @@ interface SeriesClientRow {
 }
 
 export default function TemplatesPage() {
-  const { templates, loading, fetchError, refetch } = useSeriesTemplates()
+  const { templates: rawTemplates, loading, fetchError, refetch } = useSeriesTemplates()
+  // Sort Mon(1)–Sun(0): map 0→7 so Sunday sorts last
+  const templates = useMemo(() =>
+    [...rawTemplates].sort((a, b) => {
+      const sa = a.day_of_week === 0 ? 7 : a.day_of_week
+      const sb = b.day_of_week === 0 ? 7 : b.day_of_week
+      return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
+    }),
+  [rawTemplates])
   const { trainers } = useTrainers()
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()

@@ -8,7 +8,16 @@ import type { Class, Trainer, Hall, TrainingType } from '@/types'
 import styles from './ClassModal.module.css'
 
 
-const DAY_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+// value = JS getDay() (0=Нд), order = Mon–Sun
+const DAY_OPTIONS = [
+  { label: 'Пн', value: 1 },
+  { label: 'Вт', value: 2 },
+  { label: 'Ср', value: 3 },
+  { label: 'Чт', value: 4 },
+  { label: 'Пт', value: 5 },
+  { label: 'Сб', value: 6 },
+  { label: 'Нд', value: 0 },
+]
 
 interface FormValues {
   ticket_type: string
@@ -437,8 +446,8 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
                 <div className={styles.field}>
                   <label htmlFor="cm-dow">День тижня</label>
                   <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
-                    {DAY_LABELS.map((label, i) => (
-                      <option key={i} value={i}>{label}</option>
+                    {DAY_OPTIONS.map(({ label, value }) => (
+                      <option key={value} value={value}>{label}</option>
                     ))}
                   </select>
                 </div>

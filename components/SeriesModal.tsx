@@ -6,7 +6,15 @@ import { useModalFocus } from '@/hooks/useModalFocus'
 import type { ClassSeries, Trainer, Hall, TrainingType } from '@/types'
 import styles from './SeriesModal.module.css'
 
-const DAY_LABELS = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота']
+const DAY_OPTIONS = [
+  { label: 'Понеділок', value: 1 },
+  { label: 'Вівторок', value: 2 },
+  { label: 'Середа', value: 3 },
+  { label: 'Четвер', value: 4 },
+  { label: "П'ятниця", value: 5 },
+  { label: 'Субота', value: 6 },
+  { label: 'Неділя', value: 0 },
+]
 
 interface FormValues {
   ticket_type: string
@@ -124,8 +132,8 @@ export default function SeriesModal({ existing, onClose, onSaved, trainers, hall
               <div className={styles.field}>
                 <label htmlFor="sm-dow">День тижня <span className={styles.required}>*</span></label>
                 <select id="sm-dow" {...register('day_of_week')} disabled={isSubmitting}>
-                  {DAY_LABELS.map((label, i) => (
-                    <option key={i} value={i}>{label}</option>
+                  {DAY_OPTIONS.map(({ label, value }) => (
+                    <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
               </div>
