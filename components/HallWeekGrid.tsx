@@ -120,6 +120,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                         const trainerName = (s.trainers as { name: string } | null)?.name
                         const clientCount = s.series_clients?.length ?? 0
                         const capacity = s.capacity
+                        const overCapacity = capacity != null && clientCount > capacity ? clientCount - capacity : 0
                         return (
                           <button
                             key={s.id}
@@ -136,6 +137,9 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                             {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
                             <span className={styles.chipCapacity}>
                               {clientCount}{capacity != null ? ` / ${capacity}` : ' пост.'}
+                              {overCapacity > 0 && (
+                                <span className={styles.chipWaitlist}> +{overCapacity}</span>
+                              )}
                             </span>
                           </button>
                         )

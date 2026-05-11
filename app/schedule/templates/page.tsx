@@ -392,6 +392,7 @@ export default function TemplatesPage() {
               <tbody>
                 {templates.map(series => {
                   const clientCount = series.series_clients?.length ?? 0
+                  const overCapacity = series.capacity != null && clientCount > series.capacity ? clientCount - series.capacity : 0
                   const isExpanded = expandedSeriesId === series.id
                   const clients = seriesClients[series.id] ?? []
                   const trainerName = (series.trainers as { name: string } | null)?.name
@@ -413,6 +414,9 @@ export default function TemplatesPage() {
                           >
                             {isExpanded ? '▾' : '▸'} Постійники ({clientCount})
                           </button>
+                          {overCapacity > 0 && (
+                            <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
+                          )}
                         </td>
                         <td className={styles.actions}>
                           <button

@@ -153,6 +153,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const activeCount = cls.enrollments.filter(
     e => e.status === 'enrolled' || e.status === 'attended'
   ).length
+  const waitlistCount = cls.enrollments.filter(e => e.status === 'waitlist').length
   const color = typeColor(cls.ticket_type)
   const isFull = cls.capacity != null && activeCount >= cls.capacity
   const isAlmost = !isFull && cls.capacity != null && activeCount >= cls.capacity * 0.8
@@ -178,6 +179,9 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       <span className={`${styles.cardCount} ${isFull ? styles.cardCountFull : isAlmost ? styles.cardCountAlmost : ''}`}>
         {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
       </span>
+      {waitlistCount > 0 && (
+        <span className={styles.cardWaitlist}>+{waitlistCount} резерв</span>
+      )}
       {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
     </button>
   )

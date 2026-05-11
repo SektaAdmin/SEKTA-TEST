@@ -496,6 +496,12 @@
 .cardCountAlmost { color: var(--warning); }
 .cardCountFull   { color: var(--danger); font-weight: 600; }
 
+.cardWaitlist {
+  font-size: 10px;
+  color: var(--warning);
+  font-family: var(--mono);
+}
+
 .cancelledBadge {
   font-size: 10px;
   color: var(--danger);

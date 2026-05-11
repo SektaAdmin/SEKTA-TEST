@@ -178,3 +178,9 @@
   line-height: 1.2;
   margin-top: 1px;
 }
+
+.chipWaitlist {
+  font-size: 10px;
+  color: var(--warning);
+  line-height: 1.2;
+}
