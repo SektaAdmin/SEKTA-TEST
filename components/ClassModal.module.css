@@ -160,3 +160,75 @@
 }
 .btnSave:hover { opacity: 0.88; }
 .btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Series toggle ───────────────────────────────────────────── */
+.toggleRow {
+  display: flex;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+}
+
+.toggleBtn {
+  flex: 1;
+  height: 28px;
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+  color: var(--text-2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.toggleBtn:hover { color: var(--text); }
+
+.toggleActive {
+  background: var(--bg-2);
+  color: var(--text);
+  border: 0.5px solid var(--border);
+}
+
+/* ── Edit scope picker ───────────────────────────────────────── */
+.scopePrompt {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 0 0 12px;
+}
+
+.scopeBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scopeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px 16px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+.scopeBtn:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+.scopeTitle {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.scopeDesc {
+  font-size: 12px;
+  color: var(--text-3);
+}

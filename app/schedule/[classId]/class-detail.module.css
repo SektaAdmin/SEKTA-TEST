@@ -354,6 +354,23 @@
 .badgeAttended  { background: var(--accent-dim); color: var(--accent); }
 .badgeCancelled { background: rgba(255,255,255,0.05); color: var(--text-3); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
+.badgeWaitlist  { background: var(--warning-dim); color: var(--warning); }
+
+/* ── Waitlist section ────────────────────────────────────────── */
+.waitlistSection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--border);
+}
+
+.waitlistTitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
 
 /* ── Row actions ─────────────────────────────────────────────── */
 .actions {
