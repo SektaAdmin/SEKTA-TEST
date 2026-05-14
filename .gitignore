@@ -6,3 +6,8 @@ node_modules/
 .idea/
 .DS_Store
 tsconfig.tsbuildinfo
+
+# External agent artifacts
+.codex/
+AGENTS.md
+RECOMMENDATIONS.md
