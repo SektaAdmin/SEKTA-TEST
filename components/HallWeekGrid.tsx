@@ -120,7 +120,15 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                         const trainerName = (s.trainers as { name: string } | null)?.name
                         const clientCount = s.series_clients?.length ?? 0
                         const capacity = s.capacity
+                        const isFull = capacity != null && clientCount >= capacity
+                        const isAlmost = !isFull && capacity != null && clientCount >= capacity * 0.8
                         const overCapacity = capacity != null && clientCount > capacity ? clientCount - capacity : 0
+                        const fillPct = capacity != null ? `${Math.min((clientCount / capacity) * 100, 100)}%` : '0%'
+                        const endTime = (() => {
+                          const [h, m] = s.time_of_day.split(':').map(Number)
+                          const total = h * 60 + m + s.duration_min
+                          return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+                        })()
                         return (
                           <button
                             key={s.id}
@@ -129,18 +137,22 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                               top: cardTop(s.time_of_day),
                               height: cardHeight(s.duration_min),
                               ['--chip-color' as string]: typeColor(s.ticket_type),
+                              ['--chip-fill' as string]: fillPct,
                             }}
                             onClick={() => onCardClick(s)}
                           >
-                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}</span>
-                            <span className={styles.chipType}>{typeLabel.get(s.ticket_type) ?? s.ticket_type}</span>
-                            {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
-                            <span className={styles.chipCapacity}>
-                              {clientCount}{capacity != null ? ` / ${capacity}` : ' пост.'}
+                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)} - {endTime}</span>
+                            <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
+                            <div className={styles.chipFooter}>
+                              <span className={styles.chipTrainer}>{trainerName ?? ''}</span>
+                              <span className={`${styles.chipCapacity} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
+                                {clientCount}{capacity != null ? `/${capacity}` : ''}
+                              </span>
                               {overCapacity > 0 && (
-                                <span className={styles.chipWaitlist}> +{overCapacity}</span>
+                                <span className={styles.chipWaitlist}>+{overCapacity}</span>
                               )}
-                            </span>
+                            </div>
+                            {capacity != null && <div className={styles.chipProgress} />}
                           </button>
                         )
                       })}

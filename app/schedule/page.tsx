@@ -67,6 +67,11 @@ function formatTime(iso: string) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+function formatEndTime(iso: string, durationMin: number) {
+  const d = new Date(new Date(iso).getTime() + durationMin * 60000)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 function formatDayDate(d: Date) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
@@ -158,6 +163,9 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const isFull = cls.capacity != null && activeCount >= cls.capacity
   const isAlmost = !isFull && cls.capacity != null && activeCount >= cls.capacity * 0.8
 
+  const fillPct = cls.capacity != null ? `${Math.min((activeCount / cls.capacity) * 100, 100)}%` : '0%'
+  const timeLabel = `${formatTime(cls.starts_at)} - ${formatEndTime(cls.starts_at, cls.duration_min)}`
+
   return (
     <button
       className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
@@ -167,22 +175,25 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
         left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
         right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
         ['--card-color' as string]: color,
+        ['--card-fill' as string]: fillPct,
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
     >
-      <span className={styles.cardTime}>{formatTime(cls.starts_at)}</span>
+      <span className={styles.cardTime}>{timeLabel}</span>
       <span className={styles.cardType}>
-        {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-        {cls.title ? ` · ${cls.title}` : ''}
+        {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
       </span>
-      {cls.trainers && <span className={styles.cardMeta}>{cls.trainers.name}</span>}
-      <span className={`${styles.cardCount} ${isFull ? styles.cardCountFull : isAlmost ? styles.cardCountAlmost : ''}`}>
-        {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''} записані
-      </span>
-      {waitlistCount > 0 && (
-        <span className={styles.cardWaitlist}>+{waitlistCount} резерв</span>
-      )}
+      <div className={styles.cardFooter}>
+        <span className={styles.cardTrainer}>{cls.trainers?.name ?? ''}</span>
+        <span className={`${styles.cardCount} ${isFull ? styles.cardCountFull : isAlmost ? styles.cardCountAlmost : ''}`}>
+          {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''}
+        </span>
+        {waitlistCount > 0 && (
+          <span className={styles.cardWaitlist}>+{waitlistCount}</span>
+        )}
+      </div>
       {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
+      {cls.capacity != null && <div className={styles.cardProgress} />}
     </button>
   )
 }
