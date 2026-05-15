@@ -9,6 +9,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
 import styles from './schedule.module.css'
+import DateRangePicker from '@/components/DateRangePicker'
 
 
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
@@ -409,7 +410,13 @@ export default function SchedulePage() {
                 <path d="M9 2L4 7l5 5"/>
               </svg>
             </button>
-            <span className={styles.weekRange}>{navLabel}</span>
+            <DateRangePicker
+              startDate={weekDays[0]}
+              endDate={weekDays[viewMode === 'week' ? 6 : 0]}
+              onChange={setBaseDate}
+              label={viewMode === 'day' ? navLabel : undefined}
+              mode={viewMode}
+            />
             <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
