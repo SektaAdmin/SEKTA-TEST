@@ -274,8 +274,9 @@
   display: grid;
   border-bottom: 0.5px solid var(--border);
   background: var(--bg-2);
+  border-radius: var(--radius) var(--radius) 0 0;
   position: sticky;
-  top: 57px;
+  top: 0;
   z-index: 5;
   flex-shrink: 0;
 }
@@ -359,10 +360,31 @@
 }
 .dayHallLabel:last-child { border-right: none; }
 
+/* ── Grid card container ─────────────────────────────────────── */
+.gridCard {
+  margin: 12px 16px 16px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: clip;
+}
+
+/* ── Calendar body grid wrapper (scrollable) ────────────────── */
+.bodyGridWrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
 /* ── Calendar body grid ─────────────────────────────────────── */
 .bodyGrid {
   display: grid;
-  flex: 1;
+  position: relative;
 }
 
 /* ── Time gutter ────────────────────────────────────────────── */
@@ -415,23 +437,30 @@
   pointer-events: none;
 }
 
-.nowLine {
+.nowLineOverlay {
   position: absolute;
   left: 0;
   right: 0;
-  height: 1.5px;
-  background: var(--danger);
+  display: flex;
+  align-items: center;
   pointer-events: none;
-  z-index: 3;
+  z-index: 0;
 }
-.nowLine::before {
-  content: '';
-  position: absolute;
-  left: -1px;
-  top: -3px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+
+.nowLineTime {
+  width: 48px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--danger);
+  font-family: var(--mono);
+  text-align: right;
+  padding-right: 6px;
+  line-height: 1;
+}
+
+.nowLineLine {
+  flex: 1;
+  height: 1px;
   background: var(--danger);
 }
 
