@@ -1,11 +1,12 @@
 'use client'
-import { useState, useMemo, useEffect, useId, useRef } from 'react'
+import { useState, useMemo, useEffect, useId } from 'react'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSaleForm, resolveSubmitValues } from '@/hooks/useSaleForm'
 import { useSaleSubmit } from '@/hooks/useSaleSubmit'
-import { formatClientLabel, parseDisplayToDatetimeLocal, datetimeLocalToDisplay } from '@/lib/formatters'
+import { formatClientLabel } from '@/lib/formatters'
 import ClientSearchCombobox from './features/ClientSearchCombobox'
+import DateTimePicker from './DateTimePicker'
 import type { Client, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
 
@@ -43,7 +44,6 @@ interface Props {
 export default function SaleModal({ onClose, onSaved, editSale, preselectedClient }: Props) {
   const isEdit = !!editSale
   const titleId = useId()
-  const datePickerRef = useRef<HTMLInputElement>(null)
   const modalRef = useModalFocus(onClose)
 
   const { tickets, trainers } = useRefs()
@@ -56,8 +56,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     payFromDeposit,
     saleDatetime,
     setSaleDatetime,
-    displayDatetime,
-    setDisplayDatetime,
     pricePaid$,
     amountGiven$,
     loadClientBalance,
@@ -106,50 +104,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
 
           {/* Дата і час */}
           <div className={styles.field}>
-            <label htmlFor="sale-datetime-text">Дата та час</label>
-            <div className={styles.datetimeRow}>
-              <input
-                id="sale-datetime-text"
-                type="text"
-                value={displayDatetime}
-                onChange={e => {
-                  setDisplayDatetime(e.target.value)
-                  const parsed = parseDisplayToDatetimeLocal(e.target.value)
-                  if (parsed) setSaleDatetime(parsed)
-                }}
-                placeholder="ДД.ММ.РРРР ГГ:ХХ"
-                disabled={busy}
-              />
-              <button
-                type="button"
-                className={styles.calendarBtn}
-                onClick={() => {
-                  try { datePickerRef.current?.showPicker() }
-                  catch { datePickerRef.current?.focus() }
-                }}
-                disabled={busy}
-                aria-label="Відкрити календар"
-              >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="1" y="3" width="14" height="12" rx="1.5"/>
-                  <line x1="5" y1="1" x2="5" y2="5"/><line x1="11" y1="1" x2="11" y2="5"/>
-                  <line x1="1" y1="7" x2="15" y2="7"/>
-                </svg>
-              </button>
-              <input
-                ref={datePickerRef}
-                type="datetime-local"
-                value={saleDatetime}
-                onChange={e => {
-                  setSaleDatetime(e.target.value)
-                  setDisplayDatetime(datetimeLocalToDisplay(e.target.value))
-                }}
-                disabled={busy}
-                className={styles.datetimeHidden}
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-            </div>
+            <label>Дата та час</label>
+            <DateTimePicker
+              value={saleDatetime}
+              onChange={setSaleDatetime}
+              disabled={busy}
+            />
           </div>
 
           {/* Клієнт */}

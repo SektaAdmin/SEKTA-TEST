@@ -1,0 +1,81 @@
+.wrap {
+  position: relative;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.textInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.calendarBtn {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+  box-sizing: border-box;
+}
+
+.calendarBtn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.calendarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-right: 4px;
+}
+
+.timeInput {
+  width: 36px;
+  height: 26px;
+  text-align: center;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  -moz-appearance: textfield;
+}
+
+.timeInput::-webkit-inner-spin-button,
+.timeInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.timeSep {
+  font-size: 12px;
+  color: var(--text-3);
+}
