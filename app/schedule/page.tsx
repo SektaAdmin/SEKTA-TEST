@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { listClassesForWeek } from '@/lib/queries/classes'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
 import { useRefs } from '@/contexts/RefsContext'
@@ -290,25 +291,9 @@ export default function SchedulePage() {
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const [activeRes, cancelledRes] = await Promise.all([
-      supabase
-        .from('classes')
-        .select('*, trainers(name), halls(name), enrollments(id, status)')
-        .gte('starts_at', weekStartISO)
-        .lte('starts_at', weekEndISO)
-        .eq('is_cancelled', false)
-        .order('starts_at'),
-      supabase
-        .from('classes')
-        .select('*, trainers(name), halls(name), enrollments(id, status)')
-        .gte('starts_at', weekStartISO)
-        .lte('starts_at', weekEndISO)
-        .eq('is_cancelled', true)
-        .order('starts_at'),
-    ])
-    if (activeRes.error) toast.error('Не вдалося завантажити розклад')
-    else setClasses((activeRes.data ?? []) as ClassWithJoins[])
-    if (!cancelledRes.error) setCancelledClasses((cancelledRes.data ?? []) as ClassWithJoins[])
+    const { active, cancelled } = await listClassesForWeek(supabase, weekStartISO, weekEndISO)
+    setClasses(active as ClassWithJoins[])
+    setCancelledClasses(cancelled as ClassWithJoins[])
     setLoading(false)
   }, [weekStartISO, weekEndISO])
 

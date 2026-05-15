@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { listClassesForDate, listEnrolledCountsForDate, listClientEnrolledClassIds, enrollClient } from '@/lib/queries/enrollments'
 import { useModalFocus } from '@/hooks/useModalFocus'
 import DatePicker from '@/components/DatePicker'
 import type { Client } from '@/types'
@@ -54,38 +55,12 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
     if (!date) return
     setLoadingClasses(true)
 
-    const dayStart = new Date(`${date}T00:00:00`).toISOString()
-    const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
-
-    Promise.all([
-      supabase
-        .from('classes')
-        .select('id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, trainers(name), halls(name)')
-        .gte('starts_at', dayStart)
-        .lte('starts_at', dayEnd)
-        .eq('is_cancelled', false)
-        .order('starts_at', { ascending: true }),
-      supabase
-        .from('enrollments')
-        .select('class_id, status')
-        .in('status', ['enrolled', 'attended']),
-      supabase
-        .from('enrollments')
-        .select('class_id')
-        .eq('client_id', client.id)
-        .in('status', ['enrolled', 'attended']),
-    ]).then(([classesRes, countsRes, clientRes]) => {
-      const rawClasses = (classesRes.data ?? []) as Omit<ClassOption, 'enrolledCount' | 'alreadyEnrolled'>[]
-      const countMap: Record<string, number> = {}
-      for (const e of (countsRes.data ?? []) as { class_id: string | null; status: string }[]) {
-        if (!e.class_id) continue
-        countMap[e.class_id] = (countMap[e.class_id] ?? 0) + 1
-      }
-      const clientClassIds = new Set(
-        (clientRes.data ?? [])
-          .map((e: { class_id: string | null }) => e.class_id)
-          .filter((id: string | null): id is string => id != null)
-      )
+    listClassesForDate(supabase, date).then(async rawClasses => {
+      const classIds = rawClasses.map(c => c.id)
+      const [countMap, clientClassIds] = await Promise.all([
+        listEnrolledCountsForDate(supabase, classIds),
+        listClientEnrolledClassIds(supabase, client.id, classIds),
+      ])
       setClasses(rawClasses.map(c => ({
         ...c,
         enrolledCount: countMap[c.id] ?? 0,
@@ -97,15 +72,9 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
 
   async function handleEnroll(classId: string) {
     setEnrollingId(classId)
-    const { error } = await supabase
-      .from('enrollments')
-      .insert({ class_id: classId, client_id: client.id, status: 'enrolled' })
+    const { error, isDuplicate } = await enrollClient(supabase, classId, client.id)
     if (error) {
-      if (error.message.includes('duplicate') || error.code === '23505') {
-        toast.error('Клієнт вже записаний на це заняття')
-      } else {
-        toast.error(error.message)
-      }
+      toast.error(isDuplicate ? 'Клієнт вже записаний на це заняття' : error)
       setEnrollingId(null)
       return
     }

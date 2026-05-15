@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { listClients } from '@/lib/queries/clients'
 import Sidebar from '@/components/Sidebar'
 import ClientModal from '@/components/ClientModal'
 import { formatClientName } from '@/lib/formatters'
@@ -44,27 +45,9 @@ export default function ClientsPage() {
 
   const fetchClients = useCallback(async (q: string, p: number, size: number) => {
     setLoading(true)
-
-    let query = supabase
-      .from('clients')
-      .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance', { count: 'exact' })
-      .order('last_name', { ascending: true })
-      .order('first_name', { ascending: true })
-
-    if (q.trim()) {
-      const s = q.trim()
-      query = query.or(
-        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,phone.ilike.%${s}%,instagram_username.ilike.%${s}%,telegram_username.ilike.%${s}%`
-      )
-    }
-
-    const rangeFrom = p * size
-    const rangeTo = rangeFrom + size - 1
-    query = query.range(rangeFrom, rangeTo)
-
-    const { data, count } = await query
-    setClients((data as Client[]) ?? [])
-    setTotal(count ?? 0)
+    const { data, count } = await listClients(supabase, { search: q, page: p, pageSize: size })
+    setClients(data)
+    setTotal(count)
     setLoading(false)
   }, [])
 

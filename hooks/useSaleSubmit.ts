@@ -1,5 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
+import { createSale, updateSale, getTicketById } from '@/lib/queries/sales'
 import type { SaleFormValues, resolveSubmitValues } from '@/hooks/useSaleForm'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import type { Ticket } from '@/types'
@@ -45,14 +46,13 @@ export function useSaleSubmit({
           sessions = editSale!.sessions ?? 0
           ticketType = editSale!.ticket_type ?? null
         } else {
-          const { data: td } = await supabase
-            .from('tickets').select('name,price,sessions,ticket_type').eq('id', formData.ticket_id).single()
+          const td = await getTicketById(supabase, formData.ticket_id)
           if (!td) { setError('Абонемент не знайдено'); return }
           ticketName = td.name; ticketPrice = td.price; sessions = td.sessions; ticketType = td.ticket_type
         }
       }
 
-      const { data, error } = await supabase.rpc('update_sale', {
+      const { success, error } = await updateSale(supabase, {
         p_sale_id:        editSale!.id,
         p_client_id:      formData.client_id,
         p_ticket_id:      formData.ticket_id || null,
@@ -68,16 +68,13 @@ export function useSaleSubmit({
         p_created_at:     new Date(saleDatetime).toISOString(),
       })
 
-      if (error || !data?.[0]?.success) {
-        setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
-        return
-      }
+      if (!success) { setError(error ?? 'Помилка збереження'); return }
 
       onSaved()
       return
     }
 
-    const { data, error } = await supabase.rpc('create_sale', {
+    const { success, error } = await createSale(supabase, {
       p_client_id:      formData.client_id,
       p_ticket_id:      formData.ticket_id || null,
       p_trainer_id:     formData.trainer_id || null,
@@ -88,10 +85,7 @@ export function useSaleSubmit({
       p_created_at:     new Date(saleDatetime).toISOString(),
     })
 
-    if (error || !data?.[0]?.success) {
-      setError(error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження')
-      return
-    }
+    if (!success) { setError(error ?? 'Помилка збереження'); return }
 
     onSaved()
   }

@@ -1,0 +1,69 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Class, ClassSeries } from '@/types'
+
+type ClassWithJoins = Class & {
+  trainers: { name: string } | null
+  halls: { name: string } | null
+  enrollments: { id: string; status: string }[]
+}
+
+export async function listClassesForWeek(
+  supabase: SupabaseClient,
+  startISO: string,
+  endISO: string
+): Promise<{ active: ClassWithJoins[]; cancelled: ClassWithJoins[] }> {
+  const [activeRes, cancelledRes] = await Promise.all([
+    supabase
+      .from('classes')
+      .select('*, trainers(name), halls(name), enrollments(id, status)')
+      .gte('starts_at', startISO)
+      .lte('starts_at', endISO)
+      .eq('is_cancelled', false)
+      .order('starts_at'),
+    supabase
+      .from('classes')
+      .select('*, trainers(name), halls(name), enrollments(id, status)')
+      .gte('starts_at', startISO)
+      .lte('starts_at', endISO)
+      .eq('is_cancelled', true)
+      .order('starts_at'),
+  ])
+  return {
+    active: (activeRes.data ?? []) as ClassWithJoins[],
+    cancelled: (cancelledRes.data ?? []) as ClassWithJoins[],
+  }
+}
+
+export async function getClassById(
+  supabase: SupabaseClient,
+  classId: string
+): Promise<(Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null> {
+  const { data, error } = await supabase
+    .from('classes')
+    .select('*, trainers(name), halls(name)')
+    .eq('id', classId)
+    .single()
+  if (error || !data) return null
+  return data as any
+}
+
+export async function updateClassCancelled(
+  supabase: SupabaseClient,
+  classId: string,
+  isCancelled: boolean
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('classes').update({ is_cancelled: isCancelled }).eq('id', classId)
+  return { error: error?.message ?? null }
+}
+
+export async function listSeriesTemplates(
+  supabase: SupabaseClient
+): Promise<{ data: ClassSeries[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('class_series')
+    .select('*, trainers(name), halls(name), series_clients(id, client_id)')
+    .eq('type', 'template')
+    .order('day_of_week')
+    .order('time_of_day')
+  return { data: (data as ClassSeries[]) ?? [], error: error?.message ?? null }
+}

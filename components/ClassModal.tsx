@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
+import { listActiveTrainers } from '@/lib/queries/trainers'
+import { listActiveHalls } from '@/lib/queries/halls'
+import { listActiveTrainingTypes } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { isoToDatetimeLocal } from '@/lib/formatters'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
@@ -74,13 +77,13 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
 
   useEffect(() => {
     Promise.all([
-      supabase.from('trainers').select('id, name, is_active, instagram_username, telegram_username').eq('is_active', true).order('name'),
-      supabase.from('halls').select('id, name, capacity, description, is_active').eq('is_active', true).order('name'),
-      supabase.from('training_types').select('id, code, label, is_active, sort_order, created_at').eq('is_active', true).order('sort_order'),
+      listActiveTrainers(supabase),
+      listActiveHalls(supabase),
+      listActiveTrainingTypes(supabase),
     ]).then(([t, h, tt]) => {
-      setTrainers((t.data ?? []) as Trainer[])
-      setHalls((h.data ?? []) as Hall[])
-      setTrainingTypes((tt.data ?? []) as TrainingType[])
+      setTrainers(t)
+      setHalls(h)
+      setTrainingTypes(tt)
     })
   }, [])
 

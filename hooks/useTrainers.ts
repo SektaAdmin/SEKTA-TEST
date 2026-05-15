@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listTrainers, toggleTrainer } from '@/lib/queries/trainers'
 import type { Trainer } from '@/types'
 
 export function useTrainers() {
@@ -12,21 +13,17 @@ export function useTrainers() {
   const fetchTrainers = useCallback(async () => {
     setLoading(true)
     setFetchError(null)
-    const { data, error } = await supabase
-      .from('trainers')
-      .select('id, name, is_active, instagram_username, telegram_username')
-      .order('name', { ascending: true })
+    const { data, error } = await listTrainers(supabase)
     if (error) {
-      setFetchError(error.message)
+      setFetchError(error)
     } else {
-      setTrainers((data as Trainer[]) ?? [])
+      setTrainers(data)
     }
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchTrainers() }, [fetchTrainers])
 
-  // lazy load for modals — only fetches if not yet loaded
   const ensureTrainers = useCallback(async () => {
     if (trainers.length > 0) return
     await fetchTrainers()
@@ -34,9 +31,9 @@ export function useTrainers() {
 
   async function toggle(id: string, newValue: boolean) {
     setToggling(id)
-    const { error } = await supabase.from('trainers').update({ is_active: newValue }).eq('id', id)
+    const { error } = await toggleTrainer(supabase, id, newValue)
     if (error) {
-      setFetchError(error.message)
+      setFetchError(error)
     } else {
       setTrainers(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }

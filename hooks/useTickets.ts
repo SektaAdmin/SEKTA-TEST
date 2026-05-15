@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listTickets, toggleTicket } from '@/lib/queries/tickets'
 import type { Ticket } from '@/types'
 
 export function useTickets() {
@@ -12,21 +13,17 @@ export function useTickets() {
   const fetchTickets = useCallback(async () => {
     setLoading(true)
     setFetchError(null)
-    const { data, error } = await supabase
-      .from('tickets')
-      .select('id, name, ticket_type, sessions, price, is_active')
-      .order('name', { ascending: true })
+    const { data, error } = await listTickets(supabase)
     if (error) {
-      setFetchError(error.message)
+      setFetchError(error)
     } else {
-      setTickets((data as Ticket[]) ?? [])
+      setTickets(data)
     }
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchTickets() }, [fetchTickets])
 
-  // lazy load for modals — only fetches if not yet loaded
   const ensureTickets = useCallback(async () => {
     if (tickets.length > 0) return
     await fetchTickets()
@@ -34,9 +31,9 @@ export function useTickets() {
 
   async function toggle(id: string, newValue: boolean) {
     setToggling(id)
-    const { error } = await supabase.from('tickets').update({ is_active: newValue }).eq('id', id)
+    const { error } = await toggleTicket(supabase, id, newValue)
     if (error) {
-      setFetchError(error.message)
+      setFetchError(error)
     } else {
       setTickets(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
     }

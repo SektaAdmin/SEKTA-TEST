@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listClients } from '@/lib/queries/clients'
 import type { Client } from '@/types'
 
 export const PAGE_SIZES = [20, 50, 100] as const
@@ -22,27 +23,10 @@ export function useClients({ search, page, pageSize }: UseClientsParams) {
     signal?: { cancelled: boolean }
   ) => {
     setLoading(true)
-
-    let query = supabase
-      .from('clients')
-      .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance', { count: 'exact' })
-      .order('last_name', { ascending: true })
-      .order('first_name', { ascending: true })
-
-    if (q.trim()) {
-      const s = q.trim()
-      query = query.or(
-        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,phone.ilike.%${s}%,instagram_username.ilike.%${s}%,telegram_username.ilike.%${s}%`
-      )
-    }
-
-    const rangeFrom = p * size
-    query = query.range(rangeFrom, rangeFrom + size - 1)
-
-    const { data, count } = await query
+    const { data, count } = await listClients(supabase, { search: q, page: p, pageSize: size })
     if (signal?.cancelled) return
-    setClients((data as Client[]) ?? [])
-    setTotal(count ?? 0)
+    setClients(data)
+    setTotal(count)
     setLoading(false)
   }, [])
 

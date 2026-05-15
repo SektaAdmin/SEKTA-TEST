@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listSalesForAccounting } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
 import DatePicker from '@/components/DatePicker'
 import type { PaymentMethod } from '@/types'
@@ -90,13 +91,9 @@ export default function AccountingPage() {
   const fetchSales = useCallback(async (from: string, to: string) => {
     setLoading(true)
     setError(null)
-    const { data, error } = await supabase
-      .from('sales')
-      .select('created_at, price_paid, amount_given, payment_method, ticket_id')
-      .gte('created_at', `${from}T00:00:00`)
-      .lte('created_at', `${to}T23:59:59`)
-    if (error) { setError(error.message); setLoading(false); return }
-    setSales((data as SaleRow[]) ?? [])
+    const { data, error } = await listSalesForAccounting(supabase, from, to)
+    if (error) { setError(error); setLoading(false); return }
+    setSales(data as SaleRow[])
     setLoading(false)
   }, [])
 

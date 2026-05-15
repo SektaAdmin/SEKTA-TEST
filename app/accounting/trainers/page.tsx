@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listSalesForTrainers } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
 import MonthNav from '@/components/MonthNav'
 import styles from './trainers.module.css'
@@ -50,14 +51,8 @@ export default function TrainerReportsPage() {
 
   const fetchSales = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('sales')
-      .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers(name)')
-      .not('trainer_id', 'is', null)
-      .not('ticket_id', 'is', null)
-      .gte('created_at', start)
-      .lte('created_at', end)
-    setSales((data ?? []) as SaleRow[])
+    const data = await listSalesForTrainers(supabase, start, end)
+    setSales(data as SaleRow[])
     setLoading(false)
   }, [start, end])
 

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { listSeriesTemplates } from '@/lib/queries/classes'
 import type { ClassSeries } from '@/types'
 
 export function useSeriesTemplates() {
@@ -11,16 +12,11 @@ export function useSeriesTemplates() {
   const fetchTemplates = useCallback(async () => {
     setLoading(true)
     setFetchError(null)
-    const { data, error } = await supabase
-      .from('class_series')
-      .select('*, trainers(name), halls(name), series_clients(id, client_id)')
-      .eq('type', 'template')
-      .order('day_of_week')
-      .order('time_of_day')
+    const { data, error } = await listSeriesTemplates(supabase)
     if (error) {
-      setFetchError(error.message)
+      setFetchError(error)
     } else {
-      setTemplates((data as ClassSeries[]) ?? [])
+      setTemplates(data)
     }
     setLoading(false)
   }, [])

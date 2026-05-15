@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { supabase } from '@/lib/supabase'
+import { searchClientsByPhone, searchClientsByName, insertClient, updateClient } from '@/lib/queries/clients'
+import { listClientTransactions } from '@/lib/queries/balance-transactions'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import type { Client } from '@/types'
@@ -61,13 +63,8 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
 
   async function loadHistory() {
     setHistoryLoading(true)
-    const { data } = await supabase
-      .from('balance_transactions')
-      .select('id, amount, transaction_type, balance_before, balance_after, description, created_at')
-      .eq('client_id', client!.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
-    setTransactions((data as Transaction[]) ?? [])
+    const data = await listClientTransactions(supabase, client!.id, 20)
+    setTransactions(data)
     setHistoryLoading(false)
     setShowHistory(true)
   }
@@ -97,17 +94,8 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     const lastName = data.last_name.trim()
 
     if (phone) {
-      let phoneQuery = supabase
-        .from('clients')
-        .select('id, first_name, last_name')
-        .eq('phone', phone)
-        .limit(1)
-
-      if (isEdit) phoneQuery = phoneQuery.neq('id', client.id)
-
-      const { data: phoneMatches } = await phoneQuery
-
-      if (phoneMatches && phoneMatches.length > 0) {
+      const phoneMatches = await searchClientsByPhone(supabase, phone, isEdit ? client.id : undefined)
+      if (phoneMatches.length > 0) {
         const c = phoneMatches[0]
         const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Невідомий клієнт'
         setError(`Клієнт з таким номером телефону вже існує: ${name}`)
@@ -116,18 +104,8 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
       }
     }
 
-    let nameQuery = supabase
-      .from('clients')
-      .select('id, phone')
-      .ilike('first_name', firstName)
-      .ilike('last_name', lastName)
-      .limit(1)
-
-    if (isEdit) nameQuery = nameQuery.neq('id', client.id)
-
-    const { data: nameMatches } = await nameQuery
-
-    if (nameMatches && nameMatches.length > 0) {
+    const nameMatches = await searchClientsByName(supabase, firstName, lastName, isEdit ? client.id : undefined)
+    if (nameMatches.length > 0) {
       const c = nameMatches[0]
       const phoneStr = c.phone ? ` (${c.phone})` : ''
       setError(`Клієнт з таким ім'ям вже існує${phoneStr}`)
@@ -144,21 +122,16 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     }
 
     if (isEdit) {
-      const { error: updateError } = await supabase
-        .from('clients')
-        .update(payload)
-        .eq('id', client.id)
-
+      const { error: updateError } = await updateClient(supabase, client.id, payload)
       if (updateError) {
-        setError(updateError.message)
+        setError(updateError)
         setLoading(false)
         return
       }
     } else {
-      const { error: insertError } = await supabase.from('clients').insert(payload)
-
+      const { error: insertError } = await insertClient(supabase, payload)
       if (insertError) {
-        setError(insertError.message)
+        setError(insertError)
         setLoading(false)
         return
       }
