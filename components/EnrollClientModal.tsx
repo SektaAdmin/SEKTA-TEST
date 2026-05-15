@@ -77,10 +77,15 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
     ]).then(([classesRes, countsRes, clientRes]) => {
       const rawClasses = (classesRes.data ?? []) as Omit<ClassOption, 'enrolledCount' | 'alreadyEnrolled'>[]
       const countMap: Record<string, number> = {}
-      for (const e of (countsRes.data ?? []) as { class_id: string; status: string }[]) {
+      for (const e of (countsRes.data ?? []) as { class_id: string | null; status: string }[]) {
+        if (!e.class_id) continue
         countMap[e.class_id] = (countMap[e.class_id] ?? 0) + 1
       }
-      const clientClassIds = new Set((clientRes.data ?? []).map((e: { class_id: string }) => e.class_id))
+      const clientClassIds = new Set(
+        (clientRes.data ?? [])
+          .map((e: { class_id: string | null }) => e.class_id)
+          .filter((id: string | null): id is string => id != null)
+      )
       setClasses(rawClasses.map(c => ({
         ...c,
         enrolledCount: countMap[c.id] ?? 0,

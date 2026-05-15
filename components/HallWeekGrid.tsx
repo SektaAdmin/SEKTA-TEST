@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { typeColor } from '@/lib/typeColor'
 import type { ClassSeries, Hall, TrainingType } from '@/types'
+import { getOverCapacityCount, isClientCountFull, isClientCountAlmost, clientFillPct } from '@/lib/scheduleMetrics'
 import styles from './HallWeekGrid.module.css'
 
 const DAYS: { label: string; dow: number }[] = [
@@ -120,10 +121,10 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                         const trainerName = (s.trainers as { name: string } | null)?.name
                         const clientCount = s.series_clients?.length ?? 0
                         const capacity = s.capacity
-                        const isFull = capacity != null && clientCount >= capacity
-                        const isAlmost = !isFull && capacity != null && clientCount >= capacity * 0.8
-                        const overCapacity = capacity != null && clientCount > capacity ? clientCount - capacity : 0
-                        const fillPct = capacity != null ? `${Math.min((clientCount / capacity) * 100, 100)}%` : '0%'
+                        const isFull = isClientCountFull(clientCount, capacity)
+                        const isAlmost = isClientCountAlmost(clientCount, capacity)
+                        const overCapacity = getOverCapacityCount(clientCount, capacity)
+                        const fill = clientFillPct(clientCount, capacity)
                         const endTime = (() => {
                           const [h, m] = s.time_of_day.split(':').map(Number)
                           const total = h * 60 + m + s.duration_min
@@ -137,7 +138,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                               top: cardTop(s.time_of_day),
                               height: cardHeight(s.duration_min),
                               ['--chip-color' as string]: typeColor(s.ticket_type),
-                              ['--chip-fill' as string]: fillPct,
+                              ['--chip-fill' as string]: fill,
                             }}
                             onClick={() => onCardClick(s)}
                           >

@@ -12,6 +12,7 @@ import HallWeekGrid from '@/components/HallWeekGrid'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
+import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import styles from './page.module.css'
 
 // indexed by JS getDay(): 0=Нд, 1=Пн...6=Сб
@@ -392,7 +393,7 @@ export default function TemplatesPage() {
               <tbody>
                 {templates.map(series => {
                   const clientCount = series.series_clients?.length ?? 0
-                  const overCapacity = series.capacity != null && clientCount > series.capacity ? clientCount - series.capacity : 0
+                  const overCapacity = getOverCapacityCount(clientCount, series.capacity)
                   const isExpanded = expandedSeriesId === series.id
                   const clients = seriesClients[series.id] ?? []
                   const trainerName = (series.trainers as { name: string } | null)?.name

@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
+import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
 import styles from './schedule.module.css'
 
 
@@ -155,15 +156,13 @@ interface CardProps {
 }
 
 function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick }: CardProps) {
-  const activeCount = cls.enrollments.filter(
-    e => e.status === 'enrolled' || e.status === 'attended'
-  ).length
-  const waitlistCount = cls.enrollments.filter(e => e.status === 'waitlist').length
+  const activeCount = getActiveCount(cls.enrollments)
+  const waitlistCount = getWaitlistCount(cls.enrollments)
   const color = typeColor(cls.ticket_type)
-  const isFull = cls.capacity != null && activeCount >= cls.capacity
-  const isAlmost = !isFull && cls.capacity != null && activeCount >= cls.capacity * 0.8
+  const full = isFull(cls.enrollments, cls.capacity)
+  const almost = isAlmost(cls.enrollments, cls.capacity)
 
-  const fillPct = cls.capacity != null ? `${Math.min((activeCount / cls.capacity) * 100, 100)}%` : '0%'
+  const fill = fillPct(cls.enrollments, cls.capacity)
   const timeLabel = `${formatTime(cls.starts_at)} - ${formatEndTime(cls.starts_at, cls.duration_min)}`
 
   return (
@@ -175,7 +174,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
         left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
         right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
         ['--card-color' as string]: color,
-        ['--card-fill' as string]: fillPct,
+        ['--card-fill' as string]: fill,
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
     >
@@ -185,7 +184,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       </span>
       <div className={styles.cardFooter}>
         <span className={styles.cardTrainer}>{cls.trainers?.name ?? ''}</span>
-        <span className={`${styles.cardCount} ${isFull ? styles.cardCountFull : isAlmost ? styles.cardCountAlmost : ''}`}>
+        <span className={`${styles.cardCount} ${full ? styles.cardCountFull : almost ? styles.cardCountAlmost : ''}`}>
           {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''}
         </span>
         {waitlistCount > 0 && (
@@ -503,9 +502,7 @@ export default function SchedulePage() {
             ) : cancelledClasses.length === 0 ? (
               <div className={styles.archiveEmpty}>Скасованих занять за цей період немає</div>
             ) : cancelledClasses.map(cls => {
-              const activeCount = cls.enrollments.filter(
-                e => e.status === 'enrolled' || e.status === 'attended'
-              ).length
+              const activeCount = getActiveCount(cls.enrollments)
               const start = new Date(cls.starts_at)
               const end = new Date(start.getTime() + cls.duration_min * 60000)
               const timeStr = `${formatTime(cls.starts_at)}–${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`
