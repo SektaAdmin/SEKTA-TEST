@@ -11,6 +11,7 @@ import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
 import styles from './schedule.module.css'
 import DateRangePicker from '@/components/DateRangePicker'
+import Link from 'next/link'
 
 
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
@@ -330,6 +331,28 @@ export default function SchedulePage() {
         {/* Topbar row 1 */}
         <div className={styles.topbar}>
           <div className={styles.topbarLeft}>
+            <DateRangePicker
+              startDate={weekDays[0]}
+              endDate={weekDays[0]}
+              onChange={setBaseDate}
+              label={navLabel}
+            />
+            <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 2L4 7l5 5"/>
+              </svg>
+            </button>
+            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M5 2l5 5-5 5"/>
+              </svg>
+            </button>
+            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
+              Сьогодні
+            </button>
+          </div>
+
+          <div className={styles.topbarRight}>
             <div className={styles.tabs}>
               <button
                 className={`${styles.tab} ${tab === 'schedule' ? styles.tabActive : ''}`}
@@ -344,31 +367,7 @@ export default function SchedulePage() {
                 Архів
               </button>
             </div>
-          </div>
-
-          <div className={styles.weekNav}>
-            <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 2L4 7l5 5"/>
-              </svg>
-            </button>
-            <DateRangePicker
-              startDate={weekDays[0]}
-              endDate={weekDays[0]}
-              onChange={setBaseDate}
-              label={navLabel}
-            />
-            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M5 2l5 5-5 5"/>
-              </svg>
-            </button>
-            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
-              Сьогодні
-            </button>
-          </div>
-
-          <div className={styles.topbarRight}>
+            <Link href="/schedule/templates" className={styles.btnTemplates}>Шаблони</Link>
             {tab === 'schedule' && (
               <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття

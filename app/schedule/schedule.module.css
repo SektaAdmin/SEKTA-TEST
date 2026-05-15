@@ -28,22 +28,6 @@
   gap: 12px;
 }
 
-.weekNav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.weekRange {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  min-width: 200px;
-  text-align: center;
-}
 
 .navBtn {
   display: flex;
@@ -90,9 +74,28 @@
   cursor: pointer;
   font-family: var(--font);
   transition: border-color 0.12s, color 0.12s, background 0.12s;
-  margin-left: 4px;
 }
 .todayBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
+.btnTemplates {
+  height: var(--control-h);
+  padding: 0 14px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+}
+.btnTemplates:hover {
   border-color: var(--border-hover);
   color: var(--text);
   background: var(--bg-3);
@@ -101,7 +104,8 @@
 /* ── Tabs ───────────────────────────────────────────────────── */
 .topbarLeft {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 8px;
   flex: 1;
 }
 
@@ -118,23 +122,24 @@
 
 .tab {
   background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 0 14px;
-  height: 57px;
+  border: 0.5px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: var(--control-h);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-2);
   cursor: pointer;
   font-family: var(--font);
-  transition: color var(--motion-fast), border-color var(--motion-fast);
+  transition: color var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
   display: flex;
   align-items: center;
 }
-.tab:hover { color: var(--text); }
+.tab:hover { color: var(--text); background: var(--bg-3); border-color: var(--border); }
 .tabActive {
   color: var(--accent);
-  border-bottom-color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
 }
 
 /* ── View toggle (Week / Day) ────────────────────────────────── */
