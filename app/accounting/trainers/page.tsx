@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
+import MonthNav from '@/components/MonthNav'
 import styles from './trainers.module.css'
 
 
@@ -29,8 +30,6 @@ function getMonthRange(year: number, month: number) {
   return { start: start.toISOString(), end: end.toISOString() }
 }
 
-const MONTHS_UA = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
-  'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень']
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash: 'Готівка',
@@ -123,11 +122,7 @@ export default function TrainerReportsPage() {
         <div className={styles.content}>
           {/* Filters */}
           <div className={styles.filters}>
-            <div className={styles.monthNav}>
-              <button className={styles.navBtn} onClick={prevMonth}>←</button>
-              <span className={styles.monthLabel}>{MONTHS_UA[month]} {year}</span>
-              <button className={styles.navBtn} onClick={nextMonth}>→</button>
-            </div>
+            <MonthNav month={month} year={year} onPrev={prevMonth} onNext={nextMonth} />
             <div className={styles.paymentFilter}>
               {['all', 'cash', 'fop', 'personal_card', 'deposit'].map(v => (
                 <button

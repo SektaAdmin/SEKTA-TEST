@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect, useId } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import DatePicker from '@/components/DatePicker'
 import type { Client } from '@/types'
 import styles from './EnrollClientModal.module.css'
 
@@ -42,7 +43,6 @@ function formatTime(iso: string, durationMin: number) {
 }
 
 export default function EnrollClientModal({ client, typeLabels, onClose, onSaved }: Props) {
-  const titleId = useId()
   const modalRef = useModalFocus(onClose)
 
   const [date, setDate] = useState(todayLocal())
@@ -120,23 +120,17 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
         className={styles.modal}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={titleId}
+        aria-label="Записати на заняття"
       >
         <div className={styles.header}>
-          <h2 id={titleId}>Записати на заняття</h2>
+          <h2>Записати на заняття</h2>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
         </div>
 
         <div className={styles.body}>
-          <div className={styles.dateRow}>
-            <label htmlFor="enroll-date">Дата</label>
-            <input
-              id="enroll-date"
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              className={styles.dateInput}
-            />
+          <div className={styles.dateRange}>
+            <span className={styles.dateLabel}>Дата</span>
+            <DatePicker value={date} onChange={setDate} />
           </div>
 
           {loadingClasses ? (

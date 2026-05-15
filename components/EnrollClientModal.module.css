@@ -60,16 +60,15 @@
 }
 
 /* ── Date picker ────────────────────────────────────────────── */
-.dateRow {
+.dateRange {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
 }
 
-.dateRow label {
-  font-size: 13px;
-  color: var(--text-2);
-  flex-shrink: 0;
+.dateLabel {
+  font-size: 12px;
+  color: var(--text-3);
 }
 
 .dateInput {

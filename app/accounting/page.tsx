@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
+import DatePicker from '@/components/DatePicker'
 import type { PaymentMethod } from '@/types'
 import styles from './accounting.module.css'
 
@@ -137,11 +138,9 @@ export default function AccountingPage() {
           </div>
           <div className={styles.dateRange}>
             <span className={styles.dateLabel}>Від</span>
-            <input className={styles.dateInput} type="date" value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)} />
+            <DatePicker value={dateFrom} onChange={setDateFrom} />
             <span className={styles.dateLabel}>До</span>
-            <input className={styles.dateInput} type="date" value={dateTo}
-              onChange={e => setDateTo(e.target.value)} />
+            <DatePicker value={dateTo} onChange={setDateTo} />
           </div>
         </div>
 

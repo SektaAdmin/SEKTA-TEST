@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import SaleModal from '@/components/SaleModal'
+import DatePicker from '@/components/DatePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
@@ -131,23 +132,11 @@ export default function SalesPage() {
             />
           </div>
 
-          <div className={styles.filterDates}>
-            <span className={styles.filterLabel}>Від</span>
-            <input
-              className={styles.filterDate}
-              type="date"
-              value={dateFrom}
-              onChange={e => handleDateFrom(e.target.value)}
-              aria-label="Дата від"
-            />
-            <span className={styles.filterLabel}>До</span>
-            <input
-              className={styles.filterDate}
-              type="date"
-              value={dateTo}
-              onChange={e => handleDateTo(e.target.value)}
-              aria-label="Дата до"
-            />
+          <div className={styles.dateRange}>
+            <span className={styles.dateLabel}>Від</span>
+            <DatePicker value={dateFrom} onChange={handleDateFrom} placeholder="Будь-яка" />
+            <span className={styles.dateLabel}>До</span>
+            <DatePicker value={dateTo} onChange={handleDateTo} placeholder="Будь-яка" />
           </div>
 
           {hasFilters && (

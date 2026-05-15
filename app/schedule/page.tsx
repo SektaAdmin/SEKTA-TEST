@@ -132,7 +132,7 @@ function formatWeekRange(days: Date[]) {
 }
 
 function formatDayFull(d: Date) {
-  return `${DAYS_UA[(d.getDay() + 6) % 7]}, ${d.getDate()} ${MONTHS_UA[d.getMonth()]} ${d.getFullYear()}`
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
 // ── Slot click → time calculation ────────────────────────────────

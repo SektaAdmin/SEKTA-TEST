@@ -1,0 +1,45 @@
+.datetimeRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  position: relative;
+}
+
+.datetimeRow input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.calendarBtn {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+  box-sizing: border-box;
+}
+
+.calendarBtn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.calendarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.datetimeHidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
