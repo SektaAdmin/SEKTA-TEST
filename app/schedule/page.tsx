@@ -14,14 +14,11 @@ import DateRangePicker from '@/components/DateRangePicker'
 
 
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-const MONTHS_UA = ['Січ', 'Лют', 'Бер', 'Квіт', 'Трав', 'Черв', 'Лип', 'Серп', 'Вер', 'Жовт', 'Лист', 'Груд']
 
 const MIN_HOUR = 7
 const MAX_HOUR = 23
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const HOUR_HEIGHT = 64
-
-type ViewMode = 'week' | 'day'
 
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -48,17 +45,6 @@ function typeColor(code: string): string {
   return TYPE_COLORS[h % TYPE_COLORS.length]
 }
 
-function getWeekDays(base: Date): Date[] {
-  const d = new Date(base)
-  const day = d.getDay()
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day))
-  d.setHours(0, 0, 0, 0)
-  return Array.from({ length: 7 }, (_, i) => {
-    const copy = new Date(d)
-    copy.setDate(d.getDate() + i)
-    return copy
-  })
-}
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
@@ -124,13 +110,6 @@ function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
   return result
 }
 
-function formatWeekRange(days: Date[]) {
-  const s = days[0], e = days[6]
-  if (s.getMonth() === e.getMonth()) {
-    return `${s.getDate()}–${e.getDate()} ${MONTHS_UA[s.getMonth()]} ${s.getFullYear()}`
-  }
-  return `${s.getDate()} ${MONTHS_UA[s.getMonth()]} – ${e.getDate()} ${MONTHS_UA[e.getMonth()]} ${e.getFullYear()}`
-}
 
 function formatDayFull(d: Date) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
@@ -262,7 +241,6 @@ export default function SchedulePage() {
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
   const [tab, setTab] = useState<'schedule' | 'archive'>('schedule')
-  const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [cancelledClasses, setCancelledClasses] = useState<ClassWithJoins[]>([])
@@ -277,17 +255,11 @@ export default function SchedulePage() {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
 
-  // For week view: derive the week; for day view: single day
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
-    if (viewMode === 'day') {
-      const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
-      const end = new Date(d); end.setHours(23, 59, 59, 999)
-      return { weekDays: [d], weekStartISO: d.toISOString(), weekEndISO: end.toISOString() }
-    }
-    const days = getWeekDays(baseDate)
-    const end = new Date(days[6]); end.setHours(23, 59, 59, 999)
-    return { weekDays: days, weekStartISO: days[0].toISOString(), weekEndISO: end.toISOString() }
-  }, [baseDate, viewMode])
+    const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
+    const end = new Date(d); end.setHours(23, 59, 59, 999)
+    return { weekDays: [d], weekStartISO: d.toISOString(), weekEndISO: end.toISOString() }
+  }, [baseDate])
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
@@ -341,28 +313,13 @@ export default function SchedulePage() {
 
   // Navigation
   function goNext() {
-    setBaseDate(d => {
-      const n = new Date(d)
-      n.setDate(d.getDate() + (viewMode === 'day' ? 1 : 7))
-      return n
-    })
+    setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + 1); return n })
   }
   function goPrev() {
-    setBaseDate(d => {
-      const n = new Date(d)
-      n.setDate(d.getDate() - (viewMode === 'day' ? 1 : 7))
-      return n
-    })
+    setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() - 1); return n })
   }
 
-  function switchToDay(day: Date) {
-    setBaseDate(day)
-    setViewMode('day')
-  }
-
-  const navLabel = viewMode === 'day'
-    ? formatDayFull(weekDays[0])
-    : formatWeekRange(weekDays)
+  const navLabel = formatDayFull(weekDays[0])
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -397,10 +354,9 @@ export default function SchedulePage() {
             </button>
             <DateRangePicker
               startDate={weekDays[0]}
-              endDate={weekDays[viewMode === 'week' ? 6 : 0]}
+              endDate={weekDays[0]}
               onChange={setBaseDate}
-              label={viewMode === 'day' ? navLabel : undefined}
-              mode={viewMode}
+              label={navLabel}
             />
             <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -413,22 +369,6 @@ export default function SchedulePage() {
           </div>
 
           <div className={styles.topbarRight}>
-            {tab === 'schedule' && (
-              <div className={styles.viewToggle}>
-                <button
-                  className={`${styles.viewBtn} ${viewMode === 'week' ? styles.viewBtnActive : ''}`}
-                  onClick={() => setViewMode('week')}
-                >
-                  Тиждень
-                </button>
-                <button
-                  className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`}
-                  onClick={() => setViewMode('day')}
-                >
-                  День
-                </button>
-              </div>
-            )}
             {tab === 'schedule' && (
               <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
@@ -518,38 +458,22 @@ export default function SchedulePage() {
         {/* Schedule grid */}
         {tab === 'schedule' && (
           <div className={styles.gridCard}>
-            {/* Week header */}
-            <div className={styles.weekHeader} style={
-              viewMode === 'week'
-                ? { gridTemplateColumns: `48px repeat(7, 1fr)` }
-                : { gridTemplateColumns: `48px 1fr` }
-            }>
+            {/* Day header */}
+            <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px 1fr` }}>
               <div className={styles.gutterCorner} />
               {weekDays.map((day, di) => {
                 const isToday = isSameDay(day, today)
-                const dayHalls = viewMode === 'week'
-                  ? hallColumns.filter(h => {
-                      const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
-                      return h === null
-                        ? dayClasses.some(c => !c.hall_id)
-                        : dayClasses.some(c => c.hall_id === h.id)
-                    })
-                  : hallColumns
                 return (
                   <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
                     <div className={styles.dayHeadTop}>
-                      <button
-                        className={styles.dayHeadBtn}
-                        onClick={() => viewMode === 'week' && switchToDay(day)}
-                        title={viewMode === 'week' ? 'Перейти до дня' : undefined}
-                      >
-                        <span className={styles.dayName}>{DAYS_UA[di]}</span>
+                      <div className={styles.dayHeadBtn}>
+                        <span className={styles.dayName}>{DAYS_UA[(day.getDay() + 6) % 7]}</span>
                         <span className={styles.dayDate}>{formatDayDate(day)}</span>
-                      </button>
+                      </div>
                     </div>
-                    {dayHalls.length > 1 && (
+                    {hallColumns.length > 1 && (
                       <div className={styles.dayHallsRow}>
-                        {dayHalls.map(h => (
+                        {hallColumns.map(h => (
                           <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
                             {h ? h.name : '—'}
                           </span>
@@ -563,11 +487,7 @@ export default function SchedulePage() {
 
             {/* Body grid */}
             <div className={styles.bodyGridWrapper}>
-            <div className={styles.bodyGrid} style={
-              viewMode === 'week'
-                ? { gridTemplateColumns: `48px repeat(7, 1fr)` }
-                : { gridTemplateColumns: `48px 1fr` }
-            }>
+            <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px 1fr` }}>
               {/* Now line overlay — full width */}
               {nowTop !== null && (
                 <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
@@ -591,14 +511,7 @@ export default function SchedulePage() {
               {weekDays.map((day, di) => {
                 const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
 
-                // Which hall columns to show for this day
-                const dayHallCols = viewMode === 'week'
-                  ? hallColumns.filter(h => {
-                      return h === null
-                        ? dayClasses.some(c => !c.hall_id)
-                        : dayClasses.some(c => c.hall_id === h.id)
-                    })
-                  : hallColumns
+                const dayHallCols = hallColumns
 
                 const showHallCols = dayHallCols.length > 0
 

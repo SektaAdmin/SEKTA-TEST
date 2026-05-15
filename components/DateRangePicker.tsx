@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { getMondayOf, isSameDay } from '@/lib/dateUtils'
+import { isSameDay } from '@/lib/dateUtils'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DateRangePicker.module.css'
 
@@ -9,7 +9,6 @@ interface DateRangePickerProps {
   endDate: Date
   onChange: (date: Date) => void
   label?: string
-  mode?: 'week' | 'day'
 }
 
 function pad(n: number): string { return String(n).padStart(2, '0') }
@@ -20,7 +19,7 @@ function formatLabel(start: Date, end: Date): string {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-export default function DateRangePicker({ startDate, endDate, onChange, label, mode = 'week' }: DateRangePickerProps) {
+export default function DateRangePicker({ startDate, endDate, onChange, label }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(startDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(startDate.getMonth())
@@ -65,12 +64,8 @@ export default function DateRangePicker({ startDate, endDate, onChange, label, m
         onPrevMonth={prevMonth}
         onNextMonth={nextMonth}
         renderDay={(day, inMonth, i) => {
-          const inWeek = day >= startDate && day <= endDate
+          const isSelected = isSameDay(day, startDate)
           const isToday = isSameDay(day, today)
-          const monday = getMondayOf(day)
-          const isMon = isSameDay(day, monday)
-          const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6)
-          const isSun = isSameDay(day, sunday)
 
           return (
             <button
@@ -79,13 +74,13 @@ export default function DateRangePicker({ startDate, endDate, onChange, label, m
               className={[
                 calStyles.day,
                 !inMonth ? calStyles.dayOutside : '',
-                inWeek ? calStyles.dayInWeek : '',
-                inWeek && isMon ? calStyles.dayWeekStart : '',
-                inWeek && isSun ? calStyles.dayWeekEnd : '',
+                isSelected ? calStyles.dayInWeek : '',
+                isSelected ? calStyles.dayWeekStart : '',
+                isSelected ? calStyles.dayWeekEnd : '',
               ].filter(Boolean).join(' ')}
-              onClick={() => { onChange(mode === 'day' ? day : getMondayOf(day)); setOpen(false) }}
+              onClick={() => { onChange(day); setOpen(false) }}
               aria-label={day.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
-              aria-pressed={inWeek}
+              aria-pressed={isSelected}
             >
               <span className={calStyles.dayNum}>{day.getDate()}</span>
               {isToday && <span className={calStyles.todayDot} aria-hidden="true" />}
