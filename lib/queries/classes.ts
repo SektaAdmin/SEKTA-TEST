@@ -56,6 +56,25 @@ export async function updateClassCancelled(
   return { error: error?.message ?? null }
 }
 
+export async function listDatesWithClasses(
+  supabase: SupabaseClient,
+  startISO: string,
+  endISO: string
+): Promise<Set<string>> {
+  const { data } = await supabase
+    .from('classes')
+    .select('starts_at')
+    .gte('starts_at', startISO)
+    .lte('starts_at', endISO)
+    .eq('is_cancelled', false)
+  const set = new Set<string>()
+  for (const row of data ?? []) {
+    const d = new Date(row.starts_at)
+    set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+  }
+  return set
+}
+
 export async function listSeriesTemplates(
   supabase: SupabaseClient
 ): Promise<{ data: ClassSeries[]; error: string | null }> {

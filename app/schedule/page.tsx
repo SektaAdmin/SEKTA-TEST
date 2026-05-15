@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { listClassesForWeek } from '@/lib/queries/classes'
+import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import Sidebar from '@/components/Sidebar'
 import ClassModal from '@/components/ClassModal'
 import { useRefs } from '@/contexts/RefsContext'
@@ -248,6 +248,10 @@ export default function SchedulePage() {
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [calActiveDates, setCalActiveDates] = useState<Set<string>>(new Set())
+  const [calViewMonth, setCalViewMonth] = useState<{ year: number; month: number }>(() => {
+    const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
+  })
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
@@ -267,6 +271,17 @@ export default function SchedulePage() {
   }, [weekStartISO, weekEndISO])
 
   useEffect(() => { fetchClasses() }, [fetchClasses])
+
+  useEffect(() => {
+    setCalViewMonth({ year: baseDate.getFullYear(), month: baseDate.getMonth() })
+  }, [baseDate.getFullYear(), baseDate.getMonth()])
+
+  useEffect(() => {
+    const { year, month } = calViewMonth
+    const start = new Date(year, month, 1)
+    const end = new Date(year, month + 1, 0, 23, 59, 59, 999)
+    listDatesWithClasses(supabase, start.toISOString(), end.toISOString()).then(setCalActiveDates)
+  }, [calViewMonth])
 
   useEffect(() => {
     const map: Record<string, string> = {}
@@ -332,6 +347,8 @@ export default function SchedulePage() {
               endDate={weekDays[0]}
               onChange={setBaseDate}
               label={navLabel}
+              activeDates={calActiveDates}
+              onMonthChange={(year, month) => setCalViewMonth({ year, month })}
             />
             <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -560,7 +577,10 @@ export default function SchedulePage() {
       {showModal && (
         <ClassModal
           onClose={() => { setShowModal(false); setPrefill(undefined) }}
-          onSaved={() => { setShowModal(false); setPrefill(undefined); fetchClasses() }}
+          onSaved={() => {
+            setShowModal(false); setPrefill(undefined); fetchClasses()
+            setCalViewMonth(m => ({ ...m })) // re-trigger active dates fetch
+          }}
           prefill={prefill}
         />
       )}

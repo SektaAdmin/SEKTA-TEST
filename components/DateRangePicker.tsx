@@ -9,6 +9,8 @@ interface DateRangePickerProps {
   endDate: Date
   onChange: (date: Date) => void
   label?: string
+  activeDates?: Set<string>
+  onMonthChange?: (year: number, month: number) => void
 }
 
 function pad(n: number): string { return String(n).padStart(2, '0') }
@@ -19,7 +21,7 @@ function formatLabel(start: Date, end: Date): string {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-export default function DateRangePicker({ startDate, endDate, onChange, label }: DateRangePickerProps) {
+export default function DateRangePicker({ startDate, endDate, onChange, label, activeDates, onMonthChange }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(startDate.getFullYear())
   const [viewMonth, setViewMonth] = useState(startDate.getMonth())
@@ -33,12 +35,16 @@ export default function DateRangePicker({ startDate, endDate, onChange, label }:
   }, [startDate.getFullYear(), startDate.getMonth()])
 
   function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
-    else setViewMonth(m => m - 1)
+    const newYear = viewMonth === 0 ? viewYear - 1 : viewYear
+    const newMonth = viewMonth === 0 ? 11 : viewMonth - 1
+    setViewYear(newYear); setViewMonth(newMonth)
+    onMonthChange?.(newYear, newMonth)
   }
   function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
-    else setViewMonth(m => m + 1)
+    const newYear = viewMonth === 11 ? viewYear + 1 : viewYear
+    const newMonth = viewMonth === 11 ? 0 : viewMonth + 1
+    setViewYear(newYear); setViewMonth(newMonth)
+    onMonthChange?.(newYear, newMonth)
   }
 
   const displayLabel = label ?? formatLabel(startDate, endDate)
@@ -66,6 +72,8 @@ export default function DateRangePicker({ startDate, endDate, onChange, label }:
         renderDay={(day, inMonth, i) => {
           const isSelected = isSameDay(day, startDate)
           const isToday = isSameDay(day, today)
+          const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+          const hasClasses = activeDates?.has(dateKey) ?? false
 
           return (
             <button
@@ -84,6 +92,7 @@ export default function DateRangePicker({ startDate, endDate, onChange, label }:
             >
               <span className={calStyles.dayNum}>{day.getDate()}</span>
               {isToday && <span className={calStyles.todayDot} aria-hidden="true" />}
+              {hasClasses && !isToday && <span className={calStyles.classDot} aria-hidden="true" />}
             </button>
           )
         }}
