@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { typeColor } from '@/lib/typeColor'
 import type { ClassSeries, Hall, TrainingType } from '@/types'
-import { getOverCapacityCount, isClientCountFull, isClientCountAlmost, clientFillPct } from '@/lib/scheduleMetrics'
+import { getOverCapacityCount, isClientCountFull, isClientCountAlmost } from '@/lib/scheduleMetrics'
 import styles from './HallWeekGrid.module.css'
 
 const DAYS: { label: string; dow: number }[] = [
@@ -124,7 +124,6 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                         const isFull = isClientCountFull(clientCount, capacity)
                         const isAlmost = isClientCountAlmost(clientCount, capacity)
                         const overCapacity = getOverCapacityCount(clientCount, capacity)
-                        const fill = clientFillPct(clientCount, capacity)
                         const endTime = (() => {
                           const [h, m] = s.time_of_day.split(':').map(Number)
                           const total = h * 60 + m + s.duration_min
@@ -138,22 +137,17 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                               top: cardTop(s.time_of_day),
                               height: cardHeight(s.duration_min),
                               ['--chip-color' as string]: typeColor(s.ticket_type),
-                              ['--chip-fill' as string]: fill,
                             }}
                             onClick={() => onCardClick(s)}
                           >
-                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)} - {endTime}</span>
+                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
                             <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
-                            <div className={styles.chipFooter}>
-                              <span className={styles.chipTrainer}>{trainerName ?? ''}</span>
-                              <span className={`${styles.chipCapacity} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
-                                {clientCount}{capacity != null ? `/${capacity}` : ''}
+                            {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
+                            {capacity != null && (
+                              <span className={`${styles.chipCapacityBadge} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
+                                {clientCount}/{capacity}{overCapacity > 0 ? ` +${overCapacity}` : ''}
                               </span>
-                              {overCapacity > 0 && (
-                                <span className={styles.chipWaitlist}>+{overCapacity}</span>
-                              )}
-                            </div>
-                            {capacity != null && <div className={styles.chipProgress} />}
+                            )}
                           </button>
                         )
                       })}

@@ -9,30 +9,37 @@
   margin-left: 196px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── Topbar ──────────────────────────────────────────────── */
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--topbar-py) var(--topbar-px);
+  padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
-  gap: 16px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
   flex-shrink: 0;
+  height: 57px;
+  gap: 12px;
 }
 
 .topbarLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex: 1;
 }
 
 .topbarRight {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .backLink {
@@ -40,6 +47,7 @@
   color: var(--text-3);
   text-decoration: none;
   transition: color var(--motion-fast);
+  white-space: nowrap;
 }
 .backLink:hover { color: var(--text); }
 
@@ -47,6 +55,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
+  white-space: nowrap;
 }
 
 /* ── Generate dialog ─────────────────────────────────────── */
@@ -104,7 +113,6 @@
 /* ── View toggle ─────────────────────────────────────────── */
 .viewToggle {
   display: flex;
-  background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -115,24 +123,27 @@
   padding: 0 12px;
   background: transparent;
   border: none;
-  color: var(--text-3);
+  color: var(--text-2);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
   transition: color var(--motion-fast), background var(--motion-fast);
 }
-.toggleBtn:hover { color: var(--text); background: var(--bg-2); }
+.toggleBtn + .toggleBtn { border-left: 0.5px solid var(--border); }
+.toggleBtn:hover { color: var(--text); background: var(--bg-3); }
 
 .toggleActive {
   height: var(--control-h);
   padding: 0 12px;
-  background: var(--bg-2);
+  background: var(--accent-dim);
   border: none;
-  color: var(--text);
+  color: var(--accent);
   font-size: 13px;
   font-family: inherit;
   cursor: default;
 }
+.toggleActive + .toggleBtn,
+.toggleBtn + .toggleActive { border-left: 0.5px solid var(--border); }
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btnGenerate {
@@ -146,6 +157,7 @@
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast);
+  white-space: nowrap;
 }
 .btnGenerate:hover { border-color: var(--accent-border-hover); background: var(--accent-dim); }
 
@@ -160,6 +172,7 @@
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast);
+  white-space: nowrap;
 }
 .btnDeleteSchedule:hover { background: var(--danger-dim); }
 
@@ -199,6 +212,7 @@
   font-family: inherit;
   cursor: pointer;
   transition: opacity var(--motion-fast);
+  white-space: nowrap;
 }
 .btnNew:hover { opacity: 0.88; }
 
@@ -242,7 +256,11 @@
   gap: 8px;
   padding: 8px var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
   flex-shrink: 0;
+  position: sticky;
+  top: 57px;
+  z-index: 8;
 }
 
 .filterGroup {
@@ -320,24 +338,28 @@
 /* ── Content ─────────────────────────────────────────────── */
 .content {
   flex: 1;
-  overflow: auto;
-  padding: var(--topbar-py) var(--topbar-px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 .loading {
   font-size: 13px;
   color: var(--text-3);
+  padding: 20px var(--topbar-px);
+  display: block;
 }
 
 .empty {
   font-size: 13px;
   color: var(--text-3);
-  padding: 24px 0;
+  padding: 48px var(--topbar-px);
 }
 
 /* ── Table ───────────────────────────────────────────────── */
 .tableWrap {
   overflow-x: auto;
+  padding: var(--topbar-py) var(--topbar-px);
 }
 
 .table {

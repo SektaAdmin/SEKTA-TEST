@@ -15,6 +15,7 @@ import Link from 'next/link'
 
 
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+const DAYS_UA_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя']
 
 const MIN_HOUR = 7
 const MAX_HOUR = 23
@@ -64,7 +65,7 @@ function formatEndTime(iso: string, durationMin: number) {
 }
 
 function formatDayDate(d: Date) {
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
 function getCardTop(iso: string, hourHeight: number): number {
@@ -113,7 +114,8 @@ function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
 
 
 function formatDayFull(d: Date) {
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+  const dayName = DAYS_UA_FULL[(d.getDay() + 6) % 7]
+  return `${dayName}, ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
 // ── Slot click → time calculation ────────────────────────────────
@@ -460,7 +462,7 @@ export default function SchedulePage() {
                   <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
                     <div className={styles.dayHeadTop}>
                       <div className={styles.dayHeadBtn}>
-                        <span className={styles.dayName}>{DAYS_UA[(day.getDay() + 6) % 7]}</span>
+                        <span className={styles.dayName}>{DAYS_UA_FULL[(day.getDay() + 6) % 7]}</span>
                         <span className={styles.dayDate}>{formatDayDate(day)}</span>
                       </div>
                     </div>

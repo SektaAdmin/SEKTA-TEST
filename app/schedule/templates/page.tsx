@@ -365,7 +365,7 @@ export default function TemplatesPage() {
 
       <div className={styles.content}>
         {loading ? (
-          <p className={styles.loading}>...</p>
+          <span className={styles.loading}>...</span>
         ) : templates.length === 0 ? (
           <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
         ) : viewMode === 'grid' ? (

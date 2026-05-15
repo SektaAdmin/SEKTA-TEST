@@ -134,10 +134,9 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 5px 7px 8px 10px;
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-left: 3px solid var(--chip-color, var(--border-strong));
+  padding: 6px 8px 6px 10px;
+  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-color, var(--border)) 35%, transparent);
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
@@ -147,79 +146,64 @@
   z-index: 1;
 }
 .chip:hover {
-  background: var(--bg-2);
-  border-color: var(--border-hover);
-  border-left-color: var(--chip-color, var(--border-strong));
+  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 25%, transparent);
+  border-color: color-mix(in srgb, var(--chip-color, var(--border)) 55%, transparent);
   z-index: 2;
 }
 
 .chipTime {
   font-size: 10px;
-  font-weight: 400;
-  color: var(--text-3);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--chip-color, var(--text-2)) 80%, white);
   font-family: var(--mono);
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .chipType {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text);
-  line-height: 1.25;
+  color: color-mix(in srgb, var(--chip-color, var(--text)) 60%, white);
+  line-height: 1.2;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-}
-
-.chipFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
   flex-shrink: 0;
 }
 
 .chipTrainer {
   font-size: 10px;
-  color: var(--text-3);
+  color: color-mix(in srgb, var(--chip-color, var(--text-3)) 60%, white);
+  opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.chipCapacity {
-  font-size: 10px;
-  color: var(--text-3);
-  font-family: var(--mono);
   flex-shrink: 0;
 }
 
-.chipCapacityAlmost { color: var(--warning); }
-.chipCapacityFull   { color: var(--danger); font-weight: 600; }
-
-.chipWaitlist {
+.chipCapacityBadge {
+  position: absolute;
+  bottom: 5px;
+  right: 7px;
   font-size: 10px;
+  font-family: var(--mono);
+  color: color-mix(in srgb, var(--chip-color, var(--text-2)) 70%, white);
+  background: color-mix(in srgb, var(--chip-color, var(--bg)) 20%, black);
+  border: 0.5px solid color-mix(in srgb, var(--chip-color, var(--border)) 40%, transparent);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.chipCapacityAlmost {
   color: var(--warning);
-  font-family: var(--mono);
-  flex-shrink: 0;
+  border-color: var(--warning);
+  background: var(--warning-dim);
 }
 
-.chipProgress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--border);
-}
-.chipProgress::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: var(--chip-fill, 0%);
-  background: var(--chip-color, var(--accent));
+.chipCapacityFull {
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--danger-dim);
+  font-weight: 600;
 }
