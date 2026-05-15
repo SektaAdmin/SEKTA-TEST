@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect, useId } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { isoToDatetimeLocal } from '@/lib/formatters'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
 import styles from './ClassModal.module.css'
@@ -57,9 +57,6 @@ function isoToTimeLocal(iso: string): string {
 }
 
 export default function ClassModal({ onClose, onSaved, existing, prefill }: Props) {
-  const titleId = useId()
-  const modalRef = useModalFocus(onClose)
-
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [halls, setHalls] = useState<Hall[]>([])
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
@@ -176,7 +173,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       notes: values.notes.trim() || null,
     }
 
-    // ── Edit existing single class ────────────────────────────
     if (isEdit && (!hasSeries || editScope === 'this')) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id, existing!.id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
@@ -186,10 +182,8 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       return
     }
 
-    // ── Edit all future in series ─────────────────────────────
     if (isEdit && hasSeries && editScope === 'future') {
       const now = new Date().toISOString()
-      // Fetch all future non-cancelled classes in this series to check each for conflicts
       const { data: futureCls } = await supabase
         .from('classes')
         .select('id, starts_at')
@@ -198,7 +192,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         .eq('is_cancelled', false)
       for (const fc of futureCls ?? []) {
         const startsAtForClass = new Date(fc.starts_at)
-        // Use the new time from payload but keep original date shifted by series offset
         const newStartsAt = new Date(payload.starts_at)
         startsAtForClass.setHours(newStartsAt.getHours(), newStartsAt.getMinutes(), 0, 0)
         const conflict = await checkConflicts(
@@ -223,7 +216,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         .eq('is_cancelled', false)
       if (error) { setServerError(error.message); setLoading(false); return }
 
-      // update series template too
       const seriesPayload = {
         ticket_type: values.ticket_type,
         trainer_id: values.trainer_id || null,
@@ -238,7 +230,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       return
     }
 
-    // ── Create single class ───────────────────────────────────
     if (!isSeries) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
@@ -248,14 +239,12 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       return
     }
 
-    // ── Create series ─────────────────────────────────────────
     const weeks = Number(values.weeks)
     const dayOfWeek = Number(values.day_of_week)
     const [hh, mm] = values.time_of_day.split(':').map(Number)
     const durationMin = Number(values.duration_min)
     const capacity = values.capacity ? Number(values.capacity) : null
 
-    // insert class_series row
     const { data: seriesData, error: seriesError } = await supabase
       .from('class_series')
       .insert({
@@ -279,8 +268,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     }
 
     const seriesId = seriesData.id
-
-    // generate N classes
     const firstDate = new Date(values.starts_at)
     const classes = []
     for (let i = 0; i < weeks; i++) {
@@ -294,7 +281,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       })
     }
 
-    // Check conflicts for each class in the series before inserting
     for (const cls of classes) {
       const conflict = await checkConflicts(cls.starts_at, cls.duration_min, cls.hall_id, cls.trainer_id)
       if (conflict) {
@@ -308,7 +294,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
 
     const { error: insertError } = await supabase.from('classes').insert(classes)
     if (insertError) {
-      // rollback series row
       await supabase.from('class_series').delete().eq('id', seriesId)
       setServerError(insertError.message)
       setLoading(false)
@@ -321,189 +306,37 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
   // ── If editing a series class — show scope picker first ──────
   if (hasSeries && editScope === null) {
     return (
-      <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-        <div ref={modalRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-          <div className={styles.header}>
-            <h2 id={titleId}>Редагування заняття</h2>
-            <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-          </div>
-          <div className={styles.body}>
-            <p className={styles.scopePrompt}>Це заняття входить до серії. Що змінити?</p>
-            <div className={styles.scopeBtns}>
-              <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('this')}>
-                <span className={styles.scopeTitle}>Тільки це заняття</span>
-                <span className={styles.scopeDesc}>Зміни торкнуться лише цієї дати</span>
-              </button>
-              <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('future')}>
-                <span className={styles.scopeTitle}>Це і всі майбутні</span>
-                <span className={styles.scopeDesc}>Зміни торкнуться цього і всіх наступних занять серії</span>
-              </button>
-            </div>
-          </div>
+      <ModalShell
+        title="Редагування заняття"
+        onClose={onClose}
+        width={480}
+        footer={null}
+      >
+        <p className={styles.scopePrompt}>Це заняття входить до серії. Що змінити?</p>
+        <div className={styles.scopeBtns}>
+          <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('this')}>
+            <span className={styles.scopeTitle}>Тільки це заняття</span>
+            <span className={styles.scopeDesc}>Зміни торкнуться лише цієї дати</span>
+          </button>
+          <button type="button" className={styles.scopeBtn} onClick={() => setEditScope('future')}>
+            <span className={styles.scopeTitle}>Це і всі майбутні</span>
+            <span className={styles.scopeDesc}>Зміни торкнуться цього і всіх наступних занять серії</span>
+          </button>
         </div>
-      </div>
+      </ModalShell>
     )
   }
 
   return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        ref={modalRef}
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className={styles.header}>
-          <h2 id={titleId}>
-            {isEdit
-              ? editScope === 'future' ? 'Редагування серії' : 'Редагування заняття'
-              : isSeries ? 'Нова серія занять' : 'Нове заняття'}
-          </h2>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.body}>
-
-            {/* Series toggle (only for new classes) */}
-            {!isEdit && (
-              <div className={styles.toggleRow}>
-                <button
-                  type="button"
-                  className={`${styles.toggleBtn} ${!isSeries ? styles.toggleActive : ''}`}
-                  onClick={() => setIsSeries(false)}
-                >
-                  Одне заняття
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.toggleBtn} ${isSeries ? styles.toggleActive : ''}`}
-                  onClick={() => setIsSeries(true)}
-                >
-                  Серія
-                </button>
-              </div>
-            )}
-
-            <div className={styles.field}>
-              <label htmlFor="cm-type">Тип заняття <span className={styles.required}>*</span></label>
-              <select id="cm-type" {...register('ticket_type', { required: true })} disabled={loading}>
-                {trainingTypes.map(t => (
-                  <option key={t.code} value={t.code}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label htmlFor="cm-trainer">Тренер</label>
-                <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
-                  <option value="">— без тренера —</option>
-                  {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="cm-hall">Зал</label>
-                <select id="cm-hall" {...register('hall_id')} disabled={loading}>
-                  <option value="">— без залу —</option>
-                  {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Date/time — single class or first occurrence */}
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label htmlFor="cm-starts">
-                  {isSeries ? 'Перше заняття' : 'Дата і час'}
-                  {' '}<span className={styles.required}>*</span>
-                </label>
-                <input
-                  id="cm-starts"
-                  type="datetime-local"
-                  {...register('starts_at', { required: "Обов'язкове поле" })}
-                  disabled={loading}
-                />
-                {errors.starts_at && <p className={styles.errorHint}>{errors.starts_at.message}</p>}
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="cm-dur">Тривалість, хв</label>
-                <input
-                  id="cm-dur"
-                  type="number"
-                  min={15}
-                  step={15}
-                  {...register('duration_min', { min: 15, valueAsNumber: true })}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Series-specific fields */}
-            {isSeries && !isEdit && (
-              <div className={styles.row}>
-                <div className={styles.field}>
-                  <label htmlFor="cm-dow">День тижня</label>
-                  <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
-                    {DAY_OPTIONS.map(({ label, value }) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="cm-weeks">Кількість тижнів <span className={styles.required}>*</span></label>
-                  <input
-                    id="cm-weeks"
-                    type="number"
-                    min={1}
-                    max={52}
-                    {...register('weeks', { min: 1, max: 52, valueAsNumber: true })}
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label htmlFor="cm-cap">Ліміт місць</label>
-                <input
-                  id="cm-cap"
-                  type="number"
-                  min={1}
-                  placeholder="Без ліміту"
-                  {...register('capacity')}
-                  disabled={loading}
-                />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="cm-title">Назва (опц.)</label>
-                <input
-                  id="cm-title"
-                  type="text"
-                  placeholder="Кастомна назва"
-                  {...register('title')}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="cm-notes">Нотатки</label>
-              <textarea
-                id="cm-notes"
-                rows={2}
-                placeholder="Додаткова інформація..."
-                {...register('notes')}
-                disabled={loading}
-              />
-            </div>
-
-            {serverError && <p className={styles.error} role="alert">{serverError}</p>}
-          </div>
-
-          <div className={styles.footer}>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <ModalShell
+        title={isEdit
+          ? editScope === 'future' ? 'Редагування серії' : 'Редагування заняття'
+          : isSeries ? 'Нова серія занять' : 'Нове заняття'}
+        onClose={onClose}
+        width={480}
+        footer={
+          <>
             <button type="button" className={styles.btnCancel} onClick={onClose} disabled={loading}>
               Скасувати
             </button>
@@ -511,12 +344,147 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               {loading
                 ? 'Збереження...'
                 : isSeries && !isEdit
-                  ? `Створити серію`
+                  ? 'Створити серію'
                   : 'Зберегти'}
             </button>
+          </>
+        }
+      >
+        {/* Series toggle (only for new classes) */}
+        {!isEdit && (
+          <div className={styles.toggleRow}>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${!isSeries ? styles.toggleActive : ''}`}
+              onClick={() => setIsSeries(false)}
+            >
+              Одне заняття
+            </button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${isSeries ? styles.toggleActive : ''}`}
+              onClick={() => setIsSeries(true)}
+            >
+              Серія
+            </button>
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+
+        <div className={styles.field}>
+          <label htmlFor="cm-type">Тип заняття <span className={styles.required}>*</span></label>
+          <select id="cm-type" {...register('ticket_type', { required: true })} disabled={loading}>
+            {trainingTypes.map(t => (
+              <option key={t.code} value={t.code}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <label htmlFor="cm-trainer">Тренер</label>
+            <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
+              <option value="">— без тренера —</option>
+              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="cm-hall">Зал</label>
+            <select id="cm-hall" {...register('hall_id')} disabled={loading}>
+              <option value="">— без залу —</option>
+              {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <label htmlFor="cm-starts">
+              {isSeries ? 'Перше заняття' : 'Дата і час'}
+              {' '}<span className={styles.required}>*</span>
+            </label>
+            <input
+              id="cm-starts"
+              type="datetime-local"
+              {...register('starts_at', { required: "Обов'язкове поле" })}
+              disabled={loading}
+            />
+            {errors.starts_at && <p className={styles.errorHint}>{errors.starts_at.message}</p>}
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="cm-dur">Тривалість, хв</label>
+            <input
+              id="cm-dur"
+              type="number"
+              min={15}
+              step={15}
+              {...register('duration_min', { min: 15, valueAsNumber: true })}
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Series-specific fields */}
+        {isSeries && !isEdit && (
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label htmlFor="cm-dow">День тижня</label>
+              <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
+                {DAY_OPTIONS.map(({ label, value }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="cm-weeks">Кількість тижнів <span className={styles.required}>*</span></label>
+              <input
+                id="cm-weeks"
+                type="number"
+                min={1}
+                max={52}
+                {...register('weeks', { min: 1, max: 52, valueAsNumber: true })}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <label htmlFor="cm-cap">Ліміт місць</label>
+            <input
+              id="cm-cap"
+              type="number"
+              min={1}
+              placeholder="Без ліміту"
+              {...register('capacity')}
+              disabled={loading}
+            />
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="cm-title">Назва (опц.)</label>
+            <input
+              id="cm-title"
+              type="text"
+              placeholder="Кастомна назва"
+              {...register('title')}
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="cm-notes">Нотатки</label>
+          <textarea
+            id="cm-notes"
+            rows={2}
+            placeholder="Додаткова інформація..."
+            {...register('notes')}
+            disabled={loading}
+          />
+        </div>
+
+        {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+      </ModalShell>
+    </form>
   )
 }

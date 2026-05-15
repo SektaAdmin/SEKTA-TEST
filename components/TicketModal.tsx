@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect, useId } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalShell } from '@/components/ui/ModalShell'
 import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
 
@@ -20,9 +20,6 @@ interface Props {
 }
 
 export default function TicketModal({ onClose, onSaved }: Props) {
-  const titleId = useId()
-  const modalRef = useModalFocus(onClose)
-
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -69,123 +66,112 @@ export default function TicketModal({ onClose, onSaved }: Props) {
   }
 
   return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        ref={modalRef}
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className={styles.header}>
-          <h2 id={titleId}>Новий абонемент</h2>
-          <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-        </div>
-
-        <div className={styles.body}>
-          <div className={styles.field}>
-            <label htmlFor="ticket-name">
-              Назва <span className={styles.required}>*</span>
-            </label>
-            <input
-              id="ticket-name"
-              type="text"
-              {...register('name', { required: 'Назва обов\'язкова' })}
-              placeholder="Групове Yoga 8 занять"
-              disabled={loading}
-            />
-            {errors.name && (
-              <p className={styles.errorHint} role="alert">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="ticket-type">
-              Тип <span className={styles.required}>*</span>
-            </label>
-            <select
-              id="ticket-type"
-              {...register('ticket_type', {
-                validate: v => trainingTypes.some(t => t.code === v) || 'Оберіть тип абонементу',
-              })}
-              disabled={loading}
-            >
-              <option value="">— Оберіть тип —</option>
-              {trainingTypes.map(t => (
-                <option key={t.code} value={t.code}>{t.label}</option>
-              ))}
-            </select>
-            {errors.ticket_type && (
-              <p className={styles.errorHint} role="alert">{errors.ticket_type.message}</p>
-            )}
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="ticket-sessions">
-                Кількість занять <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="ticket-sessions"
-                type="number"
-                min={1}
-                step={1}
-                {...register('sessions', {
-                  required: 'Кількість занять обов\'язкова',
-                  validate: v => {
-                    const n = parseInt(v, 10)
-                    if (isNaN(n) || n <= 0) return 'Кількість занять > 0'
-                    if (!Number.isInteger(n)) return 'Тільки ціле число'
-                    return true
-                  },
-                })}
-                placeholder="8"
-                disabled={loading}
-              />
-              {errors.sessions && (
-                <p className={styles.errorHint} role="alert">{errors.sessions.message}</p>
-              )}
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="ticket-price">
-                Ціна (₴) <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="ticket-price"
-                type="number"
-                min={1}
-                step={1}
-                {...register('price', {
-                  required: 'Ціна обов\'язкова',
-                  validate: v => {
-                    const n = parseInt(v, 10)
-                    if (isNaN(n) || n <= 0) return 'Ціна > 0'
-                    if (!Number.isInteger(n)) return 'Тільки ціле число'
-                    return true
-                  },
-                })}
-                placeholder="2400"
-                disabled={loading}
-              />
-              {errors.price && (
-                <p className={styles.errorHint} role="alert">{errors.price.message}</p>
-              )}
-            </div>
-          </div>
-
-          {serverError && <p className={styles.error} role="alert">{serverError}</p>}
-        </div>
-
-        <div className={styles.footer}>
+    <ModalShell
+      title="Новий абонемент"
+      onClose={onClose}
+      footer={
+        <>
           <button className={styles.btnCancel} onClick={onClose} disabled={loading}>
             Скасувати
           </button>
           <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
             {loading ? 'Збереження...' : 'Зберегти'}
           </button>
+        </>
+      }
+    >
+      <div className={styles.field}>
+        <label htmlFor="ticket-name">
+          Назва <span className={styles.required}>*</span>
+        </label>
+        <input
+          id="ticket-name"
+          type="text"
+          {...register('name', { required: 'Назва обов\'язкова' })}
+          placeholder="Групове Yoga 8 занять"
+          disabled={loading}
+        />
+        {errors.name && (
+          <p className={styles.errorHint} role="alert">{errors.name.message}</p>
+        )}
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="ticket-type">
+          Тип <span className={styles.required}>*</span>
+        </label>
+        <select
+          id="ticket-type"
+          {...register('ticket_type', {
+            validate: v => trainingTypes.some(t => t.code === v) || 'Оберіть тип абонементу',
+          })}
+          disabled={loading}
+        >
+          <option value="">— Оберіть тип —</option>
+          {trainingTypes.map(t => (
+            <option key={t.code} value={t.code}>{t.label}</option>
+          ))}
+        </select>
+        {errors.ticket_type && (
+          <p className={styles.errorHint} role="alert">{errors.ticket_type.message}</p>
+        )}
+      </div>
+
+      <div className={styles.row}>
+        <div className={styles.field}>
+          <label htmlFor="ticket-sessions">
+            Кількість занять <span className={styles.required}>*</span>
+          </label>
+          <input
+            id="ticket-sessions"
+            type="number"
+            min={1}
+            step={1}
+            {...register('sessions', {
+              required: 'Кількість занять обов\'язкова',
+              validate: v => {
+                const n = parseInt(v, 10)
+                if (isNaN(n) || n <= 0) return 'Кількість занять > 0'
+                if (!Number.isInteger(n)) return 'Тільки ціле число'
+                return true
+              },
+            })}
+            placeholder="8"
+            disabled={loading}
+          />
+          {errors.sessions && (
+            <p className={styles.errorHint} role="alert">{errors.sessions.message}</p>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="ticket-price">
+            Ціна (₴) <span className={styles.required}>*</span>
+          </label>
+          <input
+            id="ticket-price"
+            type="number"
+            min={1}
+            step={1}
+            {...register('price', {
+              required: 'Ціна обов\'язкова',
+              validate: v => {
+                const n = parseInt(v, 10)
+                if (isNaN(n) || n <= 0) return 'Ціна > 0'
+                if (!Number.isInteger(n)) return 'Тільки ціле число'
+                return true
+              },
+            })}
+            placeholder="2400"
+            disabled={loading}
+          />
+          {errors.price && (
+            <p className={styles.errorHint} role="alert">{errors.price.message}</p>
+          )}
         </div>
       </div>
-    </div>
+
+      {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+    </ModalShell>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
-import { useState, useId } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalShell } from '@/components/ui/ModalShell'
 import styles from './HallModal.module.css'
 
 
@@ -11,8 +11,6 @@ interface Props {
 }
 
 export default function HallModal({ onClose, onSaved }: Props) {
-  const titleId = useId()
-  const modalRef = useModalFocus(onClose)
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState('')
   const [description, setDescription] = useState('')
@@ -49,65 +47,58 @@ export default function HallModal({ onClose, onSaved }: Props) {
   }
 
   return (
-    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal} ref={modalRef} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <div className={styles.header}>
-          <h2 id={titleId} className={styles.title}>Новий зал</h2>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M2 2l12 12M14 2L2 14"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.body}>
-          <div className={styles.field}>
-            <label className={styles.label}>Назва залу *</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Наприклад: Великий зал"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              autoFocus
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>Місткість (осіб) *</label>
-            <input
-              className={styles.input}
-              type="number"
-              min="1"
-              placeholder="Наприклад: 20"
-              value={capacity}
-              onChange={e => setCapacity(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>Опис</label>
-            <textarea
-              className={styles.textarea}
-              placeholder="Необов'язково"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {error && <div className={styles.error}>{error}</div>}
-        </div>
-
-        <div className={styles.footer}>
+    <ModalShell
+      title="Новий зал"
+      onClose={onClose}
+      width={440}
+      modalClassName={styles.modal}
+      footer={
+        <>
           <button className={styles.btnCancel} onClick={onClose} disabled={saving}>
             Скасувати
           </button>
           <button className={styles.btnSave} onClick={handleSubmit} disabled={saving}>
             {saving ? 'Збереження...' : 'Зберегти'}
           </button>
-        </div>
+        </>
+      }
+    >
+      <div className={styles.field}>
+        <label className={styles.label}>Назва залу *</label>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Наприклад: Великий зал"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          autoFocus
+        />
       </div>
-    </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Місткість (осіб) *</label>
+        <input
+          className={styles.input}
+          type="number"
+          min="1"
+          placeholder="Наприклад: 20"
+          value={capacity}
+          onChange={e => setCapacity(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Опис</label>
+        <textarea
+          className={styles.textarea}
+          placeholder="Необов'язково"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          rows={3}
+        />
+      </div>
+
+      {error && <div className={styles.error}>{error}</div>}
+    </ModalShell>
   )
 }

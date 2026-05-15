@@ -1,0 +1,64 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+  animation: overlayIn var(--motion-fast) both;
+}
+
+.modal {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn var(--motion-fast) both;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.header h2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+  transition: color 0.12s;
+}
+.close:hover { color: var(--text); }
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 0.5px solid var(--border);
+}

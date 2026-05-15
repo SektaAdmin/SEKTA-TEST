@@ -1,10 +1,11 @@
 'use client'
-import { useState, useId } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { supabase } from '@/lib/supabase'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalShell } from '@/components/ui/ModalShell'
+import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
@@ -51,8 +52,6 @@ interface Props {
 
 export default function ClientModal({ onClose, onSaved, client }: Props) {
   const isEdit = !!client
-  const titleId = useId()
-  const modalRef = useModalFocus(onClose)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -97,7 +96,6 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     const firstName = data.first_name.trim()
     const lastName = data.last_name.trim()
 
-    // Check phone duplicate (exclude current client when editing)
     if (phone) {
       let phoneQuery = supabase
         .from('clients')
@@ -118,7 +116,6 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
       }
     }
 
-    // Check full name duplicate (case-insensitive, exclude current client when editing)
     let nameQuery = supabase
       .from('clients')
       .select('id, phone')
@@ -171,159 +168,131 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
   }
 
   return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        ref={modalRef}
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className={styles.header}>
-          <h2 id={titleId}>{isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}</h2>
-          <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-        </div>
-
-        <div className={styles.body}>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="client-first-name">
-                Ім'я <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="client-first-name"
-                type="text"
-                {...register('first_name')}
-                placeholder="Анна"
-                disabled={loading}
-              />
-              {errors.first_name && (
-                <p className={styles.errorHint} role="alert">{errors.first_name.message}</p>
-              )}
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="client-last-name">
-                Прізвище <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="client-last-name"
-                type="text"
-                {...register('last_name')}
-                placeholder="Іваненко"
-                disabled={loading}
-              />
-              {errors.last_name && (
-                <p className={styles.errorHint} role="alert">{errors.last_name.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="client-phone">Телефон</label>
-            <input
-              id="client-phone"
-              type="tel"
-              {...register('phone')}
-              placeholder="+380 XX XXX XX XX"
-              disabled={loading}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="client-instagram">Instagram</label>
-            <div className={styles.inputPrefix}>
-              <span className={styles.prefix}>@</span>
-              <input
-                id="client-instagram"
-                type="text"
-                {...register('instagram_username')}
-                placeholder="username"
-                disabled={loading}
-                className={styles.inputWithPrefix}
-              />
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="client-telegram">Telegram</label>
-            <div className={styles.inputPrefix}>
-              <span className={styles.prefix}>@</span>
-              <input
-                id="client-telegram"
-                type="text"
-                {...register('telegram_username')}
-                placeholder="username"
-                disabled={loading}
-                className={styles.inputWithPrefix}
-              />
-            </div>
-          </div>
-
-          {isEdit && (
-            <>
-              <button
-                type="button"
-                className={styles.historyToggle}
-                onClick={toggleHistory}
-              >
-                {showHistory ? '▲' : '▼'} Історія транзакцій
-              </button>
-
-              {(showHistory || historyLoading) && (
-                <div className={styles.historySection}>
-                  {historyLoading ? (
-                    <p className={styles.historyLoading}>Завантаження...</p>
-                  ) : transactions.length === 0 ? (
-                    <p className={styles.historyEmpty}>Транзакцій немає</p>
-                  ) : (
-                    <table className={styles.historyTable}>
-                      <thead>
-                        <tr>
-                          <th>Дата</th>
-                          <th>Тип</th>
-                          <th>Сума</th>
-                          <th>Баланс</th>
-                          <th>Опис</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {transactions.map(tx => (
-                          <tr key={tx.id}>
-                            <td className={styles.txDate}>{formatTxDate(tx.created_at)}</td>
-                            <td className={styles.txType}>
-                              {TX_LABELS[tx.transaction_type] ?? tx.transaction_type}
-                            </td>
-                            <td className={`${styles.txAmount} ${tx.amount > 0 ? styles.txPos : styles.txNeg}`}>
-                              {tx.amount > 0 ? '+' : ''}{Number(tx.amount).toLocaleString('uk-UA')}
-                            </td>
-                            <td className={styles.txBalance}>
-                              {Number(tx.balance_after).toLocaleString('uk-UA')}
-                            </td>
-                            <td className={styles.txDesc}>{tx.description ?? '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-          {error && <p className={styles.error} role="alert">{error}</p>}
-        </div>
-
-        <div className={styles.footer}>
+    <ModalShell
+      title={isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
+      onClose={onClose}
+      footer={
+        <>
           <button className={styles.btnCancel} onClick={onClose} disabled={loading}>
             Скасувати
           </button>
           <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
             {loading ? 'Збереження...' : isEdit ? 'Оновити' : 'Зберегти'}
           </button>
+        </>
+      }
+    >
+      <div className={styles.row}>
+        <div className={styles.field}>
+          <label htmlFor="client-first-name">
+            Ім'я <span className={styles.required}>*</span>
+          </label>
+          <input
+            id="client-first-name"
+            type="text"
+            {...register('first_name')}
+            placeholder="Анна"
+            disabled={loading}
+          />
+          {errors.first_name && (
+            <p className={styles.errorHint} role="alert">{errors.first_name.message}</p>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="client-last-name">
+            Прізвище <span className={styles.required}>*</span>
+          </label>
+          <input
+            id="client-last-name"
+            type="text"
+            {...register('last_name')}
+            placeholder="Іваненко"
+            disabled={loading}
+          />
+          {errors.last_name && (
+            <p className={styles.errorHint} role="alert">{errors.last_name.message}</p>
+          )}
         </div>
       </div>
-    </div>
+
+      <div className={styles.field}>
+        <label htmlFor="client-phone">Телефон</label>
+        <input
+          id="client-phone"
+          type="tel"
+          {...register('phone')}
+          placeholder="+380 XX XXX XX XX"
+          disabled={loading}
+        />
+      </div>
+
+      <SocialHandleInput
+        id="client-instagram"
+        label="Instagram"
+        registration={register('instagram_username')}
+        disabled={loading}
+      />
+
+      <SocialHandleInput
+        id="client-telegram"
+        label="Telegram"
+        registration={register('telegram_username')}
+        disabled={loading}
+      />
+
+      {isEdit && (
+        <>
+          <button
+            type="button"
+            className={styles.historyToggle}
+            onClick={toggleHistory}
+          >
+            {showHistory ? '▲' : '▼'} Історія транзакцій
+          </button>
+
+          {(showHistory || historyLoading) && (
+            <div className={styles.historySection}>
+              {historyLoading ? (
+                <p className={styles.historyLoading}>Завантаження...</p>
+              ) : transactions.length === 0 ? (
+                <p className={styles.historyEmpty}>Транзакцій немає</p>
+              ) : (
+                <table className={styles.historyTable}>
+                  <thead>
+                    <tr>
+                      <th>Дата</th>
+                      <th>Тип</th>
+                      <th>Сума</th>
+                      <th>Баланс</th>
+                      <th>Опис</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map(tx => (
+                      <tr key={tx.id}>
+                        <td className={styles.txDate}>{formatTxDate(tx.created_at)}</td>
+                        <td className={styles.txType}>
+                          {TX_LABELS[tx.transaction_type] ?? tx.transaction_type}
+                        </td>
+                        <td className={`${styles.txAmount} ${tx.amount > 0 ? styles.txPos : styles.txNeg}`}>
+                          {tx.amount > 0 ? '+' : ''}{Number(tx.amount).toLocaleString('uk-UA')}
+                        </td>
+                        <td className={styles.txBalance}>
+                          {Number(tx.balance_after).toLocaleString('uk-UA')}
+                        </td>
+                        <td className={styles.txDesc}>{tx.description ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {error && <p className={styles.error} role="alert">{error}</p>}
+    </ModalShell>
   )
 }
