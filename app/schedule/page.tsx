@@ -145,13 +145,10 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const full = isFull(cls.enrollments, cls.capacity)
   const almost = isAlmost(cls.enrollments, cls.capacity)
 
-  const fill = fillPct(cls.enrollments, cls.capacity)
   const timeLabel = `${formatTime(cls.starts_at)} – ${formatEndTime(cls.starts_at, cls.duration_min)}`
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 50
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
-
-  const progressClass = full ? styles.cardProgressFull : almost ? styles.cardProgressAlmost : styles.cardProgress
 
   return (
     <button
@@ -162,37 +159,34 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
         left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
         right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
         ['--card-color' as string]: color,
-        ['--card-fill' as string]: fill,
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
     >
       {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
-      <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-        {label}
-      </span>
+      {cls.halls?.name && (
+        <span className={styles.cardHall}>{cls.halls.name}</span>
+      )}
       {isCompact ? (
-        <span className={styles.cardTime}>{timeLabel}</span>
+        <>
+          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>{label}</span>
+          <span className={styles.cardTime}>{timeLabel}</span>
+        </>
       ) : (
         <>
-          <div className={styles.cardMeta}>
-            <span className={styles.cardTime}>{timeLabel}</span>
-            {cls.trainers?.name && <span className={styles.cardDot}>·</span>}
-            <span className={styles.cardTrainer}>{cls.trainers?.name ?? ''}</span>
-          </div>
-          <div className={styles.cardFooter}>
-            <span className={`${styles.cardCount} ${full ? styles.cardCountFull : almost ? styles.cardCountAlmost : ''}`}>
-              {activeCount}{cls.capacity != null ? `/${cls.capacity}` : ''}
+          <span className={styles.cardTime}>{timeLabel}</span>
+          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
+            {label}
+          </span>
+          {cls.trainers?.name && (
+            <span className={styles.cardTrainer}>{cls.trainers.name}</span>
+          )}
+          {cls.capacity != null && (
+            <span className={`${styles.countBadge} ${full ? styles.countBadgeFull : almost ? styles.countBadgeAlmost : ''}`}>
+              {activeCount}/{cls.capacity}{waitlistCount > 0 ? ` +${waitlistCount}` : ''}
             </span>
-            {waitlistCount > 0 && (
-              <span className={styles.cardWaitlist}>+{waitlistCount} черга</span>
-            )}
-            {cls.halls?.name && (
-              <span className={styles.cardHall}>{cls.halls.name.slice(0, 3).toUpperCase()}</span>
-            )}
-          </div>
+          )}
         </>
       )}
-      {cls.capacity != null && <div className={progressClass} />}
     </button>
   )
 }

@@ -475,41 +475,42 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 5px 7px 8px 10px;
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-left: 3px solid var(--card-color, var(--border));
+  padding: 6px 8px 6px 10px;
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-color, var(--border)) 35%, transparent);
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
-  transition: border-color var(--motion-fast), background var(--motion-fast);
+  transition: background var(--motion-fast), border-color var(--motion-fast);
   z-index: 1;
 }
 .card:hover {
-  border-left-color: var(--card-color, var(--border-hover));
-  background: var(--bg-2);
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 25%, transparent);
+  border-color: color-mix(in srgb, var(--card-color, var(--border)) 55%, transparent);
   z-index: 2;
 }
 
 .cardCancelled {
-  background: var(--bg-2);
-  border-left-color: var(--border-strong) !important;
+  background: var(--bg-2) !important;
+  border: 1px solid var(--border) !important;
+  opacity: 0.55;
 }
 
 .cardTime {
   font-size: 10px;
-  font-weight: 400;
-  color: var(--text-3);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--card-color, var(--text-2)) 80%, white);
   font-family: var(--mono);
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .cardType {
   font-size: 12px;
   font-weight: 700;
-  color: var(--card-color, var(--text));
-  line-height: 1.25;
+  color: color-mix(in srgb, var(--card-color, var(--text)) 60%, white);
+  line-height: 1.2;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
@@ -518,91 +519,57 @@
 }
 .cardTypeCancelled { color: var(--text-3); }
 
-.cardMeta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-.cardDot {
-  font-size: 10px;
-  color: var(--text-3);
-  flex-shrink: 0;
-}
-
-.cardFooter {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  margin-top: auto;
-}
-
 .cardTrainer {
   font-size: 10px;
-  color: var(--text-3);
+  color: color-mix(in srgb, var(--card-color, var(--text-3)) 60%, white);
+  opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
-}
-
-.cardCount {
-  font-size: 10px;
-  color: var(--text-3);
-  font-family: var(--mono);
   flex-shrink: 0;
 }
 
-.cardCountAlmost { color: var(--warning); }
-.cardCountFull   { color: var(--danger); font-weight: 600; }
-
-.cardWaitlist {
+.countBadge {
+  position: absolute;
+  bottom: 5px;
+  right: 7px;
   font-size: 10px;
+  font-family: var(--mono);
+  color: color-mix(in srgb, var(--card-color, var(--text-2)) 70%, white);
+  background: color-mix(in srgb, var(--card-color, var(--bg)) 20%, black);
+  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, transparent);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.countBadgeAlmost {
   color: var(--warning);
-  font-family: var(--mono);
-  flex-shrink: 0;
+  border-color: var(--warning);
+  background: var(--warning-dim);
+}
+
+.countBadgeFull {
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--danger-dim);
+  font-weight: 600;
 }
 
 .cardHall {
-  font-size: 9px;
-  color: var(--text-3);
-  background: var(--bg);
-  border: 0.5px solid var(--border);
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--card-color, var(--text-3)) 70%, white);
+  background: color-mix(in srgb, var(--card-color, var(--bg)) 20%, black);
+  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, transparent);
   border-radius: 3px;
-  padding: 1px 4px;
-  flex-shrink: 0;
-  font-family: var(--mono);
-  margin-left: auto;
+  padding: 1px 5px;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-/* shared progress bar base */
-.cardProgress,
-.cardProgressAlmost,
-.cardProgressFull {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--border);
-}
-.cardProgress::after,
-.cardProgressAlmost::after,
-.cardProgressFull::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: var(--card-fill, 0%);
-}
-.cardProgress::after       { background: var(--success); }
-.cardProgressAlmost::after { background: var(--warning); }
-.cardProgressFull::after   { background: var(--danger); }
 
 .cancelledBadge {
   position: absolute;
