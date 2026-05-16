@@ -379,26 +379,21 @@ if (loading) {
                 )}
                 {isTwoHour(cls) && (
                   <div className={styles.hoursSelect}>
-                    <label className={styles.hoursLabel}>
-                      <input
-                        type="checkbox"
-                        checked={selectedHours.includes(1)}
-                        onChange={e => setSelectedHours(prev =>
-                          e.target.checked ? [...prev, 1].sort() : prev.filter(h => h !== 1)
-                        )}
-                      />
-                      1-а година
-                    </label>
-                    <label className={styles.hoursLabel}>
-                      <input
-                        type="checkbox"
-                        checked={selectedHours.includes(2)}
-                        onChange={e => setSelectedHours(prev =>
-                          e.target.checked ? [...prev, 2].sort() : prev.filter(h => h !== 2)
-                        )}
-                      />
-                      2-а година
-                    </label>
+                    {[1, 2].map(hour => {
+                      const d = new Date(new Date(cls.starts_at).getTime() + (hour - 1) * 60 * 60000)
+                      return (
+                        <label key={hour} className={styles.hoursLabel}>
+                          <input
+                            type="checkbox"
+                            checked={selectedHours.includes(hour)}
+                            onChange={e => setSelectedHours(prev =>
+                              e.target.checked ? [...prev, hour].sort() : prev.filter(h => h !== hour)
+                            )}
+                          />
+                          {formatTime(d)}
+                        </label>
+                      )
+                    })}
                   </div>
                 )}
                 {enrollError && <p className={styles.enrollError}>{enrollError}</p>}
@@ -442,7 +437,7 @@ if (loading) {
                         : '—'
                       const bal = balanceMap[e.client_id]
                       const isLoading = actionLoading === e.id
-                      const hoursLabel = formatHoursLabel(e.hours_attended)
+                      const hoursLabel = formatHoursLabel(e.hours_attended, cls.starts_at)
                       return (
                         <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
                           <td>
@@ -613,9 +608,10 @@ function formatTime(d: Date) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-function formatHoursLabel(hours: number[] | null): string | null {
+function formatHoursLabel(hours: number[] | null, startsAt: string): string | null {
   if (!hours || hours.length === 0) return null
   const sorted = [...hours].sort()
-  if (sorted.length === 1) return `${sorted[0]} год`
-  return `${sorted.join('+')} год`
+  if (sorted.length >= 2) return null
+  const d = new Date(new Date(startsAt).getTime() + (sorted[0] - 1) * 60 * 60000)
+  return formatTime(d)
 }

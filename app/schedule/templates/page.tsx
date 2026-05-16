@@ -530,26 +530,21 @@ export default function TemplatesPage() {
               <div className={styles.drawerBody}>
                 {s.duration_min >= 120 && (
                   <div className={styles.drawerHoursSelect}>
-                    <label className={styles.drawerHoursLabel}>
-                      <input
-                        type="checkbox"
-                        checked={drawerSelectedHours.includes(1)}
-                        onChange={e => setDrawerSelectedHours(prev =>
-                          e.target.checked ? [...prev, 1].sort() : prev.filter(h => h !== 1)
-                        )}
-                      />
-                      1-а година
-                    </label>
-                    <label className={styles.drawerHoursLabel}>
-                      <input
-                        type="checkbox"
-                        checked={drawerSelectedHours.includes(2)}
-                        onChange={e => setDrawerSelectedHours(prev =>
-                          e.target.checked ? [...prev, 2].sort() : prev.filter(h => h !== 2)
-                        )}
-                      />
-                      2-а година
-                    </label>
+                    {[1, 2].map(hour => {
+                      const label = formatSeriesHoursLabel([hour], s.time_of_day) ?? String(hour)
+                      return (
+                        <label key={hour} className={styles.drawerHoursLabel}>
+                          <input
+                            type="checkbox"
+                            checked={drawerSelectedHours.includes(hour)}
+                            onChange={e => setDrawerSelectedHours(prev =>
+                              e.target.checked ? [...prev, hour].sort() : prev.filter(h => h !== hour)
+                            )}
+                          />
+                          {label}
+                        </label>
+                      )
+                    })}
                   </div>
                 )}
                 <div className={styles.addClientRow}>
@@ -572,7 +567,7 @@ export default function TemplatesPage() {
                 ) : (
                   <div className={styles.drawerClientList}>
                     {clients.map((row, i) => {
-                      const hoursLabel = formatSeriesHoursLabel(row.hours_attended)
+                      const hoursLabel = formatSeriesHoursLabel(row.hours_attended, s.time_of_day)
                       return (
                         <div key={row.id} className={styles.drawerClientRow}>
                           <span className={styles.drawerClientNum}>{i + 1}</span>
@@ -608,9 +603,13 @@ export default function TemplatesPage() {
   )
 }
 
-function formatSeriesHoursLabel(hours: number[] | null): string | null {
+function formatSeriesHoursLabel(hours: number[] | null, timeOfDay: string): string | null {
   if (!hours || hours.length === 0) return null
   const sorted = [...hours].sort()
-  if (sorted.length === 1) return `${sorted[0]} год`
-  return `${sorted.join('+')} год`
+  if (sorted.length >= 2) return null
+  const [h, m] = timeOfDay.split(':').map(Number)
+  const totalMin = h * 60 + m + (sorted[0] - 1) * 60
+  const hh = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const mm = String(totalMin % 60).padStart(2, '0')
+  return `${hh}:${mm}`
 }
