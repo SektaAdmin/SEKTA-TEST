@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -81,6 +81,23 @@ export default function TemplatesPage() {
   const [showDelete, setShowDelete] = useState(false)
   const [deleteWeeks, setDeleteWeeks] = useState(1)
   const [deleting, setDeleting] = useState(false)
+
+  const generateWrapRef = useRef<HTMLDivElement>(null)
+  const deleteWrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showGenerate && !showDelete) return
+    const handleClick = (e: MouseEvent) => {
+      if (showGenerate && generateWrapRef.current && !generateWrapRef.current.contains(e.target as Node)) {
+        setShowGenerate(false)
+      }
+      if (showDelete && deleteWrapRef.current && !deleteWrapRef.current.contains(e.target as Node)) {
+        setShowDelete(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showGenerate, showDelete])
 
   // Expandable series clients
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
@@ -235,7 +252,7 @@ export default function TemplatesPage() {
               Список
             </button>
           </div>
-          <div className={styles.generateWrap}>
+          <div className={styles.generateWrap} ref={generateWrapRef}>
             <button
               className={styles.btnGenerate}
               onClick={() => { setShowGenerate(v => !v); setShowDelete(false) }}
@@ -275,7 +292,7 @@ export default function TemplatesPage() {
               </div>
             )}
           </div>
-          <div className={styles.generateWrap}>
+          <div className={styles.generateWrap} ref={deleteWrapRef}>
             <button
               className={styles.btnDeleteSchedule}
               onClick={() => { setShowDelete(v => !v); setShowGenerate(false) }}
