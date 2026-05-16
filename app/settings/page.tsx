@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import TicketModal from '@/components/TicketModal'
 import TrainerModal from '@/components/TrainerModal'
 import HallModal from '@/components/HallModal'
@@ -34,6 +35,7 @@ function SettingsContent() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Налаштування</h1>

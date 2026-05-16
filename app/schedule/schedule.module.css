@@ -13,6 +13,10 @@
   overflow: hidden;
 }
 
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+}
+
 /* ── Topbar ─────────────────────────────────────────────────── */
 .topbar {
   display: flex;

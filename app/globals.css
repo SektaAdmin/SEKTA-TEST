@@ -55,6 +55,11 @@
   /* Анімації */
   --motion-fast:     0.12s ease-out;
   --motion-standard: 0.18s ease-in-out;
+
+  /* Layout */
+  --sidebar-w: 196px;
+  --topbar-h: 64px;
+  --bottom-nav-h: 56px;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -80,4 +85,19 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 @keyframes modalIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bottomSheetIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --control-h: 44px;
+    --topbar-py: 12px;
+    --topbar-px: 16px;
+  }
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea { font-size: 16px; }
 }

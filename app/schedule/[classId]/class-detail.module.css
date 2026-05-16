@@ -12,6 +12,10 @@
   min-height: 100vh;
 }
 
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+}
+
 .loadingState {
   color: var(--text-3);
   font-size: 13px;

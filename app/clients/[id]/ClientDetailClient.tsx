@@ -8,6 +8,7 @@ import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import { deleteSale } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
@@ -196,6 +197,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   if (loading) return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}><div className={styles.empty}>Завантаження...</div></main>
     </div>
   )
@@ -203,6 +205,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   if (fetchError || !client) return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}><div className={styles.empty}>{fetchError ?? 'Клієнта не знайдено'}</div></main>
     </div>
   )
@@ -213,6 +216,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
 
         <div className={styles.topbar}>

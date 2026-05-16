@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClients } from '@/lib/queries/clients'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import { formatClientName } from '@/lib/formatters'
 import type { Client } from '@/types'
@@ -91,6 +92,7 @@ export default function ClientsPage() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Клієнти</h1>

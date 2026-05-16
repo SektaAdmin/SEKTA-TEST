@@ -6,6 +6,10 @@
 
 .field { display: flex; flex-direction: column; gap: 5px; }
 
+@media (max-width: 640px) {
+  .row { flex-direction: column; }
+}
+
 .field label {
   font-size: 11px;
   color: var(--text-2);

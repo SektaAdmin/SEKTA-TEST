@@ -15,6 +15,7 @@ import {
 } from '@/lib/queries/enrollments'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
@@ -221,6 +222,7 @@ if (loading) {
     return (
       <div className={styles.layout}>
         <Sidebar />
+        <BottomNav />
         <main className={styles.main}>
           <div className={styles.loadingState}>Завантаження...</div>
         </main>
@@ -232,6 +234,7 @@ if (loading) {
     return (
       <div className={styles.layout}>
         <Sidebar />
+        <BottomNav />
         <main className={styles.main}>
           <div className={styles.loadingState}>{fetchError ?? 'Заняття не знайдено'}</div>
         </main>
@@ -251,6 +254,7 @@ if (loading) {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
 
         {/* Header */}

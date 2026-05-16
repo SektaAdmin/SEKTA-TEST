@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSalesForTrainers } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
 import styles from './trainers.module.css'
 
@@ -108,6 +109,7 @@ export default function TrainerReportsPage() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Звіти по тренерах</h1>

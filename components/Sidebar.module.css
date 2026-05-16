@@ -67,3 +67,7 @@
 }
 
 .logout:hover { color: var(--danger); background: var(--danger-dim); }
+
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+}

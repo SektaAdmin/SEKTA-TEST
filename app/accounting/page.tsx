@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSalesForAccounting } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import type { PaymentMethod } from '@/types'
 import styles from './accounting.module.css'
@@ -116,6 +117,7 @@ export default function AccountingPage() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Звітність</h1>

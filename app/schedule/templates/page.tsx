@@ -12,6 +12,7 @@ import HallWeekGrid from '@/components/HallWeekGrid'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import styles from './page.module.css'
 
@@ -231,6 +232,7 @@ export default function TemplatesPage() {
   return (
     <div className={styles.layout}>
     <Sidebar />
+    <BottomNav />
     <div className={styles.page}>
       <div className={styles.topbar}>
         <div className={styles.topbarLeft}>

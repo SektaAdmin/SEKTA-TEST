@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
@@ -337,6 +338,7 @@ export default function SchedulePage() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
 
         {/* Topbar row 1 */}

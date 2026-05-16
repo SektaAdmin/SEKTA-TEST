@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 import SaleModal from '@/components/SaleModal'
 import DatePicker from '@/components/DatePicker'
 import { useRefs } from '@/contexts/RefsContext'
@@ -109,6 +110,7 @@ export default function SalesPage() {
   return (
     <div className={styles.layout}>
       <Sidebar />
+      <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Продажи</h1>
