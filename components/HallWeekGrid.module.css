@@ -207,3 +207,8 @@
   background: var(--danger-dim);
   font-weight: 600;
 }
+
+@media (max-width: 640px) {
+  .dayLabel { min-width: 80px; }
+  .cell { min-width: 80px; }
+}

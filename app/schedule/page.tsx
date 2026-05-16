@@ -472,6 +472,7 @@ export default function SchedulePage() {
         {/* Schedule grid */}
         {tab === 'schedule' && (
           <div className={styles.gridCard}>
+            <div className={styles.gridScrollWrap}>
             {/* Day header */}
             <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px 1fr` }}>
               <div className={styles.gutterCorner} />
@@ -570,6 +571,7 @@ export default function SchedulePage() {
                   </div>
                 )
               })}
+            </div>
             </div>
             </div>
           </div>

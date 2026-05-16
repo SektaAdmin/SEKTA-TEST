@@ -40,6 +40,17 @@
 .field input:disabled,
 .field textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 
+@media (max-width: 640px) {
+  .field select,
+  .field input[type="text"],
+  .field input[type="number"],
+  .field input[type="datetime-local"],
+  .field input,
+  .field textarea {
+    font-size: 16px;
+  }
+}
+
 .required { color: var(--accent); font-size: 10px; margin-left: 4px; }
 
 .error {

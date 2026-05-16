@@ -15,6 +15,10 @@
 
 @media (max-width: 640px) {
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px var(--topbar-px); gap: 8px; }
+  .topbarLeft { flex: 1 1 100%; }
+  .topbarRight { flex: 1 1 100%; }
+  .btnTemplates { display: none; }
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -382,12 +386,34 @@
   overflow: clip;
 }
 
+.gridScrollWrap {
+  display: contents;
+}
+
 /* ── Calendar body grid wrapper (scrollable) ────────────────── */
 .bodyGridWrapper {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .gridCard { overflow: hidden; }
+  .gridScrollWrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .weekHeader { min-width: 480px; }
+  .bodyGridWrapper {
+    overflow-x: visible;
+    min-width: 480px;
+  }
+  .hallSubCol { min-width: 80px; }
 }
 
 /* ── Calendar body grid ─────────────────────────────────────── */

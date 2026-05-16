@@ -688,3 +688,8 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+@media (max-width: 640px) {
+  .drawer { width: 100%; border-left: none; }
+  .clientFilterWrap { width: 100%; }
+}
