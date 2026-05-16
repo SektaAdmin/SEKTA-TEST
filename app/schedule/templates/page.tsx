@@ -238,7 +238,7 @@ export default function TemplatesPage() {
           <div className={styles.generateWrap}>
             <button
               className={styles.btnGenerate}
-              onClick={() => setShowGenerate(v => !v)}
+              onClick={() => { setShowGenerate(v => !v); setShowDelete(false) }}
             >
               Виставити тиждень
             </button>
