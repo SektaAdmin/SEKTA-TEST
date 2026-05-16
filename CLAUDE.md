@@ -219,6 +219,7 @@ training_types (standalone reference)
 | id | uuid | NO | PK |
 | series_id | uuid | NO | → class_series.id CASCADE |
 | client_id | uuid | NO | → clients.id CASCADE |
+| hours_attended | integer[] | YES | Аналогічно enrollments.hours_attended. `generate_week()` прокидує це значення в enrollments. |
 | created_at | timestamptz | NO | now() |
 
 **UNIQUE(series_id, client_id).** Використовується `generate_week()` для автозапису при виставленні тижня.
@@ -250,10 +251,13 @@ training_types (standalone reference)
 | client_id | uuid | NO | → clients.id |
 | status | text | NO | enrolled / attended / cancelled / noshow / **waitlist** |
 | sessions_used | integer | NO | default 0 |
+| hours_attended | integer[] | YES | `[1]`, `[2]`, або `[1,2]` для 2-годинних занять. NULL = все заняття (1-годинні або обидві години). |
 | sale_id | uuid | YES | |
 | notes | text | YES | |
 
 **Waitlist:** якщо зал повний при INSERT зі статусом `enrolled` — тригер `check_class_capacity` автоматично змінює статус на `waitlist`. Адмін вручну переводить в `enrolled`.
+
+**hours_attended:** для занять з `duration_min >= 120` клієнт може відвідати 1-у, 2-у або обидві години. `sessions_used` при `mark_attendance` = `hours_attended.length` (або 1 якщо NULL).
 
 ---
 
@@ -506,4 +510,4 @@ hooks/
 
 ---
 
-**Last Updated**: 2026-05-07 (archive tab, cancel/restore flow, soft delete clarified)
+**Last Updated**: 2026-05-16 (hours_attended для 2-годинних занять: enrollments + series_clients + generate_week)

@@ -32,6 +32,7 @@ type EnrollmentRow = {
   client_id: string
   status: 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
   sessions_used: number
+  hours_attended: number[] | null
   created_at: string
   clients: { first_name: string | null; last_name: string | null } | null
 }
@@ -66,6 +67,7 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   const [addingClient, setAddingClient] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clientBalance, setClientBalance] = useState<number | null>(null)
+  const [selectedHours, setSelectedHours] = useState<number[]>([1, 2])
   const [enrolling, setEnrolling] = useState(false)
   const [enrollError, setEnrollError] = useState<string | null>(null)
 
@@ -111,6 +113,8 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
     setClientBalance(balance)
   }
 
+  const isTwoHour = (cls: ClassWithJoins | null) => (cls?.duration_min ?? 0) >= 120
+
   async function handleEnroll() {
     if (!selectedClient || !cls) return
     setEnrolling(true)
@@ -131,7 +135,8 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
       return
     }
 
-    const { error, isDuplicate } = await enrollClientQuery(supabase, cls.id, selectedClient.id)
+    const hoursArg = isTwoHour(cls) ? selectedHours.slice().sort() : undefined
+    const { error, isDuplicate } = await enrollClientQuery(supabase, cls.id, selectedClient.id, hoursArg)
     if (error) {
       setEnrollError(isDuplicate ? 'Клієнт вже записаний на це заняття' : 'Помилка при записі клієнта')
       setEnrolling(false)
@@ -140,16 +145,18 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
     setAddingClient(false)
     setSelectedClient(null)
     setClientBalance(null)
+    setSelectedHours([1, 2])
     await fetchEnrollments(cls.ticket_type)
     setEnrolling(false)
   }
 
-  async function handleMarkAttended(enrollmentId: string) {
-    setActionLoading(enrollmentId)
-    setActionError(prev => { const n = { ...prev }; delete n[enrollmentId]; return n })
-    const { success, error } = await markAttendance(supabase, enrollmentId, 1)
+  async function handleMarkAttended(enrollment: EnrollmentRow) {
+    setActionLoading(enrollment.id)
+    setActionError(prev => { const n = { ...prev }; delete n[enrollment.id]; return n })
+    const sessionsUsed = enrollment.hours_attended?.length ?? 1
+    const { success, error } = await markAttendance(supabase, enrollment.id, sessionsUsed)
     if (!success) {
-      setActionError(prev => ({ ...prev, [enrollmentId]: error ?? 'Помилка' }))
+      setActionError(prev => ({ ...prev, [enrollment.id]: error ?? 'Помилка' }))
     } else if (cls) {
       await fetchEnrollments(cls.ticket_type)
     }
@@ -370,6 +377,30 @@ if (loading) {
                     )}
                   </div>
                 )}
+                {isTwoHour(cls) && (
+                  <div className={styles.hoursSelect}>
+                    <label className={styles.hoursLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedHours.includes(1)}
+                        onChange={e => setSelectedHours(prev =>
+                          e.target.checked ? [...prev, 1].sort() : prev.filter(h => h !== 1)
+                        )}
+                      />
+                      1-а година
+                    </label>
+                    <label className={styles.hoursLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedHours.includes(2)}
+                        onChange={e => setSelectedHours(prev =>
+                          e.target.checked ? [...prev, 2].sort() : prev.filter(h => h !== 2)
+                        )}
+                      />
+                      2-а година
+                    </label>
+                  </div>
+                )}
                 {enrollError && <p className={styles.enrollError}>{enrollError}</p>}
                 <div className={styles.addFormActions}>
                   <button
@@ -411,12 +442,16 @@ if (loading) {
                         : '—'
                       const bal = balanceMap[e.client_id]
                       const isLoading = actionLoading === e.id
+                      const hoursLabel = formatHoursLabel(e.hours_attended)
                       return (
                         <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
                           <td>
                             <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                               {name}
                             </a>
+                            {hoursLabel && (
+                              <span className={styles.hoursTag}>{hoursLabel}</span>
+                            )}
                           </td>
                           <td>
                             <span className={`${styles.badge} ${styles[STATUS_STYLES[e.status]]}`}>
@@ -437,7 +472,7 @@ if (loading) {
                                 <>
                                   <button
                                     className={styles.btnAttend}
-                                    onClick={() => handleMarkAttended(e.id)}
+                                    onClick={() => handleMarkAttended(e)}
                                     disabled={isLoading}
                                     title="Відвідав"
                                   >
@@ -576,4 +611,11 @@ if (loading) {
 
 function formatTime(d: Date) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function formatHoursLabel(hours: number[] | null): string | null {
+  if (!hours || hours.length === 0) return null
+  const sorted = [...hours].sort()
+  if (sorted.length === 1) return `${sorted[0]} год`
+  return `${sorted.join('+')} год`
 }

@@ -61,12 +61,12 @@ export async function listEnrollmentsForClass(
   supabase: SupabaseClient,
   classId: string
 ): Promise<{
-  id: string; client_id: string; status: string; sessions_used: number; created_at: string;
+  id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
   clients: { first_name: string | null; last_name: string | null } | null
 }[]> {
   const { data } = await supabase
     .from('enrollments')
-    .select('id, client_id, status, sessions_used, created_at, clients(first_name, last_name)')
+    .select('id, client_id, status, sessions_used, hours_attended, created_at, clients(first_name, last_name)')
     .eq('class_id', classId)
     .order('created_at')
   return (data as any[]) ?? []
@@ -143,11 +143,17 @@ export async function checkClientConflict(
 export async function enrollClient(
   supabase: SupabaseClient,
   classId: string,
-  clientId: string
+  clientId: string,
+  hoursAttended?: number[]
 ): Promise<{ error: string | null; isDuplicate: boolean }> {
   const { error } = await supabase
     .from('enrollments')
-    .insert({ class_id: classId, client_id: clientId, status: 'enrolled' })
+    .insert({
+      class_id: classId,
+      client_id: clientId,
+      status: 'enrolled',
+      ...(hoursAttended !== undefined ? { hours_attended: hoursAttended } : {}),
+    })
   if (!error) return { error: null, isDuplicate: false }
   const isDuplicate = error.message.includes('duplicate') || error.code === '23505'
   return { error: error.message, isDuplicate }

@@ -39,6 +39,7 @@ function formatMonday(dateStr: string): string {
 interface SeriesClientRow {
   id: string
   client_id: string
+  hours_attended: number[] | null
   clients: { first_name: string | null; last_name: string | null }
 }
 
@@ -86,13 +87,14 @@ export default function TemplatesPage() {
   const [seriesClients, setSeriesClients] = useState<Record<string, SeriesClientRow[]>>({})
   const [clientsLoading, setClientsLoading] = useState<string | null>(null)
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
+  const [drawerSelectedHours, setDrawerSelectedHours] = useState<number[]>([1, 2])
 
   const loadSeriesClients = useCallback(async (seriesId: string) => {
     if (seriesClients[seriesId]) return
     setClientsLoading(seriesId)
     const { data, error } = await supabase
       .from('series_clients')
-      .select('id, client_id, clients(first_name, last_name)')
+      .select('id, client_id, hours_attended, clients(first_name, last_name)')
       .eq('series_id', seriesId)
       .order('created_at')
     if (error) {
@@ -112,10 +114,10 @@ export default function TemplatesPage() {
     }
   }
 
-  const addSeriesClient = async (seriesId: string, client: Client) => {
-    const { error } = await supabase
-      .from('series_clients')
-      .insert({ series_id: seriesId, client_id: client.id })
+  const addSeriesClient = async (seriesId: string, client: Client, hoursAttended?: number[]) => {
+    const insertData: Record<string, unknown> = { series_id: seriesId, client_id: client.id }
+    if (hoursAttended !== undefined) insertData.hours_attended = hoursAttended
+    const { error } = await supabase.from('series_clients').insert(insertData)
     if (error) {
       toast.error(error.message)
       return
@@ -123,6 +125,7 @@ export default function TemplatesPage() {
     const newRow: SeriesClientRow = {
       id: crypto.randomUUID(),
       client_id: client.id,
+      hours_attended: hoursAttended ?? null,
       clients: { first_name: client.first_name, last_name: client.last_name },
     }
     setSeriesClients(prev => ({
@@ -200,6 +203,7 @@ export default function TemplatesPage() {
 
   const openClientsDrawer = (s: ClassSeries) => {
     setClientsDrawerSeries(s)
+    setDrawerSelectedHours([1, 2])
     loadSeriesClients(s.id)
   }
 
@@ -524,10 +528,38 @@ export default function TemplatesPage() {
               </div>
 
               <div className={styles.drawerBody}>
+                {s.duration_min >= 120 && (
+                  <div className={styles.drawerHoursSelect}>
+                    <label className={styles.drawerHoursLabel}>
+                      <input
+                        type="checkbox"
+                        checked={drawerSelectedHours.includes(1)}
+                        onChange={e => setDrawerSelectedHours(prev =>
+                          e.target.checked ? [...prev, 1].sort() : prev.filter(h => h !== 1)
+                        )}
+                      />
+                      1-а година
+                    </label>
+                    <label className={styles.drawerHoursLabel}>
+                      <input
+                        type="checkbox"
+                        checked={drawerSelectedHours.includes(2)}
+                        onChange={e => setDrawerSelectedHours(prev =>
+                          e.target.checked ? [...prev, 2].sort() : prev.filter(h => h !== 2)
+                        )}
+                      />
+                      2-а година
+                    </label>
+                  </div>
+                )}
                 <div className={styles.addClientRow}>
                   <ClientSearchCombobox
                     key={searchKey}
-                    onSelect={client => { addSeriesClient(s.id, client); setSearchKey(k => k + 1) }}
+                    onSelect={client => {
+                      const hours = s.duration_min >= 120 ? drawerSelectedHours.slice().sort() : undefined
+                      addSeriesClient(s.id, client, hours)
+                      setSearchKey(k => k + 1)
+                    }}
                     onClear={() => {}}
                   />
                 </div>
@@ -539,25 +571,31 @@ export default function TemplatesPage() {
                   <span className={styles.noClients}>Немає постійників</span>
                 ) : (
                   <div className={styles.drawerClientList}>
-                    {clients.map((row, i) => (
-                      <div key={row.id} className={styles.drawerClientRow}>
-                        <span className={styles.drawerClientNum}>{i + 1}</span>
-                        <span className={styles.drawerClientName}>
-                          {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
-                        </span>
-                        {confirmRemoveId === row.id ? (
-                          <button
-                            className={styles.btnRemoveConfirm}
-                            onClick={() => { removeSeriesClient(s.id, row.id); setConfirmRemoveId(null) }}
-                          >Підтвердити</button>
-                        ) : (
-                          <button
-                            className={styles.btnRemove}
-                            onClick={() => setConfirmRemoveId(row.id)}
-                          >Видалити</button>
-                        )}
-                      </div>
-                    ))}
+                    {clients.map((row, i) => {
+                      const hoursLabel = formatSeriesHoursLabel(row.hours_attended)
+                      return (
+                        <div key={row.id} className={styles.drawerClientRow}>
+                          <span className={styles.drawerClientNum}>{i + 1}</span>
+                          <span className={styles.drawerClientName}>
+                            {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
+                          </span>
+                          {hoursLabel && (
+                            <span className={styles.hoursTag}>{hoursLabel}</span>
+                          )}
+                          {confirmRemoveId === row.id ? (
+                            <button
+                              className={styles.btnRemoveConfirm}
+                              onClick={() => { removeSeriesClient(s.id, row.id); setConfirmRemoveId(null) }}
+                            >Підтвердити</button>
+                          ) : (
+                            <button
+                              className={styles.btnRemove}
+                              onClick={() => setConfirmRemoveId(row.id)}
+                            >Видалити</button>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -568,4 +606,11 @@ export default function TemplatesPage() {
     </div>
     </div>
   )
+}
+
+function formatSeriesHoursLabel(hours: number[] | null): string | null {
+  if (!hours || hours.length === 0) return null
+  const sorted = [...hours].sort()
+  if (sorted.length === 1) return `${sorted[0]} год`
+  return `${sorted.join('+')} год`
 }

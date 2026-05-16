@@ -95,6 +95,7 @@ export interface SeriesClient {
   id: string
   series_id: string
   client_id: string
+  hours_attended: number[] | null
   created_at: string
 }
 
@@ -128,6 +129,7 @@ export interface Enrollment {
   client_id: string
   status: 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
   sessions_used: number
+  hours_attended: number[] | null
   sale_id: string | null
   notes: string | null
   created_at: string

@@ -649,3 +649,38 @@
   color: var(--text);
   flex: 1;
 }
+
+/* ── Hours in drawer ─────────────────────────────────────────── */
+.drawerHoursSelect {
+  display: flex;
+  gap: 16px;
+  padding: 0 0 12px;
+}
+
+.drawerHoursLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.drawerHoursLabel input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.hoursTag {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
