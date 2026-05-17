@@ -6,19 +6,14 @@ import { getOverCapacityCount, isClientCountFull, isClientCountAlmost } from '@/
 import styles from './HallWeekGrid.module.css'
 
 const DAYS: { label: string; dow: number }[] = [
-  { label: 'Пн', dow: 1 },
-  { label: 'Вт', dow: 2 },
-  { label: 'Ср', dow: 3 },
-  { label: 'Чт', dow: 4 },
-  { label: 'Пт', dow: 5 },
-  { label: 'Сб', dow: 6 },
-  { label: 'Нд', dow: 0 },
+  { label: 'Понеділок', dow: 1 },
+  { label: 'Вівторок', dow: 2 },
+  { label: 'Середа', dow: 3 },
+  { label: 'Четвер', dow: 4 },
+  { label: 'Пʼятниця', dow: 5 },
+  { label: 'Субота', dow: 6 },
+  { label: 'Неділя', dow: 0 },
 ]
-
-const DAYS_FULL: Record<number, string> = {
-  1: 'Понеділок', 2: 'Вівторок', 3: 'Середа',
-  4: 'Четвер', 5: 'Пʼятниця', 6: 'Субота', 0: 'Неділя',
-}
 
 const MIN_HOUR = 7
 const MAX_HOUR = 23
@@ -89,90 +84,85 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
 
       {/* ── Body ── */}
       <div className={styles.scrollBody}>
-        {DAYS.map(({ dow }) => {
+        {DAYS.map(({ label, dow }) => {
           const dowMap = byDowHall.get(dow)!
           return (
-            <div key={dow} className={styles.dayRow}>
+            <div key={dow} className={styles.dayBlock}>
 
-              {/* Time gutter — sticky left, flow layout */}
-              <div className={styles.timeGutter}>
-                {/* First row: day name instead of hour */}
-                <div className={styles.timeRowDay}>
-                  <span className={styles.dayLabel}>{DAYS_FULL[dow]}</span>
-                </div>
-                {/* Hour rows */}
-                {HOURS.map(h => (
-                  <div key={h} className={styles.timeRow}>
-                    <span className={styles.timeLabel}>{String(h).padStart(2, '0')}</span>
-                  </div>
-                ))}
+              {/* Day label — sticky top, spans full scroll width */}
+              <div className={styles.dayHeader}>
+                <span className={styles.dayHeaderText}>{label}</span>
               </div>
 
-              {/* Hall columns */}
-              {hallCols.map(hall => {
-                const items = (dowMap.get(hall?.id ?? null) ?? []).sort((a, b) =>
-                  a.time_of_day.localeCompare(b.time_of_day)
-                )
-                return (
-                  <div
-                    key={hall?.id ?? '__nohall'}
-                    className={styles.cell}
-                    onClick={onSlotClick ? e => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      // subtract day-name row height from y before calculating hour
-                      const y = e.clientY - rect.top - HOUR_HEIGHT
-                      const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + y / HOUR_HEIGHT)))
-                      onSlotClick(dow, `${String(hour).padStart(2, '0')}:00`, hall?.id ?? null)
-                    } : undefined}
-                  >
-                    {/* Empty day-name row placeholder */}
-                    <div className={styles.cellDayPlaceholder} />
-                    {/* Hour lines */}
-                    {HOURS.slice(1).map(h => (
-                      <div
-                        key={h}
-                        className={styles.hourLine}
-                        style={{ top: HOUR_HEIGHT + (h - MIN_HOUR) * HOUR_HEIGHT }}
-                      />
-                    ))}
-                    {/* Cards — offset by one HOUR_HEIGHT for the day-name row */}
-                    {items.map(s => {
-                      const trainerName = (s.trainers as { name: string } | null)?.name
-                      const clientCount = s.series_clients?.length ?? 0
-                      const capacity = s.capacity
-                      const isFull = isClientCountFull(clientCount, capacity)
-                      const isAlmost = isClientCountAlmost(clientCount, capacity)
-                      const overCapacity = getOverCapacityCount(clientCount, capacity)
-                      const endTime = (() => {
-                        const [h, m] = s.time_of_day.split(':').map(Number)
-                        const total = h * 60 + m + s.duration_min
-                        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-                      })()
-                      return (
-                        <button
-                          key={s.id}
-                          className={styles.chip}
-                          style={{
-                            top: HOUR_HEIGHT + cardTop(s.time_of_day),
-                            height: cardHeight(s.duration_min),
-                            ['--chip-color' as string]: typeColor(s.ticket_type),
-                          }}
-                          onClick={e => { e.stopPropagation(); onCardClick(s) }}
-                        >
-                          <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
-                          <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
-                          {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
-                          {capacity != null && (
-                            <span className={`${styles.chipCapacityBadge} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
-                              {clientCount}/{capacity}{overCapacity > 0 ? ` +${overCapacity}` : ''}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )
-              })}
+              {/* Time gutter + hall columns */}
+              <div className={styles.dayRow}>
+                {/* Time gutter — sticky left, flow layout */}
+                <div className={styles.timeGutter}>
+                  {HOURS.map(h => (
+                    <div key={h} className={styles.timeRow}>
+                      <span className={styles.timeLabel}>{String(h).padStart(2, '0')}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Hall columns */}
+                {hallCols.map(hall => {
+                  const items = (dowMap.get(hall?.id ?? null) ?? []).sort((a, b) =>
+                    a.time_of_day.localeCompare(b.time_of_day)
+                  )
+                  return (
+                    <div
+                      key={hall?.id ?? '__nohall'}
+                      className={styles.cell}
+                      style={{ height: TOTAL_H }}
+                      onClick={onSlotClick ? e => {
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const y = e.clientY - rect.top
+                        const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + y / HOUR_HEIGHT)))
+                        onSlotClick(dow, `${String(hour).padStart(2, '0')}:00`, hall?.id ?? null)
+                      } : undefined}
+                    >
+                      {HOURS.slice(1).map(h => (
+                        <div key={h} className={styles.hourLine} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }} />
+                      ))}
+                      {items.map(s => {
+                        const trainerName = (s.trainers as { name: string } | null)?.name
+                        const clientCount = s.series_clients?.length ?? 0
+                        const capacity = s.capacity
+                        const isFull = isClientCountFull(clientCount, capacity)
+                        const isAlmost = isClientCountAlmost(clientCount, capacity)
+                        const overCapacity = getOverCapacityCount(clientCount, capacity)
+                        const endTime = (() => {
+                          const [h, m] = s.time_of_day.split(':').map(Number)
+                          const total = h * 60 + m + s.duration_min
+                          return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+                        })()
+                        return (
+                          <button
+                            key={s.id}
+                            className={styles.chip}
+                            style={{
+                              top: cardTop(s.time_of_day),
+                              height: cardHeight(s.duration_min),
+                              ['--chip-color' as string]: typeColor(s.ticket_type),
+                            }}
+                            onClick={e => { e.stopPropagation(); onCardClick(s) }}
+                          >
+                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
+                            <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
+                            {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
+                            {capacity != null && (
+                              <span className={`${styles.chipCapacityBadge} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
+                                {clientCount}/{capacity}{overCapacity > 0 ? ` +${overCapacity}` : ''}
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )
         })}

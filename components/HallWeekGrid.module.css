@@ -43,16 +43,44 @@
   flex-direction: column;
 }
 
-/* ── Day row ─────────────────────────────────────────────── */
-.dayRow {
+/* ── Day block ───────────────────────────────────────────── */
+.dayBlock {
   display: flex;
-  border-bottom: 1px solid var(--border-strong);
-}
-.dayRow:last-child {
-  border-bottom: none;
+  flex-direction: column;
 }
 
-/* ── Time gutter (sticky left) ───────────────────────────── */
+/* ── Day header — sticky top within .root, spans full scroll width ── */
+.dayHeader {
+  position: sticky;
+  top: 0; /* sticks to top of .root scroll container (z-index below stickyHeader) */
+  z-index: 5;
+  background: var(--bg-3);
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 0.5px solid var(--border-strong);
+  /* min-width covers the full scrollable width automatically in block flow */
+}
+
+.dayBlock:first-child .dayHeader {
+  border-top: none;
+}
+
+.dayHeaderText {
+  display: block;
+  padding: 5px 10px 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  user-select: none;
+}
+
+/* ── Day content row ─────────────────────────────────────── */
+.dayRow {
+  display: flex;
+}
+
+/* ── Time gutter (sticky left, flow layout) ──────────────── */
 .timeGutter {
   flex-shrink: 0;
   width: 48px;
@@ -65,28 +93,6 @@
   flex-direction: column;
 }
 
-/* Day name row in gutter — same height as HOUR_HEIGHT */
-.timeRowDay {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 0.5px solid var(--border-strong);
-  flex-shrink: 0;
-}
-
-.dayLabel {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  user-select: none;
-}
-
-/* Hour rows in gutter */
 .timeRow {
   height: 64px;
   flex-shrink: 0;
@@ -114,19 +120,10 @@
   min-width: 140px;
   position: relative;
   border-right: 0.5px solid var(--border);
-  /* total height = day-name row + all hour rows */
-  height: calc(64px + 64px * 16); /* HOUR_HEIGHT + TOTAL_H */
   cursor: cell;
 }
 .cell:last-child {
   border-right: none;
-}
-
-/* Placeholder that matches the day-name row height */
-.cellDayPlaceholder {
-  height: 64px;
-  border-bottom: 0.5px solid var(--border-strong);
-  pointer-events: none;
 }
 
 /* ── Hour lines ──────────────────────────────────────────── */
