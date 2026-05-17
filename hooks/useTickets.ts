@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listTickets, toggleTicket } from '@/lib/queries/tickets'
+import { useRealtime } from '@/lib/useRealtime'
 import type { Ticket } from '@/types'
 
 export function useTickets() {
@@ -39,6 +40,8 @@ export function useTickets() {
     }
     setToggling(null)
   }
+
+  useRealtime(['tickets'], fetchTickets)
 
   return { tickets, loading, fetchError, toggling, toggle, refetch: fetchTickets, ensureTickets }
 }

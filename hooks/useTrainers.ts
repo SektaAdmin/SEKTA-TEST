@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listTrainers, toggleTrainer } from '@/lib/queries/trainers'
+import { useRealtime } from '@/lib/useRealtime'
 import type { Trainer } from '@/types'
 
 export function useTrainers() {
@@ -39,6 +40,8 @@ export function useTrainers() {
     }
     setToggling(null)
   }
+
+  useRealtime(['trainers'], fetchTrainers)
 
   return { trainers, loading, fetchError, toggling, toggle, refetch: fetchTrainers, ensureTrainers }
 }

@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-07 (archive tab, cancel/restore flow, soft delete clarified) (recurring classes, waitlist, client enrollment from profile)
+- **Last Updated**: 2026-05-17 (Supabase Realtime: useRealtime хук, підписки в усіх хуках даних і компонентах)
 
 ---
 
@@ -437,6 +437,9 @@ hooks/
   useSaleForm.ts      — стан форми SaleModal
   useSaleSubmit.ts    — сабміт SaleModal (create/update/delete)
   useModalFocus.ts    — focus trap + Escape для всіх модалок
+
+lib/
+  useRealtime.ts      — Supabase Realtime підписки (postgres_changes). Використовується в усіх хуках даних і в ClassDetailClient/ClientDetailClient для оновлення в реальному часі при роботі кількох адмінів одночасно.
 ```
 
 ### CSS Design System
@@ -510,4 +513,4 @@ hooks/
 
 ---
 
-**Last Updated**: 2026-05-16 (hours_attended для 2-годинних занять: enrollments + series_clients + generate_week)
+**Last Updated**: 2026-05-17 (Supabase Realtime: useRealtime хук, підписки в усіх хуках даних і компонентах; REPLICA IDENTITY FULL + supabase_realtime publication для всіх таблиць)

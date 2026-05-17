@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { useRealtime } from '@/lib/useRealtime'
 import { getClassById, updateClassCancelled } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
@@ -101,6 +102,8 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   }, [fetchClass, fetchEnrollments])
 
   useEffect(() => { loadAll() }, [loadAll])
+
+  useRealtime(['classes', 'enrollments', 'client_session_balances'], loadAll)
 
   useEffect(() => {
     listTrainingTypeLabels(supabase).then(setTypeLabels)

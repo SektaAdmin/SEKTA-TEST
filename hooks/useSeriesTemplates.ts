@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSeriesTemplates } from '@/lib/queries/classes'
+import { useRealtime } from '@/lib/useRealtime'
 import type { ClassSeries } from '@/types'
 
 export function useSeriesTemplates() {
@@ -22,6 +23,8 @@ export function useSeriesTemplates() {
   }, [])
 
   useEffect(() => { fetchTemplates() }, [fetchTemplates])
+
+  useRealtime(['class_series', 'series_clients'], fetchTemplates)
 
   return { templates, loading, fetchError, refetch: fetchTemplates }
 }

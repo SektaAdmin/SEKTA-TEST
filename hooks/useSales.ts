@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSales } from '@/lib/queries/sales'
+import { useRealtime } from '@/lib/useRealtime'
 import type { Sale } from '@/types'
 
 export const PAGE_SIZES = [20, 50, 100] as const
@@ -55,6 +56,8 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
   }, [fetchSales, page, pageSize, search, dateFrom, dateTo])
 
   const refetch = () => fetchSales(page, pageSize, search, dateFrom, dateTo)
+
+  useRealtime(['sales'], refetch)
 
   return { sales, total, loading, fetchError, refetch }
 }

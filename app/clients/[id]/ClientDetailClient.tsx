@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useRealtime } from '@/lib/useRealtime'
 import { getClientDetail, listPastEnrollmentsForClient, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
 import type { PastEnrollment, FeedEnrollment } from '@/lib/queries/client-detail'
 import { listSalesForClient, listAllSalesForFeed } from '@/lib/queries/sales'
@@ -190,21 +191,25 @@ export default function ClientDetailClient({ id }: { id: string }) {
     ]).then(() => setLoading(false))
   }, [fetchAllClientData, fetchSales, fetchFeedEnrollments])
 
+  const reloadAll = useCallback(() => {
+    fetchAllClientData()
+    setSalesPage(0)
+    fetchSales(0)
+    setPastPage(0)
+    fetchPastEnrollments(0)
+    fetchFeedEnrollments()
+    fetchFeedSales()
+  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments, fetchFeedSales])
+
   useEffect(() => {
     function onVisible() {
-      if (document.visibilityState === 'visible') {
-        fetchAllClientData()
-        setSalesPage(0)
-        fetchSales(0)
-        setPastPage(0)
-        fetchPastEnrollments(0)
-        fetchFeedEnrollments()
-        fetchFeedSales()
-      }
+      if (document.visibilityState === 'visible') reloadAll()
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments, fetchFeedSales])
+  }, [reloadAll])
+
+  useRealtime(['clients', 'sales', 'balance_transactions', 'client_session_balances', 'enrollments'], reloadAll)
 
   function handleClientSaved() {
     setShowEditModal(false)

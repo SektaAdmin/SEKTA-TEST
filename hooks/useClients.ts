@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listClients } from '@/lib/queries/clients'
+import { useRealtime } from '@/lib/useRealtime'
 import type { Client } from '@/types'
 
 export const PAGE_SIZES = [20, 50, 100] as const
@@ -37,6 +38,8 @@ export function useClients({ search, page, pageSize }: UseClientsParams) {
   }, [search, page, pageSize, fetchClients])
 
   const refetch = () => fetchClients(search, page, pageSize)
+
+  useRealtime(['clients', 'sales'], refetch)
 
   return { clients, total, loading, refetch }
 }
