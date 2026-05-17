@@ -91,6 +91,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
 
               {/* Day label — sticky top, spans full scroll width */}
               <div className={styles.dayHeader}>
+                <div className={styles.dayHeaderGutter} />
                 <span className={styles.dayHeaderText}>{label}</span>
               </div>
 
