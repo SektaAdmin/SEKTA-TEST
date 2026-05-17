@@ -197,6 +197,33 @@ export async function deleteSale(
   return { success: true, error: null }
 }
 
+export type ReconciliationSale = {
+  id: string
+  created_at: string
+  price_paid: number
+  amount_given: number
+  payment_method: string
+  ticket_id: string | null
+  ticket_name: string | null
+  clients: { first_name: string | null; last_name: string | null } | null
+}
+
+export async function listSalesForReconciliation(
+  supabase: SupabaseClient,
+  dateFrom: string,
+  dateTo: string,
+  methods: ('fop' | 'personal_card')[]
+): Promise<{ data: ReconciliationSale[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('sales')
+    .select('id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, clients(first_name, last_name)')
+    .in('payment_method', methods)
+    .gte('created_at', `${dateFrom}T00:00:00`)
+    .lte('created_at', `${dateTo}T23:59:59`)
+    .order('created_at', { ascending: false })
+  return { data: (data as unknown as ReconciliationSale[]) ?? [], error: error?.message ?? null }
+}
+
 export async function getTicketById(
   supabase: SupabaseClient,
   ticketId: string
