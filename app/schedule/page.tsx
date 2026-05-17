@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
+import { useRealtime } from '@/lib/useRealtime'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
@@ -272,6 +273,8 @@ export default function SchedulePage() {
   }, [weekStartISO, weekEndISO])
 
   useEffect(() => { fetchClasses() }, [fetchClasses])
+
+  useRealtime(['classes', 'enrollments'], fetchClasses)
 
   useEffect(() => {
     setCalViewMonth({ year: baseDate.getFullYear(), month: baseDate.getMonth() })
