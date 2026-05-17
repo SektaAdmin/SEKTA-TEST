@@ -30,16 +30,11 @@ export function useRealtime(tables: string[], onChange: () => void) {
         channel.on(
           'postgres_changes' as const,
           { event: '*', schema: 'public', table },
-          (payload: unknown) => {
-            console.log(`[Realtime] event on ${channelNameRef.current}`, payload)
-            onChangeRef.current()
-          }
+          () => onChangeRef.current()
         )
       }
 
-      channel.subscribe((status: string) => {
-        console.log(`[Realtime] ${channelNameRef.current} → ${status}`)
-      })
+      channel.subscribe()
     }
 
     subscribe()
