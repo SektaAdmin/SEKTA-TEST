@@ -534,7 +534,15 @@ export default function TemplatesPage() {
                     </span>
                   )}
                 </div>
-                <button className={styles.drawerClose} onClick={closeClientsDrawer}>✕</button>
+                <div className={styles.drawerActions}>
+                  <button
+                    className={styles.drawerEdit}
+                    onClick={() => { closeClientsDrawer(); setEditingSeries(s) }}
+                  >
+                    Редагувати
+                  </button>
+                  <button className={styles.drawerClose} onClick={closeClientsDrawer}>✕</button>
+                </div>
               </div>
 
               <div className={styles.drawerBody}>
