@@ -1,0 +1,524 @@
+/* ── Overlay & Modal ─────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+  animation: overlayIn var(--motion-fast) both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  animation: modalIn var(--motion-standard) both;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 0.5px solid var(--border);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.topbarTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.topbarActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  line-height: 1;
+  transition: color var(--motion-fast);
+  flex-shrink: 0;
+}
+.close:hover { color: var(--text); }
+
+.btnEdit {
+  background: transparent;
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font);
+  transition: border-color 0.12s, color 0.12s;
+}
+.btnEdit:hover { border-color: var(--text-3); color: var(--text); }
+
+.btnCancel {
+  background: transparent;
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font);
+  transition: background 0.12s;
+}
+.btnCancel:hover { background: var(--danger-dim); }
+.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnRestore {
+  background: var(--accent-dim);
+  border: 0.5px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font);
+  transition: opacity 0.12s;
+}
+.btnRestore:hover { opacity: 0.8; }
+.btnRestore:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.confirmPrompt {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* ── Body ────────────────────────────────────────────────────── */
+.body {
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+}
+
+.loadingState {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Callout ─────────────────────────────────────────────────── */
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--warning-dim);
+  border: 0.5px solid rgba(224,160,64,0.35);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.calloutIcon {
+  color: var(--warning);
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Info card ───────────────────────────────────────────────── */
+.infoCard {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+.infoRow:last-child { border-bottom: none; }
+
+.infoLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.cancelledBadge {
+  font-size: 11px;
+  color: var(--danger);
+  background: var(--danger-dim);
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-left: 4px;
+}
+
+/* ── Section ─────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.btnAdd {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.btnAdd:hover { opacity: 0.88; }
+
+/* ── Add client form ─────────────────────────────────────────── */
+.addForm {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clientPreview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 0;
+}
+
+.clientName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.balanceOk {
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--mono);
+}
+
+.balanceWarn {
+  font-size: 12px;
+  color: var(--danger);
+  background: var(--danger-dim);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.enrollError {
+  font-size: 12px;
+  color: var(--danger);
+  background: var(--danger-dim);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.addFormActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btnCancelAdd {
+  background: transparent;
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font);
+  transition: border-color 0.12s, color 0.12s;
+}
+.btnCancelAdd:hover { border-color: var(--text-3); color: var(--text); }
+
+.btnConfirmEnroll {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 16px;
+  color: var(--accent-text);
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 13px;
+  transition: opacity 0.12s;
+}
+.btnConfirmEnroll:hover { opacity: 0.88; }
+.btnConfirmEnroll:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Empty ───────────────────────────────────────────────────── */
+.empty {
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 32px 0;
+  text-align: center;
+}
+
+/* ── Table ───────────────────────────────────────────────────── */
+.tableWrap {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table thead tr { background: var(--bg-3); }
+
+.table th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 0.5px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 11px 14px;
+  color: var(--text);
+  border-bottom: 0.5px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: var(--bg-3); }
+
+.rowCancelled td { opacity: 0.45; }
+
+.clientLink {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.12s;
+}
+.clientLink:hover { color: var(--accent); }
+
+.balanceCell { font-family: var(--mono); font-size: 12px; }
+.balPos  { color: var(--accent); }
+.balZero { color: var(--danger); }
+
+.dateCell { font-size: 12px; color: var(--text-2); font-family: var(--mono); }
+
+/* ── Status badges ───────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badgeEnrolled  { background: rgba(100,160,255,0.12); color: var(--fop); }
+.badgeAttended  { background: var(--accent-dim); color: var(--accent); }
+.badgeCancelled { background: rgba(255,255,255,0.05); color: var(--text-3); }
+.badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
+.badgeWaitlist  { background: var(--warning-dim); color: var(--warning); }
+
+/* ── Waitlist section ────────────────────────────────────────── */
+.waitlistSection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--border);
+}
+
+.waitlistTitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+/* ── Row actions ─────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.btnAttend, .btnNoshow, .btnCancelEnroll, .btnReEnroll {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.btnAttend {
+  font-weight: 600;
+  font-size: 13px;
+}
+.btnAttend:hover:not(:disabled) {
+  background: var(--accent-dim);
+  border-color: var(--accent-border-hover);
+  color: var(--accent);
+}
+
+.btnNoshow:hover:not(:disabled) {
+  background: var(--danger-dim);
+  border-color: var(--danger-border-hover);
+  color: var(--danger);
+}
+
+.btnCancelEnroll:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text-2);
+}
+
+.btnReEnroll:hover:not(:disabled) {
+  background: var(--fop-dim);
+  border-color: rgba(100,160,255,0.3);
+  color: var(--fop);
+}
+
+.btnAttend:disabled,
+.btnNoshow:disabled,
+.btnCancelEnroll:disabled,
+.btnReEnroll:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.rowError {
+  font-size: 11px;
+  color: var(--danger);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Hours selection ─────────────────────────────────────────── */
+.hoursSelect {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+
+.hoursLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hoursLabel input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.hoursTag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .overlay { padding: 0; align-items: flex-end; }
+  .modal { border-radius: var(--radius) var(--radius) 0 0; max-width: 100%; }
+  .body { max-height: 85vh; }
+  .content { padding: 16px; }
+  .tableWrap { overflow-x: auto; }
+}

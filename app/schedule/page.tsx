@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
@@ -8,6 +7,7 @@ import { useRealtime } from '@/lib/useRealtime'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
+import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
@@ -235,7 +235,6 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
 
 // ── Main page ─────────────────────────────────────────────────────
 export default function SchedulePage() {
-  const router = useRouter()
   const { trainers, halls, trainingTypes } = useRefs()
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
@@ -247,6 +246,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
+  const [detailClassId, setDetailClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
@@ -454,7 +454,7 @@ export default function SchedulePage() {
                 <button
                   key={cls.id}
                   className={styles.archiveRow}
-                  onClick={() => router.push(`/schedule/${cls.id}`)}
+                  onClick={() => setDetailClassId(cls.id)}
                 >
                   <span className={styles.archiveDate}>{dayStr}</span>
                   <span className={styles.archiveTime}>{timeStr}</span>
@@ -548,7 +548,7 @@ export default function SchedulePage() {
                             typeLabels={typeLabels}
                             hourHeight={HOUR_HEIGHT}
                             day={day}
-                            onCardClick={id => router.push(`/schedule/${id}`)}
+                            onCardClick={id => setDetailClassId(id)}
                             onSlotClick={startsAt => {
                               setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                               setShowModal(true)
@@ -580,6 +580,14 @@ export default function SchedulePage() {
           </div>
         )}
       </main>
+
+      {detailClassId && (
+        <ClassDetailModal
+          classId={detailClassId}
+          onClose={() => setDetailClassId(null)}
+          onClassUpdated={fetchClasses}
+        />
+      )}
 
       {showModal && (
         <ClassModal
