@@ -427,7 +427,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           </section>
 
           <section className={styles.card}>
-            <h2 className={styles.cardTitle}>Прошедші тренування</h2>
+            <h2 className={styles.cardTitle}>Минулі тренування</h2>
             {pastEnrollments.length === 0 ? (
               <div className={styles.emptySection}>
                 <span className={styles.empty2}>Ще не було тренувань</span>
