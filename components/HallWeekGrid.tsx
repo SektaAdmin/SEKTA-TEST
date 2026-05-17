@@ -6,13 +6,13 @@ import { getOverCapacityCount, isClientCountFull, isClientCountAlmost } from '@/
 import styles from './HallWeekGrid.module.css'
 
 const DAYS: { label: string; dow: number }[] = [
-  { label: 'Пн', dow: 1 },
-  { label: 'Вт', dow: 2 },
-  { label: 'Ср', dow: 3 },
-  { label: 'Чт', dow: 4 },
-  { label: 'Пт', dow: 5 },
-  { label: 'Сб', dow: 6 },
-  { label: 'Нд', dow: 0 },
+  { label: 'Понеділок', dow: 1 },
+  { label: 'Вівторок', dow: 2 },
+  { label: 'Середа', dow: 3 },
+  { label: 'Четвер', dow: 4 },
+  { label: 'Пʼятниця', dow: 5 },
+  { label: 'Субота', dow: 6 },
+  { label: 'Неділя', dow: 0 },
 ]
 
 const MIN_HOUR = 7
@@ -48,126 +48,124 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
     return m
   }, [trainingTypes])
 
-  // hall_id (null = no hall) → dow → ClassSeries[]
-  const byHallDay = useMemo(() => {
-    const map = new Map<string | null, Map<number, ClassSeries[]>>()
-    for (const hall of activeHalls) map.set(hall.id, new Map())
-    map.set(null, new Map())
-    for (const s of series) {
-      const key = s.hall_id ?? null
-      if (!map.has(key)) map.set(key, new Map())
-      const dowMap = map.get(key)!
-      if (!dowMap.has(s.day_of_week)) dowMap.set(s.day_of_week, [])
-      dowMap.get(s.day_of_week)!.push(s)
-    }
-    return map
+  // Determine which halls actually appear in the series (+ null for no-hall)
+  const hallCols = useMemo(() => {
+    const hallIds = new Set(series.map(s => s.hall_id ?? null))
+    const result: (Hall | null)[] = activeHalls.filter(h => hallIds.has(h.id))
+    if (hallIds.has(null)) result.push(null)
+    return result
   }, [series, activeHalls])
 
-  const noHallMap = byHallDay.get(null)
-  const hasNoHall = noHallMap && Array.from(noHallMap.values()).some(a => a.length > 0)
+  // dow → hall_id → ClassSeries[]
+  const byDowHall = useMemo(() => {
+    const map = new Map<number, Map<string | null, ClassSeries[]>>()
+    for (const { dow } of DAYS) map.set(dow, new Map())
+    for (const s of series) {
+      const dowMap = map.get(s.day_of_week)!
+      const key = s.hall_id ?? null
+      if (!dowMap.has(key)) dowMap.set(key, [])
+      dowMap.get(key)!.push(s)
+    }
+    return map
+  }, [series])
 
-  const hallRows = [
-    ...activeHalls.map(h => ({ id: h.id, name: h.name, dowMap: byHallDay.get(h.id) ?? new Map<number, ClassSeries[]>() })),
-    ...(hasNoHall ? [{ id: null as string | null, name: 'Без залу', dowMap: noHallMap! }] : []),
-  ]
+  const TIME_GUTTER_W = 44
+  const HALL_COL_MIN_W = 140
+
+  // grid-template-columns for the header and body
+  const colTemplate = `${TIME_GUTTER_W}px repeat(${hallCols.length}, minmax(${HALL_COL_MIN_W}px, 1fr))`
 
   return (
     <div className={styles.root}>
-      {/* ── Sticky header: corner + day labels ── */}
-      <div className={styles.stickyHeader}>
+      {/* ── Sticky header: corner + hall labels ── */}
+      <div className={styles.stickyHeader} style={{ gridTemplateColumns: colTemplate }}>
         <div className={styles.cornerCell} />
-        <div className={styles.dayLabels}>
-          {DAYS.map(d => (
-            <div key={d.dow} className={styles.dayLabel}>{d.label}</div>
-          ))}
-        </div>
+        {hallCols.map(hall => (
+          <div key={hall?.id ?? '__nohall'} className={styles.hallHeaderCell}>
+            {hall ? hall.name : 'Без залу'}
+          </div>
+        ))}
       </div>
 
       {/* ── Scrollable body ── */}
       <div className={styles.scrollBody}>
-        {/* Hall rows */}
-        <div className={styles.hallRows}>
-          {hallRows.map(hall => (
-            <div key={hall.id ?? '__nohall'} className={styles.hallRow}>
-              {/* Time axis per row */}
-              <div className={styles.timeAxis} style={{ height: TOTAL_H }}>
-                {HOURS.map(h => (
-                  <div key={h} className={styles.timeLabel} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
-                    {String(h).padStart(2, '0')}
-                  </div>
-                ))}
-              </div>
-              {/* Hall name */}
-              <div className={styles.hallName}>{hall.name}</div>
-
-              {/* Day cells */}
-              <div className={styles.dayCells}>
-                {DAYS.map(d => {
-                  const items = (hall.dowMap.get(d.dow) ?? []).sort((a, b) =>
-                    a.time_of_day.localeCompare(b.time_of_day)
-                  )
-                  return (
-                    <div
-                      key={d.dow}
-                      className={styles.cell}
-                      style={{ height: TOTAL_H }}
-                      onClick={onSlotClick ? e => {
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        const y = e.clientY - rect.top
-                        const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + y / HOUR_HEIGHT)))
-                        onSlotClick(d.dow, `${String(hour).padStart(2, '0')}:00`, hall.id)
-                      } : undefined}
-                    >
-                      {/* Hour lines */}
-                      {HOURS.slice(1).map(h => (
-                        <div
-                          key={h}
-                          className={styles.hourLine}
-                          style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}
-                        />
-                      ))}
-                      {/* Cards */}
-                      {items.map(s => {
-                        const trainerName = (s.trainers as { name: string } | null)?.name
-                        const clientCount = s.series_clients?.length ?? 0
-                        const capacity = s.capacity
-                        const isFull = isClientCountFull(clientCount, capacity)
-                        const isAlmost = isClientCountAlmost(clientCount, capacity)
-                        const overCapacity = getOverCapacityCount(clientCount, capacity)
-                        const endTime = (() => {
-                          const [h, m] = s.time_of_day.split(':').map(Number)
-                          const total = h * 60 + m + s.duration_min
-                          return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-                        })()
-                        return (
-                          <button
-                            key={s.id}
-                            className={styles.chip}
-                            style={{
-                              top: cardTop(s.time_of_day),
-                              height: cardHeight(s.duration_min),
-                              ['--chip-color' as string]: typeColor(s.ticket_type),
-                            }}
-                            onClick={e => { e.stopPropagation(); onCardClick(s) }}
-                          >
-                            <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
-                            <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
-                            {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
-                            {capacity != null && (
-                              <span className={`${styles.chipCapacityBadge} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
-                                {clientCount}/{capacity}{overCapacity > 0 ? ` +${overCapacity}` : ''}
-                              </span>
-                            )}
-                          </button>
-                        )
-                      })}
+        {DAYS.map(({ label, dow }) => {
+          const dowMap = byDowHall.get(dow)!
+          return (
+            <div key={dow} className={styles.dayRow}>
+              {/* Day label (sticky left, full height) */}
+              <div className={styles.dayLabelCell} style={{ height: TOTAL_H }}>
+                {/* Time gutter + day name stacked */}
+                <div className={styles.dayName}>{label}</div>
+                <div className={styles.timeAxis}>
+                  {HOURS.map(h => (
+                    <div key={h} className={styles.timeLabel} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
+                      {String(h).padStart(2, '0')}
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
+
+              {/* Hall columns for this day */}
+              {hallCols.map(hall => {
+                const items = (dowMap.get(hall?.id ?? null) ?? []).sort((a, b) =>
+                  a.time_of_day.localeCompare(b.time_of_day)
+                )
+                return (
+                  <div
+                    key={hall?.id ?? '__nohall'}
+                    className={styles.cell}
+                    style={{ height: TOTAL_H }}
+                    onClick={onSlotClick ? e => {
+                      const rect = e.currentTarget.getBoundingClientRect()
+                      const y = e.clientY - rect.top
+                      const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + y / HOUR_HEIGHT)))
+                      onSlotClick(dow, `${String(hour).padStart(2, '0')}:00`, hall?.id ?? null)
+                    } : undefined}
+                  >
+                    {HOURS.slice(1).map(h => (
+                      <div key={h} className={styles.hourLine} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }} />
+                    ))}
+                    {items.map(s => {
+                      const trainerName = (s.trainers as { name: string } | null)?.name
+                      const clientCount = s.series_clients?.length ?? 0
+                      const capacity = s.capacity
+                      const isFull = isClientCountFull(clientCount, capacity)
+                      const isAlmost = isClientCountAlmost(clientCount, capacity)
+                      const overCapacity = getOverCapacityCount(clientCount, capacity)
+                      const endTime = (() => {
+                        const [h, m] = s.time_of_day.split(':').map(Number)
+                        const total = h * 60 + m + s.duration_min
+                        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+                      })()
+                      return (
+                        <button
+                          key={s.id}
+                          className={styles.chip}
+                          style={{
+                            top: cardTop(s.time_of_day),
+                            height: cardHeight(s.duration_min),
+                            ['--chip-color' as string]: typeColor(s.ticket_type),
+                          }}
+                          onClick={e => { e.stopPropagation(); onCardClick(s) }}
+                        >
+                          <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
+                          <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
+                          {trainerName && <span className={styles.chipTrainer}>{trainerName}</span>}
+                          {capacity != null && (
+                            <span className={`${styles.chipCapacityBadge} ${isFull ? styles.chipCapacityFull : isAlmost ? styles.chipCapacityAlmost : ''}`}>
+                              {clientCount}/{capacity}{overCapacity > 0 ? ` +${overCapacity}` : ''}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )

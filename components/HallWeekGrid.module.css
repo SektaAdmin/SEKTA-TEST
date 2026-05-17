@@ -1,124 +1,117 @@
 /* ── Root ─────────────────────────────────────────────────── */
 .root {
   position: relative;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: calc(100vh - 120px);
+  overflow: auto;
+  max-height: calc(100vh - 140px);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
+  background: var(--bg-2);
 }
 
-/* ── Sticky top header ────────────────────────────────────── */
+/* ── Sticky top header (hall labels) ─────────────────────── */
 .stickyHeader {
+  display: grid;
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
   background: var(--bg-2);
   border-bottom: 0.5px solid var(--border-strong);
 }
 
 .cornerCell {
-  flex-shrink: 0;
-  width: 44px; /* time axis width */
-  /* hall name col + time axis */
-  margin-left: 120px;
+  /* time gutter width matches .dayLabelCell */
+  border-right: 0.5px solid var(--border);
+  background: var(--bg-2);
 }
 
-.dayLabels {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-}
-
-.dayLabel {
-  flex: 1;
-  min-width: 120px;
-  text-align: center;
+.hallHeaderCell {
   font-size: 11px;
   font-weight: 500;
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 8px 0;
-}
-
-/* ── Scroll body ──────────────────────────────────────────── */
-.scrollBody {
-  display: flex;
-}
-
-/* ── Time axis (per hall row, sticky left) ────────────────── */
-.timeAxis {
-  flex-shrink: 0;
-  width: 44px;
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  background: var(--bg-2);
+  text-align: center;
+  padding: 8px 4px;
   border-right: 0.5px solid var(--border);
-  align-self: flex-start;
+}
+.hallHeaderCell:last-child {
+  border-right: none;
 }
 
-.timeLabel {
-  position: absolute;
-  right: 8px;
-  font-size: 10px;
-  color: var(--text-3);
-  line-height: 1;
-  transform: translateY(-50%);
-  user-select: none;
-}
-
-/* ── Hall rows area ───────────────────────────────────────── */
-.hallRows {
-  flex: 1;
-  min-width: 0;
+/* ── Scrollable body ─────────────────────────────────────── */
+.scrollBody {
   display: flex;
   flex-direction: column;
 }
 
-.hallRow {
+/* ── Day row ─────────────────────────────────────────────── */
+.dayRow {
   display: flex;
   border-bottom: 0.5px solid var(--border-strong);
 }
-.hallRow:last-child {
+.dayRow:last-child {
   border-bottom: none;
 }
 
-/* ── Hall name label ──────────────────────────────────────── */
-.hallName {
+/* ── Day label cell (sticky left, contains day name + time axis) */
+.dayLabelCell {
   flex-shrink: 0;
-  width: 120px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-2);
-  padding: 12px 12px 0 12px;
-  border-right: 0.5px solid var(--border);
+  width: 44px; /* same as time gutter */
   position: sticky;
-  left: 44px; /* stick after time axis */
+  left: 0;
+  z-index: 3;
   background: var(--bg-2);
-  z-index: 2;
-}
-
-/* ── Day cells ────────────────────────────────────────────── */
-.dayCells {
+  border-right: 0.5px solid var(--border-strong);
   display: flex;
-  flex: 1;
-  min-width: 0;
+  flex-direction: column;
+  align-items: center;
 }
 
+.dayName {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding: 10px 0;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Time axis (inside day label cell) ───────────────────── */
+.timeAxis {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+.timeLabel {
+  position: absolute;
+  right: 6px;
+  font-size: 9px;
+  color: var(--text-3);
+  line-height: 1;
+  transform: translateY(-50%);
+  user-select: none;
+  font-family: var(--mono);
+}
+
+/* ── Hall cell (column inside a day row) ─────────────────── */
 .cell {
   flex: 1;
-  min-width: 120px;
+  min-width: 140px;
   position: relative;
   border-right: 0.5px solid var(--border);
+  cursor: cell;
 }
 .cell:last-child {
   border-right: none;
 }
 
-/* ── Hour lines ───────────────────────────────────────────── */
+/* ── Hour lines ──────────────────────────────────────────── */
 .hourLine {
   position: absolute;
   left: 0;
@@ -128,7 +121,7 @@
   pointer-events: none;
 }
 
-/* ── Class chip ───────────────────────────────────────────── */
+/* ── Class chip ──────────────────────────────────────────── */
 .chip {
   position: absolute;
   left: 3px;
@@ -211,6 +204,6 @@
 }
 
 @media (max-width: 640px) {
-  .dayLabel { min-width: 80px; }
-  .cell { min-width: 80px; }
+  .cell { min-width: 100px; }
+  .hallHeaderCell { font-size: 10px; }
 }
