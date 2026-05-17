@@ -81,6 +81,7 @@ export default function TemplatesPage() {
     })
   }, [rawTemplates, filterTrainer, filterClient])
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [prefillSeries, setPrefillSeries] = useState<{ day_of_week?: number; time_of_day?: string; hall_id?: string } | null>(null)
   const [editingSeries, setEditingSeries] = useState<ClassSeries | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [clientsDrawerSeries, setClientsDrawerSeries] = useState<ClassSeries | null>(null)
@@ -382,6 +383,10 @@ export default function TemplatesPage() {
             halls={halls}
             trainingTypes={trainingTypes}
             onCardClick={openClientsDrawer}
+            onSlotClick={(dow, time, hallId) => {
+              setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
+              setShowCreateModal(true)
+            }}
           />
         ) : (
           <div className={styles.tableWrap}>
@@ -498,8 +503,9 @@ export default function TemplatesPage() {
       {(showCreateModal || editingSeries) && (
         <SeriesModal
           existing={editingSeries}
-          onClose={() => { setShowCreateModal(false); setEditingSeries(null) }}
-          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); refetch() }}
+          prefill={prefillSeries ?? undefined}
+          onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null) }}
+          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); refetch() }}
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}

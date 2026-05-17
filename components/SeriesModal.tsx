@@ -27,8 +27,15 @@ interface FormValues {
   notes: string
 }
 
+interface Prefill {
+  day_of_week?: number
+  time_of_day?: string
+  hall_id?: string
+}
+
 interface Props {
   existing?: ClassSeries | null
+  prefill?: Prefill
   onClose: () => void
   onSaved: () => void
   trainers: Trainer[]
@@ -36,7 +43,7 @@ interface Props {
   trainingTypes: TrainingType[]
 }
 
-export default function SeriesModal({ existing, onClose, onSaved, trainers, halls, trainingTypes }: Props) {
+export default function SeriesModal({ existing, prefill, onClose, onSaved, trainers, halls, trainingTypes }: Props) {
   const isEdit = !!existing
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
@@ -53,9 +60,9 @@ export default function SeriesModal({ existing, onClose, onSaved, trainers, hall
     } : {
       ticket_type: trainingTypes[0]?.code ?? '',
       trainer_id: '',
-      hall_id: '',
-      day_of_week: '1',
-      time_of_day: '10:00',
+      hall_id: prefill?.hall_id ?? '',
+      day_of_week: String(prefill?.day_of_week ?? 1),
+      time_of_day: prefill?.time_of_day ?? '10:00',
       duration_min: 60,
       capacity: '',
       title: '',

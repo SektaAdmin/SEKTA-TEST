@@ -36,9 +36,10 @@ interface Props {
   halls: Hall[]
   trainingTypes: TrainingType[]
   onCardClick: (s: ClassSeries) => void
+  onSlotClick?: (dow: number, time: string, hallId: string | null) => void
 }
 
-export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick }: Props) {
+export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick }: Props) {
   const activeHalls = useMemo(() => halls.filter(h => h.is_active), [halls])
 
   const typeLabel = useMemo(() => {
@@ -107,7 +108,17 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                     a.time_of_day.localeCompare(b.time_of_day)
                   )
                   return (
-                    <div key={d.dow} className={styles.cell} style={{ height: TOTAL_H }}>
+                    <div
+                      key={d.dow}
+                      className={styles.cell}
+                      style={{ height: TOTAL_H }}
+                      onClick={onSlotClick ? e => {
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const y = e.clientY - rect.top
+                        const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + y / HOUR_HEIGHT)))
+                        onSlotClick(d.dow, `${String(hour).padStart(2, '0')}:00`, hall.id)
+                      } : undefined}
+                    >
                       {/* Hour lines */}
                       {HOURS.slice(1).map(h => (
                         <div
@@ -138,7 +149,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                               height: cardHeight(s.duration_min),
                               ['--chip-color' as string]: typeColor(s.ticket_type),
                             }}
-                            onClick={() => onCardClick(s)}
+                            onClick={e => { e.stopPropagation(); onCardClick(s) }}
                           >
                             <span className={styles.chipTime}>{s.time_of_day.slice(0, 5)}–{endTime}</span>
                             <span className={styles.chipType}>{s.title || (typeLabel.get(s.ticket_type) ?? s.ticket_type)}</span>
