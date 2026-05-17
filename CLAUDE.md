@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-17 (Supabase Realtime: useRealtime хук, підписки в усіх хуках даних і компонентах)
+- **Last Updated**: 2026-05-17 (Зарплатні нарахування тренерів: trainer_rates, trainer_payments, calc_trainer_salary)
 
 ---
 
@@ -20,6 +20,8 @@ tickets ───┘
 halls (standalone reference)
 class_series ──► classes ──► enrollments ◄──── clients
 training_types (standalone reference)
+trainer_rates ──► trainers (trainer_id NULL = глобальна ставка)
+trainer_payments ──► trainers
 ```
 
 ---
@@ -261,6 +263,41 @@ training_types (standalone reference)
 
 ---
 
+### `trainer_rates` — Ставки тренерів ₴/год
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| trainer_id | uuid | YES | → trainers.id CASCADE. **NULL = глобальна ставка** |
+| ticket_type | text | NO | Тип заняття |
+| rate | numeric | NO | ₴ за годину, >= 0 |
+| created_at | timestamptz | NO | |
+
+**UNIQUE NULLS NOT DISTINCT (trainer_id, ticket_type)** — одна ставка на пару (тренер, тип).
+Пріоритет: індивідуальна (trainer_id NOT NULL) → глобальна (trainer_id IS NULL).
+
+**RLS:** Увімкнено. authenticated = повний доступ.
+
+---
+
+### `trainer_payments` — Виплати тренерам
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| trainer_id | uuid | NO | → trainers.id CASCADE |
+| period_start | date | NO | Початок розрахункового періоду |
+| period_end | date | NO | Кінець розрахункового періоду |
+| calculated_amount | numeric | NO | Snapshot нарахування на момент виплати |
+| paid_amount | numeric | NO | Фактично виплачено |
+| payment_date | date | NO | Дата виплати |
+| notes | text | YES | |
+| created_at | timestamptz | NO | |
+
+**RLS:** Увімкнено. authenticated = повний доступ.
+
+---
+
 ## Stored Procedures
 
 ### `create_sale(...)` — Атомарне створення продажу
@@ -324,6 +361,21 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 → TABLE(classes_created int, enrollments_created int)
 ```
 Бере **тільки** `class_series WHERE type='template'`, генерує заняття на `p_weeks` тижнів починаючи з `p_start_date` (має бути понеділок). Ідемпотентна: повторний виклик на ту саму дату не створює дублікатів (UNIQUE index `uq_classes_series_date`). Автоматично записує `series_clients` в `enrollments` зі статусом `enrolled` (тригер `check_class_capacity` може перевести частину у `waitlist`).
+
+**GRANT EXECUTE** на authenticated, anon.
+
+---
+
+### `calc_trainer_salary(p_trainer_id, p_start, p_end)` — Нарахування зарплати
+
+```
+→ TABLE(ticket_type text, sessions_total int, rate numeric, amount numeric)
+```
+Рахує нарахування тренера за діапазон дат на основі **проведених занять** (`enrollments.status IN ('attended', 'noshow')`).
+- `attended`: `sessions_used` (з `mark_attendance`)
+- `noshow`: `duration_min / 60` (тренер провів заняття, клієнт не прийшов)
+- Ставка: індивідуальна `trainer_rates` → глобальна (trainer_id IS NULL) → NULL (не задано)
+- `rate = NULL` → `amount = 0`, у UI відображається "не задано"
 
 **GRANT EXECUTE** на authenticated, anon.
 
@@ -496,7 +548,9 @@ lib/
 | `/schedule/templates` | Шаблони тижня: create/edit class_series type='template', постійники, кнопка "Виставити тиждень" |
 | `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність. Кнопки: «Редагувати», «Скасувати заняття» / «Відновити» (soft delete через `is_cancelled`) |
 | `/accounting` | Облік надходжень |
-| `/accounting/trainers` | Розрахунок з тренерами |
+| `/accounting/trainers` | Звіт по продажах тренерів |
+| `/accounting/trainers/salary` | Нарахування зарплати (по проведених заняттях) + виплати |
+| `/accounting/trainers/rates` | Управління ставками (глобальні + індивідуальні) |
 
 ---
 

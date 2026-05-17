@@ -113,7 +113,11 @@ export default function TrainerReportsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Звіти по тренерах</h1>
-          <a href="/accounting" className={styles.backLink}>← Звітність</a>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <a href="/accounting/trainers/salary" className={styles.backLink}>Нарахування</a>
+            <a href="/accounting/trainers/rates" className={styles.backLink}>Ставки</a>
+            <a href="/accounting" className={styles.backLink}>← Звітність</a>
+          </div>
         </div>
 
         <div className={styles.filterBar}>
