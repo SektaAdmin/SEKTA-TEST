@@ -8,7 +8,7 @@
   background: var(--bg-2);
 }
 
-/* ── Sticky top header ────────────────────────────────────── */
+/* ── Sticky top header (hall labels) ─────────────────────── */
 .stickyHeader {
   display: grid;
   position: sticky;
@@ -18,14 +18,8 @@
   border-bottom: 0.5px solid var(--border-strong);
 }
 
-/* Corner above day-name column */
-.cornerDay {
-  background: var(--bg-2);
-  border-right: 0.5px solid var(--border);
-}
-
-/* Corner above time-gutter column */
-.cornerTime {
+/* Corner above time gutter */
+.cornerCell {
   background: var(--bg-2);
   border-right: 0.5px solid var(--border-strong);
 }
@@ -50,51 +44,58 @@
   flex-direction: column;
 }
 
-/* ── Day row ─────────────────────────────────────────────── */
+/* ── Day block (header smuga + content row) ──────────────── */
+.dayBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Day separator row ───────────────────────────────────── */
+.dayHeader {
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  background: var(--bg-3);
+  border-top: 0.5px solid var(--border-strong);
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+  /* Full viewport width regardless of scroll position */
+  width: 100%;
+}
+
+.dayBlock:first-child .dayHeader {
+  border-top: none;
+}
+
+.dayHeaderText {
+  display: block;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  user-select: none;
+}
+
+/* ── Day content row (time gutter + hall cells) ──────────── */
 .dayRow {
   display: flex;
   border-bottom: 0.5px solid var(--border-strong);
 }
-.dayRow:last-child {
+.dayBlock:last-child .dayRow {
   border-bottom: none;
 }
 
-/* ── Day name cell (sticky left, column 1) ───────────────── */
-.dayNameCell {
-  flex-shrink: 0;
-  width: 72px;
-  position: sticky;
-  left: 0;
-  z-index: 4;
-  background: var(--bg-2);
-  border-right: 0.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dayNameText {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  user-select: none;
-}
-
-/* ── Time gutter (sticky, column 2) ─────────────────────── */
-/* sticky position allows horizontal scroll lock;
-   sticky elements are also a containing block for absolute children */
+/* ── Time gutter (sticky left, column 1) ─────────────────── */
 .timeGutter {
   flex-shrink: 0;
   width: 44px;
+  position: sticky;
+  left: 0;
+  z-index: 3;
   background: var(--bg-2);
   border-right: 0.5px solid var(--border-strong);
-  position: sticky;
-  left: 72px;
-  z-index: 3;
 }
 
 .timeGutterInner {
@@ -114,7 +115,7 @@
   font-family: var(--mono);
 }
 
-/* ── Hall cell (column inside a day row) ─────────────────── */
+/* ── Hall cell ───────────────────────────────────────────── */
 .cell {
   flex: 1;
   min-width: 140px;
@@ -221,6 +222,4 @@
 @media (max-width: 640px) {
   .cell { min-width: 100px; }
   .hallHeaderCell { font-size: 10px; }
-  .dayNameCell { width: 48px; }
-  .timeGutter { left: 48px; }
 }
