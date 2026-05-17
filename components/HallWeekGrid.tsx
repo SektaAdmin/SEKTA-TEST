@@ -85,19 +85,18 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
 
       {/* ── Scrollable body ── */}
       <div className={styles.scrollBody}>
-        {/* Time axis */}
-        <div className={styles.timeAxis} style={{ height: TOTAL_H }}>
-          {HOURS.map(h => (
-            <div key={h} className={styles.timeLabel} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
-              {String(h).padStart(2, '0')}
-            </div>
-          ))}
-        </div>
-
         {/* Hall rows */}
         <div className={styles.hallRows}>
           {hallRows.map(hall => (
             <div key={hall.id ?? '__nohall'} className={styles.hallRow}>
+              {/* Time axis per row */}
+              <div className={styles.timeAxis} style={{ height: TOTAL_H }}>
+                {HOURS.map(h => (
+                  <div key={h} className={styles.timeLabel} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
+                    {String(h).padStart(2, '0')}
+                  </div>
+                ))}
+              </div>
               {/* Hall name */}
               <div className={styles.hallName}>{hall.name}</div>
 

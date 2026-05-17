@@ -48,14 +48,16 @@
   display: flex;
 }
 
-/* ── Time axis ────────────────────────────────────────────── */
+/* ── Time axis (per hall row, sticky left) ────────────────── */
 .timeAxis {
   flex-shrink: 0;
   width: 44px;
-  position: relative;
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--bg-2);
   border-right: 0.5px solid var(--border);
-  /* push down to align with hall name height (28px header) */
-  margin-top: 0;
+  align-self: flex-start;
 }
 
 .timeLabel {
