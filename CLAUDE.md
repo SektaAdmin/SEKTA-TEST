@@ -6,7 +6,7 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-17 (Зарплатні нарахування тренерів: trainer_rates, trainer_payments, calc_trainer_salary)
+- **Last Updated**: 2026-05-18 (Повернення сесій при скасуванні: reverse_attendance, cancel_class_and_restore_sessions)
 
 ---
 
@@ -361,6 +361,30 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 → TABLE(classes_created int, enrollments_created int)
 ```
 Бере **тільки** `class_series WHERE type='template'`, генерує заняття на `p_weeks` тижнів починаючи з `p_start_date` (має бути понеділок). Ідемпотентна: повторний виклик на ту саму дату не створює дублікатів (UNIQUE index `uq_classes_series_date`). Автоматично записує `series_clients` в `enrollments` зі статусом `enrolled` (тригер `check_class_capacity` може перевести частину у `waitlist`).
+
+**GRANT EXECUTE** на authenticated, anon.
+
+---
+
+### `reverse_attendance(p_enrollment_id)` — Скасування відвідування
+
+```
+→ TABLE(success boolean, error_message text)
+```
+Повертає `sessions_used` назад в `client_session_balances`, скидає enrollment на `status='cancelled'`, `sessions_used=0`. Повертає `success=false` якщо enrollment не знайдено або статус не `attended`.
+
+**GRANT EXECUTE** на authenticated, anon.
+
+---
+
+### `cancel_class_and_restore_sessions(p_class_id)` — Скасування заняття з поверненням сесій
+
+```
+→ TABLE(success boolean, restored_count int, error_message text)
+```
+Атомарно: повертає сесії всім клієнтам зі статусом `attended` (batch INSERT в `client_session_balances`), скидає їх enrollment на `cancelled`, встановлює `classes.is_cancelled=true`. Повертає кількість клієнтів яким повернуті сесії.
+
+**Використовувати замість прямого UPDATE classes.is_cancelled=true при скасуванні заняття.**
 
 **GRANT EXECUTE** на authenticated, anon.
 

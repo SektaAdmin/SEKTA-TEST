@@ -4,13 +4,14 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
-import { getClassById, updateClassCancelled } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
   getClientSessionBalance,
   markAttendance,
   updateEnrollmentStatus,
+  reverseAttendance,
   checkClientConflict,
   enrollClient as enrollClientQuery,
 } from '@/lib/queries/enrollments'
@@ -181,14 +182,29 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   async function handleCancelClass() {
     if (!cls) return
     setCancellingClass(true)
-    const { error } = await updateClassCancelled(supabase, cls.id, true)
+    const { restoredCount, error } = await cancelClassAndRestoreSessions(supabase, cls.id)
     if (error) {
       toast.error('Не вдалося скасувати заняття')
     } else {
       setConfirmCancelClass(false)
-      await fetchClass()
+      if (restoredCount > 0) {
+        toast.success(`Заняття скасовано. Повернено ${restoredCount} ${restoredCount === 1 ? 'заняття' : 'занять'} клієнтам`)
+      }
+      await loadAll()
     }
     setCancellingClass(false)
+  }
+
+  async function handleReverseAttendance(enrollmentId: string) {
+    if (!window.confirm('Скасувати відвідування? Заняття буде повернено на баланс клієнта.')) return
+    setActionLoading(enrollmentId)
+    const { success, error } = await reverseAttendance(supabase, enrollmentId)
+    if (!success) {
+      toast.error(error ?? 'Не вдалося скасувати відвідування')
+    } else if (cls) {
+      await fetchEnrollments(cls.ticket_type)
+    }
+    setActionLoading(null)
   }
 
   async function handleRestoreClass() {
@@ -497,6 +513,16 @@ if (loading) {
                                     —
                                   </button>
                                 </>
+                              )}
+                              {e.status === 'attended' && (
+                                <button
+                                  className={styles.btnCancelEnroll}
+                                  onClick={() => handleReverseAttendance(e.id)}
+                                  disabled={isLoading}
+                                  title="Скасувати відвідування"
+                                >
+                                  —
+                                </button>
                               )}
                               {(e.status === 'cancelled' || e.status === 'noshow') && (
                                 <button

@@ -119,6 +119,17 @@ export async function markAttendance(
   return { success: true, error: null }
 }
 
+export async function reverseAttendance(
+  supabase: SupabaseClient,
+  enrollmentId: string
+): Promise<{ success: boolean; error: string | null }> {
+  const { data, error } = await supabase.rpc('reverse_attendance', { p_enrollment_id: enrollmentId })
+  if (error || data?.[0]?.success === false) {
+    return { success: false, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
+  }
+  return { success: true, error: null }
+}
+
 export async function updateEnrollmentStatus(
   supabase: SupabaseClient,
   enrollmentId: string,

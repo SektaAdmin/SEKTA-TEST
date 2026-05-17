@@ -56,6 +56,17 @@ export async function updateClassCancelled(
   return { error: error?.message ?? null }
 }
 
+export async function cancelClassAndRestoreSessions(
+  supabase: SupabaseClient,
+  classId: string
+): Promise<{ restoredCount: number; error: string | null }> {
+  const { data, error } = await supabase.rpc('cancel_class_and_restore_sessions', { p_class_id: classId })
+  if (error || data?.[0]?.success === false) {
+    return { restoredCount: 0, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
+  }
+  return { restoredCount: data?.[0]?.restored_count ?? 0, error: null }
+}
+
 export async function listDatesWithClasses(
   supabase: SupabaseClient,
   startISO: string,
