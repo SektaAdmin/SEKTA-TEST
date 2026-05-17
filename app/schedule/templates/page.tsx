@@ -100,6 +100,11 @@ export default function TemplatesPage() {
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
+  const gridScrollRef = useRef<HTMLDivElement>(null)
+  const savedScrollTop = useRef(0)
+
+  const saveScroll = () => { if (gridScrollRef.current) savedScrollTop.current = gridScrollRef.current.scrollTop }
+  const restoreScroll = () => { requestAnimationFrame(() => { if (gridScrollRef.current) gridScrollRef.current.scrollTop = savedScrollTop.current }) }
 
   // Expandable series clients
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
@@ -242,7 +247,7 @@ export default function TemplatesPage() {
     loadSeriesClients(s.id)
   }
 
-  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null) }
+  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null); restoreScroll() }
 
   if (fetchError) toast.error(fetchError)
 
@@ -379,11 +384,13 @@ export default function TemplatesPage() {
           <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
         ) : viewMode === 'grid' ? (
           <HallWeekGrid
+            ref={gridScrollRef}
             series={templates}
             halls={halls}
             trainingTypes={trainingTypes}
-            onCardClick={openClientsDrawer}
+            onCardClick={(s) => { saveScroll(); openClientsDrawer(s) }}
             onSlotClick={(dow, time, hallId) => {
+              saveScroll()
               setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
               setShowCreateModal(true)
             }}
@@ -504,8 +511,8 @@ export default function TemplatesPage() {
         <SeriesModal
           existing={editingSeries}
           prefill={prefillSeries ?? undefined}
-          onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null) }}
-          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); refetch() }}
+          onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); restoreScroll() }}
+          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); refetch(); restoreScroll() }}
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
@@ -537,7 +544,7 @@ export default function TemplatesPage() {
                 <div className={styles.drawerActions}>
                   <button
                     className={styles.drawerEdit}
-                    onClick={() => { closeClientsDrawer(); setEditingSeries(s) }}
+                    onClick={() => { saveScroll(); setClientsDrawerSeries(null); setConfirmRemoveId(null); setEditingSeries(s) }}
                   >
                     Редагувати
                   </button>
