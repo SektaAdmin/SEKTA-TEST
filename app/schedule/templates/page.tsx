@@ -19,11 +19,11 @@ import styles from './page.module.css'
 // indexed by JS getDay(): 0=Нд, 1=Пн...6=Сб
 const DAY_LABELS: Record<number, string> = { 0: 'Нд', 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' }
 
-// Рахує наступний понеділок у київському часі (навіть якщо сьогодні пн → +7)
-function nextMondayKyiv(): string {
+// Поточний або наступний понеділок у київському часі (якщо сьогодні пн → сьогодні)
+function thisOrNextMondayKyiv(): string {
   const kyivDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Kyiv' }))
-  const day = kyivDate.getDay() // 0=Нд, 1=Пн, ..., 6=Сб
-  const diff = day === 0 ? 1 : (8 - day) % 7 || 7
+  const day = kyivDate.getDay()
+  const diff = day === 1 ? 0 : day === 0 ? 1 : 8 - day
   kyivDate.setDate(kyivDate.getDate() + diff)
   const y = kyivDate.getFullYear()
   const m = String(kyivDate.getMonth() + 1).padStart(2, '0')
@@ -31,11 +31,11 @@ function nextMondayKyiv(): string {
   return `${y}-${m}-${d}`
 }
 
-function formatMonday(dateStr: string): string {
+function isMonday(dateStr: string): boolean {
   const [y, m, d] = dateStr.split('-').map(Number)
-  const date = new Date(y, m - 1, d)
-  return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })
+  return new Date(y, m - 1, d).getDay() === 1
 }
+
 
 interface SeriesClientRow {
   id: string
@@ -75,12 +75,13 @@ export default function TemplatesPage() {
   // Generate week dialog
   const [showGenerate, setShowGenerate] = useState(false)
   const [generateWeeks, setGenerateWeeks] = useState(1)
+  const [generateDate, setGenerateDate] = useState(thisOrNextMondayKyiv)
   const [generating, setGenerating] = useState(false)
-  const nextMonday = nextMondayKyiv()
 
   // Delete schedule dialog
   const [showDelete, setShowDelete] = useState(false)
   const [deleteWeeks, setDeleteWeeks] = useState(1)
+  const [deleteDate, setDeleteDate] = useState(thisOrNextMondayKyiv)
   const [deleting, setDeleting] = useState(false)
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
@@ -171,9 +172,10 @@ export default function TemplatesPage() {
   }
 
   const handleGenerate = async () => {
+    if (!isMonday(generateDate)) { toast.error('Оберіть понеділок'); return }
     setGenerating(true)
     const { data, error } = await supabase.rpc('generate_week', {
-      p_start_date: nextMonday,
+      p_start_date: generateDate,
       p_weeks: generateWeeks,
     })
     setGenerating(false)
@@ -187,6 +189,7 @@ export default function TemplatesPage() {
   }
 
   const handleDelete = async () => {
+    if (!isMonday(deleteDate)) { toast.error('Оберіть понеділок'); return }
     setDeleting(true)
     const { data: series } = await supabase
       .from('class_series')
@@ -201,7 +204,7 @@ export default function TemplatesPage() {
       return
     }
 
-    const [y, m, d] = nextMonday.split('-').map(Number)
+    const [y, m, d] = deleteDate.split('-').map(Number)
     const startDate = new Date(y, m - 1, d)
     const endDate = new Date(startDate)
     endDate.setDate(endDate.getDate() + deleteWeeks * 7)
@@ -263,10 +266,13 @@ export default function TemplatesPage() {
             </button>
             {showGenerate && (
               <div className={styles.generateDialog}>
-                <p className={styles.generateLabel}>
-                  З понеділка <strong>{formatMonday(nextMonday)}</strong>
-                </p>
                 <div className={styles.generateRow}>
+                  <input
+                    type="date"
+                    value={generateDate}
+                    onChange={e => setGenerateDate(e.target.value)}
+                    className={styles.generateDateInput}
+                  />
                   <input
                     type="number"
                     min={1}
@@ -276,6 +282,11 @@ export default function TemplatesPage() {
                     className={styles.generateInput}
                   />
                   <span className={styles.generateUnit}>тижн.</span>
+                </div>
+                {!isMonday(generateDate) && (
+                  <p className={styles.dateError}>Оберіть понеділок</p>
+                )}
+                <div className={styles.generateRow}>
                   <button
                     className={styles.btnCancel}
                     onClick={() => setShowGenerate(false)}
@@ -286,7 +297,7 @@ export default function TemplatesPage() {
                   <button
                     className={styles.btnConfirm}
                     onClick={handleGenerate}
-                    disabled={generating}
+                    disabled={generating || !isMonday(generateDate)}
                   >
                     {generating ? 'Генерую...' : 'Виставити'}
                   </button>
@@ -303,14 +314,16 @@ export default function TemplatesPage() {
             </button>
             {showDelete && (
               <div className={styles.generateDialog}>
-                <p className={styles.generateLabel}>
-                  Видалити заняття з шаблонів з{' '}
-                  <strong>{formatMonday(nextMonday)}</strong>
-                </p>
                 <p className={styles.deleteWarning}>
-                  Буде видалено заняття та записи клієнтів за {deleteWeeks} тижн. Ручні заняття залишаться.
+                  Буде видалено заняття з шаблонів та записи клієнтів. Ручні заняття залишаться.
                 </p>
                 <div className={styles.generateRow}>
+                  <input
+                    type="date"
+                    value={deleteDate}
+                    onChange={e => setDeleteDate(e.target.value)}
+                    className={styles.generateDateInput}
+                  />
                   <input
                     type="number"
                     min={1}
@@ -320,6 +333,11 @@ export default function TemplatesPage() {
                     className={styles.generateInput}
                   />
                   <span className={styles.generateUnit}>тижн.</span>
+                </div>
+                {!isMonday(deleteDate) && (
+                  <p className={styles.dateError}>Оберіть понеділок</p>
+                )}
+                <div className={styles.generateRow}>
                   <button
                     className={styles.btnCancel}
                     onClick={() => setShowDelete(false)}
@@ -330,7 +348,7 @@ export default function TemplatesPage() {
                   <button
                     className={styles.btnDelete}
                     onClick={handleDelete}
-                    disabled={deleting}
+                    disabled={deleting || !isMonday(deleteDate)}
                   >
                     {deleting ? 'Видаляю...' : 'Видалити'}
                   </button>
