@@ -89,6 +89,30 @@ export async function listSalesForClient(
   return { data: (data as unknown as Sale[]) ?? [], count: count ?? 0 }
 }
 
+export type FeedSale = {
+  id: string
+  created_at: string
+  ticket_name: string | null
+  ticket_type: string | null
+  sessions: number | null
+  price_paid: number
+  amount_given: number
+  payment_method: string
+  trainers: { name: string } | null
+}
+
+export async function listAllSalesForFeed(
+  supabase: SupabaseClient,
+  clientId: string
+): Promise<FeedSale[]> {
+  const { data } = await supabase
+    .from('sales')
+    .select('id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers(name)')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+  return (data as unknown as FeedSale[]) ?? []
+}
+
 export async function listSalesForAccounting(
   supabase: SupabaseClient,
   dateFrom: string,

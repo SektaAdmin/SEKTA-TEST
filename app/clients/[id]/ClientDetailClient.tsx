@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getClientDetail, listPastEnrollmentsForClient, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
 import type { PastEnrollment, FeedEnrollment } from '@/lib/queries/client-detail'
-import { listSalesForClient } from '@/lib/queries/sales'
+import { listSalesForClient, listAllSalesForFeed } from '@/lib/queries/sales'
+import type { FeedSale } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import { deleteSale } from '@/lib/queries/sales'
@@ -102,6 +103,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [pastTotal, setPastTotal] = useState(0)
   const [pastPage, setPastPage] = useState(0)
   const [feedEnrollments, setFeedEnrollments] = useState<FeedEnrollment[]>([])
+  const [feedSales, setFeedSales] = useState<FeedSale[]>([])
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
 
@@ -150,6 +152,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
     setFeedEnrollments(data)
   }, [id])
 
+  const fetchFeedSales = useCallback(async () => {
+    const data = await listAllSalesForFeed(supabase, id)
+    setFeedSales(data)
+  }, [id])
+
   const fetchSales = useCallback(async (page: number) => {
     const { data: salesData, count } = await listSalesForClient(supabase, id, page, SALES_PAGE_SIZE)
     if (page === 0) {
@@ -179,6 +186,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       fetchSales(0),
       fetchPastEnrollments(0),
       fetchFeedEnrollments(),
+      fetchFeedSales(),
     ]).then(() => setLoading(false))
   }, [fetchAllClientData, fetchSales, fetchFeedEnrollments])
 
@@ -191,11 +199,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
         setPastPage(0)
         fetchPastEnrollments(0)
         fetchFeedEnrollments()
+        fetchFeedSales()
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments])
+  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments, fetchFeedSales])
 
   function handleClientSaved() {
     setShowEditModal(false)
@@ -479,21 +488,41 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
             {activeTab === 'feed' && (() => {
               type FeedItem =
-                | { kind: 'enrollment'; date: number; data: FeedEnrollment }
-                | { kind: 'sale'; date: number; data: typeof sales[0] }
+                | { kind: 'enrollment'; date: number; data: FeedEnrollment; runningBalance: Record<string, number> }
+                | { kind: 'sale'; date: number; data: FeedSale; runningBalance: Record<string, number> }
 
-              const items: FeedItem[] = [
+              const rawItems: Array<{ kind: 'enrollment'; date: number; data: FeedEnrollment } | { kind: 'sale'; date: number; data: FeedSale }> = [
                 ...feedEnrollments.filter(e => e.classes).map(e => ({
                   kind: 'enrollment' as const,
                   date: new Date(e.classes!.starts_at).getTime(),
                   data: e,
                 })),
-                ...sales.map(s => ({
+                ...feedSales.map(s => ({
                   kind: 'sale' as const,
                   date: new Date(s.created_at).getTime(),
                   data: s,
                 })),
-              ].sort((a, b) => b.date - a.date)
+              ].sort((a, b) => a.date - b.date)
+
+              // compute running session balance per ticket_type, oldest→newest
+              const running: Record<string, number> = {}
+              const items: FeedItem[] = rawItems.map(item => {
+                if (item.kind === 'sale') {
+                  const type = item.data.ticket_type
+                  if (type && item.data.sessions != null) {
+                    running[type] = (running[type] ?? 0) + item.data.sessions
+                  }
+                } else {
+                  const type = item.data.classes?.ticket_type
+                  if (type && item.data.status === 'attended' && item.data.sessions_used > 0) {
+                    running[type] = (running[type] ?? 0) - item.data.sessions_used
+                  }
+                }
+                return { ...item, runningBalance: { ...running } } as FeedItem
+              })
+
+              // display newest first
+              items.reverse()
 
               const FEED_PAGE = 30
               const visible = feedShowAll ? items : items.slice(0, FEED_PAGE)
@@ -515,8 +544,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                           <th>Тип / Операція</th>
                           <th>Тренер</th>
                           <th>Деталі</th>
-                          <th>Сесії</th>
-                          <th>Сума</th>
+                          <th>Залишок</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -527,6 +555,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             const start = new Date(cls.starts_at)
                             const end = new Date(start.getTime() + cls.duration_min * 60000)
                             const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                            const bal = item.runningBalance[cls.ticket_type]
                             return (
                               <tr key={`e-${e.id}`}>
                                 <td className={styles.dateCell}>
@@ -541,18 +570,18 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                                 <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
                                 <td className={styles.numCell}>
-                                  {e.status === 'attended' && e.sessions_used > 0
-                                    ? <span className={styles.sessionsNeg}>−{e.sessions_used}</span>
+                                  {bal !== undefined
+                                    ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
                                     : <span className={styles.empty2}>—</span>
                                   }
                                 </td>
-                                <td><span className={styles.empty2}>—</span></td>
                               </tr>
                             )
                           } else {
                             const s = item.data
                             const delta = s.amount_given - s.price_paid
-                            const balAfter = balanceAfterMap.get(s.id)
+                            const type = s.ticket_type
+                            const bal = type ? item.runningBalance[type] : undefined
                             return (
                               <tr key={`s-${s.id}`}>
                                 <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
@@ -574,14 +603,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   </span>
                                 </td>
                                 <td className={styles.numCell}>
-                                  {s.sessions != null
-                                    ? <span className={styles.sessionsPos}>+{s.sessions}</span>
-                                    : <span className={styles.empty2}>—</span>
-                                  }
-                                </td>
-                                <td className={styles.numCell}>
-                                  {balAfter !== undefined
-                                    ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
+                                  {bal !== undefined
+                                    ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
                                     : <span className={styles.empty2}>—</span>
                                   }
                                 </td>
