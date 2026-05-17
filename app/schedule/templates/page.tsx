@@ -31,10 +31,40 @@ function thisOrNextMondayKyiv(): string {
   return `${y}-${m}-${d}`
 }
 
-function isMonday(dateStr: string): boolean {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d).getDay() === 1
+// Повертає всі понеділки місяця у форматі YYYY-MM-DD
+function getMondaysInMonth(year: number, month: number): string[] {
+  const mondays: string[] = []
+  const d = new Date(year, month, 1)
+  // Перемотуємо до першого понеділка
+  while (d.getDay() !== 1) d.setDate(d.getDate() + 1)
+  while (d.getMonth() === month) {
+    const y = d.getFullYear()
+    const mo = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    mondays.push(`${y}-${mo}-${dd}`)
+    d.setDate(d.getDate() + 7)
+  }
+  return mondays
 }
+
+// Масив дат для рендеру сітки місяця (42 клітинки: 6 рядків × 7)
+function getCalendarGrid(year: number, month: number): (string | null)[] {
+  const firstDay = new Date(year, month, 1).getDay() // 0=Нд
+  // Сітка Пн–Нд: зсув (0=Пн, 6=Нд)
+  const startOffset = (firstDay + 6) % 7
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const grid: (string | null)[] = []
+  for (let i = 0; i < startOffset; i++) grid.push(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mo = String(month + 1).padStart(2, '0')
+    const dd = String(d).padStart(2, '0')
+    grid.push(`${year}-${mo}-${dd}`)
+  }
+  while (grid.length % 7 !== 0) grid.push(null)
+  return grid
+}
+
+const MONTH_NAMES_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
 
 
 interface SeriesClientRow {
@@ -72,16 +102,15 @@ export default function TemplatesPage() {
   const [clientsDrawerSeries, setClientsDrawerSeries] = useState<ClassSeries | null>(null)
   const [searchKey, setSearchKey] = useState(0)
 
-  // Generate week dialog
+  // Shared calendar state for generate/delete dialogs
   const [showGenerate, setShowGenerate] = useState(false)
-  const [generateWeeks, setGenerateWeeks] = useState(1)
-  const [generateDate, setGenerateDate] = useState(thisOrNextMondayKyiv)
-  const [generating, setGenerating] = useState(false)
-
-  // Delete schedule dialog
   const [showDelete, setShowDelete] = useState(false)
-  const [deleteWeeks, setDeleteWeeks] = useState(1)
-  const [deleteDate, setDeleteDate] = useState(thisOrNextMondayKyiv)
+  const [selectedMondays, setSelectedMondays] = useState<string[]>(() => [thisOrNextMondayKyiv()])
+  const [calendarMonth, setCalendarMonth] = useState<{ year: number; month: number }>(() => {
+    const d = new Date(thisOrNextMondayKyiv())
+    return { year: d.getFullYear(), month: d.getMonth() }
+  })
+  const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
@@ -172,30 +201,24 @@ export default function TemplatesPage() {
   }
 
   const handleGenerate = async () => {
-    if (!isMonday(generateDate)) { toast.error('Оберіть понеділок'); return }
+    if (selectedMondays.length === 0) return
     setGenerating(true)
-    const { data, error } = await supabase.rpc('generate_week', {
-      p_start_date: generateDate,
-      p_weeks: generateWeeks,
-    })
+    let totalClasses = 0, totalEnrollments = 0
+    for (const monday of [...selectedMondays].sort()) {
+      const { data, error } = await supabase.rpc('generate_week', { p_start_date: monday, p_weeks: 1 })
+      if (error) { toast.error(error.message); setGenerating(false); return }
+      totalClasses += data?.[0]?.classes_created ?? 0
+      totalEnrollments += data?.[0]?.enrollments_created ?? 0
+    }
     setGenerating(false)
     setShowGenerate(false)
-    if (error) {
-      toast.error(error.message)
-    } else {
-      const row = data?.[0]
-      toast.success(`Створено ${row?.classes_created ?? 0} занять, записано ${row?.enrollments_created ?? 0} клієнтів`)
-    }
+    toast.success(`Створено ${totalClasses} занять, записано ${totalEnrollments} клієнтів`)
   }
 
   const handleDelete = async () => {
-    if (!isMonday(deleteDate)) { toast.error('Оберіть понеділок'); return }
+    if (selectedMondays.length === 0) return
     setDeleting(true)
-    const { data: series } = await supabase
-      .from('class_series')
-      .select('id')
-      .eq('type', 'template')
-
+    const { data: series } = await supabase.from('class_series').select('id').eq('type', 'template')
     const seriesIds = (series ?? []).map((s: { id: string }) => s.id)
     if (seriesIds.length === 0) {
       setDeleting(false)
@@ -203,23 +226,43 @@ export default function TemplatesPage() {
       toast.success('Немає шаблонів для видалення')
       return
     }
-
-    const [y, m, d] = deleteDate.split('-').map(Number)
-    const startDate = new Date(y, m - 1, d)
-    const endDate = new Date(startDate)
-    endDate.setDate(endDate.getDate() + deleteWeeks * 7)
-
-    const { error } = await supabase
-      .from('classes')
-      .delete()
-      .in('series_id', seriesIds)
-      .gte('starts_at', startDate.toISOString())
-      .lt('starts_at', endDate.toISOString())
-
+    for (const monday of [...selectedMondays].sort()) {
+      const [y, m, d] = monday.split('-').map(Number)
+      const startDate = new Date(y, m - 1, d)
+      const endDate = new Date(startDate)
+      endDate.setDate(endDate.getDate() + 7)
+      const { error } = await supabase
+        .from('classes').delete()
+        .in('series_id', seriesIds)
+        .gte('starts_at', startDate.toISOString())
+        .lt('starts_at', endDate.toISOString())
+      if (error) { toast.error(error.message); setDeleting(false); return }
+    }
     setDeleting(false)
     setShowDelete(false)
-    if (error) toast.error(error.message)
-    else toast.success('Розклад видалено')
+    toast.success('Розклад видалено')
+  }
+
+  const toggleMonday = (dateStr: string) => {
+    setSelectedMondays(prev =>
+      prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr]
+    )
+  }
+
+  const openGenerateDialog = () => {
+    setSelectedMondays([thisOrNextMondayKyiv()])
+    const d = new Date(thisOrNextMondayKyiv())
+    setCalendarMonth({ year: d.getFullYear(), month: d.getMonth() })
+    setShowGenerate(true)
+    setShowDelete(false)
+  }
+
+  const openDeleteDialog = () => {
+    setSelectedMondays([thisOrNextMondayKyiv()])
+    const d = new Date(thisOrNextMondayKyiv())
+    setCalendarMonth({ year: d.getFullYear(), month: d.getMonth() })
+    setShowDelete(true)
+    setShowGenerate(false)
   }
 
   const openClientsDrawer = (s: ClassSeries) => {
@@ -258,58 +301,30 @@ export default function TemplatesPage() {
             </button>
           </div>
           <div className={styles.generateWrap} ref={generateWrapRef}>
-            <button
-              className={styles.btnGenerate}
-              onClick={() => { setShowGenerate(v => !v); setShowDelete(false) }}
-            >
+            <button className={styles.btnGenerate} onClick={openGenerateDialog}>
               Виставити тиждень
             </button>
             {showGenerate && (
               <div className={styles.generateDialog}>
+                <MiniCalendar
+                  calendarMonth={calendarMonth}
+                  setCalendarMonth={setCalendarMonth}
+                  selectedMondays={selectedMondays}
+                  toggleMonday={toggleMonday}
+                />
                 <div className={styles.generateRow}>
-                  <input
-                    type="date"
-                    value={generateDate}
-                    onChange={e => setGenerateDate(e.target.value)}
-                    className={styles.generateDateInput}
-                  />
-                  <input
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={generateWeeks}
-                    onChange={e => setGenerateWeeks(Number(e.target.value))}
-                    className={styles.generateInput}
-                  />
-                  <span className={styles.generateUnit}>тижн.</span>
-                </div>
-                {!isMonday(generateDate) && (
-                  <p className={styles.dateError}>Оберіть понеділок</p>
-                )}
-                <div className={styles.generateRow}>
-                  <button
-                    className={styles.btnCancel}
-                    onClick={() => setShowGenerate(false)}
-                    disabled={generating}
-                  >
+                  <button className={styles.btnCancel} onClick={() => setShowGenerate(false)} disabled={generating}>
                     Скасувати
                   </button>
-                  <button
-                    className={styles.btnConfirm}
-                    onClick={handleGenerate}
-                    disabled={generating || !isMonday(generateDate)}
-                  >
-                    {generating ? 'Генерую...' : 'Виставити'}
+                  <button className={styles.btnConfirm} onClick={handleGenerate} disabled={generating || selectedMondays.length === 0}>
+                    {generating ? 'Генерую...' : `Виставити${selectedMondays.length > 1 ? ` (${selectedMondays.length})` : ''}`}
                   </button>
                 </div>
               </div>
             )}
           </div>
           <div className={styles.generateWrap} ref={deleteWrapRef}>
-            <button
-              className={styles.btnDeleteSchedule}
-              onClick={() => { setShowDelete(v => !v); setShowGenerate(false) }}
-            >
+            <button className={styles.btnDeleteSchedule} onClick={openDeleteDialog}>
               Видалити розклад
             </button>
             {showDelete && (
@@ -317,40 +332,18 @@ export default function TemplatesPage() {
                 <p className={styles.deleteWarning}>
                   Буде видалено заняття з шаблонів та записи клієнтів. Ручні заняття залишаться.
                 </p>
+                <MiniCalendar
+                  calendarMonth={calendarMonth}
+                  setCalendarMonth={setCalendarMonth}
+                  selectedMondays={selectedMondays}
+                  toggleMonday={toggleMonday}
+                />
                 <div className={styles.generateRow}>
-                  <input
-                    type="date"
-                    value={deleteDate}
-                    onChange={e => setDeleteDate(e.target.value)}
-                    className={styles.generateDateInput}
-                  />
-                  <input
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={deleteWeeks}
-                    onChange={e => setDeleteWeeks(Number(e.target.value))}
-                    className={styles.generateInput}
-                  />
-                  <span className={styles.generateUnit}>тижн.</span>
-                </div>
-                {!isMonday(deleteDate) && (
-                  <p className={styles.dateError}>Оберіть понеділок</p>
-                )}
-                <div className={styles.generateRow}>
-                  <button
-                    className={styles.btnCancel}
-                    onClick={() => setShowDelete(false)}
-                    disabled={deleting}
-                  >
+                  <button className={styles.btnCancel} onClick={() => setShowDelete(false)} disabled={deleting}>
                     Скасувати
                   </button>
-                  <button
-                    className={styles.btnDelete}
-                    onClick={handleDelete}
-                    disabled={deleting || !isMonday(deleteDate)}
-                  >
-                    {deleting ? 'Видаляю...' : 'Видалити'}
+                  <button className={styles.btnDelete} onClick={handleDelete} disabled={deleting || selectedMondays.length === 0}>
+                    {deleting ? 'Видаляю...' : `Видалити${selectedMondays.length > 1 ? ` (${selectedMondays.length})` : ''}`}
                   </button>
                 </div>
               </div>
@@ -636,6 +629,62 @@ export default function TemplatesPage() {
         )
       })()}
     </div>
+    </div>
+  )
+}
+
+interface MiniCalendarProps {
+  calendarMonth: { year: number; month: number }
+  setCalendarMonth: (v: { year: number; month: number }) => void
+  selectedMondays: string[]
+  toggleMonday: (dateStr: string) => void
+}
+
+function MiniCalendar({ calendarMonth, setCalendarMonth, selectedMondays, toggleMonday }: MiniCalendarProps) {
+  const { year, month } = calendarMonth
+  const grid = getCalendarGrid(year, month)
+
+  const prevMonth = () => {
+    const d = new Date(year, month - 1, 1)
+    setCalendarMonth({ year: d.getFullYear(), month: d.getMonth() })
+  }
+  const nextMonth = () => {
+    const d = new Date(year, month + 1, 1)
+    setCalendarMonth({ year: d.getFullYear(), month: d.getMonth() })
+  }
+
+  return (
+    <div className={styles.calendar}>
+      <div className={styles.calHeader}>
+        <button className={styles.calNavBtn} onClick={prevMonth}>‹</button>
+        <span className={styles.calMonthLabel}>{MONTH_NAMES_UK[month]} {year}</span>
+        <button className={styles.calNavBtn} onClick={nextMonth}>›</button>
+      </div>
+      <div className={styles.calGrid}>
+        {['Пн','Вт','Ср','Чт','Пт','Сб','Нд'].map(d => (
+          <span key={d} className={styles.calWeekday}>{d}</span>
+        ))}
+        {grid.map((dateStr, i) => {
+          if (!dateStr) return <span key={i} className={styles.calDayEmpty} />
+          const [dy, dm, dd] = dateStr.split('-').map(Number)
+          const isMonday = new Date(dy, dm - 1, dd).getDay() === 1
+          const isSelected = selectedMondays.includes(dateStr)
+          const cls = isMonday
+            ? isSelected ? styles.calDaySelected : styles.calDayMonday
+            : styles.calDayDisabled
+          return (
+            <button
+              key={dateStr}
+              className={cls}
+              onClick={() => isMonday && toggleMonday(dateStr)}
+              disabled={!isMonday}
+              tabIndex={isMonday ? 0 : -1}
+            >
+              {Number(dateStr.split('-')[2])}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
