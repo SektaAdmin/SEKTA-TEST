@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
@@ -250,6 +250,8 @@ export default function SchedulePage() {
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const [calActiveDates, setCalActiveDates] = useState<Set<string>>(new Set())
   const [calViewMonth, setCalViewMonth] = useState<{ year: number; month: number }>(() => {
     const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
@@ -297,11 +299,23 @@ export default function SchedulePage() {
     function updateNow() {
       const now = new Date()
       const h = now.getHours() + now.getMinutes() / 60
-      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * HOUR_HEIGHT : null)
+      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * hourHeight : null)
     }
     updateNow()
     const id = setInterval(updateNow, 60000)
     return () => clearInterval(id)
+  }, [hourHeight])
+
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    const totalHours = MAX_HOUR - MIN_HOUR
+    const obs = new ResizeObserver(entries => {
+      const h = entries[0].contentRect.height
+      setHourHeight(Math.max(HOUR_HEIGHT, Math.floor(h / totalHours)))
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
   }, [])
 
   // Apply filters
@@ -504,7 +518,7 @@ export default function SchedulePage() {
             </div>
 
             {/* Body grid */}
-            <div className={styles.bodyGridWrapper}>
+            <div className={styles.bodyGridWrapper} ref={wrapperRef}>
             <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px 1fr` }}>
               {/* Now line overlay — full width */}
               {nowTop !== null && (
@@ -519,7 +533,7 @@ export default function SchedulePage() {
               {/* Time gutter */}
               <div className={styles.timeGutter}>
                 {HOURS.map(h => (
-                  <div key={h} className={styles.timeRow} style={{ height: `${HOUR_HEIGHT}px` }}>
+                  <div key={h} className={styles.timeRow} style={{ height: `${hourHeight}px` }}>
                     <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
                   </div>
                 ))}
@@ -534,7 +548,7 @@ export default function SchedulePage() {
                 const showHallCols = dayHallCols.length > 0
 
                 return (
-                  <div key={di} className={styles.dayCol} style={{ height: `${(MAX_HOUR - MIN_HOUR) * HOUR_HEIGHT}px` }}>
+                  <div key={di} className={styles.dayCol} style={{ height: `${(MAX_HOUR - MIN_HOUR) * hourHeight}px` }}>
                     {showHallCols ? (
                       // Hall sub-columns
                       dayHallCols.map(hall => {
@@ -546,7 +560,7 @@ export default function SchedulePage() {
                             key={hall?.id ?? 'no-hall'}
                             classes={hallClasses}
                             typeLabels={typeLabels}
-                            hourHeight={HOUR_HEIGHT}
+                            hourHeight={hourHeight}
                             day={day}
                             onCardClick={id => setDetailClassId(id)}
                             onSlotClick={startsAt => {
@@ -562,7 +576,7 @@ export default function SchedulePage() {
                         key="empty"
                         classes={[]}
                         typeLabels={typeLabels}
-                        hourHeight={HOUR_HEIGHT}
+                        hourHeight={hourHeight}
                         day={day}
                         onCardClick={() => {}}
                         onSlotClick={startsAt => {
