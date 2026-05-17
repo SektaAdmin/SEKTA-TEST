@@ -51,6 +51,134 @@
 
 .field textarea { resize: vertical; min-height: 60px; }
 
+/* ── Постійники секція ───────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 0.5px solid var(--border);
+  margin: 4px 0;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.hoursSelect {
+  display: flex;
+  gap: 16px;
+  padding: 0 0 4px;
+}
+
+.hoursLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hoursLabel input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.addClientRow {
+  display: flex;
+  align-items: center;
+}
+
+.clientsLoading {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.noClients {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.clientList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.clientRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--motion-fast);
+}
+.clientRow:hover { border-color: var(--border-hover); }
+
+.clientNum {
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 18px;
+  flex-shrink: 0;
+}
+
+.clientName {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+}
+
+.hoursTag {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btnRemove {
+  background: transparent;
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  color: var(--danger);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  opacity: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: opacity var(--motion-fast), background var(--motion-fast);
+}
+.btnRemove:hover { background: var(--danger-dim); }
+.clientRow:hover .btnRemove { opacity: 1; }
+
+.btnRemoveConfirm {
+  background: var(--danger-dim);
+  border: 0.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  color: var(--danger);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background var(--motion-fast);
+}
+.btnRemoveConfirm:hover { background: var(--danger-border); }
+
 .required {
   color: var(--accent);
   font-size: 10px;

@@ -44,19 +44,6 @@ function getMondayOf(d: Date): Date {
   return monday
 }
 
-function getSundayOf(monday: Date): Date {
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  return sunday
-}
-
-
-interface SeriesClientRow {
-  id: string
-  client_id: string
-  hours_attended: number[] | null
-  clients: { first_name: string | null; last_name: string | null }
-}
 
 export default function TemplatesPage() {
   const { templates: rawTemplates, loading, fetchError, refetch } = useSeriesTemplates()
@@ -80,12 +67,11 @@ export default function TemplatesPage() {
       return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
     })
   }, [rawTemplates, filterTrainer, filterClient])
+
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [prefillSeries, setPrefillSeries] = useState<{ day_of_week?: number; time_of_day?: string; hall_id?: string } | null>(null)
   const [editingSeries, setEditingSeries] = useState<ClassSeries | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [clientsDrawerSeries, setClientsDrawerSeries] = useState<ClassSeries | null>(null)
-  const [searchKey, setSearchKey] = useState(0)
 
   // Shared calendar state for generate/delete dialogs
   const [showGenerate, setShowGenerate] = useState(false)
@@ -100,75 +86,13 @@ export default function TemplatesPage() {
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
-  // Expandable series clients
-  const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
-  const [seriesClients, setSeriesClients] = useState<Record<string, SeriesClientRow[]>>({})
-  const [clientsLoading, setClientsLoading] = useState<string | null>(null)
-  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
-  const [drawerSelectedHours, setDrawerSelectedHours] = useState<number[]>([1, 2])
 
-  const loadSeriesClients = useCallback(async (seriesId: string) => {
-    if (seriesClients[seriesId]) return
-    setClientsLoading(seriesId)
-    const { data, error } = await supabase
-      .from('series_clients')
-      .select('id, client_id, hours_attended, clients(first_name, last_name)')
-      .eq('series_id', seriesId)
-      .order('created_at')
-    if (error) {
-      toast.error(error.message)
-    } else {
-      setSeriesClients(prev => ({ ...prev, [seriesId]: (data ?? []) as SeriesClientRow[] }))
-    }
-    setClientsLoading(null)
-  }, [seriesClients])
-
-  const toggleExpand = (seriesId: string) => {
-    if (expandedSeriesId === seriesId) {
-      setExpandedSeriesId(null)
-    } else {
-      setExpandedSeriesId(seriesId)
-      loadSeriesClients(seriesId)
-    }
-  }
-
-  const addSeriesClient = async (seriesId: string, client: Client, hoursAttended?: number[]) => {
-    const insertData: Record<string, unknown> = { series_id: seriesId, client_id: client.id }
-    if (hoursAttended !== undefined) insertData.hours_attended = hoursAttended
-    const { error } = await supabase.from('series_clients').insert(insertData)
-    if (error) {
-      toast.error(error.message)
-      return
-    }
-    const newRow: SeriesClientRow = {
-      id: crypto.randomUUID(),
-      client_id: client.id,
-      hours_attended: hoursAttended ?? null,
-      clients: { first_name: client.first_name, last_name: client.last_name },
-    }
-    setSeriesClients(prev => ({
-      ...prev,
-      [seriesId]: [...(prev[seriesId] ?? []), newRow],
-    }))
-    refetch()
-  }
-
-  const removeSeriesClient = async (seriesId: string, rowId: string) => {
-    const { error } = await supabase.from('series_clients').delete().eq('id', rowId)
-    if (error) { toast.error(error.message); return }
-    setSeriesClients(prev => ({
-      ...prev,
-      [seriesId]: (prev[seriesId] ?? []).filter(r => r.id !== rowId),
-    }))
-    refetch()
-  }
-
-  const deleteSeries = async (id: string) => {
+  const deleteSeries = useCallback(async (id: string) => {
     const { error } = await supabase.from('class_series').delete().eq('id', id)
     if (error) { toast.error(error.message); return }
     setDeletingId(null)
     refetch()
-  }
+  }, [refetch])
 
   const handleGenerate = async () => {
     if (selectedMondays.length === 0) return
@@ -234,14 +158,6 @@ export default function TemplatesPage() {
     setShowDelete(true)
     setShowGenerate(false)
   }
-
-  const openClientsDrawer = (s: ClassSeries) => {
-    setClientsDrawerSeries(s)
-    setDrawerSelectedHours([1, 2])
-    loadSeriesClients(s.id)
-  }
-
-  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null) }
 
   if (fetchError) toast.error(fetchError)
 
@@ -381,7 +297,7 @@ export default function TemplatesPage() {
             series={templates}
             halls={halls}
             trainingTypes={trainingTypes}
-            onCardClick={openClientsDrawer}
+            onCardClick={s => setEditingSeries(s)}
             onSlotClick={(dow, time, hallId) => {
               setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
               setShowCreateModal(true)
@@ -406,91 +322,53 @@ export default function TemplatesPage() {
                 {templates.map(series => {
                   const clientCount = series.series_clients?.length ?? 0
                   const overCapacity = getOverCapacityCount(clientCount, series.capacity)
-                  const isExpanded = expandedSeriesId === series.id
-                  const clients = seriesClients[series.id] ?? []
                   const trainerName = (series.trainers as { name: string } | null)?.name
                   const hallName = (series.halls as { name: string } | null)?.name
+                  const typeLabel = trainingTypes.find(t => t.code === series.ticket_type)?.label ?? series.ticket_type
 
                   return (
-                    <>
-                      <tr key={series.id} className={styles.row}>
-                        <td>{DAY_LABELS[series.day_of_week]}</td>
-                        <td>{series.time_of_day.slice(0, 5)}</td>
-                        <td>{series.ticket_type}</td>
-                        <td>{trainerName ?? '—'}</td>
-                        <td>{hallName ?? '—'}</td>
-                        <td>{series.capacity ?? '—'}</td>
-                        <td>
+                    <tr key={series.id} className={styles.row}>
+                      <td>{DAY_LABELS[series.day_of_week]}</td>
+                      <td>{series.time_of_day.slice(0, 5)}</td>
+                      <td>{typeLabel}</td>
+                      <td>{trainerName ?? '—'}</td>
+                      <td>{hallName ?? '—'}</td>
+                      <td>{series.capacity ?? '—'}</td>
+                      <td>
+                        <button
+                          className={styles.btnClients}
+                          onClick={() => setEditingSeries(series)}
+                        >
+                          Постійники ({clientCount})
+                        </button>
+                        {overCapacity > 0 && (
+                          <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
+                        )}
+                      </td>
+                      <td className={styles.actions}>
+                        <button
+                          className={styles.btnEdit}
+                          onClick={() => setEditingSeries(series)}
+                        >
+                          Редагувати
+                        </button>
+                        {deletingId === series.id ? (
+                          <span className={styles.deleteConfirm}>
+                            Шаблон буде видалено. Вже створені заняття залишаться.{' '}
+                            <button className={styles.btnDanger} onClick={() => deleteSeries(series.id)}>Так, видалити</button>
+                            {' '}
+                            <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
+                          </span>
+                        ) : (
                           <button
-                            className={styles.btnClients}
-                            onClick={() => toggleExpand(series.id)}
+                            className={styles.btnDanger}
+                            onClick={() => setDeletingId(series.id)}
                           >
-                            {isExpanded ? '▾' : '▸'} Постійники ({clientCount})
+                            Видалити
                           </button>
-                          {overCapacity > 0 && (
-                            <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
-                          )}
-                        </td>
-                        <td className={styles.actions}>
-                          <button
-                            className={styles.btnEdit}
-                            onClick={() => setEditingSeries(series)}
-                          >
-                            Редагувати
-                          </button>
-                          {deletingId === series.id ? (
-                            <span className={styles.deleteConfirm}>
-                              Шаблон буде видалено. Вже створені заняття залишаться.{' '}
-                              <button className={styles.btnDanger} onClick={() => deleteSeries(series.id)}>Так, видалити</button>
-                              {' '}
-                              <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
-                            </span>
-                          ) : (
-                            <button
-                              className={styles.btnDanger}
-                              onClick={() => setDeletingId(series.id)}
-                            >
-                              Видалити
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr key={`${series.id}-clients`} className={styles.expandedRow}>
-                          <td colSpan={8}>
-                            <div className={styles.clientsPanel}>
-                              {clientsLoading === series.id ? (
-                                <span className={styles.loading}>...</span>
-                              ) : (
-                                <>
-                                  <div className={styles.clientsList}>
-                                    {clients.length === 0 && (
-                                      <span className={styles.noClients}>Немає постійників</span>
-                                    )}
-                                    {clients.map(row => (
-                                      <span key={row.id} className={styles.clientChip}>
-                                        {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
-                                        <button
-                                          className={styles.btnRemove}
-                                          onClick={() => removeSeriesClient(series.id, row.id)}
-                                          aria-label="Видалити"
-                                        >×</button>
-                                      </span>
-                                    ))}
-                                  </div>
-                                  <div className={styles.addClientRow}>
-                                    <ClientSearchCombobox
-                                      onSelect={client => addSeriesClient(series.id, client)}
-                                      onClear={() => {}}
-                                    />
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </>
+                        )}
+                      </td>
+                    </tr>
                   )
                 })}
               </tbody>
@@ -510,111 +388,6 @@ export default function TemplatesPage() {
           trainingTypes={trainingTypes}
         />
       )}
-
-      {/* Drawer: постійники обраного шаблону */}
-      {clientsDrawerSeries && (() => {
-        const s = clientsDrawerSeries
-        const clients = seriesClients[s.id] ?? []
-        const trainerName = (s.trainers as { name: string } | null)?.name
-        const hallName = (s.halls as { name: string } | null)?.name
-        return (
-          <>
-            <div className={styles.drawerOverlay} onClick={closeClientsDrawer} />
-            <div className={styles.drawer}>
-              <div className={styles.drawerHeader}>
-                <div className={styles.drawerMeta}>
-                  <span className={styles.drawerTime}>{DAY_LABELS[s.day_of_week]}, {s.time_of_day.slice(0, 5)}</span>
-                  <span className={styles.drawerTitle}>
-                    {trainingTypes.find(t => t.code === s.ticket_type)?.label ?? s.ticket_type}
-                  </span>
-                  {(trainerName || hallName) && (
-                    <span className={styles.drawerSub}>
-                      {[trainerName, hallName].filter(Boolean).join(' · ')}
-                    </span>
-                  )}
-                </div>
-                <div className={styles.drawerActions}>
-                  <button
-                    className={styles.drawerEdit}
-                    onClick={() => { closeClientsDrawer(); setEditingSeries(s) }}
-                  >
-                    Редагувати
-                  </button>
-                  <button className={styles.drawerClose} onClick={closeClientsDrawer}>✕</button>
-                </div>
-              </div>
-
-              <div className={styles.drawerBody}>
-                {s.duration_min >= 120 && (
-                  <div className={styles.drawerHoursSelect}>
-                    {[1, 2].map(hour => {
-                      const label = formatSeriesHoursLabel([hour], s.time_of_day) ?? String(hour)
-                      return (
-                        <label key={hour} className={styles.drawerHoursLabel}>
-                          <input
-                            type="checkbox"
-                            checked={drawerSelectedHours.includes(hour)}
-                            onChange={e => setDrawerSelectedHours(prev =>
-                              e.target.checked ? [...prev, hour].sort() : prev.filter(h => h !== hour)
-                            )}
-                          />
-                          {label}
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
-                <div className={styles.addClientRow}>
-                  <ClientSearchCombobox
-                    key={searchKey}
-                    onSelect={client => {
-                      const hours = s.duration_min >= 120 ? drawerSelectedHours.slice().sort() : undefined
-                      addSeriesClient(s.id, client, hours)
-                      setSearchKey(k => k + 1)
-                    }}
-                    onClear={() => {}}
-                  />
-                </div>
-
-                <p className={styles.drawerLabel}>Постійники</p>
-                {clientsLoading === s.id ? (
-                  <span className={styles.loading}>...</span>
-                ) : clients.length === 0 ? (
-                  <span className={styles.noClients}>Немає постійників</span>
-                ) : (
-                  <div className={styles.drawerClientList}>
-                    {clients.map((row, i) => {
-                      const hoursLabel = formatSeriesHoursLabel(row.hours_attended, s.time_of_day)
-                      return (
-                        <div key={row.id} className={styles.drawerClientRow}>
-                          <span className={styles.drawerClientNum}>{i + 1}</span>
-                          <span className={styles.drawerClientName}>
-                            {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
-                          </span>
-                          {hoursLabel && (
-                            <span className={styles.hoursTag}>{hoursLabel}</span>
-                          )}
-                          {confirmRemoveId === row.id ? (
-                            <button
-                              className={styles.btnRemoveConfirm}
-                              onClick={() => { removeSeriesClient(s.id, row.id); setConfirmRemoveId(null) }}
-                            >Підтвердити</button>
-                          ) : (
-                            <button
-                              className={styles.btnRemove}
-                              onClick={() => setConfirmRemoveId(row.id)}
-                            >Видалити</button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )
-      })()}
     </div>
     </div>
   )
@@ -634,8 +407,6 @@ interface MiniCalendarProps {
 function MiniCalendar({ anchorRef, open, onClose, calendarMonth, setCalendarMonth, selectedMondays, toggleMonday, footer }: MiniCalendarProps) {
   const { year, month } = calendarMonth
 
-  const selectedMondayDates = selectedMondays.map(s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d) })
-
   return (
     <CalendarPopover
       anchorRef={anchorRef}
@@ -648,7 +419,6 @@ function MiniCalendar({ anchorRef, open, onClose, calendarMonth, setCalendarMont
       footer={footer}
       renderDay={(day, inMonth, i) => {
         const monday = getMondayOf(day)
-        const sunday = getSundayOf(monday)
         const mondayStr = toDateStr(monday)
         const isWeekSelected = selectedMondays.includes(mondayStr)
         const isStart = day.getDay() === 1
@@ -674,15 +444,4 @@ function MiniCalendar({ anchorRef, open, onClose, calendarMonth, setCalendarMont
       }}
     />
   )
-}
-
-function formatSeriesHoursLabel(hours: number[] | null, timeOfDay: string): string | null {
-  if (!hours || hours.length === 0) return null
-  const sorted = [...hours].sort()
-  if (sorted.length >= 2) return null
-  const [h, m] = timeOfDay.split(':').map(Number)
-  const totalMin = h * 60 + m + (sorted[0] - 1) * 60
-  const hh = String(Math.floor(totalMin / 60)).padStart(2, '0')
-  const mm = String(totalMin % 60).padStart(2, '0')
-  return `${hh}:${mm}`
 }

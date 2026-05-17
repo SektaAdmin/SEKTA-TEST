@@ -164,8 +164,9 @@
   z-index: 1;
 }
 .chip:hover {
-  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 25%, transparent);
-  border-color: color-mix(in srgb, var(--chip-color, var(--border)) 55%, transparent);
+  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 30%, transparent);
+  border-color: color-mix(in srgb, var(--chip-color, var(--border)) 70%, transparent);
+  border-width: 1.5px;
   z-index: 2;
 }
 
