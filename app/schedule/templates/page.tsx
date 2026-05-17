@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -102,9 +102,17 @@ export default function TemplatesPage() {
   const deleteWrapRef = useRef<HTMLDivElement>(null)
   const gridScrollRef = useRef<HTMLDivElement>(null)
   const savedScrollTop = useRef(0)
+  const pendingRestore = useRef(false)
 
   const saveScroll = () => { if (gridScrollRef.current) savedScrollTop.current = gridScrollRef.current.scrollTop }
-  const restoreScroll = () => { requestAnimationFrame(() => { if (gridScrollRef.current) gridScrollRef.current.scrollTop = savedScrollTop.current }) }
+  const restoreScroll = () => { pendingRestore.current = true }
+
+  useEffect(() => {
+    if (pendingRestore.current && gridScrollRef.current) {
+      gridScrollRef.current.scrollTop = savedScrollTop.current
+      pendingRestore.current = false
+    }
+  })
 
   // Expandable series clients
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
@@ -512,7 +520,7 @@ export default function TemplatesPage() {
           existing={editingSeries}
           prefill={prefillSeries ?? undefined}
           onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); restoreScroll() }}
-          onSaved={async () => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); await refetch(); restoreScroll() }}
+          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); saveScroll(); refetch(); restoreScroll() }}
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
