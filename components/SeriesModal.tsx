@@ -65,7 +65,9 @@ function formatHoursLabel(hours: number[] | null, timeOfDay: string): string | n
 }
 
 export default function SeriesModal({ existing, prefill, onClose, onSaved, trainers, halls, trainingTypes }: Props) {
-  const isEdit = !!existing
+  const [createdSeries, setCreatedSeries] = useState<ClassSeries | null>(null)
+  const activeSeries = existing ?? createdSeries
+  const isEdit = !!activeSeries
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormValues>({
     defaultValues: existing ? {
@@ -102,24 +104,24 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
   const [selectedHours, setSelectedHours] = useState<number[]>([1, 2])
 
   useEffect(() => {
-    if (!isEdit || !existing?.id) return
+    if (!isEdit || !activeSeries?.id) return
     setClientsLoading(true)
     supabase
       .from('series_clients')
       .select('id, client_id, hours_attended, clients(first_name, last_name)')
-      .eq('series_id', existing.id)
+      .eq('series_id', activeSeries.id)
       .order('created_at')
       .then((result: { data: unknown[] | null; error: { message: string } | null }) => {
         if (result.error) toast.error(result.error.message)
         else setClients((result.data ?? []) as SeriesClientRow[])
         setClientsLoading(false)
       })
-  }, [isEdit, existing?.id])
+  }, [isEdit, activeSeries?.id])
 
   const addClient = async (client: Client) => {
-    if (!existing?.id) return
+    if (!activeSeries?.id) return
     const hours = Number(durationMin) >= 120 ? selectedHours.slice().sort() : undefined
-    const insertData: Record<string, unknown> = { series_id: existing.id, client_id: client.id }
+    const insertData: Record<string, unknown> = { series_id: activeSeries.id, client_id: client.id }
     if (hours !== undefined) insertData.hours_attended = hours
     const { error } = await supabase.from('series_clients').insert(insertData)
     if (error) { toast.error(error.message); return }
@@ -154,30 +156,38 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
     }
 
     if (isEdit) {
-      const { error } = await supabase.from('class_series').update(payload).eq('id', existing!.id)
+      const { error } = await supabase.from('class_series').update(payload).eq('id', activeSeries!.id)
       if (error) { alert(error.message); return }
+      onSaved()
     } else {
-      const { error } = await supabase.from('class_series').insert(payload)
+      const { data, error } = await supabase.from('class_series').insert(payload).select().single()
       if (error) { alert(error.message); return }
+      setCreatedSeries(data as ClassSeries)
+      // не закриваємо модалку — даємо змогу одразу додати постійників
     }
+  }
 
-    onSaved()
+  const handleClose = () => {
+    if (createdSeries) onSaved()
+    else onClose()
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <ModalShell
         title={isEdit ? 'Редагувати шаблон' : 'Новий шаблон'}
-        onClose={onClose}
+        onClose={handleClose}
         width={520}
         footer={
           <>
-            <button type="button" className={styles.btnCancel} onClick={onClose} disabled={isSubmitting}>
-              Скасувати
+            <button type="button" className={styles.btnCancel} onClick={handleClose} disabled={isSubmitting}>
+              {createdSeries ? 'Готово' : 'Скасувати'}
             </button>
-            <button type="submit" className={styles.btnSave} disabled={isSubmitting}>
-              {isSubmitting ? 'Збереження...' : isEdit ? 'Зберегти' : 'Створити'}
-            </button>
+            {!createdSeries && (
+              <button type="submit" className={styles.btnSave} disabled={isSubmitting}>
+                {isSubmitting ? 'Збереження...' : 'Створити'}
+              </button>
+            )}
           </>
         }
       >
