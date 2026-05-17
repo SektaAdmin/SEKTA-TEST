@@ -15,8 +15,8 @@ const DAYS: { label: string; dow: number }[] = [
   { label: 'Неділя', dow: 0 },
 ]
 
-const MIN_HOUR = 7
-const MAX_HOUR = 23
+const MIN_HOUR = 8
+const MAX_HOUR = 22
 const HOUR_HEIGHT = 64
 const CARD_MIN_HEIGHT = 48
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)

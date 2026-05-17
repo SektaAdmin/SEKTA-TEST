@@ -19,8 +19,8 @@ import Link from 'next/link'
 const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const DAYS_UA_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя']
 
-const MIN_HOUR = 7
-const MAX_HOUR = 23
+const MIN_HOUR = 8
+const MAX_HOUR = 22
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const HOUR_HEIGHT = 64
 
