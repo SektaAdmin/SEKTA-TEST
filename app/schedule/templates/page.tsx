@@ -512,7 +512,7 @@ export default function TemplatesPage() {
           existing={editingSeries}
           prefill={prefillSeries ?? undefined}
           onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); restoreScroll() }}
-          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); refetch(); restoreScroll() }}
+          onSaved={async () => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); await refetch(); restoreScroll() }}
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
