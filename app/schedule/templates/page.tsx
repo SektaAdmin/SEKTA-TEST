@@ -331,7 +331,7 @@ export default function TemplatesPage() {
           </div>
           <button
             className={styles.btnNew}
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => { saveScroll(); setShowCreateModal(true) }}
           >
             + Новий шаблон
           </button>
