@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, forwardRef } from 'react'
+import { useMemo } from 'react'
 import { typeColor } from '@/lib/typeColor'
 import type { ClassSeries, Hall, TrainingType } from '@/types'
 import { getOverCapacityCount, isClientCountFull, isClientCountAlmost } from '@/lib/scheduleMetrics'
@@ -40,7 +40,7 @@ interface Props {
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
 }
 
-const HallWeekGrid = forwardRef<HTMLDivElement, Props>(function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick }, ref) {
+export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick }: Props) {
   const activeHalls = useMemo(() => halls.filter(h => h.is_active), [halls])
 
   const typeLabel = useMemo(() => {
@@ -71,7 +71,7 @@ const HallWeekGrid = forwardRef<HTMLDivElement, Props>(function HallWeekGrid({ s
   const colTemplate = `${TIME_GUTTER_W}px repeat(${hallCols.length}, minmax(140px, 1fr))`
 
   return (
-    <div ref={ref} className={styles.root}>
+    <div className={styles.root}>
       {/* ── Sticky top header: time corner | hall labels ── */}
       <div className={styles.stickyHeader} style={{ gridTemplateColumns: colTemplate }}>
         <div className={styles.cornerCell} />
@@ -170,6 +170,4 @@ const HallWeekGrid = forwardRef<HTMLDivElement, Props>(function HallWeekGrid({ s
       </div>
     </div>
   )
-})
-
-export default HallWeekGrid
+}

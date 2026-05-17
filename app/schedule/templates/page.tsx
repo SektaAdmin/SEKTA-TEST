@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -100,20 +100,6 @@ export default function TemplatesPage() {
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
-  const gridScrollRef = useRef<HTMLDivElement>(null)
-  const savedScrollTop = useRef(0)
-  const pendingRestore = useRef(false)
-
-  const saveScroll = () => { if (gridScrollRef.current) savedScrollTop.current = gridScrollRef.current.scrollTop }
-  const restoreScroll = () => { pendingRestore.current = true }
-
-  useEffect(() => {
-    if (pendingRestore.current && gridScrollRef.current) {
-      gridScrollRef.current.scrollTop = savedScrollTop.current
-      pendingRestore.current = false
-    }
-  })
-
   // Expandable series clients
   const [expandedSeriesId, setExpandedSeriesId] = useState<string | null>(null)
   const [seriesClients, setSeriesClients] = useState<Record<string, SeriesClientRow[]>>({})
@@ -255,7 +241,7 @@ export default function TemplatesPage() {
     loadSeriesClients(s.id)
   }
 
-  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null); restoreScroll() }
+  const closeClientsDrawer = () => { setClientsDrawerSeries(null); setConfirmRemoveId(null) }
 
   if (fetchError) toast.error(fetchError)
 
@@ -339,7 +325,7 @@ export default function TemplatesPage() {
           </div>
           <button
             className={styles.btnNew}
-            onClick={() => { saveScroll(); setShowCreateModal(true) }}
+            onClick={() => setShowCreateModal(true)}
           >
             + Новий шаблон
           </button>
@@ -392,13 +378,11 @@ export default function TemplatesPage() {
           <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
         ) : viewMode === 'grid' ? (
           <HallWeekGrid
-            ref={gridScrollRef}
             series={templates}
             halls={halls}
             trainingTypes={trainingTypes}
-            onCardClick={(s) => { saveScroll(); openClientsDrawer(s) }}
+            onCardClick={openClientsDrawer}
             onSlotClick={(dow, time, hallId) => {
-              saveScroll()
               setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
               setShowCreateModal(true)
             }}
@@ -519,8 +503,8 @@ export default function TemplatesPage() {
         <SeriesModal
           existing={editingSeries}
           prefill={prefillSeries ?? undefined}
-          onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); restoreScroll() }}
-          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); saveScroll(); refetch(); restoreScroll() }}
+          onClose={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null) }}
+          onSaved={() => { setShowCreateModal(false); setEditingSeries(null); setPrefillSeries(null); refetch() }}
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
@@ -552,7 +536,7 @@ export default function TemplatesPage() {
                 <div className={styles.drawerActions}>
                   <button
                     className={styles.drawerEdit}
-                    onClick={() => { saveScroll(); setClientsDrawerSeries(null); setConfirmRemoveId(null); setEditingSeries(s) }}
+                    onClick={() => { closeClientsDrawer(); setEditingSeries(s) }}
                   >
                     Редагувати
                   </button>
