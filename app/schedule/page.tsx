@@ -222,7 +222,7 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
             key={cls.id}
             cls={cls}
             typeLabels={typeLabels}
-            hourHeight={HOUR_HEIGHT}
+            hourHeight={hourHeight}
             laneIndex={laneIndex}
             laneCount={laneCount}
             onClick={() => onCardClick(cls.id)}
