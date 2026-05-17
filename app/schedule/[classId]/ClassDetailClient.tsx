@@ -121,7 +121,7 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   const isTwoHour = (cls: ClassWithJoins | null) => (cls?.duration_min ?? 0) >= 120
 
   async function handleEnroll() {
-    if (!selectedClient || !cls) return
+    if (!selectedClient || !cls || cls.ticket_type === 'self_training') return
     setEnrolling(true)
     setEnrollError(null)
 
@@ -373,7 +373,7 @@ if (loading) {
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Записані клієнти</h2>
-              {!addingClient && (
+              {!addingClient && cls?.ticket_type !== 'self_training' && (
                 <button className={styles.btnAdd} onClick={() => { setAddingClient(true); setEnrollError(null) }}>
                   + Записати клієнта
                 </button>
