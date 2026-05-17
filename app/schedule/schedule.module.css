@@ -399,6 +399,7 @@
 }
 
 @media (max-width: 640px) {
+  .filterBar { overflow-x: auto; flex-wrap: nowrap; padding: 8px 16px; }
   .gridCard { overflow: hidden; }
   .gridScrollWrap {
     display: flex;

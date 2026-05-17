@@ -96,30 +96,30 @@ export default function ClientsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Клієнти</h1>
-          <div className={styles.topbarRight}>
-            <div className={styles.searchWrap}>
-              <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="7" cy="7" r="4.5"/>
-                <line x1="10.5" y1="10.5" x2="14" y2="14"/>
-              </svg>
-              <input
-                className={styles.searchInput}
-                type="text"
-                value={searchInput}
-                onChange={e => handleSearchInput(e.target.value)}
-                placeholder="Пошук..."
-                aria-label="Пошук клієнта"
-              />
-              {searchInput && (
-                <button className={styles.searchClear} onClick={clearSearch} aria-label="Очистити пошук">
-                  ✕
-                </button>
-              )}
-            </div>
+          <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+            + Додати клієнта
+          </button>
+        </div>
 
-            <button className={styles.btnNew} onClick={() => setShowModal(true)}>
-              + Додати клієнта
-            </button>
+        <div className={styles.filterBar}>
+          <div className={styles.searchWrap}>
+            <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="7" cy="7" r="4.5"/>
+              <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+            </svg>
+            <input
+              className={styles.searchInput}
+              type="text"
+              value={searchInput}
+              onChange={e => handleSearchInput(e.target.value)}
+              placeholder="Пошук за клієнтом..."
+              aria-label="Пошук клієнта"
+            />
+            {searchInput && (
+              <button className={styles.searchClear} onClick={clearSearch} aria-label="Очистити пошук">
+                ✕
+              </button>
+            )}
           </div>
         </div>
 

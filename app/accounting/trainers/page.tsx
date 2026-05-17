@@ -116,23 +116,22 @@ export default function TrainerReportsPage() {
           <a href="/accounting" className={styles.backLink}>← Звітність</a>
         </div>
 
-        <div className={styles.content}>
-          {/* Filters */}
-          <div className={styles.filters}>
-            <MonthNav month={month} year={year} onPrev={prevMonth} onNext={nextMonth} />
-            <div className={styles.paymentFilter}>
-              {['all', 'cash', 'fop', 'personal_card', 'deposit'].map(v => (
-                <button
-                  key={v}
-                  className={`${styles.filterBtn} ${paymentFilter === v ? styles.filterBtnActive : ''}`}
-                  onClick={() => setPaymentFilter(v)}
-                >
-                  {v === 'all' ? 'Всі методи' : PAYMENT_LABELS[v]}
-                </button>
-              ))}
-            </div>
+        <div className={styles.filterBar}>
+          <MonthNav month={month} year={year} onPrev={prevMonth} onNext={nextMonth} />
+          <div className={styles.paymentFilter}>
+            {['all', 'cash', 'fop', 'personal_card', 'deposit'].map(v => (
+              <button
+                key={v}
+                className={`${styles.filterBtn} ${paymentFilter === v ? styles.filterBtnActive : ''}`}
+                onClick={() => setPaymentFilter(v)}
+              >
+                {v === 'all' ? 'Всі методи' : PAYMENT_LABELS[v]}
+              </button>
+            ))}
           </div>
+        </div>
 
+        <div className={styles.content}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
           ) : summaries.length === 0 ? (

@@ -51,6 +51,25 @@
 }
 .backLink:hover { border-color: var(--text-3); color: var(--text); }
 
+/* ── Filter bar ─────────────────────────────────────────────── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  position: sticky;
+  top: 57px;
+  z-index: 8;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .filterBar { overflow-x: auto; flex-wrap: nowrap; padding: 10px 16px; }
+}
+
 /* ── Content ─────────────────────────────────────────────────── */
 .content {
   flex: 1;
@@ -60,12 +79,8 @@
   gap: 20px;
 }
 
-/* ── Filters ─────────────────────────────────────────────────── */
-.filters {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+@media (max-width: 640px) {
+  .content { padding: 16px; }
 }
 
 .paymentFilter {
