@@ -22,6 +22,9 @@ const CARD_MIN_HEIGHT = 48
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const TOTAL_H = HOUR_HEIGHT * (MAX_HOUR - MIN_HOUR)
 
+const DAY_NAME_W = 72
+const TIME_GUTTER_W = 44
+
 function cardTop(timeOfDay: string): number {
   const [h, m] = timeOfDay.split(':').map(Number)
   return (h - MIN_HOUR + m / 60) * HOUR_HEIGHT
@@ -48,7 +51,6 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
     return m
   }, [trainingTypes])
 
-  // Determine which halls actually appear in the series (+ null for no-hall)
   const hallCols = useMemo(() => {
     const hallIds = new Set(series.map(s => s.hall_id ?? null))
     const result: (Hall | null)[] = activeHalls.filter(h => hallIds.has(h.id))
@@ -56,7 +58,6 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
     return result
   }, [series, activeHalls])
 
-  // dow → hall_id → ClassSeries[]
   const byDowHall = useMemo(() => {
     const map = new Map<number, Map<string | null, ClassSeries[]>>()
     for (const { dow } of DAYS) map.set(dow, new Map())
@@ -69,17 +70,15 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
     return map
   }, [series])
 
-  const TIME_GUTTER_W = 44
-  const HALL_COL_MIN_W = 140
-
-  // grid-template-columns for the header and body
-  const colTemplate = `${TIME_GUTTER_W}px repeat(${hallCols.length}, minmax(${HALL_COL_MIN_W}px, 1fr))`
+  // grid-template-columns: day-name | time-gutter | hall cols
+  const colTemplate = `${DAY_NAME_W}px ${TIME_GUTTER_W}px repeat(${hallCols.length}, minmax(140px, 1fr))`
 
   return (
     <div className={styles.root}>
-      {/* ── Sticky header: corner + hall labels ── */}
+      {/* ── Sticky header: day-name corner | time corner | hall labels ── */}
       <div className={styles.stickyHeader} style={{ gridTemplateColumns: colTemplate }}>
-        <div className={styles.cornerCell} />
+        <div className={styles.cornerDay} />
+        <div className={styles.cornerTime} />
         {hallCols.map(hall => (
           <div key={hall?.id ?? '__nohall'} className={styles.hallHeaderCell}>
             {hall ? hall.name : 'Без залу'}
@@ -93,11 +92,14 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
           const dowMap = byDowHall.get(dow)!
           return (
             <div key={dow} className={styles.dayRow}>
-              {/* Day label (sticky left, full height) */}
-              <div className={styles.dayLabelCell} style={{ height: TOTAL_H }}>
-                {/* Time gutter + day name stacked */}
-                <div className={styles.dayName}>{label}</div>
-                <div className={styles.timeAxis}>
+              {/* Day name — sticky left */}
+              <div className={styles.dayNameCell} style={{ height: TOTAL_H }}>
+                <span className={styles.dayNameText}>{label}</span>
+              </div>
+
+              {/* Time gutter — sticky, second column */}
+              <div className={styles.timeGutter} style={{ height: TOTAL_H }}>
+                <div className={styles.timeGutterInner}>
                   {HOURS.map(h => (
                     <div key={h} className={styles.timeLabel} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
                       {String(h).padStart(2, '0')}
@@ -106,7 +108,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
                 </div>
               </div>
 
-              {/* Hall columns for this day */}
+              {/* Hall columns */}
               {hallCols.map(hall => {
                 const items = (dowMap.get(hall?.id ?? null) ?? []).sort((a, b) =>
                   a.time_of_day.localeCompare(b.time_of_day)

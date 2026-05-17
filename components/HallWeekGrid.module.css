@@ -8,7 +8,7 @@
   background: var(--bg-2);
 }
 
-/* ── Sticky top header (hall labels) ─────────────────────── */
+/* ── Sticky top header ────────────────────────────────────── */
 .stickyHeader {
   display: grid;
   position: sticky;
@@ -18,10 +18,16 @@
   border-bottom: 0.5px solid var(--border-strong);
 }
 
-.cornerCell {
-  /* time gutter width matches .dayLabelCell */
-  border-right: 0.5px solid var(--border);
+/* Corner above day-name column */
+.cornerDay {
   background: var(--bg-2);
+  border-right: 0.5px solid var(--border);
+}
+
+/* Corner above time-gutter column */
+.cornerTime {
+  background: var(--bg-2);
+  border-right: 0.5px solid var(--border-strong);
 }
 
 .hallHeaderCell {
@@ -53,39 +59,48 @@
   border-bottom: none;
 }
 
-/* ── Day label cell (sticky left, contains day name + time axis) */
-.dayLabelCell {
+/* ── Day name cell (sticky left, column 1) ───────────────── */
+.dayNameCell {
   flex-shrink: 0;
-  width: 44px; /* same as time gutter */
+  width: 72px;
   position: sticky;
   left: 0;
-  z-index: 3;
+  z-index: 4;
   background: var(--bg-2);
-  border-right: 0.5px solid var(--border-strong);
+  border-right: 0.5px solid var(--border);
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
-.dayName {
-  font-size: 9px;
+.dayNameText {
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  padding: 10px 0;
-  flex-shrink: 0;
-  line-height: 1;
+  user-select: none;
 }
 
-/* ── Time axis (inside day label cell) ───────────────────── */
-.timeAxis {
+/* ── Time gutter (sticky, column 2) ─────────────────────── */
+/* sticky position allows horizontal scroll lock;
+   sticky elements are also a containing block for absolute children */
+.timeGutter {
+  flex-shrink: 0;
+  width: 44px;
+  background: var(--bg-2);
+  border-right: 0.5px solid var(--border-strong);
+  position: sticky;
+  left: 72px;
+  z-index: 3;
+}
+
+.timeGutterInner {
   position: relative;
-  flex: 1;
   width: 100%;
-  overflow: hidden;
+  height: 100%;
 }
 
 .timeLabel {
@@ -206,4 +221,6 @@
 @media (max-width: 640px) {
   .cell { min-width: 100px; }
   .hallHeaderCell { font-size: 10px; }
+  .dayNameCell { width: 48px; }
+  .timeGutter { left: 48px; }
 }
