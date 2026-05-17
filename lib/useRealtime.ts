@@ -21,18 +21,14 @@ export function useRealtime(tables: string[], onChange: () => void) {
         'postgres_changes' as const,
         { event: '*', schema: 'public', table },
         (payload: unknown) => {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[Realtime] event on ${channelNameRef.current}`, payload)
-          }
+          console.log(`[Realtime] event on ${channelNameRef.current}`, payload)
           onChangeRef.current()
         }
       )
     }
 
     channel.subscribe((status: string) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Realtime] ${channelNameRef.current} → ${status}`)
-      }
+      console.log(`[Realtime] ${channelNameRef.current} → ${status}`)
     })
     return () => { supabase.removeChannel(channel) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
