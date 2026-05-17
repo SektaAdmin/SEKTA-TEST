@@ -29,6 +29,20 @@ export type UpcomingEnrollment = {
   } | null
 }
 
+export type PastEnrollment = {
+  id: string
+  class_id: string
+  sessions_used: number
+  classes: {
+    ticket_type: string
+    title: string | null
+    starts_at: string
+    duration_min: number
+    trainers: { name: string } | null
+    halls: { name: string } | null
+  } | null
+}
+
 export async function getClientDetail(
   supabase: SupabaseClient,
   id: string
@@ -72,5 +86,28 @@ export async function getClientDetail(
     sessionBalances: (balancesRes.data as ClientSessionBalance[]) ?? [],
     permanentEnrollments: (permanentRes.data as unknown as PermanentEnrollment[]) ?? [],
     upcomingEnrollments: (upcomingRes.data as unknown as UpcomingEnrollment[]) ?? [],
+  }
+}
+
+export async function listPastEnrollmentsForClient(
+  supabase: SupabaseClient,
+  clientId: string,
+  page: number,
+  pageSize: number
+): Promise<{ data: PastEnrollment[]; count: number }> {
+  const from = page * pageSize
+  const to = from + pageSize - 1
+
+  const { data, count } = await supabase
+    .from('enrollments')
+    .select('id, class_id, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))', { count: 'exact' })
+    .eq('client_id', clientId)
+    .eq('status', 'attended')
+    .order('starts_at', { referencedTable: 'classes', ascending: false })
+    .range(from, to)
+
+  return {
+    data: (data as unknown as PastEnrollment[]) ?? [],
+    count: count ?? 0,
   }
 }

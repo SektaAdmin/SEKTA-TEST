@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { getClientDetail } from '@/lib/queries/client-detail'
+import { getClientDetail, listPastEnrollmentsForClient } from '@/lib/queries/client-detail'
+import type { PastEnrollment } from '@/lib/queries/client-detail'
 import { listSalesForClient } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
@@ -85,6 +86,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [upcomingEnrollments, setUpcomingEnrollments] = useState<UpcomingEnrollment[]>([])
   const [permanentEnrollments, setPermanentEnrollments] = useState<PermanentEnrollment[]>([])
   const [showEnrollModal, setShowEnrollModal] = useState(false)
+  const [pastEnrollments, setPastEnrollments] = useState<PastEnrollment[]>([])
+  const [pastTotal, setPastTotal] = useState(0)
+  const [pastPage, setPastPage] = useState(0)
 
   const fetchAllClientData = useCallback(async () => {
     const { client, sessionBalances, permanentEnrollments, upcomingEnrollments } =
@@ -116,6 +120,16 @@ export default function ClientDetailClient({ id }: { id: string }) {
     setUpcomingEnrollments(upcomingEnrollments)
   }, [id])
 
+  const fetchPastEnrollments = useCallback(async (page: number) => {
+    const { data, count } = await listPastEnrollmentsForClient(supabase, id, page, SALES_PAGE_SIZE)
+    if (page === 0) {
+      setPastEnrollments(data)
+    } else {
+      setPastEnrollments(prev => [...prev, ...data])
+    }
+    setPastTotal(count)
+  }, [id])
+
   const fetchSales = useCallback(async (page: number) => {
     const { data: salesData, count } = await listSalesForClient(supabase, id, page, SALES_PAGE_SIZE)
     if (page === 0) {
@@ -143,6 +157,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       listTrainingTypeLabels(supabase).then(setTypeLabels),
       fetchAllClientData(),
       fetchSales(0),
+      fetchPastEnrollments(0),
     ]).then(() => setLoading(false))
   }, [fetchAllClientData, fetchSales])
 
@@ -152,11 +167,13 @@ export default function ClientDetailClient({ id }: { id: string }) {
         fetchAllClientData()
         setSalesPage(0)
         fetchSales(0)
+        setPastPage(0)
+        fetchPastEnrollments(0)
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchAllClientData, fetchSales])
+  }, [fetchAllClientData, fetchSales, fetchPastEnrollments])
 
   function handleClientSaved() {
     setShowEditModal(false)
@@ -192,6 +209,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
     const next = salesPage + 1
     setSalesPage(next)
     fetchSales(next)
+  }
+
+  function handleLoadMorePast() {
+    const next = pastPage + 1
+    setPastPage(next)
+    fetchPastEnrollments(next)
   }
 
   if (loading) return (
@@ -373,7 +396,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {upcomingEnrollments.filter(e => e.classes).map(e => {
+                    {[...upcomingEnrollments].filter(e => e.classes).sort((a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()).map(e => {
                       const cls = e.classes!
                       const start = new Date(cls.starts_at)
                       const end = new Date(start.getTime() + cls.duration_min * 60000)
@@ -400,6 +423,55 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   </tbody>
                 </table>
               </div>
+            )}
+          </section>
+
+          <section className={styles.card}>
+            <h2 className={styles.cardTitle}>Прошедші тренування</h2>
+            {pastEnrollments.length === 0 ? (
+              <div className={styles.emptySection}>
+                <span className={styles.empty2}>Ще не було тренувань</span>
+              </div>
+            ) : (
+              <>
+                <div className={styles.tableWrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Дата і час</th>
+                        <th>Тип</th>
+                        <th>Тренер</th>
+                        <th>Зал</th>
+                        <th>Занять</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pastEnrollments.filter(e => e.classes).map(e => {
+                        const cls = e.classes!
+                        const start = new Date(cls.starts_at)
+                        const end = new Date(start.getTime() + cls.duration_min * 60000)
+                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                        return (
+                          <tr key={e.id}>
+                            <td className={styles.dateCell}>
+                              {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                            </td>
+                            <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                            <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                            <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                            <td className={styles.numCell}>{e.sessions_used}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {pastEnrollments.length < pastTotal && (
+                  <button className={styles.btnLoadMore} onClick={handleLoadMorePast}>
+                    Завантажити ще ({pastTotal - pastEnrollments.length})
+                  </button>
+                )}
+              </>
             )}
           </section>
 
