@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { getClientDetail, listPastEnrollmentsForClient } from '@/lib/queries/client-detail'
-import type { PastEnrollment } from '@/lib/queries/client-detail'
+import { getClientDetail, listPastEnrollmentsForClient, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
+import type { PastEnrollment, FeedEnrollment } from '@/lib/queries/client-detail'
 import { listSalesForClient } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
@@ -65,6 +65,18 @@ const PAYMENT_CLASS: Record<string, string> = {
 
 const SALES_PAGE_SIZE = 20
 
+const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
+  attended:  'Відвідала',
+  noshow:    'Не прийшла',
+  cancelled: 'Скасувала',
+}
+
+const ENROLLMENT_STATUS_CLASS: Record<string, string> = {
+  attended:  'badgeAttended',
+  noshow:    'badgeNoshow',
+  cancelled: 'badgeCancelled',
+}
+
 export default function ClientDetailClient({ id }: { id: string }) {
   const router = useRouter()
 
@@ -89,6 +101,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [pastEnrollments, setPastEnrollments] = useState<PastEnrollment[]>([])
   const [pastTotal, setPastTotal] = useState(0)
   const [pastPage, setPastPage] = useState(0)
+  const [feedEnrollments, setFeedEnrollments] = useState<FeedEnrollment[]>([])
+  const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
+  const [feedShowAll, setFeedShowAll] = useState(false)
 
   const fetchAllClientData = useCallback(async () => {
     const { client, sessionBalances, permanentEnrollments, upcomingEnrollments } =
@@ -130,6 +145,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
     setPastTotal(count)
   }, [id])
 
+  const fetchFeedEnrollments = useCallback(async () => {
+    const data = await listFeedEnrollmentsForClient(supabase, id)
+    setFeedEnrollments(data)
+  }, [id])
+
   const fetchSales = useCallback(async (page: number) => {
     const { data: salesData, count } = await listSalesForClient(supabase, id, page, SALES_PAGE_SIZE)
     if (page === 0) {
@@ -158,8 +178,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
       fetchAllClientData(),
       fetchSales(0),
       fetchPastEnrollments(0),
+      fetchFeedEnrollments(),
     ]).then(() => setLoading(false))
-  }, [fetchAllClientData, fetchSales])
+  }, [fetchAllClientData, fetchSales, fetchFeedEnrollments])
 
   useEffect(() => {
     function onVisible() {
@@ -169,11 +190,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
         fetchSales(0)
         setPastPage(0)
         fetchPastEnrollments(0)
+        fetchFeedEnrollments()
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchAllClientData, fetchSales, fetchPastEnrollments])
+  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments])
 
   function handleClientSaved() {
     setShowEditModal(false)
@@ -427,173 +449,320 @@ export default function ClientDetailClient({ id }: { id: string }) {
           </section>
 
           <section className={styles.card}>
-            <h2 className={styles.cardTitle}>Минулі тренування</h2>
-            {pastEnrollments.length === 0 ? (
-              <div className={styles.emptySection}>
-                <span className={styles.empty2}>Ще не було тренувань</span>
+            <div className={styles.tabHeader}>
+              <div className={styles.tabBar}>
+                <button
+                  className={activeTab === 'feed' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                  onClick={() => setActiveTab('feed')}
+                >
+                  Зведена стрічка
+                </button>
+                <button
+                  className={activeTab === 'trainings' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                  onClick={() => setActiveTab('trainings')}
+                >
+                  Тренування
+                </button>
+                <button
+                  className={activeTab === 'sales' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                  onClick={() => setActiveTab('sales')}
+                >
+                  Продажі
+                </button>
               </div>
-            ) : (
-              <>
-                <div className={styles.tableWrap}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Дата і час</th>
-                        <th>Тип</th>
-                        <th>Тренер</th>
-                        <th>Зал</th>
-                        <th>Занять</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pastEnrollments.filter(e => e.classes).map(e => {
-                        const cls = e.classes!
-                        const start = new Date(cls.starts_at)
-                        const end = new Date(start.getTime() + cls.duration_min * 60000)
-                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                        return (
-                          <tr key={e.id}>
-                            <td className={styles.dateCell}>
-                              {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
-                            </td>
-                            <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
-                            <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                            <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
-                            <td className={styles.numCell}>{e.sessions_used}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                {pastEnrollments.length < pastTotal && (
-                  <button className={styles.btnLoadMore} onClick={handleLoadMorePast}>
-                    Завантажити ще ({pastTotal - pastEnrollments.length})
-                  </button>
-                )}
-              </>
-            )}
-          </section>
-
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>Історія покупок</h2>
-              <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
-                Записати продаж
-              </button>
+              {activeTab === 'sales' && (
+                <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
+                  Записати продаж
+                </button>
+              )}
             </div>
-            {sales.length === 0 ? (
-              <div className={styles.emptySection}>
-                <span className={styles.empty2}>Покупок ще не було</span>
-              </div>
-            ) : (
-              <>
-                <div className={styles.tableWrap}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Дата</th>
-                        <th>Операція</th>
-                        <th>Занять</th>
-                        <th>Ціна</th>
-                        <th>Оплачено</th>
-                        <th>Δ Депозит</th>
-                        <th>Депозит після</th>
-                        <th>Спосіб</th>
-                        <th>Тренер</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sales.map(s => {
-                        const delta = s.amount_given - s.price_paid
-                        const balAfter = balanceAfterMap.get(s.id)
-                        return (
-                        <tr key={s.id}>
-                          <td className={styles.dateCell}>
-                            {formatSaleDatetime(s.created_at)}
-                          </td>
-                          <td>
-                            {s.ticket_name
-                              ? s.ticket_name
-                              : delta >= 0
-                                ? <span className={styles.opTopup}>↑ Поповнення</span>
-                                : <span className={styles.opDeduction}>↓ Списання</span>
-                            }
-                          </td>
-                          <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
-                          <td className={styles.numCell}>
-                            {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : <span className={styles.empty2}>—</span>}
-                          </td>
-                          <td className={styles.numCell}>
-                            {s.ticket_id != null && s.payment_method !== 'deposit'
-                              ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
-                              : <span className={styles.empty2}>—</span>}
-                          </td>
-                          <td className={styles.numCell}>
-                            {delta > 0
-                              ? <span className={styles.deltaPos}>+{delta.toLocaleString('uk-UA')} ₴</span>
-                              : delta < 0
-                                ? <span className={styles.deltaNeg}>{delta.toLocaleString('uk-UA')} ₴</span>
-                                : <span className={styles.empty2}>—</span>
-                            }
-                          </td>
-                          <td className={styles.numCell}>
-                            {balAfter !== undefined
-                              ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
-                              : <span className={styles.empty2}>—</span>
-                            }
-                          </td>
-                          <td>
-                            <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
-                              {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
-                            </span>
-                          </td>
-                          <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                          <td>
-                            <div className={styles.actions}>
-                              <button
-                                className={styles.btnRowEdit}
-                                onClick={() => setEditingSale({
-                                  id: s.id,
-                                  client_id: s.client_id,
-                                  client_name: formatClientName(s.clients),
-                                  ticket_id: s.ticket_id,
-                                  ticket_name: s.ticket_name,
-                                  ticket_price: s.ticket_price,
-                                  ticket_type: s.ticket_type ?? null,
-                                  sessions: s.sessions,
-                                  trainer_id: s.trainer_id,
-                                  trainer_name: s.trainers?.name ?? null,
-                                  price_paid: s.price_paid,
-                                  amount_given: s.amount_given,
-                                  payment_method: s.payment_method,
-                                  notes: s.notes,
-                                  created_at: s.created_at,
-                                })}
-                              >
-                                Змінити
-                              </button>
-                              <button
-                                className={styles.btnRowDel}
-                                onClick={() => setDeleteId(s.id)}
-                              >
-                                Видалити
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+
+            {activeTab === 'feed' && (() => {
+              type FeedItem =
+                | { kind: 'enrollment'; date: number; data: FeedEnrollment }
+                | { kind: 'sale'; date: number; data: typeof sales[0] }
+
+              const items: FeedItem[] = [
+                ...feedEnrollments.filter(e => e.classes).map(e => ({
+                  kind: 'enrollment' as const,
+                  date: new Date(e.classes!.starts_at).getTime(),
+                  data: e,
+                })),
+                ...sales.map(s => ({
+                  kind: 'sale' as const,
+                  date: new Date(s.created_at).getTime(),
+                  data: s,
+                })),
+              ].sort((a, b) => b.date - a.date)
+
+              const FEED_PAGE = 30
+              const visible = feedShowAll ? items : items.slice(0, FEED_PAGE)
+
+              if (items.length === 0) return (
+                <div className={styles.emptySection}>
+                  <span className={styles.empty2}>Ще немає подій</span>
                 </div>
-                {sales.length < salesTotal && (
-                  <button className={styles.btnLoadMore} onClick={handleLoadMore}>
-                    Завантажити ще ({salesTotal - sales.length})
-                  </button>
-                )}
-              </>
+              )
+
+              return (
+                <>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Дата і час</th>
+                          <th>Подія</th>
+                          <th>Тип / Операція</th>
+                          <th>Тренер</th>
+                          <th>Деталі</th>
+                          <th>Сесії</th>
+                          <th>Сума</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visible.map(item => {
+                          if (item.kind === 'enrollment') {
+                            const e = item.data
+                            const cls = e.classes!
+                            const start = new Date(cls.starts_at)
+                            const end = new Date(start.getTime() + cls.duration_min * 60000)
+                            const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                            return (
+                              <tr key={`e-${e.id}`}>
+                                <td className={styles.dateCell}>
+                                  {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                                </td>
+                                <td>
+                                  <span className={`${styles.badge} ${styles[ENROLLMENT_STATUS_CLASS[e.status] ?? '']}`}>
+                                    {ENROLLMENT_STATUS_LABELS[e.status] ?? e.status}
+                                  </span>
+                                </td>
+                                <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                                <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                <td className={styles.numCell}>
+                                  {e.status === 'attended' && e.sessions_used > 0
+                                    ? <span className={styles.sessionsNeg}>−{e.sessions_used}</span>
+                                    : <span className={styles.empty2}>—</span>
+                                  }
+                                </td>
+                                <td><span className={styles.empty2}>—</span></td>
+                              </tr>
+                            )
+                          } else {
+                            const s = item.data
+                            const delta = s.amount_given - s.price_paid
+                            const balAfter = balanceAfterMap.get(s.id)
+                            return (
+                              <tr key={`s-${s.id}`}>
+                                <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
+                                <td>
+                                  <span className={`${styles.badge} ${styles.badgeSale}`}>Продаж</span>
+                                </td>
+                                <td>
+                                  {s.ticket_name
+                                    ? s.ticket_name
+                                    : delta >= 0
+                                      ? <span className={styles.opTopup}>↑ Поповнення</span>
+                                      : <span className={styles.opDeduction}>↓ Списання</span>
+                                  }
+                                </td>
+                                <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                <td>
+                                  <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
+                                    {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
+                                  </span>
+                                </td>
+                                <td className={styles.numCell}>
+                                  {s.sessions != null
+                                    ? <span className={styles.sessionsPos}>+{s.sessions}</span>
+                                    : <span className={styles.empty2}>—</span>
+                                  }
+                                </td>
+                                <td className={styles.numCell}>
+                                  {balAfter !== undefined
+                                    ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
+                                    : <span className={styles.empty2}>—</span>
+                                  }
+                                </td>
+                              </tr>
+                            )
+                          }
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {!feedShowAll && items.length > FEED_PAGE && (
+                    <button className={styles.btnLoadMore} onClick={() => setFeedShowAll(true)}>
+                      Показати всі ({items.length - FEED_PAGE} більше)
+                    </button>
+                  )}
+                </>
+              )
+            })()}
+
+            {activeTab === 'trainings' && (
+              pastEnrollments.length === 0 ? (
+                <div className={styles.emptySection}>
+                  <span className={styles.empty2}>Ще не було тренувань</span>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Дата і час</th>
+                          <th>Тип</th>
+                          <th>Тренер</th>
+                          <th>Зал</th>
+                          <th>Занять</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pastEnrollments.filter(e => e.classes).map(e => {
+                          const cls = e.classes!
+                          const start = new Date(cls.starts_at)
+                          const end = new Date(start.getTime() + cls.duration_min * 60000)
+                          const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                          return (
+                            <tr key={e.id}>
+                              <td className={styles.dateCell}>
+                                {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                              </td>
+                              <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                              <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                              <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                              <td className={styles.numCell}>{e.sessions_used}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {pastEnrollments.length < pastTotal && (
+                    <button className={styles.btnLoadMore} onClick={handleLoadMorePast}>
+                      Завантажити ще ({pastTotal - pastEnrollments.length})
+                    </button>
+                  )}
+                </>
+              )
+            )}
+
+            {activeTab === 'sales' && (
+              sales.length === 0 ? (
+                <div className={styles.emptySection}>
+                  <span className={styles.empty2}>Покупок ще не було</span>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Дата</th>
+                          <th>Операція</th>
+                          <th>Занять</th>
+                          <th>Ціна</th>
+                          <th>Оплачено</th>
+                          <th>Δ Депозит</th>
+                          <th>Депозит після</th>
+                          <th>Спосіб</th>
+                          <th>Тренер</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sales.map(s => {
+                          const delta = s.amount_given - s.price_paid
+                          const balAfter = balanceAfterMap.get(s.id)
+                          return (
+                          <tr key={s.id}>
+                            <td className={styles.dateCell}>
+                              {formatSaleDatetime(s.created_at)}
+                            </td>
+                            <td>
+                              {s.ticket_name
+                                ? s.ticket_name
+                                : delta >= 0
+                                  ? <span className={styles.opTopup}>↑ Поповнення</span>
+                                  : <span className={styles.opDeduction}>↓ Списання</span>
+                              }
+                            </td>
+                            <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
+                            <td className={styles.numCell}>
+                              {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : <span className={styles.empty2}>—</span>}
+                            </td>
+                            <td className={styles.numCell}>
+                              {s.ticket_id != null && s.payment_method !== 'deposit'
+                                ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
+                                : <span className={styles.empty2}>—</span>}
+                            </td>
+                            <td className={styles.numCell}>
+                              {delta > 0
+                                ? <span className={styles.deltaPos}>+{delta.toLocaleString('uk-UA')} ₴</span>
+                                : delta < 0
+                                  ? <span className={styles.deltaNeg}>{delta.toLocaleString('uk-UA')} ₴</span>
+                                  : <span className={styles.empty2}>—</span>
+                              }
+                            </td>
+                            <td className={styles.numCell}>
+                              {balAfter !== undefined
+                                ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
+                                : <span className={styles.empty2}>—</span>
+                              }
+                            </td>
+                            <td>
+                              <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
+                                {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
+                              </span>
+                            </td>
+                            <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                            <td>
+                              <div className={styles.actions}>
+                                <button
+                                  className={styles.btnRowEdit}
+                                  onClick={() => setEditingSale({
+                                    id: s.id,
+                                    client_id: s.client_id,
+                                    client_name: formatClientName(s.clients),
+                                    ticket_id: s.ticket_id,
+                                    ticket_name: s.ticket_name,
+                                    ticket_price: s.ticket_price,
+                                    ticket_type: s.ticket_type ?? null,
+                                    sessions: s.sessions,
+                                    trainer_id: s.trainer_id,
+                                    trainer_name: s.trainers?.name ?? null,
+                                    price_paid: s.price_paid,
+                                    amount_given: s.amount_given,
+                                    payment_method: s.payment_method,
+                                    notes: s.notes,
+                                    created_at: s.created_at,
+                                  })}
+                                >
+                                  Змінити
+                                </button>
+                                <button
+                                  className={styles.btnRowDel}
+                                  onClick={() => setDeleteId(s.id)}
+                                >
+                                  Видалити
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {sales.length < salesTotal && (
+                    <button className={styles.btnLoadMore} onClick={handleLoadMore}>
+                      Завантажити ще ({salesTotal - sales.length})
+                    </button>
+                  )}
+                </>
+              )
             )}
           </section>
 

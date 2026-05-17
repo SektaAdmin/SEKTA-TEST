@@ -43,6 +43,21 @@ export type PastEnrollment = {
   } | null
 }
 
+export type FeedEnrollment = {
+  id: string
+  class_id: string
+  status: string
+  sessions_used: number
+  classes: {
+    ticket_type: string
+    title: string | null
+    starts_at: string
+    duration_min: number
+    trainers: { name: string } | null
+    halls: { name: string } | null
+  } | null
+}
+
 export async function getClientDetail(
   supabase: SupabaseClient,
   id: string
@@ -110,4 +125,21 @@ export async function listPastEnrollmentsForClient(
     data: (data as unknown as PastEnrollment[]) ?? [],
     count: count ?? 0,
   }
+}
+
+export async function listFeedEnrollmentsForClient(
+  supabase: SupabaseClient,
+  clientId: string
+): Promise<FeedEnrollment[]> {
+  const now = new Date().toISOString()
+
+  const { data } = await supabase
+    .from('enrollments')
+    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))')
+    .eq('client_id', clientId)
+    .in('status', ['attended', 'noshow', 'cancelled'])
+    .lt('classes.starts_at', now)
+    .order('starts_at', { referencedTable: 'classes', ascending: false })
+
+  return (data as unknown as FeedEnrollment[]) ?? []
 }

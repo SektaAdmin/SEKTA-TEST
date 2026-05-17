@@ -459,6 +459,48 @@
 .opTopup     { color: var(--success); font-size: 12px; }
 .opDeduction { color: var(--danger); font-size: 12px; }
 
+/* ── Tabs ───────────────────────────────────────────────────── */
+.tabHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 0.5px solid var(--border);
+  margin: -20px -24px 16px;
+  padding: 0 24px;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0;
+}
+
+.tab {
+  height: 40px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+  margin-bottom: -0.5px;
+}
+.tab:hover { color: var(--text-2); }
+.tabActive { color: var(--text) !important; border-bottom-color: var(--accent); }
+
+/* ── Feed badges ────────────────────────────────────────────── */
+.badgeAttended  { background: rgba(200,240,96,0.1); color: var(--accent); }
+.badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
+.badgeCancelled { background: var(--bg-3); color: var(--text-3); }
+.badgeSale      { background: var(--success-dim); color: var(--success); }
+
+/* ── Session delta in feed ──────────────────────────────────── */
+.sessionsNeg { color: var(--danger); font-weight: 600; font-family: var(--mono); }
+.sessionsPos { color: var(--success); font-weight: 600; font-family: var(--mono); }
+
 /* ── Accordion ──────────────────────────────────────────────── */
 .accordionToggle {
   display: flex;
