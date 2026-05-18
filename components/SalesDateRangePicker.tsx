@@ -31,6 +31,39 @@ function formatDisplay(ymd: string): string {
   return `${d}.${m}.${y}`
 }
 
+// Маска: raw = '18052026' (8 цифр ДДММРРРР) → display = '18.05.2026'
+function digitsToDisplay(raw: string): string {
+  const d = raw.padEnd(8, '_').split('')
+  return `${d[0]}${d[1]}.${d[2]}${d[3]}.${d[4]}${d[5]}${d[6]}${d[7]}`
+}
+
+// YYYY-MM-DD → '18052026'
+function ymdToRaw(ymd: string): string {
+  if (!ymd) return ''
+  const [y, m, d] = ymd.split('-')
+  return `${d}${m}${y}`
+}
+
+// '18052026' → курсор-позиція у відображуваному рядку
+function rawLenToCursorPos(len: number): number {
+  if (len <= 2) return len
+  if (len <= 4) return len + 1  // після першої точки
+  return len + 2                // після другої точки
+}
+
+// Парсить raw (8 цифр ДДММРРРР) → YMD або null
+function rawToYMD(raw: string): string | null {
+  if (raw.length !== 8) return null
+  const d = Number(raw.slice(0, 2))
+  const m = Number(raw.slice(2, 4))
+  const y = Number(raw.slice(4, 8))
+  const date = new Date(y, m - 1, d)
+  if (!isNaN(date.getTime()) && date.getDate() === d && date.getMonth() === m - 1 && y > 1900) {
+    return toYMD(date)
+  }
+  return null
+}
+
 function startOfDay(d: Date): Date {
   const r = new Date(d); r.setHours(0,0,0,0); return r
 }
@@ -182,9 +215,12 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   // Draft state — застосовується лише через Apply
   const [pendingFrom, setPendingFrom] = useState<string>(dateFrom)
   const [pendingTo, setPendingTo] = useState<string>(dateTo)
-  // Буфер для ручного введення дат у футері
-  const [inputFrom, setInputFrom] = useState<string>(dateFrom ? formatDisplay(dateFrom) : '')
-  const [inputTo, setInputTo] = useState<string>(dateTo ? formatDisplay(dateTo) : '')
+  // Маска: raw = лише цифри ДДММРРРР (max 8)
+  const [rawFrom, setRawFrom] = useState<string>(ymdToRaw(dateFrom))
+  const [rawTo, setRawTo] = useState<string>(ymdToRaw(dateTo))
+  // Refs для позиціонування курсору
+  const inputFromRef = useRef<HTMLInputElement>(null)
+  const inputToRef = useRef<HTMLInputElement>(null)
   // Першый клік вибору (ще не другий)
   const [selectingFrom, setSelectingFrom] = useState<string | null>(null)
   const [hoverDate, setHoverDate] = useState<string | null>(null)
@@ -210,35 +246,67 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     ? [formatDisplay(dateFrom), formatDisplay(dateTo)].filter(Boolean).join(' – ')
     : 'Будь-який період'
 
-  function handleDateInput(raw: string, field: 'from' | 'to') {
-    if (field === 'from') setInputFrom(raw)
-    else setInputTo(raw)
-
-    if (raw === '') {
-      if (field === 'from') setPendingFrom('')
+  function handleRawChange(newRaw: string, field: 'from' | 'to') {
+    if (field === 'from') {
+      setRawFrom(newRaw)
+      const ymd = rawToYMD(newRaw)
+      if (ymd) { setPendingFrom(ymd); setSelectingFrom(null) }
+      else setPendingFrom('')
+    } else {
+      setRawTo(newRaw)
+      const ymd = rawToYMD(newRaw)
+      if (ymd) setPendingTo(ymd)
       else setPendingTo('')
-      return
     }
-    if (raw.length === 10) {
-      const parts = raw.split('.')
-      if (parts.length === 3) {
-        const [d, m, y] = parts.map(Number)
-        const date = new Date(y, m-1, d)
-        if (!isNaN(date.getTime()) && date.getDate() === d && date.getMonth() === m-1) {
-          const ymd = toYMD(date)
-          if (field === 'from') { setPendingFrom(ymd); setSelectingFrom(null) }
-          else setPendingTo(ymd)
-        }
+  }
+
+  function makeMaskKeyDown(field: 'from' | 'to') {
+    return (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const raw = field === 'from' ? rawFrom : rawTo
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault()
+        if (raw.length < 8) handleRawChange(raw + e.key, field)
+      } else if (e.key === 'Backspace') {
+        e.preventDefault()
+        handleRawChange(raw.slice(0, -1), field)
+      } else if (e.key === '.' || e.key === '/' || e.key === '-') {
+        e.preventDefault()
+      } else if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'Escape') {
+        // дозволяємо нативну поведінку
+      } else if (!e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
       }
     }
   }
+
+  function makeMaskPaste(field: 'from' | 'to') {
+    return (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault()
+      const text = e.clipboardData.getData('text')
+      const digits = text.replace(/\D/g, '').slice(0, 8)
+      handleRawChange(digits, field)
+    }
+  }
+
+  // Позиціонування курсору після зміни raw
+  useEffect(() => {
+    if (!inputFromRef.current) return
+    const pos = rawLenToCursorPos(rawFrom.length)
+    requestAnimationFrame(() => inputFromRef.current?.setSelectionRange(pos, pos))
+  }, [rawFrom])
+
+  useEffect(() => {
+    if (!inputToRef.current) return
+    const pos = rawLenToCursorPos(rawTo.length)
+    requestAnimationFrame(() => inputToRef.current?.setSelectionRange(pos, pos))
+  }, [rawTo])
 
   // Синхронізувати pending при відкритті
   function handleOpen() {
     setPendingFrom(dateFrom)
     setPendingTo(dateTo)
-    setInputFrom(dateFrom ? formatDisplay(dateFrom) : '')
-    setInputTo(dateTo ? formatDisplay(dateTo) : '')
+    setRawFrom(ymdToRaw(dateFrom))
+    setRawTo(ymdToRaw(dateTo))
     setSelectingFrom(null)
     setHoverDate(null)
     const d = parseYMD(dateFrom) ?? now
@@ -289,16 +357,16 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
       setSelectingFrom(ymd)
       setPendingFrom(ymd)
       setPendingTo('')
-      setInputFrom(formatDisplay(ymd))
-      setInputTo('')
+      setRawFrom(ymdToRaw(ymd))
+      setRawTo('')
     } else {
       let from = selectingFrom
       let to = ymd
       if (to < from) { [from, to] = [to, from] }
       setPendingFrom(from)
       setPendingTo(to)
-      setInputFrom(formatDisplay(from))
-      setInputTo(formatDisplay(to))
+      setRawFrom(ymdToRaw(from))
+      setRawTo(ymdToRaw(to))
       setSelectingFrom(null)
       setHoverDate(null)
     }
@@ -308,13 +376,13 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     const r = preset.getRange()
     if (!r) {
       onClear()
-      setInputFrom('')
-      setInputTo('')
+      setRawFrom('')
+      setRawTo('')
     } else {
       onChangeFrom(r.from)
       onChangeTo(r.to)
-      setInputFrom(formatDisplay(r.from))
-      setInputTo(formatDisplay(r.to))
+      setRawFrom(ymdToRaw(r.from))
+      setRawTo(ymdToRaw(r.to))
     }
     setSelectingFrom(null)
     setHoverDate(null)
@@ -444,22 +512,32 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
             <div className={styles.footer}>
               <div className={styles.footerDates}>
                 <input
+                  ref={inputFromRef}
                   className={styles.dateField}
                   type="text"
-                  value={inputFrom}
-                  placeholder="дд.мм.рррр"
-                  onChange={e => handleDateInput(e.target.value, 'from')}
-                  maxLength={10}
+                  value={digitsToDisplay(rawFrom)}
+                  onChange={() => {}}
+                  onKeyDown={makeMaskKeyDown('from')}
+                  onPaste={makeMaskPaste('from')}
+                  onClick={e => {
+                    const pos = rawLenToCursorPos(rawFrom.length)
+                    ;(e.target as HTMLInputElement).setSelectionRange(pos, pos)
+                  }}
                   aria-label="Дата початку"
                 />
                 <span className={styles.dateSep}>—</span>
                 <input
+                  ref={inputToRef}
                   className={styles.dateField}
                   type="text"
-                  value={inputTo}
-                  placeholder="дд.мм.рррр"
-                  onChange={e => handleDateInput(e.target.value, 'to')}
-                  maxLength={10}
+                  value={digitsToDisplay(rawTo)}
+                  onChange={() => {}}
+                  onKeyDown={makeMaskKeyDown('to')}
+                  onPaste={makeMaskPaste('to')}
+                  onClick={e => {
+                    const pos = rawLenToCursorPos(rawTo.length)
+                    ;(e.target as HTMLInputElement).setSelectionRange(pos, pos)
+                  }}
                   aria-label="Дата кінця"
                 />
               </div>
