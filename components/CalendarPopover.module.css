@@ -1,6 +1,6 @@
 .popover {
   z-index: 9999;
-  width: 224px;
+  width: 256px;
   background: var(--bg-2);
   border: 0.5px solid var(--border-strong);
   border-radius: var(--radius);
