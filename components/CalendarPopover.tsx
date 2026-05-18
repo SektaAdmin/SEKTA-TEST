@@ -34,7 +34,7 @@ export default function CalendarPopover({
     const rect = anchorRef.current.getBoundingClientRect()
     setPopoverPos({
       top: rect.bottom + window.scrollY + 6,
-      left: rect.left + window.scrollX + rect.width / 2,
+      left: rect.left + window.scrollX,
     })
   }, [open])
 
