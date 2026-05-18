@@ -173,7 +173,7 @@
   border: none;
   background: transparent;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 12px !important;
   cursor: pointer;
   padding: 0;
   transition: color var(--motion-fast);
