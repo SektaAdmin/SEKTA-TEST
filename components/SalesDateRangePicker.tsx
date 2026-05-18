@@ -182,6 +182,9 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   // Draft state — застосовується лише через Apply
   const [pendingFrom, setPendingFrom] = useState<string>(dateFrom)
   const [pendingTo, setPendingTo] = useState<string>(dateTo)
+  // Буфер для ручного введення дат у футері
+  const [inputFrom, setInputFrom] = useState<string>(dateFrom ? formatDisplay(dateFrom) : '')
+  const [inputTo, setInputTo] = useState<string>(dateTo ? formatDisplay(dateTo) : '')
   // Першый клік вибору (ще не другий)
   const [selectingFrom, setSelectingFrom] = useState<string | null>(null)
   const [hoverDate, setHoverDate] = useState<string | null>(null)
@@ -207,10 +210,35 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     ? [formatDisplay(dateFrom), formatDisplay(dateTo)].filter(Boolean).join(' – ')
     : 'Будь-який період'
 
+  function handleDateInput(raw: string, field: 'from' | 'to') {
+    if (field === 'from') setInputFrom(raw)
+    else setInputTo(raw)
+
+    if (raw === '') {
+      if (field === 'from') setPendingFrom('')
+      else setPendingTo('')
+      return
+    }
+    if (raw.length === 10) {
+      const parts = raw.split('.')
+      if (parts.length === 3) {
+        const [d, m, y] = parts.map(Number)
+        const date = new Date(y, m-1, d)
+        if (!isNaN(date.getTime()) && date.getDate() === d && date.getMonth() === m-1) {
+          const ymd = toYMD(date)
+          if (field === 'from') { setPendingFrom(ymd); setSelectingFrom(null) }
+          else setPendingTo(ymd)
+        }
+      }
+    }
+  }
+
   // Синхронізувати pending при відкритті
   function handleOpen() {
     setPendingFrom(dateFrom)
     setPendingTo(dateTo)
+    setInputFrom(dateFrom ? formatDisplay(dateFrom) : '')
+    setInputTo(dateTo ? formatDisplay(dateTo) : '')
     setSelectingFrom(null)
     setHoverDate(null)
     const d = parseYMD(dateFrom) ?? now
@@ -258,17 +286,19 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
 
   function handleDayClick(ymd: string) {
     if (!selectingFrom) {
-      // Перший клік
       setSelectingFrom(ymd)
       setPendingFrom(ymd)
       setPendingTo('')
+      setInputFrom(formatDisplay(ymd))
+      setInputTo('')
     } else {
-      // Другий клік
       let from = selectingFrom
       let to = ymd
       if (to < from) { [from, to] = [to, from] }
       setPendingFrom(from)
       setPendingTo(to)
+      setInputFrom(formatDisplay(from))
+      setInputTo(formatDisplay(to))
       setSelectingFrom(null)
       setHoverDate(null)
     }
@@ -278,9 +308,13 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     const r = preset.getRange()
     if (!r) {
       onClear()
+      setInputFrom('')
+      setInputTo('')
     } else {
       onChangeFrom(r.from)
       onChangeTo(r.to)
+      setInputFrom(formatDisplay(r.from))
+      setInputTo(formatDisplay(r.to))
     }
     setSelectingFrom(null)
     setHoverDate(null)
@@ -409,13 +443,25 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
             {/* Футер */}
             <div className={styles.footer}>
               <div className={styles.footerDates}>
-                <span className={styles.dateField}>
-                  {effectiveFrom ? formatDisplay(effectiveFrom) : <span className={styles.datePlaceholder}>дд.мм.рррр</span>}
-                </span>
+                <input
+                  className={styles.dateField}
+                  type="text"
+                  value={inputFrom}
+                  placeholder="дд.мм.рррр"
+                  onChange={e => handleDateInput(e.target.value, 'from')}
+                  maxLength={10}
+                  aria-label="Дата початку"
+                />
                 <span className={styles.dateSep}>—</span>
-                <span className={styles.dateField}>
-                  {effectiveTo ? formatDisplay(effectiveTo) : <span className={styles.datePlaceholder}>дд.мм.рррр</span>}
-                </span>
+                <input
+                  className={styles.dateField}
+                  type="text"
+                  value={inputTo}
+                  placeholder="дд.мм.рррр"
+                  onChange={e => handleDateInput(e.target.value, 'to')}
+                  maxLength={10}
+                  aria-label="Дата кінця"
+                />
               </div>
               <div className={styles.footerBtns}>
                 <button type="button" className={styles.btnCancel} onClick={handleCancel}>Скасувати</button>
