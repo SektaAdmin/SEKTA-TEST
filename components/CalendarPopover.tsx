@@ -70,25 +70,27 @@ export default function CalendarPopover({
       role="dialog"
       aria-modal="true"
     >
-      <div className={styles.calHeader}>
-        <button type="button" className={styles.monthNav} onClick={onPrevMonth} aria-label="Попередній місяць">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M8 2L4 6l4 4"/>
-          </svg>
-        </button>
-        <span className={styles.monthLabel}>{MONTHS_UK[viewMonth]} {viewYear}</span>
-        <button type="button" className={styles.monthNav} onClick={onNextMonth} aria-label="Наступний місяць">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M4 2l4 4-4 4"/>
-          </svg>
-        </button>
-      </div>
+      <div className={styles.calBody}>
+        <div className={styles.calHeader}>
+          <button type="button" className={styles.monthNav} onClick={onPrevMonth} aria-label="Попередній місяць">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <span className={styles.monthLabel}>{MONTHS_UK[viewMonth]} {viewYear}</span>
+          <button type="button" className={styles.monthNav} onClick={onNextMonth} aria-label="Наступний місяць">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
 
-      <div className={styles.grid}>
-        {WEEKDAYS.map(d => (
-          <div key={d} className={styles.weekday}>{d}</div>
-        ))}
-        {days.map((day, i) => renderDay(day, day.getMonth() === viewMonth, i))}
+        <div className={styles.grid}>
+          {WEEKDAYS.map(d => (
+            <div key={d} className={styles.weekday}>{d}</div>
+          ))}
+          {days.map((day, i) => renderDay(day, day.getMonth() === viewMonth, i))}
+        </div>
       </div>
       {footer && <div className={styles.footer}>{footer}</div>}
     </div>,
