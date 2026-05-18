@@ -1,20 +1,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0e0e0e;
-  --bg-2: #161616;
-  --bg-3: #1e1e1e;
-  --border: rgba(255,255,255,0.07);
-  --border-hover: rgba(255,255,255,0.14);
-  --border-strong: rgba(255,255,255,0.12);
-  --text: #f0ede8;
-  --text-2: #888580;
-  --text-3: #555250;
-  --accent: #c8f060;
-  --accent-dim: rgba(200,240,96,0.12);
-  --accent-text: #1a2800;
-  --danger: #ff5c5c;
-  --danger-dim: rgba(255,92,92,0.1);
+  --bg: #f5f5f2;
+  --bg-2: #ffffff;
+  --bg-3: #eeede9;
+  --border: rgba(0,0,0,0.08);
+  --border-hover: rgba(0,0,0,0.16);
+  --border-strong: rgba(0,0,0,0.14);
+  --text: #1a1917;
+  --text-2: #6b6864;
+  --text-3: #a09d9a;
+  --accent: #5c9e00;
+  --accent-dim: rgba(92,158,0,0.10);
+  --accent-text: #ffffff;
+  --danger: #d93535;
+  --danger-dim: rgba(217,53,53,0.08);
   --radius: 10px;
   --radius-sm: 6px;
   --font: 'Geologica', sans-serif;
@@ -29,28 +29,28 @@
   --badge-radius: 20px;
 
   /* Семантичні кольори */
-  --success: #22c55e;
-  --success-dim: rgba(34,197,94,0.1);
-  --warning: #e0a040;
-  --warning-dim: rgba(224,160,64,0.08);
-  --overlay-bg: rgba(0,0,0,0.6);
+  --success: #1a9e45;
+  --success-dim: rgba(26,158,69,0.10);
+  --warning: #b87a00;
+  --warning-dim: rgba(184,122,0,0.08);
+  --overlay-bg: rgba(0,0,0,0.35);
   --white: #ffffff;
 
   /* Кольори методів оплати */
-  --fop: #60a0f0;
-  --fop-dim: rgba(96,160,240,0.1);
-  --card: #f0b460;
-  --card-dim: rgba(240,180,96,0.1);
-  --deposit: #a855f7;
-  --deposit-dim: rgba(168,85,247,0.1);
+  --fop: #2d78d6;
+  --fop-dim: rgba(45,120,214,0.10);
+  --card: #c07000;
+  --card-dim: rgba(192,112,0,0.10);
+  --deposit: #8b34d4;
+  --deposit-dim: rgba(139,52,212,0.10);
 
   /* Accent з різними прозорістю */
-  --accent-border: rgba(200,240,96,0.25);
-  --accent-border-hover: rgba(200,240,96,0.4);
-  --accent-border-strong: rgba(200,240,96,0.5);
-  --danger-border: rgba(255,92,92,0.3);
-  --danger-border-hover: rgba(255,92,92,0.4);
-  --danger-border-strong: rgba(255,92,92,0.5);
+  --accent-border: rgba(92,158,0,0.30);
+  --accent-border-hover: rgba(92,158,0,0.50);
+  --accent-border-strong: rgba(92,158,0,0.65);
+  --danger-border: rgba(217,53,53,0.25);
+  --danger-border-hover: rgba(217,53,53,0.40);
+  --danger-border-strong: rgba(217,53,53,0.50);
 
   /* Анімації */
   --motion-fast:     0.12s ease-out;
@@ -60,41 +60,6 @@
   --sidebar-w: 196px;
   --topbar-h: 64px;
   --bottom-nav-h: 56px;
-}
-
-.light {
-  --bg: #f5f5f2;
-  --bg-2: #ffffff;
-  --bg-3: #eeede9;
-  --border: rgba(0,0,0,0.08);
-  --border-hover: rgba(0,0,0,0.16);
-  --border-strong: rgba(0,0,0,0.14);
-  --text: #1a1917;
-  --text-2: #6b6864;
-  --text-3: #a09d9a;
-  --overlay-bg: rgba(0,0,0,0.35);
-  --accent: #5c9e00;
-  --accent-dim: rgba(92,158,0,0.10);
-  --accent-text: #ffffff;
-  --accent-border: rgba(92,158,0,0.30);
-  --accent-border-hover: rgba(92,158,0,0.50);
-  --accent-border-strong: rgba(92,158,0,0.65);
-  --danger: #d93535;
-  --danger-dim: rgba(217,53,53,0.08);
-  --danger-border: rgba(217,53,53,0.25);
-  --danger-border-hover: rgba(217,53,53,0.40);
-  --danger-border-strong: rgba(217,53,53,0.50);
-  --success: #1a9e45;
-  --success-dim: rgba(26,158,69,0.10);
-  --warning: #b87a00;
-  --warning-dim: rgba(184,122,0,0.08);
-  --fop: #2d78d6;
-  --fop-dim: rgba(45,120,214,0.10);
-  --card: #c07000;
-  --card-dim: rgba(192,112,0,0.10);
-  --deposit: #8b34d4;
-  --deposit-dim: rgba(139,52,212,0.10);
-  --table-hover-bg: var(--bg-3);
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; zoom: 1.5; }

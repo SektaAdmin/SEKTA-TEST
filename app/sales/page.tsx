@@ -108,7 +108,7 @@ export default function SalesPage() {
   }
 
   return (
-    <div className={`${styles.layout} light`}>
+    <div className={styles.layout}>
       <Sidebar />
       <BottomNav />
       <main className={styles.main}>
