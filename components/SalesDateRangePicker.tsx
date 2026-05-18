@@ -283,8 +283,12 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     return (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault()
       const text = e.clipboardData.getData('text')
-      const digits = text.replace(/\D/g, '').slice(0, 8)
-      handleRawChange(digits, field)
+      let digits = text.replace(/\D/g, '')
+      // 2-цифровий рік: якщо 6 цифр → розширити рік до 4 (ДДММРР → ДДММ20РР)
+      if (digits.length === 6) {
+        digits = digits.slice(0, 4) + '20' + digits.slice(4)
+      }
+      handleRawChange(digits.slice(0, 8), field)
     }
   }
 
