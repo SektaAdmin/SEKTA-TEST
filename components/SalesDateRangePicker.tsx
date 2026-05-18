@@ -1,8 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays, isSameDay } from '@/lib/dateUtils'
-import { calStyles } from './CalendarPopover'
+import { buildCalendarDays } from '@/lib/dateUtils'
 import styles from './SalesDateRangePicker.module.css'
 
 const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
@@ -36,7 +35,11 @@ function startOfDay(d: Date): Date {
   const r = new Date(d); r.setHours(0,0,0,0); return r
 }
 
-type Preset = { label: string; getRange: () => { from: string; to: string } }
+function isTodayYMD(ymd: string): boolean {
+  return ymd === toYMD(startOfDay(new Date()))
+}
+
+type Preset = { label: string; getRange: () => { from: string; to: string } | null }
 
 function buildPresets(): Preset[] {
   const now = startOfDay(new Date())
@@ -53,17 +56,23 @@ function buildPresets(): Preset[] {
       },
     },
     {
-      label: 'Останні 7 днів',
+      label: 'Цей тиждень',
       getRange: () => {
-        const d = new Date(now); d.setDate(d.getDate()-6)
-        return { from: toYMD(d), to: toYMD(now) }
+        const d = new Date(now)
+        const day = d.getDay() === 0 ? 6 : d.getDay()-1
+        const start = new Date(d); start.setDate(d.getDate()-day)
+        return { from: toYMD(start), to: toYMD(now) }
       },
     },
     {
-      label: 'Останні 30 днів',
+      label: 'Минулий тиждень',
       getRange: () => {
-        const d = new Date(now); d.setDate(d.getDate()-29)
-        return { from: toYMD(d), to: toYMD(now) }
+        const d = new Date(now)
+        const day = d.getDay() === 0 ? 6 : d.getDay()-1
+        const thisMonday = new Date(d); thisMonday.setDate(d.getDate()-day)
+        const lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate()-7)
+        const lastSunday = new Date(thisMonday); lastSunday.setDate(thisMonday.getDate()-1)
+        return { from: toYMD(lastMonday), to: toYMD(lastSunday) }
       },
     },
     {
@@ -82,26 +91,109 @@ function buildPresets(): Preset[] {
         return { from: toYMD(start), to: toYMD(end) }
       },
     },
+    {
+      label: 'Цей рік',
+      getRange: () => {
+        const start = new Date(now.getFullYear(), 0, 1)
+        const end = new Date(now.getFullYear(), 11, 31)
+        return { from: toYMD(start), to: toYMD(end) }
+      },
+    },
+    {
+      label: 'Минулий рік',
+      getRange: () => {
+        const start = new Date(now.getFullYear()-1, 0, 1)
+        const end = new Date(now.getFullYear()-1, 11, 31)
+        return { from: toYMD(start), to: toYMD(end) }
+      },
+    },
+    {
+      label: 'Весь час',
+      getRange: () => null,
+    },
   ]
 }
 
 function getActivePreset(dateFrom: string, dateTo: string): string | null {
+  if (!dateFrom && !dateTo) return 'Весь час'
   for (const p of buildPresets()) {
     const r = p.getRange()
+    if (!r) continue
     if (r.from === dateFrom && r.to === dateTo) return p.label
   }
   return null
 }
 
+function renderMonthGrid(
+  year: number,
+  month: number,
+  effectiveFrom: string,
+  effectiveTo: string,
+  pendingFrom: string | null,
+  onDayClick: (ymd: string) => void,
+  onDayHover: (ymd: string) => void,
+  onDayLeave: () => void,
+) {
+  const days = buildCalendarDays(year, month)
+  const todayYMD = toYMD(startOfDay(new Date()))
+
+  return days.map((day, i) => {
+    const ymd = toYMD(day)
+    const inMonth = day.getMonth() === month
+    const isToday = ymd === todayYMD
+
+    const from = effectiveFrom
+    const to = effectiveTo
+
+    const isStart = from ? ymd === from : false
+    const isEnd = to ? ymd === to : false
+    const inRange = from && to ? ymd > from && ymd < to : false
+    const isEndpoint = isStart || isEnd
+    const isSingleDay = from && to && from === to && isStart
+
+    return (
+      <button
+        key={`${year}-${month}-${i}`}
+        type="button"
+        className={[
+          styles.day,
+          !inMonth ? styles.dayOutside : '',
+          inRange ? styles.dayInRange : '',
+          isStart && !isSingleDay ? styles.dayRangeStart : '',
+          isEnd && !isSingleDay ? styles.dayRangeEnd : '',
+          isEndpoint ? styles.dayEndpoint : '',
+        ].filter(Boolean).join(' ')}
+        onClick={() => onDayClick(ymd)}
+        onMouseEnter={() => pendingFrom && onDayHover(ymd)}
+        onMouseLeave={() => pendingFrom && onDayLeave()}
+        aria-label={day.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
+        aria-pressed={isEndpoint}
+      >
+        <span className={styles.dayNum}>{day.getDate()}</span>
+        {isToday && <span className={styles.todayDot} aria-hidden="true" />}
+      </button>
+    )
+  })
+}
+
 export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, onChangeTo, onClear }: Props) {
   const [open, setOpen] = useState(false)
-  const [pendingStart, setPendingStart] = useState<string | null>(null)
+
+  // Draft state — застосовується лише через Apply
+  const [pendingFrom, setPendingFrom] = useState<string>(dateFrom)
+  const [pendingTo, setPendingTo] = useState<string>(dateTo)
+  // Першый клік вибору (ще не другий)
+  const [selectingFrom, setSelectingFrom] = useState<string | null>(null)
   const [hoverDate, setHoverDate] = useState<string | null>(null)
 
   const now = startOfDay(new Date())
-  const initMonth = parseYMD(dateFrom) ?? now
-  const [viewYear, setViewYear] = useState(initMonth.getFullYear())
-  const [viewMonth, setViewMonth] = useState(initMonth.getMonth())
+  const initLeft = parseYMD(dateFrom) ?? now
+  const [leftYear, setLeftYear] = useState(initLeft.getFullYear())
+  const [leftMonth, setLeftMonth] = useState(initLeft.getMonth())
+
+  // Правий місяць = лівий + 1
+  const rightMonth = leftMonth === 11 ? 0 : leftMonth + 1
+  const rightYear = leftMonth === 11 ? leftYear + 1 : leftYear
 
   const triggerRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -115,82 +207,133 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
     ? [formatDisplay(dateFrom), formatDisplay(dateTo)].filter(Boolean).join(' – ')
     : 'Будь-який період'
 
+  // Синхронізувати pending при відкритті
+  function handleOpen() {
+    setPendingFrom(dateFrom)
+    setPendingTo(dateTo)
+    setSelectingFrom(null)
+    setHoverDate(null)
+    const d = parseYMD(dateFrom) ?? now
+    setLeftYear(d.getFullYear())
+    setLeftMonth(d.getMonth())
+    setOpen(true)
+  }
+
   useEffect(() => {
     if (!open || !triggerRef.current) return
     const rect = triggerRef.current.getBoundingClientRect()
+    // Перевірити чи попап вліз справа, інакше вирівняти по правому краю тригера
     setPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX })
   }, [open])
 
   useEffect(() => {
-    if (!open) { setPendingStart(null); setHoverDate(null); return }
+    if (!open) return
     function onMouseDown(e: MouseEvent) {
       const t = e.target as Node
       if (
         triggerRef.current && !triggerRef.current.contains(t) &&
         popoverRef.current && !popoverRef.current.contains(t)
-      ) { setOpen(false) }
+      ) {
+        setPendingFrom(dateFrom)
+        setPendingTo(dateTo)
+        setSelectingFrom(null)
+        setOpen(false)
+      }
     }
-    function onKeyDown(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false) }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setPendingFrom(dateFrom)
+        setPendingTo(dateTo)
+        setSelectingFrom(null)
+        setOpen(false)
+      }
+    }
     document.addEventListener('mousedown', onMouseDown)
     document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('mousedown', onMouseDown)
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [open])
+  }, [open, dateFrom, dateTo])
 
   function handleDayClick(ymd: string) {
-    if (!pendingStart) {
-      setPendingStart(ymd)
+    if (!selectingFrom) {
+      // Перший клік
+      setSelectingFrom(ymd)
+      setPendingFrom(ymd)
+      setPendingTo('')
     } else {
-      let from = pendingStart
+      // Другий клік
+      let from = selectingFrom
       let to = ymd
       if (to < from) { [from, to] = [to, from] }
-      onChangeFrom(from)
-      onChangeTo(to)
-      setPendingStart(null)
+      setPendingFrom(from)
+      setPendingTo(to)
+      setSelectingFrom(null)
       setHoverDate(null)
-      setOpen(false)
     }
   }
 
   function handlePreset(preset: Preset) {
     const r = preset.getRange()
-    onChangeFrom(r.from)
-    onChangeTo(r.to)
-    setPendingStart(null)
+    if (!r) {
+      onClear()
+    } else {
+      onChangeFrom(r.from)
+      onChangeTo(r.to)
+    }
+    setSelectingFrom(null)
+    setHoverDate(null)
+    setOpen(false)
+  }
+
+  function handleApply() {
+    onChangeFrom(pendingFrom)
+    onChangeTo(pendingTo)
+    setSelectingFrom(null)
+    setOpen(false)
+  }
+
+  function handleCancel() {
+    setPendingFrom(dateFrom)
+    setPendingTo(dateTo)
+    setSelectingFrom(null)
     setHoverDate(null)
     setOpen(false)
   }
 
   function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y-1); setViewMonth(11) }
-    else setViewMonth(m => m-1)
+    if (leftMonth === 0) { setLeftYear(y => y-1); setLeftMonth(11) }
+    else setLeftMonth(m => m-1)
   }
   function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y+1); setViewMonth(0) }
-    else setViewMonth(m => m+1)
+    if (leftMonth === 11) { setLeftYear(y => y+1); setLeftMonth(0) }
+    else setLeftMonth(m => m+1)
   }
 
-  const days = buildCalendarDays(viewYear, viewMonth)
-  const today = now
+  // Ефективний діапазон для рендеру (з hover-preview)
+  let effectiveFrom = pendingFrom
+  let effectiveTo = pendingTo
 
-  // Effective range for highlight (supports hover preview)
-  const effectiveFrom = pendingStart ?? dateFrom
-  const effectiveTo = pendingStart
-    ? (hoverDate
-        ? (hoverDate >= pendingStart ? hoverDate : pendingStart)
-        : null)
-    : dateTo
-  const effectiveFromFinal = pendingStart && hoverDate && hoverDate < pendingStart ? hoverDate : effectiveFrom
-  const effectiveToFinal = pendingStart && hoverDate && hoverDate < pendingStart ? pendingStart : effectiveTo
+  if (selectingFrom && hoverDate) {
+    if (hoverDate >= selectingFrom) {
+      effectiveFrom = selectingFrom
+      effectiveTo = hoverDate
+    } else {
+      effectiveFrom = hoverDate
+      effectiveTo = selectingFrom
+    }
+  } else if (selectingFrom && !hoverDate) {
+    effectiveFrom = selectingFrom
+    effectiveTo = ''
+  }
 
   return (
     <div className={styles.wrap} ref={triggerRef}>
       <button
         type="button"
         className={`${styles.trigger} ${open ? styles.triggerOpen : ''} ${!hasValue ? styles.triggerEmpty : ''}`}
-        onClick={() => setOpen(o => !o)}
+        onClick={handleOpen}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
@@ -199,7 +342,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
           <path d="M5 1v3M11 1v3M2 7h12"/>
         </svg>
         <span>{triggerLabel}</span>
-        <svg className={styles.chevron} width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M2 3.5l3 3 3-3"/>
         </svg>
       </button>
@@ -215,7 +358,6 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
         >
           {/* Ліва колонка — пресети */}
           <div className={styles.presets}>
-            <div className={styles.presetsTitle}>Швидкий вибір</div>
             {presets.map(p => (
               <button
                 key={p.label}
@@ -226,76 +368,67 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
                 {p.label}
               </button>
             ))}
-            {hasValue && (
-              <button
-                type="button"
-                className={styles.clearBtn}
-                onClick={() => { onClear(); setOpen(false) }}
-              >
-                Скинути
-              </button>
-            )}
           </div>
 
-          {/* Права колонка — календар */}
-          <div className={styles.calWrap}>
-            <div className={styles.calHeader}>
-              <button type="button" className={styles.monthNav} onClick={prevMonth} aria-label="Попередній місяць">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M8 2L4 6l4 4"/>
-                </svg>
-              </button>
-              <span className={styles.monthLabel}>{MONTHS_UK[viewMonth]} {viewYear}</span>
-              <button type="button" className={styles.monthNav} onClick={nextMonth} aria-label="Наступний місяць">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M4 2l4 4-4 4"/>
-                </svg>
-              </button>
-            </div>
-
-            <div className={styles.grid}>
-              {WEEKDAYS.map(d => (
-                <div key={d} className={calStyles.weekday}>{d}</div>
-              ))}
-              {days.map((day, i) => {
-                const ymd = toYMD(day)
-                const inMonth = day.getMonth() === viewMonth
-                const isToday = isSameDay(day, today)
-                const isStart = effectiveFromFinal ? ymd === effectiveFromFinal : false
-                const isEnd = effectiveToFinal ? ymd === effectiveToFinal : false
-                const inRange = effectiveFromFinal && effectiveToFinal
-                  ? ymd > effectiveFromFinal && ymd < effectiveToFinal
-                  : false
-                const isEndpoint = isStart || isEnd
-
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    className={[
-                      calStyles.day,
-                      !inMonth ? calStyles.dayOutside : '',
-                      (inRange || isEndpoint) ? calStyles.dayInWeek : '',
-                      isStart ? calStyles.dayWeekStart : '',
-                      isEnd ? calStyles.dayWeekEnd : '',
-                      isEndpoint ? calStyles.daySelected : '',
-                    ].filter(Boolean).join(' ')}
-                    onClick={() => handleDayClick(ymd)}
-                    onMouseEnter={() => pendingStart && setHoverDate(ymd)}
-                    onMouseLeave={() => pendingStart && setHoverDate(null)}
-                    aria-label={day.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    aria-pressed={isEndpoint}
-                  >
-                    <span className={calStyles.dayNum}>{day.getDate()}</span>
-                    {isToday && <span className={calStyles.todayDot} aria-hidden="true" />}
+          {/* Права частина — два календарі + футер */}
+          <div className={styles.right}>
+            <div className={styles.calendars}>
+              {/* Лівий місяць */}
+              <div className={styles.calWrap}>
+                <div className={styles.calHeader}>
+                  <button type="button" className={styles.monthNav} onClick={prevMonth} aria-label="Попередній місяць">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2L4 6l4 4"/></svg>
                   </button>
-                )
-              })}
+                  <span className={styles.monthLabel}>{MONTHS_UK[leftMonth]} {leftYear}</span>
+                  <div className={styles.monthNavPlaceholder} />
+                </div>
+                <div className={styles.grid}>
+                  {WEEKDAYS.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                  {renderMonthGrid(leftYear, leftMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
+                </div>
+              </div>
+
+              <div className={styles.calDivider} />
+
+              {/* Правий місяць */}
+              <div className={styles.calWrap}>
+                <div className={styles.calHeader}>
+                  <div className={styles.monthNavPlaceholder} />
+                  <span className={styles.monthLabel}>{MONTHS_UK[rightMonth]} {rightYear}</span>
+                  <button type="button" className={styles.monthNav} onClick={nextMonth} aria-label="Наступний місяць">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 2l4 4-4 4"/></svg>
+                  </button>
+                </div>
+                <div className={styles.grid}>
+                  {WEEKDAYS.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                  {renderMonthGrid(rightYear, rightMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
+                </div>
+              </div>
             </div>
 
-            {pendingStart && (
-              <div className={styles.hint}>Оберіть кінцеву дату</div>
-            )}
+            {/* Футер */}
+            <div className={styles.footer}>
+              <div className={styles.footerDates}>
+                <span className={styles.dateField}>
+                  {effectiveFrom ? formatDisplay(effectiveFrom) : <span className={styles.datePlaceholder}>дд.мм.рррр</span>}
+                </span>
+                <span className={styles.dateSep}>—</span>
+                <span className={styles.dateField}>
+                  {effectiveTo ? formatDisplay(effectiveTo) : <span className={styles.datePlaceholder}>дд.мм.рррр</span>}
+                </span>
+              </div>
+              <div className={styles.footerBtns}>
+                <button type="button" className={styles.btnCancel} onClick={handleCancel}>Скасувати</button>
+                <button
+                  type="button"
+                  className={styles.btnApply}
+                  onClick={handleApply}
+                  disabled={!pendingFrom && !pendingTo}
+                >
+                  Застосувати
+                </button>
+              </div>
+            </div>
           </div>
         </div>,
         document.body

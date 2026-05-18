@@ -1,67 +1,47 @@
-.wrap {
-  position: relative;
-}
+/* Trigger */
+.wrap { position: relative; }
 
 .trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: var(--control-h);
-  padding: 0 10px 0 10px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
   border: 0.5px solid var(--border);
   background: transparent;
   color: var(--text);
   font-size: 13px;
   font-weight: 500;
+  font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast), color var(--motion-fast);
   white-space: nowrap;
   user-select: none;
-  font-family: var(--font);
 }
+.trigger:hover { border-color: var(--border-hover); }
+.trigger:active { transform: translateY(0.5px); }
 
-.trigger:hover {
-  border-color: var(--border-hover);
-}
-
-.trigger:active {
-  transform: translateY(0.5px);
-}
-
-.triggerEmpty {
-  color: var(--text-3);
-  font-weight: 400;
-}
-
+.triggerEmpty { color: var(--text-3); font-weight: 400; }
 .triggerEmpty .calIcon,
-.triggerEmpty .chevron {
-  color: var(--text-3);
-}
+.triggerEmpty .chevron { color: var(--text-3); }
 
 .triggerOpen {
   border-color: var(--accent-border);
   background: var(--accent-dim);
   color: var(--accent);
 }
-
 .triggerOpen .calIcon,
-.triggerOpen .chevron {
-  color: var(--accent);
-}
+.triggerOpen .chevron { color: var(--accent); }
 
-.calIcon {
-  color: var(--text-3);
-  flex-shrink: 0;
-  transition: color var(--motion-fast);
-}
-
+.calIcon { color: var(--text-3); flex-shrink: 0; transition: color var(--motion-fast); }
 .chevron {
   color: var(--text-3);
   flex-shrink: 0;
-  transition: color var(--motion-fast);
   margin-left: 2px;
+  transition: color var(--motion-fast), transform var(--motion-fast);
 }
+.chevronOpen { transform: rotate(180deg); }
 
 /* Popover */
 .popover {
@@ -70,11 +50,10 @@
   background: var(--bg-2);
   border: 0.5px solid var(--border-strong);
   border-radius: var(--radius);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.05);
   overflow: hidden;
   animation: popoverIn var(--motion-fast) both;
 }
-
 @keyframes popoverIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -85,27 +64,17 @@
   width: 148px;
   flex-shrink: 0;
   border-right: 0.5px solid var(--border);
-  padding: 12px 8px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.presetsTitle {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0 8px;
-  margin-bottom: 6px;
+  gap: 1px;
 }
 
 .presetBtn {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 6px 8px;
+  padding: 7px 10px;
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;
@@ -115,49 +84,36 @@
   cursor: pointer;
   transition: background var(--motion-fast), color var(--motion-fast);
 }
-
-.presetBtn:hover {
-  background: var(--bg-3);
-  color: var(--text);
-}
+.presetBtn:hover { background: var(--bg-3); color: var(--text); }
 
 .presetBtnActive {
   background: var(--accent-dim);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
+}
+.presetBtnActive:hover { background: var(--accent-dim); color: var(--accent); }
+
+/* Right side */
+.right {
+  display: flex;
+  flex-direction: column;
 }
 
-.presetBtnActive:hover {
-  background: var(--accent-dim);
-  color: var(--accent);
+/* Two calendars side by side */
+.calendars {
+  display: flex;
+  gap: 0;
+  padding: 12px 16px 8px;
 }
 
-.clearBtn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: transparent;
-  color: var(--danger);
-  font-size: 12px;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: background var(--motion-fast);
-  margin-top: 4px;
+.calDivider {
+  width: 0.5px;
+  background: var(--border);
+  margin: 0 16px;
+  align-self: stretch;
 }
 
-.clearBtn:hover {
-  background: var(--danger-dim);
-}
-
-/* Calendar column */
-.calWrap {
-  padding: 12px;
-  width: 224px;
-  flex-shrink: 0;
-}
+.calWrap { width: 224px; }
 
 .calHeader {
   display: flex;
@@ -186,27 +142,170 @@
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast);
 }
+.monthNav:hover { border-color: var(--border-hover); color: var(--text); }
+.monthNav:active { transform: translateY(0.5px); }
 
-.monthNav:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-}
-
-.monthNav:active {
-  transform: translateY(0.5px);
-}
+.monthNavPlaceholder { width: 22px; height: 22px; flex-shrink: 0; }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  gap: 0;
 }
 
-.hint {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--text-3);
+.weekday {
   text-align: center;
-  padding: 4px 0;
-  border-top: 0.5px solid var(--border);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding-bottom: 6px;
+  letter-spacing: 0.02em;
 }
+
+/* Day cell */
+.day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--motion-fast);
+}
+.day:hover { color: var(--text); }
+.day:hover .dayNum { background: var(--bg-3); }
+
+.dayNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  transition: background var(--motion-fast), color var(--motion-fast);
+  position: relative;
+  z-index: 1;
+}
+
+.dayOutside { color: var(--text-3); opacity: 0.4; }
+
+.todayDot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  z-index: 2;
+}
+
+/* Range highlight — сіра смуга між кінцями */
+.dayInRange::before {
+  content: '';
+  position: absolute;
+  top: 3px; bottom: 3px; left: 0; right: 0;
+  background: var(--bg-3);
+  z-index: 0;
+}
+
+/* Кінець діапазону — смуга тільки ліворуч */
+.dayRangeEnd::before {
+  right: 50%;
+}
+
+/* Початок діапазону — смуга тільки праворуч */
+.dayRangeStart::before {
+  left: 50%;
+}
+
+/* Ендпоінт — заповнений квадрат */
+.dayEndpoint .dayNum {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.dayEndpoint:hover .dayNum {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.dayEndpoint { color: var(--accent-text); }
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 12px;
+  border-top: 0.5px solid var(--border);
+  gap: 12px;
+}
+
+.footerDates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateField {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-3);
+  min-width: 100px;
+  justify-content: center;
+  font-family: var(--font);
+}
+
+.datePlaceholder { color: var(--text-3); }
+
+.dateSep { font-size: 13px; color: var(--text-3); }
+
+.footerBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btnCancel {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+.btnCancel:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btnApply {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity var(--motion-fast);
+}
+.btnApply:hover { opacity: 0.88; }
+.btnApply:disabled { opacity: 0.4; cursor: not-allowed; }
