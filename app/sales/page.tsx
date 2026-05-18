@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import SaleModal from '@/components/SaleModal'
-import DatePicker from '@/components/DatePicker'
+import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
@@ -134,12 +134,13 @@ export default function SalesPage() {
             />
           </div>
 
-          <div className={styles.dateRange}>
-            <span className={styles.dateLabel}>Від</span>
-            <DatePicker value={dateFrom} onChange={handleDateFrom} placeholder="Будь-яка" />
-            <span className={styles.dateLabel}>До</span>
-            <DatePicker value={dateTo} onChange={handleDateTo} placeholder="Будь-яка" />
-          </div>
+          <SalesDateRangePicker
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onChangeFrom={handleDateFrom}
+            onChangeTo={handleDateTo}
+            onClear={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
+          />
 
           {hasFilters && (
             <button className={styles.filterClear} onClick={clearFilters}>

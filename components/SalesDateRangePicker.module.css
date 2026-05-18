@@ -1,0 +1,212 @@
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--control-h);
+  padding: 0 10px 0 10px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), background var(--motion-fast), color var(--motion-fast);
+  white-space: nowrap;
+  user-select: none;
+  font-family: var(--font);
+}
+
+.trigger:hover {
+  border-color: var(--border-hover);
+}
+
+.trigger:active {
+  transform: translateY(0.5px);
+}
+
+.triggerEmpty {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.triggerEmpty .calIcon,
+.triggerEmpty .chevron {
+  color: var(--text-3);
+}
+
+.triggerOpen {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.triggerOpen .calIcon,
+.triggerOpen .chevron {
+  color: var(--accent);
+}
+
+.calIcon {
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: color var(--motion-fast);
+}
+
+.chevron {
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: color var(--motion-fast);
+  margin-left: 2px;
+}
+
+/* Popover */
+.popover {
+  z-index: 9999;
+  display: flex;
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
+  animation: popoverIn var(--motion-fast) both;
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Presets column */
+.presets {
+  width: 148px;
+  flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.presetsTitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+
+.presetBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.presetBtn:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.presetBtnActive {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.presetBtnActive:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.clearBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+  margin-top: 4px;
+}
+
+.clearBtn:hover {
+  background: var(--danger-dim);
+}
+
+/* Calendar column */
+.calWrap {
+  padding: 12px;
+  width: 224px;
+  flex-shrink: 0;
+}
+
+.calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.monthLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+
+.monthNav:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+.monthNav:active {
+  transform: translateY(0.5px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 4px 0;
+  border-top: 0.5px solid var(--border);
+}
