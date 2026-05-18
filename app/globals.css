@@ -62,6 +62,41 @@
   --bottom-nav-h: 56px;
 }
 
+.light {
+  --bg: #f5f5f2;
+  --bg-2: #ffffff;
+  --bg-3: #eeede9;
+  --border: rgba(0,0,0,0.08);
+  --border-hover: rgba(0,0,0,0.16);
+  --border-strong: rgba(0,0,0,0.14);
+  --text: #1a1917;
+  --text-2: #6b6864;
+  --text-3: #a09d9a;
+  --overlay-bg: rgba(0,0,0,0.35);
+  --accent: #5c9e00;
+  --accent-dim: rgba(92,158,0,0.10);
+  --accent-text: #ffffff;
+  --accent-border: rgba(92,158,0,0.30);
+  --accent-border-hover: rgba(92,158,0,0.50);
+  --accent-border-strong: rgba(92,158,0,0.65);
+  --danger: #d93535;
+  --danger-dim: rgba(217,53,53,0.08);
+  --danger-border: rgba(217,53,53,0.25);
+  --danger-border-hover: rgba(217,53,53,0.40);
+  --danger-border-strong: rgba(217,53,53,0.50);
+  --success: #1a9e45;
+  --success-dim: rgba(26,158,69,0.10);
+  --warning: #b87a00;
+  --warning-dim: rgba(184,122,0,0.08);
+  --fop: #2d78d6;
+  --fop-dim: rgba(45,120,214,0.10);
+  --card: #c07000;
+  --card-dim: rgba(192,112,0,0.10);
+  --deposit: #8b34d4;
+  --deposit-dim: rgba(139,52,212,0.10);
+  --table-hover-bg: var(--bg-3);
+}
+
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; zoom: 1.5; }
 
 input, select, textarea, button { font-family: var(--font); font-size: 14px; }
