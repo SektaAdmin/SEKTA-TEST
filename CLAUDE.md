@@ -6,7 +6,8 @@
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Last Updated**: 2026-05-18 (Повернення сесій при скасуванні: reverse_attendance, cancel_class_and_restore_sessions)
+- **Stack Additions**: Tailwind CSS, shadcn/ui (Этап 1 инфраструктуры завершена)
+- **Last Updated**: 2026-05-18 (Этап 1: Tailwind + shadcn/ui инфра; CSS Modules не зінегрировані)
 
 ---
 
@@ -459,6 +460,15 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 - @supabase/supabase-js 2.43.4
 - @supabase/ssr 0.10.2
 
+**UI & Styling (Etap 1 — завершено):**
+- Tailwind CSS + @tailwindcss/postcss
+- shadcn/ui (компоненти: Select, Popover, Dialog, Calendar, Button, Command)
+- @radix-ui/* (react-select, react-popover, react-dialog, react-slot, react-icons)
+- tailwindcss-animate, class-variance-authority, clsx, tailwind-merge
+- lucide-react (іконки)
+- cmdk (Command Palette)
+- react-day-picker (Calendar)
+
 **Environment:**
 - dotenv 17.4.2
 
@@ -468,6 +478,13 @@ npm run dev      # Start dev server (localhost:3000)
 npm run build    # Build for production
 npm run start    # Start production server
 ```
+
+**Tailwind + shadcn/ui архітектура:**
+- CSS-токени з globals.css відображаються як Tailwind-утиліти через tailwind.config.ts
+- Всі компоненти shadcn у components/ui/
+- lib/utils.ts: функція cn() для merge Tailwind classNames
+- Існуючі CSS Modules залишаються незмінними (паралельне існування)
+- Наступні етапи: заміна нативних select на shadcn Select, DatePicker на shadcn Calendar, тощо
 
 ---
 
