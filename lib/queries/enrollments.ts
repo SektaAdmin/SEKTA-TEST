@@ -157,7 +157,7 @@ export async function enrollClient(
   clientId: string,
   hoursAttended?: number[]
 ): Promise<{ error: string | null; isDuplicate: boolean }> {
-  const { error } = await supabase
+  const { error: insertError } = await supabase
     .from('enrollments')
     .insert({
       class_id: classId,
@@ -165,7 +165,43 @@ export async function enrollClient(
       status: 'enrolled',
       ...(hoursAttended !== undefined ? { hours_attended: hoursAttended } : {}),
     })
-  if (!error) return { error: null, isDuplicate: false }
-  const isDuplicate = error.message.includes('duplicate') || error.code === '23505'
-  return { error: error.message, isDuplicate }
+  if (insertError) {
+    const isDuplicate = insertError.message.includes('duplicate') || insertError.code === '23505'
+    return { error: insertError.message, isDuplicate }
+  }
+
+  // For rental types, automatically create a sales record
+  const { data: classData } = await supabase
+    .from('classes')
+    .select('ticket_type')
+    .eq('id', classId)
+    .single()
+
+  const ticketType = classData?.ticket_type
+  const RENTAL_TYPES = ['hallrental', 'smallhallrental', 'pylonrental', 'striprental']
+
+  if (ticketType && RENTAL_TYPES.includes(ticketType)) {
+    const { data: ticketData } = await supabase
+      .from('tickets')
+      .select('id, name, price, sessions')
+      .eq('ticket_type', ticketType)
+      .eq('is_active', true)
+      .single()
+
+    if (ticketData) {
+      // Create sales record for the rental
+      await supabase.rpc('create_sale', {
+        p_client_id: clientId,
+        p_ticket_id: ticketData.id,
+        p_trainer_id: null,
+        p_price_paid: ticketData.price,
+        p_amount_given: ticketData.price,
+        p_payment_method: 'deposit',
+        p_notes: `Оренда через розклад`,
+        p_created_at: new Date().toISOString(),
+      })
+    }
+  }
+
+  return { error: null, isDuplicate: false }
 }
