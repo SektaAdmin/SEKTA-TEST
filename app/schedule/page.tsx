@@ -44,6 +44,7 @@ const TYPE_COLORS = [
 ]
 
 function typeColor(code: string): string {
+  if (code === 'group') return '#5b8af5'
   let h = 0
   for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
   return TYPE_COLORS[h % TYPE_COLORS.length]
