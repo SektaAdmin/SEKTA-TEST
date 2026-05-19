@@ -65,19 +65,25 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>SEKTA</div>
-      <nav className={styles.nav}>
-        {nav.map(item => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`${styles.item} ${pathname === item.href || (item.href !== '/schedule' && pathname.startsWith(item.href)) ? styles.active : ''}`}
-          >
-            <span className={styles.icon}>{item.icon}</span>
-            {item.label}
-          </Link>
-        ))}
+      <nav className={styles.nav} aria-label="Основна навігація">
+        {nav.map(item => {
+          const isActive = item.href === '/schedule'
+            ? pathname === '/schedule' || pathname.startsWith('/schedule/')
+            : pathname === item.href || pathname.startsWith(item.href + '/')
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.item} ${isActive ? styles.active : ''}`}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <span className={styles.icon} aria-hidden="true">{item.icon}</span>
+              {item.label}
+            </Link>
+          )
+        })}
       </nav>
-      <button className={styles.logout} onClick={handleLogout}>
+      <button type="button" className={styles.logout} onClick={handleLogout} aria-label="Вийти з системи">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
           <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3"/>
           <polyline points="11,11 14,8 11,5"/>
