@@ -7,7 +7,7 @@
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Stack Additions**: Tailwind CSS, shadcn/ui (Этап 1 инфраструктуры завершена)
-- **Last Updated**: 2026-05-18 (Этап 1: Tailwind + shadcn/ui инфра; CSS Modules не зінегрировані)
+- **Last Updated**: 2026-05-19 (Etap 1 завершена: Tailwind CSS + shadcn/ui інфраструктура, компоненти модалок, розклад з динамічною висотою, Supabase Realtime)
 
 ---
 
@@ -607,5 +607,3 @@ lib/
 7. **GIN-индексы на clients** — использовать для fuzzy-поиска по фамилии и телефону (`%` или `similarity()`)
 
 ---
-
-**Last Updated**: 2026-05-17 (Supabase Realtime: useRealtime хук, підписки в усіх хуках даних і компонентах; REPLICA IDENTITY FULL + supabase_realtime publication для всіх таблиць)
