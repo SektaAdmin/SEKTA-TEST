@@ -383,7 +383,13 @@ update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, 
 ```
 → TABLE(success boolean, restored_count int, error_message text)
 ```
-Атомарно: повертає сесії всім клієнтам зі статусом `attended` (batch INSERT в `client_session_balances`), скидає їх enrollment на `cancelled`, встановлює `classes.is_cancelled=true`. Повертає кількість клієнтів яким повернуті сесії.
+Атомарно скасовує заняття та повертає сесії клієнтам:
+- **`attended`**: повертає `sessions_used` (кількість занять які клієнт спожив)
+- **`noshow`**: повертає `duration_min / 60` (тренер провів, клієнт не прийшов — поверти сесії)
+- **`enrolled`** (просто записані): скасовуються без повернення сесій
+- **`waitlist`**: залишаються у черзі
+
+Встановлює `classes.is_cancelled=true` та повертає кількість клієнтів яким повернуті сесії.
 
 **Використовувати замість прямого UPDATE classes.is_cancelled=true при скасуванні заняття.**
 
