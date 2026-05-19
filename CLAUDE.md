@@ -7,7 +7,7 @@
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Stack Additions**: Tailwind CSS, shadcn/ui (Этап 1 инфраструктуры завершена)
-- **Last Updated**: 2026-05-19 (Etap 1 завершена: Tailwind CSS + shadcn/ui інфраструктура, компоненти модалок, розклад з динамічною висотою, Supabase Realtime)
+- **Last Updated**: 2026-05-19 (Etap 1 завершена: Tailwind CSS + shadcn/ui інфраструктура, компоненти модалок, розклад з динамічною висотою, Supabase Realtime. Исправлено: автоматическое создание sales при записи на платные услуги аренды залов)
 
 ---
 
