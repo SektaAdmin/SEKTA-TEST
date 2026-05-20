@@ -64,7 +64,8 @@ export default function ScheduleDetailCard({ classId, onClose, onOpenFull }: Pro
   const startTime = new Date(cls.starts_at)
   const endTime = new Date(startTime.getTime() + cls.duration_min * 60000)
   const timeStr = `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}–${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`
-  const dateStr = startTime.toLocaleString('uk-UA', { dateStyle: 'short', weekday: 'short' })
+  const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+  const dateStr = `${DAYS_SHORT[startTime.getDay()]}, ${String(startTime.getDate()).padStart(2, '0')}.${String(startTime.getMonth() + 1).padStart(2, '0')}.${startTime.getFullYear()}`
   const typeLabel = typeLabels[cls.ticket_type] ?? cls.ticket_type
 
   return (
