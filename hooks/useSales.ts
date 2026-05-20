@@ -24,12 +24,12 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
 
   const fetchSales = useCallback(async (
     p: number, size: number, q: string, from: string, to: string,
-    signal?: { cancelled: boolean }
+    abortSignal?: AbortSignal
   ) => {
     setLoading(true)
     setFetchError(null)
     const { data, count, error } = await listSales(supabase, { page: p, pageSize: size, search: q, dateFrom: from, dateTo: to })
-    if (signal?.cancelled) return
+    if (abortSignal?.aborted) return
     if (error) {
       setFetchError(error)
     } else {
@@ -40,9 +40,9 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
   }, [])
 
   useEffect(() => {
-    const signal = { cancelled: false }
-    fetchSales(page, pageSize, search, dateFrom, dateTo, signal)
-    return () => { signal.cancelled = true }
+    const controller = new AbortController()
+    fetchSales(page, pageSize, search, dateFrom, dateTo, controller.signal)
+    return () => controller.abort()
   }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
 
   useEffect(() => {

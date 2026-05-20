@@ -12,6 +12,7 @@ export function useRealtime(tables: string[], onChange: () => void) {
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel>
+    let debounceTimer: ReturnType<typeof setTimeout>
 
     async function subscribe() {
       // Realtime postgres_changes with RLS requires the JWT access token
@@ -30,7 +31,10 @@ export function useRealtime(tables: string[], onChange: () => void) {
         channel.on(
           'postgres_changes' as const,
           { event: '*', schema: 'public', table },
-          () => onChangeRef.current()
+          () => {
+            clearTimeout(debounceTimer)
+            debounceTimer = setTimeout(() => onChangeRef.current(), 300)
+          }
         )
       }
 
@@ -40,6 +44,7 @@ export function useRealtime(tables: string[], onChange: () => void) {
     subscribe()
 
     return () => {
+      clearTimeout(debounceTimer)
       if (channel) supabase.removeChannel(channel)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -18,28 +18,34 @@ export function useClients({ search, page, pageSize }: UseClientsParams) {
   const [clients, setClients] = useState<Client[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchClients = useCallback(async (
     q: string, p: number, size: number,
-    signal?: { cancelled: boolean }
+    abortSignal?: AbortSignal
   ) => {
     setLoading(true)
-    const { data, count } = await listClients(supabase, { search: q, page: p, pageSize: size })
-    if (signal?.cancelled) return
-    setClients(data)
-    setTotal(count)
+    setFetchError(null)
+    const { data, count, error } = await listClients(supabase, { search: q, page: p, pageSize: size })
+    if (abortSignal?.aborted) return
+    if (error) {
+      setFetchError(typeof error === 'string' ? error : 'Помилка завантаження')
+    } else {
+      setClients(data)
+      setTotal(count)
+    }
     setLoading(false)
   }, [])
 
   useEffect(() => {
-    const signal = { cancelled: false }
-    fetchClients(search, page, pageSize, signal)
-    return () => { signal.cancelled = true }
+    const controller = new AbortController()
+    fetchClients(search, page, pageSize, controller.signal)
+    return () => controller.abort()
   }, [search, page, pageSize, fetchClients])
 
   const refetch = () => fetchClients(search, page, pageSize)
 
   useRealtime(['clients', 'sales'], refetch)
 
-  return { clients, total, loading, refetch }
+  return { clients, total, loading, fetchError, refetch }
 }

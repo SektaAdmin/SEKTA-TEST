@@ -10,7 +10,7 @@ export interface ListClientsParams {
 export async function listClients(
   supabase: SupabaseClient,
   { search, page, pageSize }: ListClientsParams
-): Promise<{ data: Client[]; count: number }> {
+): Promise<{ data: Client[]; count: number; error: string | null }> {
   let query = supabase
     .from('clients')
     .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance', { count: 'exact' })
@@ -27,8 +27,8 @@ export async function listClients(
   const rangeFrom = page * pageSize
   query = query.range(rangeFrom, rangeFrom + pageSize - 1)
 
-  const { data, count } = await query
-  return { data: (data as Client[]) ?? [], count: count ?? 0 }
+  const { data, count, error } = await query
+  return { data: (data as Client[]) ?? [], count: count ?? 0, error: error?.message ?? null }
 }
 
 export async function getClient(

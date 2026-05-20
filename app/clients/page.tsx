@@ -32,6 +32,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [searchInput, setSearchInput] = useState('')
@@ -44,16 +45,27 @@ export default function ClientsPage() {
   const totalPages = Math.ceil(total / pageSize)
   const from = page * pageSize
 
-  const fetchClients = useCallback(async (q: string, p: number, size: number) => {
+  const fetchClients = useCallback(async (
+    q: string, p: number, size: number,
+    abortSignal?: AbortSignal
+  ) => {
     setLoading(true)
-    const { data, count } = await listClients(supabase, { search: q, page: p, pageSize: size })
-    setClients(data)
-    setTotal(count)
+    setFetchError(null)
+    const { data, count, error } = await listClients(supabase, { search: q, page: p, pageSize: size })
+    if (abortSignal?.aborted) return
+    if (error) {
+      setFetchError(typeof error === 'string' ? error : 'Помилка завантаження')
+    } else {
+      setClients(data)
+      setTotal(count)
+    }
     setLoading(false)
   }, [])
 
   useEffect(() => {
-    fetchClients(search, page, pageSize)
+    const controller = new AbortController()
+    fetchClients(search, page, pageSize, controller.signal)
+    return () => controller.abort()
   }, [search, page, pageSize, fetchClients])
 
   function handleSearchInput(value: string) {
@@ -128,6 +140,8 @@ export default function ClientsPage() {
             <div className={styles.loading}>
               <span /><span /><span />
             </div>
+          ) : fetchError ? (
+            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : clients.length === 0 ? (
             <div className={styles.empty}>
               {search
