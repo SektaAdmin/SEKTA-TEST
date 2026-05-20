@@ -57,7 +57,7 @@ export default function Sidebar() {
 
         <button
           type="button"
-          className={`${styles.item} ${isInSettings ? styles.active : ''}`}
+          className={styles.item}
           onClick={() => setSettingsOpen(o => !o)}
           aria-expanded={settingsOpen}
         >
