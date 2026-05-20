@@ -411,7 +411,7 @@
 .dayHeader {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   border-right: 0.5px solid var(--border);
   background: var(--bg-2);
