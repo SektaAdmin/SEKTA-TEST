@@ -249,6 +249,7 @@ export default function SchedulePage() {
   const [showModal, setShowModal] = useState(false)
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
   const [detailClassId, setDetailClassId] = useState<string | null>(null)
+  const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
@@ -601,18 +602,18 @@ export default function SchedulePage() {
               onDateSelect={setBaseDate}
               detailClassId={detailClassId}
               onDetailClose={() => setDetailClassId(null)}
-              onOpenFullDetail={() => {}}
+              onEditDetail={() => detailClassId && setEditClassId(detailClassId)}
               onClassUpdated={fetchClasses}
             />
           )}
         </div>
       </main>
 
-      {detailClassId && (
+      {editClassId && (
         <ClassDetailModal
-          classId={detailClassId}
-          onClose={() => setDetailClassId(null)}
-          onClassUpdated={fetchClasses}
+          classId={editClassId}
+          onClose={() => setEditClassId(null)}
+          onClassUpdated={() => { fetchClasses(); setEditClassId(null) }}
         />
       )}
 

@@ -15,7 +15,7 @@ interface Props {
   onDateSelect: (d: Date) => void
   detailClassId: string | null
   onDetailClose: () => void
-  onOpenFullDetail: () => void
+  onEditDetail: () => void
   onClassUpdated: () => void
 }
 
@@ -29,7 +29,7 @@ export default function ScheduleRightPanel({
   onDateSelect,
   detailClassId,
   onDetailClose,
-  onOpenFullDetail,
+  onEditDetail,
   onClassUpdated,
 }: Props) {
   const days = buildCalendarDays(viewYear, viewMonth)
@@ -93,7 +93,7 @@ export default function ScheduleRightPanel({
       </div>
 
       {detailClassId && (
-        <ScheduleDetailCard classId={detailClassId} onClose={onDetailClose} onOpenFull={onOpenFullDetail} />
+        <ScheduleDetailCard classId={detailClassId} onClose={onDetailClose} onEdit={onEditDetail} />
       )}
     </aside>
   )

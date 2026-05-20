@@ -18,10 +18,10 @@ type ClassWithJoins = Class & {
 interface Props {
   classId: string
   onClose: () => void
-  onOpenFull: () => void
+  onEdit: () => void
 }
 
-export default function ScheduleDetailCard({ classId, onClose, onOpenFull }: Props) {
+export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) {
   const [cls, setCls] = useState<ClassWithJoins | null>(null)
   const [enrollmentCount, setEnrollmentCount] = useState(0)
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
@@ -72,9 +72,16 @@ export default function ScheduleDetailCard({ classId, onClose, onOpenFull }: Pro
     <div className={styles.card}>
       <div className={styles.header}>
         <div className={styles.title}>{cls.title || typeLabel}</div>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
-          ×
-        </button>
+        <div className={styles.headerBtns}>
+          <button className={styles.editBtn} onClick={onEdit} aria-label="Редагувати">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z"/>
+            </svg>
+          </button>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
+            ×
+          </button>
+        </div>
       </div>
 
       <div className={styles.rows}>
@@ -115,7 +122,7 @@ export default function ScheduleDetailCard({ classId, onClose, onOpenFull }: Pro
         )}
       </div>
 
-      <button className={styles.detailBtn} onClick={onOpenFull}>
+      <button className={styles.detailBtn} onClick={onEdit}>
         Докладніше →
       </button>
     </div>
