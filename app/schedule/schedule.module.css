@@ -400,7 +400,6 @@
   flex-shrink: 0;
   min-height: 40px;
   align-items: center;
-  justify-items: center;
 }
 
 /* sticky offset applied via inline style when filter bar is visible */
@@ -416,7 +415,7 @@
   justify-content: center;
   border-right: 0.5px solid var(--border);
   background: var(--bg-2);
-  overflow: hidden;
+  min-height: 40px;
 }
 .dayHeader:last-child { border-right: none; }
 
