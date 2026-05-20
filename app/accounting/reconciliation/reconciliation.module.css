@@ -21,12 +21,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--topbar-py) var(--topbar-px);
+  height: var(--topbar-h);
+  padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .title {
@@ -56,18 +58,19 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 28px;
+  height: var(--filterbar-h);
+  padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   flex-wrap: wrap;
   flex-shrink: 0;
   position: sticky;
-  top: 57px;
+  top: var(--topbar-h);
   z-index: 8;
   background: var(--bg);
 }
 
 @media (max-width: 640px) {
-  .filters { overflow-x: auto; flex-wrap: nowrap; padding: 10px 16px; }
+  .filters { overflow-x: auto; flex-wrap: nowrap; padding: 0 16px; }
   .content { padding: 16px; }
 }
 

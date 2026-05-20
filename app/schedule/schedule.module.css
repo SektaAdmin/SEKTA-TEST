@@ -32,7 +32,7 @@
   top: 0;
   z-index: 10;
   flex-shrink: 0;
-  height: 57px;
+  height: var(--topbar-h);
   gap: 12px;
 }
 
@@ -184,12 +184,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px var(--topbar-px);
+  height: var(--filterbar-h);
+  padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
   position: sticky;
-  top: 57px;
+  top: var(--topbar-h);
   z-index: 8;
 }
 
