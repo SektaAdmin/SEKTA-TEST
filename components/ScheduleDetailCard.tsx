@@ -72,16 +72,9 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
     <div className={styles.card}>
       <div className={styles.header}>
         <div className={styles.title}>{cls.title || typeLabel}</div>
-        <div className={styles.headerBtns}>
-          <button className={styles.editBtn} onClick={onEdit} aria-label="Редагувати">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z"/>
-            </svg>
-          </button>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
-            ×
-          </button>
-        </div>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Закрити">
+          ×
+        </button>
       </div>
 
       <div className={styles.rows}>

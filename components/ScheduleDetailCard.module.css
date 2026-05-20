@@ -24,30 +24,6 @@
   flex: 1;
 }
 
-.headerBtns {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.editBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: transparent;
-  border: none;
-  color: var(--text-2);
-  cursor: pointer;
-  transition: color 0.12s;
-}
-
-.editBtn:hover {
-  color: var(--text);
-}
-
 .closeBtn {
   display: flex;
   align-items: center;
