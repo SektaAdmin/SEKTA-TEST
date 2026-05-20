@@ -1,13 +1,13 @@
 # sekta-crm — Supabase CRM
 
 ## Проект
-Фитнес/танцевальная студия. CRM для управления клиентами, тренерами, абонементами и продажами.
+Фітнес/танцювальна студія. CRM для управління клієнтами, тренерами, абонементами і продажами.
 
 - **Stack**: Next.js 14.2.3 + React 18 + TypeScript
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
-- **Stack Additions**: Tailwind CSS, shadcn/ui (Этап 1 инфраструктуры завершена)
-- **Last Updated**: 2026-05-19 (Etap 1 завершена: Tailwind CSS + shadcn/ui інфраструктура, компоненти модалок, розклад з динамічною висотою, Supabase Realtime. Исправлено: автоматическое создание sales при записи на платные услуги аренды залов)
+- **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
+- **Last Updated**: 2026-05-20
 
 ---
 
@@ -29,27 +29,21 @@ trainer_payments ──► trainers
 
 ## Tables
 
-### `clients` — Клиенты студии
+### `clients` — Клієнти студії
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | uuid | NO | gen_random_uuid() | PK |
 | first_name | text | YES | — | |
 | last_name | text | YES | — | |
-| phone | text | YES | — | Уникальный идентификатор клиента |
-| instagram_username | text | YES | — | Без @ и домена |
+| phone | text | YES | — | Унікальний ідентифікатор клієнта |
+| instagram_username | text | YES | — | Без @ і домену |
 | telegram_username | text | YES | — | Без @ |
-| balance | integer | YES | 0 | Денежный депозит (₴) |
-| credit_limit | numeric | YES | 10000 | Лимит отрицательного баланса, >= 0 |
-| balance_updated_at | timestamptz | YES | now() | Обновляется через update_client_balance() |
+| balance | integer | YES | 0 | Грошовий депозит (₴) |
+| credit_limit | numeric | YES | 10000 | Ліміт від'ємного балансу, >= 0 |
+| balance_updated_at | timestamptz | YES | now() | Оновлюється через update_client_balance() |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
-
-**Indexes:**
-- `clients_pkey` (UNIQUE btree on id)
-- `idx_clients_balance` (btree on balance)
-- `idx_clients_last_name_trgm` (GIN gin_trgm_ops on last_name) — fuzzy search
-- `idx_clients_phone_trgm` (GIN gin_trgm_ops on phone) — fuzzy search
 
 **RLS:** Увімкнено. Політика `authenticated_all`: authenticated = повний доступ, anon = нічого.
 
@@ -67,132 +61,104 @@ trainer_payments ──► trainers
 
 ---
 
-### `tickets` — Тарифы/абонементы
+### `tickets` — Тарифи/абонементи
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
 | id | uuid | NO | gen_random_uuid() | PK |
-| name | text | NO | — | Название тарифа |
-| ticket_type | text | NO | — | Тип занятия (не enum, свободный текст) |
-| sessions | integer | NO | — | Количество занятий, > 0 |
-| price | integer | NO | — | Цена в **гривнях** (₴) |
-| is_active | boolean | NO | false | true = актуальный, false = архив |
+| name | text | NO | — | Назва тарифу |
+| ticket_type | text | NO | — | Тип заняття (не enum, вільний текст) |
+| sessions | integer | NO | — | Кількість занять, > 0 |
+| price | integer | NO | — | Ціна в **гривнях** (₴) |
+| is_active | boolean | NO | false | true = актуальний, false = архів |
 | created_at | timestamptz | NO | now() | |
 | updated_at | timestamptz | NO | now() | Auto-updated |
 
-**Constraints:**
-- `price >= 0` (check)
-- `sessions > 0` (check)
-- Max 20 активных тарифов (бизнес-правило, не DB-constraint)
+**Constraints:** `price >= 0`, `sessions > 0`. Max 20 активних тарифів (бізнес-правило).
 
-**Известные значения `ticket_type`:** group, individual, hallrental, smallhallrental, individualduo, individualtrio, pylonrental, striprental
+**Відомі значення `ticket_type`:** group, individual, hallrental, smallhallrental, individualduo, individualtrio, pylonrental, striprental — та будь-які нові з `training_types.code`.
 
-**Indexes:**
-- `tickets_pkey` (UNIQUE btree on id)
-- `idx_tickets_type` (btree on ticket_type)
-- `idx_tickets_is_active` (btree on is_active)
-
-**RLS:** Отключён
+**RLS:** Вимкнено.
 
 ---
 
-### `trainers` — Тренеры
+### `trainers` — Тренери
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | uuid | NO | gen_random_uuid() | PK |
-| name | text | NO | — | length(trim(name)) > 0 |
-| is_active | boolean | NO | true | false = больше не работает |
-| instagram_username | text | YES | — | Без @ |
-| telegram_username | text | YES | — | Без @ |
-| created_at | timestamptz | NO | now() | |
-| updated_at | timestamptz | NO | now() | Auto-updated |
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| name | text | NO | length(trim(name)) > 0 |
+| is_active | boolean | NO | true |
+| instagram_username | text | YES | Без @ |
+| telegram_username | text | YES | Без @ |
+| created_at | timestamptz | NO | |
+| updated_at | timestamptz | NO | Auto-updated |
 
-**Indexes:**
-- `trainers_pkey` (UNIQUE btree on id)
-
-**RLS:** Отключён
+**RLS:** Вимкнено.
 
 ---
 
-### `sales` — Продажи (денормализованные)
+### `sales` — Продажі (денормалізовані)
 
-| Column | Type | Nullable | FK | Notes |
-|--------|------|----------|-----|-------|
-| id | uuid | NO | — | PK |
-| client_id | uuid | NO | → clients.id CASCADE | |
-| ticket_id | uuid | YES | → tickets.id SET NULL | |
-| trainer_id | uuid | YES | → trainers.id SET NULL | |
-| ticket_name | text | YES | — | **Snapshot** ticket.name на момент продажи |
-| ticket_price | integer | YES | — | **Snapshot** ticket.price (гривні) |
-| sessions | integer | YES | — | **Snapshot** ticket.sessions |
-| price_paid | integer | NO | — | Фактически оплачено, >= 0 |
-| amount_given | integer | NO | — | Сумма, которую дал клиент, >= 0 |
-| payment_method | text | NO | — | Enum: `cash`, `fop`, `personal_card`, `deposit` |
-| notes | text | YES | — | Комментарий |
-| created_at | timestamptz | NO | now() | |
-| updated_at | timestamptz | NO | now() | Auto-updated |
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| client_id | uuid | NO | → clients.id CASCADE |
+| ticket_id | uuid | YES | → tickets.id SET NULL |
+| trainer_id | uuid | YES | → trainers.id SET NULL |
+| ticket_name | text | YES | **Snapshot** ticket.name на момент продажу |
+| ticket_price | integer | YES | **Snapshot** ticket.price (гривні) |
+| sessions | integer | YES | **Snapshot** ticket.sessions |
+| price_paid | integer | NO | Фактично оплачено, >= 0 |
+| amount_given | integer | NO | Сума яку дав клієнт, >= 0 |
+| payment_method | text | NO | `cash` / `fop` / `personal_card` / `deposit` |
+| notes | text | YES | |
+| created_at | timestamptz | NO | |
+| updated_at | timestamptz | NO | Auto-updated |
 
-**Денормализация:**
-⚠️ `ticket_name`, `ticket_price`, `sessions` — **неизменяемые исторические снимки** на момент покупки. Не джоинить `tickets` для отчётов — использовать snapshot-значения напрямую.
+⚠️ `ticket_name`, `ticket_price`, `sessions` — **незмінні знімки** на момент купівлі. Не джоїнити `tickets` для звітів.
 
-**Indexes:**
-- `sales_pkey` (UNIQUE btree on id)
-- `idx_sales_client_id` (btree on client_id)
-- `idx_sales_client_created` (btree on client_id, created_at DESC)
-- `idx_sales_ticket_id` (btree on ticket_id)
-- `idx_sales_trainer_id` (btree on trainer_id)
-- `idx_sales_created_at` (btree on created_at)
-- `idx_sales_price_paid` (btree on price_paid)
-
-**RLS:** Отключён
+**RLS:** Вимкнено.
 
 ---
 
-### `balance_transactions` — Лог балансовых операций
+### `balance_transactions` — Лог балансових операцій
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | uuid | NO | gen_random_uuid() | PK |
-| client_id | uuid | NO | — | → clients.id |
-| amount | numeric | NO | — | Изменение баланса, ≠ 0 |
-| transaction_type | varchar | NO | — | Тип операции |
-| balance_before | numeric | NO | — | Баланс до |
-| balance_after | numeric | NO | — | Баланс после |
-| related_sale_id | uuid | YES | — | → sales.id |
-| description | text | YES | — | |
-| reason | text | YES | — | |
-| created_by | uuid | NO | gen_random_uuid() | |
-| created_at | timestamptz | YES | now() | |
-| reversed_at | timestamptz | YES | — | Если операция отменена |
-| reversed_by | uuid | YES | — | |
-| reversal_reason | text | YES | — | |
+Логується автоматично через `update_client_balance()`. Містить: `client_id`, `amount`, `transaction_type`, `balance_before`, `balance_after`, `related_sale_id`, `description`, `reason`, `created_by`, `created_at`, `reversed_at`, `reversed_by`, `reversal_reason`.
 
-**Indexes:**
-- `balance_transactions_pkey` (UNIQUE btree on id)
-- `idx_balance_transactions_client` (btree on client_id, created_at DESC)
-- `idx_balance_transactions_sale` (btree on related_sale_id WHERE NOT NULL)
-- `idx_balance_transactions_type` (btree on transaction_type, created_at DESC)
-
-**RLS:** Отключён
+**RLS:** Вимкнено.
 
 ---
 
-### `halls` — Залы студии
+### `halls` — Зали студії
 
-| Column | Type | Nullable | Default | Notes |
-|--------|------|----------|---------|-------|
-| id | uuid | NO | gen_random_uuid() | PK |
-| name | text | NO | — | length(trim(name)) > 0 |
-| capacity | integer | NO | — | > 0 |
-| is_active | boolean | NO | true | |
-| description | text | YES | — | |
-| created_at | timestamptz | NO | now() | |
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| name | text | NO | length(trim(name)) > 0 |
+| capacity | integer | NO | > 0 |
+| is_active | boolean | NO | true |
+| description | text | YES | |
+| created_at | timestamptz | NO | |
 
-**Indexes:**
-- `halls_pkey` (UNIQUE btree on id)
+**RLS:** Вимкнено.
 
-**RLS:** Отключён
+---
+
+### `training_types` — Типи тренувань (довідник)
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| code | text | NO | UNIQUE, latin+digits, відповідає `ticket_type` скрізь |
+| label | text | NO | Відображувана назва |
+| is_active | boolean | NO | true |
+| sort_order | integer | NO | 0 |
+| created_at | timestamptz | NO | |
+
+`code` — незмінний ідентифікатор. `label` — редагується. Керується через `/settings?tab=training-types`.
+
+**⚠️ Константи TICKET_TYPES / TICKET_TYPE_LABELS видалені з types/index.ts** — всі dropdown та дисплеї читають з DB.
 
 ---
 
@@ -200,7 +166,7 @@ trainer_payments ──► trainers
 
 | Column | Type | Nullable | Default | Notes |
 |--------|------|----------|---------|-------|
-| id | uuid | NO | gen_random_uuid() | PK |
+| id | uuid | NO | PK | |
 | type | text | NO | 'series' | `'template'` = постійний шаблон тижня; `'series'` = разова серія |
 | ticket_type | text | NO | — | |
 | trainer_id | uuid | YES | — | → trainers.id SET NULL |
@@ -211,9 +177,9 @@ trainer_payments ──► trainers
 | duration_min | integer | NO | 60 | |
 | day_of_week | smallint | NO | — | 0=Нд..6=Сб |
 | time_of_day | time | NO | — | |
-| created_at | timestamptz | NO | now() | |
+| created_at | timestamptz | NO | — | |
 
-**RLS:** Відключено. GRANT на anon, authenticated.
+**RLS:** Вимкнено. GRANT на anon, authenticated.
 
 ### `series_clients` — Постійники шаблонів
 
@@ -222,12 +188,10 @@ trainer_payments ──► trainers
 | id | uuid | NO | PK |
 | series_id | uuid | NO | → class_series.id CASCADE |
 | client_id | uuid | NO | → clients.id CASCADE |
-| hours_attended | integer[] | YES | Аналогічно enrollments.hours_attended. `generate_week()` прокидує це значення в enrollments. |
-| created_at | timestamptz | NO | now() |
+| hours_attended | integer[] | YES | `generate_week()` прокидує в enrollments.hours_attended |
+| created_at | timestamptz | NO | |
 
-**UNIQUE(series_id, client_id).** Використовується `generate_week()` для автозапису при виставленні тижня.
-
-**RLS:** Увімкнено. authenticated = повний доступ.
+**UNIQUE(series_id, client_id).** RLS: Увімкнено. authenticated = повний доступ.
 
 ### `classes` — Заняття
 
@@ -244,6 +208,8 @@ trainer_payments ──► trainers
 | capacity | integer | YES | |
 | is_cancelled | boolean | NO | default false |
 | notes | text | YES | |
+| created_at | timestamptz | NO | |
+| updated_at | timestamptz | NO | |
 
 ### `enrollments` — Записи клієнтів на заняття
 
@@ -252,352 +218,251 @@ trainer_payments ──► trainers
 | id | uuid | NO | PK |
 | class_id | uuid | NO | → classes.id |
 | client_id | uuid | NO | → clients.id |
-| status | text | NO | enrolled / attended / cancelled / noshow / **waitlist** |
+| status | text | NO | `enrolled` / `attended` / `cancelled` / `noshow` / `waitlist` |
 | sessions_used | integer | NO | default 0 |
-| hours_attended | integer[] | YES | `[1]`, `[2]`, або `[1,2]` для 2-годинних занять. NULL = все заняття (1-годинні або обидві години). |
+| hours_attended | integer[] | YES | `[1]`, `[2]`, або `[1,2]` для 2-год занять. NULL = все заняття. |
 | sale_id | uuid | YES | |
 | notes | text | YES | |
+| created_at | timestamptz | NO | |
+| updated_at | timestamptz | NO | |
 
-**Waitlist:** якщо зал повний при INSERT зі статусом `enrolled` — тригер `check_class_capacity` автоматично змінює статус на `waitlist`. Адмін вручну переводить в `enrolled`.
+**Waitlist:** тригер `check_class_capacity` автоматично змінює `enrolled` → `waitlist` якщо зал повний.
 
-**hours_attended:** для занять з `duration_min >= 120` клієнт може відвідати 1-у, 2-у або обидві години. `sessions_used` при `mark_attendance` = `hours_attended.length` (або 1 якщо NULL).
+**hours_attended:** для `duration_min >= 120` клієнт може відвідати 1-у, 2-у або обидві години. `sessions_used` = `hours_attended.length` (або 1 якщо NULL).
 
 ---
 
 ### `trainer_rates` — Ставки тренерів ₴/год
 
-| Column | Type | Nullable | Notes |
-|--------|------|----------|-------|
-| id | uuid | NO | PK |
-| trainer_id | uuid | YES | → trainers.id CASCADE. **NULL = глобальна ставка** |
-| ticket_type | text | NO | Тип заняття |
-| rate | numeric | NO | ₴ за годину, >= 0 |
-| created_at | timestamptz | NO | |
-
-**UNIQUE NULLS NOT DISTINCT (trainer_id, ticket_type)** — одна ставка на пару (тренер, тип).
-Пріоритет: індивідуальна (trainer_id NOT NULL) → глобальна (trainer_id IS NULL).
-
-**RLS:** Увімкнено. authenticated = повний доступ.
-
----
+**UNIQUE NULLS NOT DISTINCT (trainer_id, ticket_type).** `trainer_id IS NULL` = глобальна ставка.
+Пріоритет: індивідуальна → глобальна. RLS: Увімкнено.
 
 ### `trainer_payments` — Виплати тренерам
 
-| Column | Type | Nullable | Notes |
-|--------|------|----------|-------|
-| id | uuid | NO | PK |
-| trainer_id | uuid | NO | → trainers.id CASCADE |
-| period_start | date | NO | Початок розрахункового періоду |
-| period_end | date | NO | Кінець розрахункового періоду |
-| calculated_amount | numeric | NO | Snapshot нарахування на момент виплати |
-| paid_amount | numeric | NO | Фактично виплачено |
-| payment_date | date | NO | Дата виплати |
-| notes | text | YES | |
-| created_at | timestamptz | NO | |
-
-**RLS:** Увімкнено. authenticated = повний доступ.
+Поля: `trainer_id`, `period_start`, `period_end`, `calculated_amount`, `paid_amount`, `payment_date`, `notes`. RLS: Увімкнено.
 
 ---
 
 ## Stored Procedures
 
-### `create_sale(...)` — Атомарне створення продажу
-
-```
-create_sale(p_client_id, p_ticket_id, p_trainer_id, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)
-```
+### `create_sale(p_client_id, p_ticket_id, p_trainer_id, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)`
 INSERT у `sales` + `update_client_balance` в одній транзакції.
 
----
-
-### `update_sale(...)` — Атомарне редагування продажу
-
-```
-update_sale(p_sale_id, p_client_id, p_ticket_id, p_trainer_id, p_ticket_name, p_ticket_price, p_sessions, p_ticket_type, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)
-```
+### `update_sale(p_sale_id, p_client_id, p_ticket_id, p_trainer_id, p_ticket_name, p_ticket_price, p_sessions, p_ticket_type, p_price_paid, p_amount_given, p_payment_method, p_notes, p_created_at)`
 Реверс старого балансу + застосування нового в одній транзакції.
 
----
-
-### `delete_sale(p_sale_id)` — Атомарне видалення продажу
-
+### `delete_sale(p_sale_id)`
 Видаляє запис + реверсує зміну балансу.
 
----
+### `update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, p_related_sale_id, p_reason)`
+`→ TABLE(success boolean, new_balance numeric, transaction_id uuid, error_message text)`
+Блокує рядок FOR UPDATE, перевіряє credit_limit, пише в balance_transactions, оновлює clients.balance.
+**Ніколи не UPDATE clients.balance напряму.**
 
-### `update_client_balance(...)` — Атомарне змінення балансу
+### `mark_attendance(p_enrollment_id uuid, p_sessions_used integer DEFAULT 1)`
+`→ TABLE(success boolean, error_message text)`
+Перевіряє client_session_balances, декрементує сесії, ставить status='attended'. `success=false` якщо балансу недостатньо.
 
-```
-update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, p_related_sale_id, p_reason)
-→ TABLE(success boolean, new_balance numeric, transaction_id uuid, error_message text)
-```
+### `reverse_attendance(p_enrollment_id uuid)`
+`→ TABLE(success boolean, error_message text)`
+Повертає sessions_used в client_session_balances, скидає enrollment на status='cancelled', sessions_used=0.
 
-1. Блокує рядок клієнта (`FOR UPDATE`)
-2. Перевіряє credit_limit: відмовляє якщо `balance + amount < -credit_limit`
-3. Записує рядок у `balance_transactions`
-4. Оновлює `clients.balance` і `clients.balance_updated_at`
+### `cancel_class_and_restore_sessions(p_class_id uuid)`
+`→ TABLE(success boolean, restored_count int, error_message text)`
+- `attended`: повертає sessions_used
+- `noshow`: повертає duration_min / 60
+- `enrolled`: скасовується без повернення
+- `waitlist`: без змін
+Встановлює is_cancelled=true. **Використовувати замість прямого UPDATE.**
 
-**Ніколи не UPDATE clients.balance напряму — тільки через цю функцію.**
+### `generate_week(p_start_date date, p_weeks int DEFAULT 1)`
+`→ TABLE(classes_created int, enrollments_created int)`
+Генерує заняття з `type='template'` шаблонів. Ідемпотентна (UNIQUE index `uq_classes_series_date`). Автоматично записує series_clients в enrollments.
 
----
+### `calc_trainer_salary(p_trainer_id, p_start, p_end)`
+`→ TABLE(ticket_type text, sessions_total int, rate numeric, amount numeric)`
+По enrolled зі status='attended'/'noshow'. Ставка: індивідуальна → глобальна → NULL (amount=0).
 
-### `mark_attendance(p_enrollment_id, p_sessions_used DEFAULT 1)` — Відвідуваність
+### `check_class_conflicts(p_starts_at, p_duration_min, p_hall_id, p_trainer_id, p_exclude_id)`
+`→ TABLE(conflict_type text, class_id uuid, starts_at timestamptz, title text, ticket_type text)`
+Перевіряє перетин по залу/тренеру. Використовується в ClassModal.
 
-```
-→ TABLE(success boolean, error_message text)
-```
-Атомарно: перевіряє `client_session_balances`, декрементує сесії, ставить `status='attended'`. Повертає `success=false` якщо балансу недостатньо.
-
----
-
-### `set_updated_at()` — Тригерна функція
-
-Оновлює `updated_at = now()` перед кожним UPDATE. Застосована до: `clients`, `tickets`, `trainers`, `sales`.
-
----
-
-### `generate_week(p_start_date date, p_weeks int DEFAULT 1)` — Генерація тижня
-
-```
-→ TABLE(classes_created int, enrollments_created int)
-```
-Бере **тільки** `class_series WHERE type='template'`, генерує заняття на `p_weeks` тижнів починаючи з `p_start_date` (має бути понеділок). Ідемпотентна: повторний виклик на ту саму дату не створює дублікатів (UNIQUE index `uq_classes_series_date`). Автоматично записує `series_clients` в `enrollments` зі статусом `enrolled` (тригер `check_class_capacity` може перевести частину у `waitlist`).
-
-**GRANT EXECUTE** на authenticated, anon.
-
----
-
-### `reverse_attendance(p_enrollment_id)` — Скасування відвідування
-
-```
-→ TABLE(success boolean, error_message text)
-```
-Повертає `sessions_used` назад в `client_session_balances`, скидає enrollment на `status='cancelled'`, `sessions_used=0`. Повертає `success=false` якщо enrollment не знайдено або статус не `attended`.
-
-**GRANT EXECUTE** на authenticated, anon.
-
----
-
-### `cancel_class_and_restore_sessions(p_class_id)` — Скасування заняття з поверненням сесій
-
-```
-→ TABLE(success boolean, restored_count int, error_message text)
-```
-Атомарно скасовує заняття та повертає сесії клієнтам:
-- **`attended`**: повертає `sessions_used` (кількість занять які клієнт спожив)
-- **`noshow`**: повертає `duration_min / 60` (тренер провів, клієнт не прийшов — поверти сесії)
-- **`enrolled`** (просто записані): скасовуються без повернення сесій
-- **`waitlist`**: залишаються у черзі
-
-Встановлює `classes.is_cancelled=true` та повертає кількість клієнтів яким повернуті сесії.
-
-**Використовувати замість прямого UPDATE classes.is_cancelled=true при скасуванні заняття.**
-
-**GRANT EXECUTE** на authenticated, anon.
-
----
-
-### `calc_trainer_salary(p_trainer_id, p_start, p_end)` — Нарахування зарплати
-
-```
-→ TABLE(ticket_type text, sessions_total int, rate numeric, amount numeric)
-```
-Рахує нарахування тренера за діапазон дат на основі **проведених занять** (`enrollments.status IN ('attended', 'noshow')`).
-- `attended`: `sessions_used` (з `mark_attendance`)
-- `noshow`: `duration_min / 60` (тренер провів заняття, клієнт не прийшов)
-- Ставка: індивідуальна `trainer_rates` → глобальна (trainer_id IS NULL) → NULL (не задано)
-- `rate = NULL` → `amount = 0`, у UI відображається "не задано"
-
-**GRANT EXECUTE** на authenticated, anon.
+### `check_client_conflict(p_client_id uuid, p_class_id uuid)`
+`→ TABLE(conflict_class_id uuid, starts_at timestamptz, ticket_type text)`
+Перевіряє чи клієнт вже записаний на паралельне заняття.
 
 ---
 
 ## Security
 
-### RLS
-**Статус: Увімкнено на всіх таблицях.** Політика `authenticated_all`: authenticated = повний доступ, anon = нічого. При нових таблицях через міграцію — додавати `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO anon, authenticated`.
+**RLS увімкнено на всіх таблицях.** Політика `authenticated_all`: authenticated = повний доступ, anon = нічого.
+При нових таблицях через міграцію — додавати `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO anon, authenticated`.
 
-### Auth
-- JWT токены от Supabase Auth
-- Текущее состояние: все authenticated пользователи = одинаковые права
+**Auth:** JWT токени Supabase Auth. Всі authenticated користувачі = однакові права.
 
 ---
 
 ## Business Logic
 
-### Управление балансом
-- `clients.balance` — грошовий депозит (₴, integer). Змінювати **тільки через `update_client_balance()`** — атомарно + логує в `balance_transactions`. Ніколи не UPDATE напряму.
-- `client_session_balances` — залишки занять по типу (`ticket_type`). Змінювати **тільки через `mark_attendance()` RPC**.
-- `credit_limit` = 10000 по замовчуванню (дозволяє депозит до -10000)
-
-### Деньги
-- `tickets.price` — в **гривнях** (₴), відображати як є
-- `sales.price_paid`, `sales.amount_given` — також гривні (₴)
-- `clients.credit_limit` — тип numeric, не integer
-
-### Денормализация в `sales`
-- `ticket_name`, `ticket_price`, `sessions` — снимки на момент продажи
-- Не обновлять, не джоинить tickets для отчётов
-
-### Ticket Management
-- Max 20 активных тарифов (`is_active = true`) — бизнес-правило
-- Мягкое удаление через `is_active = false`
-- Физически не удалять (сохраняется история продаж)
-
-### payment_method в sales
-Допустимые значения: `cash`, `fop`, `personal_card`, `deposit`
+- `clients.balance` — грошовий депозит (₴). Змінювати **тільки через `update_client_balance()`**.
+- `client_session_balances` — залишки занять по типу. Змінювати **тільки через `mark_attendance()` RPC**.
+- `credit_limit` = 10000 за замовчуванням (дозволяє депозит до -10000).
+- `tickets.price`, `sales.price_paid`, `sales.amount_given` — в **гривнях** (₴), ділити на 100 не треба.
+- `ticket_name`, `ticket_price`, `sessions` у sales — **незмінні знімки**, не оновлювати.
+- `payment_method`: `cash`, `fop`, `personal_card`, `deposit`.
+- **Аренда залів** (`hallrental`, `smallhallrental`, `pylonrental`, `striprental`): при записі клієнта через `enrollClient()` автоматично створюється sales-запис через `create_sale` RPC з `payment_method='deposit'`.
+- **SaleModal без тікету** = депозитна операція: `ticket_id=null`, позитивний `amount_given` = поповнення, від'ємний `price_paid` = списання.
 
 ---
 
 ## Stack
 
-**Frontend:**
-- Next.js 14.2.3
-- React 18
-- TypeScript
-
-**Forms & Validation:**
-- react-hook-form 7.72.1
-- @hookform/resolvers 5.2.2
-- zod 4.3.6
-
-**Backend & Database:**
-- Supabase PostgreSQL
-- @supabase/supabase-js 2.43.4
-- @supabase/ssr 0.10.2
-
-**UI & Styling (Etap 1 — завершено):**
-- Tailwind CSS + @tailwindcss/postcss
-- shadcn/ui (компоненти: Select, Popover, Dialog, Calendar, Button, Command)
-- @radix-ui/* (react-select, react-popover, react-dialog, react-slot, react-icons)
-- tailwindcss-animate, class-variance-authority, clsx, tailwind-merge
-- lucide-react (іконки)
-- cmdk (Command Palette)
-- react-day-picker (Calendar)
-
-**Environment:**
-- dotenv 17.4.2
-
-**Commands:**
-```bash
-npm run dev      # Start dev server (localhost:3000)
-npm run build    # Build for production
-npm run start    # Start production server
+```
+Next.js 14.2.3 · React 18 · TypeScript
+Supabase PostgreSQL · @supabase/supabase-js 2.43.4 · @supabase/ssr 0.10.2
+Tailwind CSS 4.3 · shadcn/ui 0.9.5 · @radix-ui/*
+react-hook-form 7.72.1 · @hookform/resolvers 5.2.2 · zod 4.3.6
+sonner 2.0.7 (toast) · swr 2.2.4 · date-fns 4.2.1
+lucide-react · cmdk · react-day-picker
 ```
 
-**Tailwind + shadcn/ui архітектура:**
-- CSS-токени з globals.css відображаються як Tailwind-утиліти через tailwind.config.ts
-- Всі компоненти shadcn у components/ui/
-- lib/utils.ts: функція cn() для merge Tailwind classNames
-- Існуючі CSS Modules залишаються незмінними (паралельне існування)
-- Наступні етапи: заміна нативних select на shadcn Select, DatePicker на shadcn Calendar, тощо
+```bash
+npm run dev      # localhost:3000
+npm run build
+npm run start
+```
 
 ---
 
-## Pages (MVP Core)
+## Pages
 
-| Route | Назначение |
-|-------|-----------|
+| Route | Призначення |
+|-------|-------------|
+| `/login` | Авторизація |
+| `/sales` | Продажі: створення, редагування, фільтр по датах |
+| `/clients` | База клієнтів, пошук |
+| `/clients/[id]` | Профіль: контакти, депозит, залишок занять, покупки, записи |
+| `/schedule` | Розклад занять: тижень/день, фільтр по залах і тренерах, click-to-create |
+| `/schedule/[classId]` | Деталі заняття, відвідуваність, запис клієнтів |
+| `/schedule/templates` | Шаблони тижня: HallWeekGrid, постійники, виставити тиждень |
+| `/accounting` | Облік надходжень по методах оплати |
+| `/accounting/reconciliation` | Звірка: FOP + картка, фільтр по датах |
+| `/accounting/trainers` | Звіт по тренерах |
+| `/accounting/trainers/salary` | Нарахування зарплати + виплати |
+| `/accounting/trainers/rates` | Ставки тренерів (глобальні + індивідуальні) |
+| `/settings` | Таби: Абонементи / Тренери / Зали / Типи тренувань |
+
+---
+
 ## Frontend Architecture
 
-### Components
+### Структура файлів
 
 ```
+app/
+  layout.tsx                  — RefsProvider + Toaster (sonner)
+  globals.css                 — CSS-змінні + @keyframes
+  [route]/page.tsx            — сторінки
+  [route]/[name].module.css   — стилі сторінок (CSS Modules залишаються)
+
 components/
-  Sidebar.tsx + Sidebar.module.css       — навігація (fixed, CSS Modules)
-  ClassModal.tsx + .module.css
-  ClientModal.tsx + .module.css
-  HallModal.tsx + .module.css
-  SaleModal.tsx + .module.css
-  TicketModal.tsx + .module.css
-  TrainerModal.tsx + .module.css
-  TrainingTypeModal.tsx + .module.css
+  Sidebar.tsx                 — навігація (fixed)
+  BottomNav.tsx               — мобільна навігація
+  icons/
+    navigation.tsx            — SVG-компоненти іконок (SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon)
+  SaleModal.tsx               — продаж/депозит
+  ClientModal.tsx             — створення/редагування клієнта
+  ClassModal.tsx              — створення/редагування заняття
+  SeriesModal.tsx             — шаблон серії
+  EnrollClientModal.tsx       — запис клієнта з профілю
+  ClassDetailModal.tsx        — деталі заняття (модальний варіант)
+  HallModal.tsx               — зал
+  TicketModal.tsx             — абонемент
+  TrainerModal.tsx            — тренер
+  TrainingTypeModal.tsx       — тип тренування
+  HallWeekGrid.tsx            — сітка шаблонів (зали × дні)
+  CalendarPopover.tsx         — міні-календар з підсвіткою тижня
+  SalesDateRangePicker.tsx    — range picker для /sales
+  DatePicker.tsx              — single date picker
+  DateRangePicker.tsx         — range picker (shadcn Calendar)
+  DateTimePicker.tsx          — date+time picker
+  DateTimeInput.tsx           — masked text input ДД.ММ.РРРР ГГ:ХХ
+  MonthNav.tsx                — навігація по місяцях
   features/
-    ClientSearchCombobox.tsx + .module.css  — використовується в /schedule/[classId]
-  ui/  — ВИДАЛЕНО (були Tailwind-версії, не використовувались)
-```
+    ClientSearchCombobox.tsx  — пошук клієнта (shadcn Command)
+  ui/
+    ModalShell.tsx            — обгортка модалок (shadcn Dialog)
+    SocialHandleInput.tsx     — input для instagram/telegram
+    button.tsx, calendar.tsx, command.tsx, dialog.tsx, popover.tsx, select.tsx  — shadcn
 
-**Правила:**
-- Модалки отримують довідникові дані (tickets, trainers, halls, trainingTypes) через props зі сторінок
-- Мутації (INSERT/UPDATE/RPC) залишаються всередині модалок
-- `ClientModal` і `ClientSearchCombobox` — виняток: їхній fetch специфічний і залишається всередині
+contexts/
+  RefsContext.tsx             — глобальний контекст довідників (tickets, trainers, halls, trainingTypes)
 
-### Hooks
-
-```
 hooks/
-  useClients.ts       — список клієнтів
-  useClientBalance.ts — баланс конкретного клієнта
-  useSales.ts         — продажі
-  useTickets.ts       — тарифи
-  useTrainers.ts      — тренери
-  useHalls.ts         — зали
-  useTrainingTypes.ts — типи занять
-  useSaleForm.ts      — стан форми SaleModal
-  useSaleSubmit.ts    — сабміт SaleModal (create/update/delete)
-  useModalFocus.ts    — focus trap + Escape для всіх модалок
+  useClients.ts               — список клієнтів
+  useClientBalance.ts         — баланс конкретного клієнта
+  useSales.ts                 — продажі
+  useTickets.ts               — тарифи (+ toggle, ensure)
+  useTrainers.ts              — тренери (+ toggle, ensure)
+  useHalls.ts                 — зали
+  useTrainingTypes.ts         — типи занять
+  useSeriesTemplates.ts       — шаблони серій
+  useSaleForm.ts              — zod-схема і стан форми SaleModal
+  useSaleSubmit.ts            — сабміт SaleModal (create/update/delete RPC)
+  useModalFocus.ts            — focus trap + Escape для модалок
 
 lib/
-  useRealtime.ts      — Supabase Realtime підписки (postgres_changes). Використовується в усіх хуках даних і в ClassDetailClient/ClientDetailClient для оновлення в реальному часі при роботі кількох адмінів одночасно.
+  supabase.ts                 — singleton createBrowserClient + export const supabase
+  supabase-server.ts          — createServerSupabase() для Server Components
+  useRealtime.ts              — Supabase Realtime підписки (debounce 300ms, JWT header)
+  useSupabaseList.ts          — generic хук для простих list-запитів
+  scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
+  typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
+  formatters.ts               — formatClientName, formatClientLabel, formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
+  dateUtils.ts                — утиліти дат
+  utils.ts                    — cn() для merge Tailwind classNames
+  queries/
+    balance-transactions.ts   — listClientTransactions, listBalanceAfterBySaleIds
+    classes.ts                — getClassById, listClassesForWeek, listDatesWithClasses, updateClassCancelled, cancelClassAndRestoreSessions, checkClassConflicts
+    client-detail.ts          — getClientDetail, listSalesForClient, listPastEnrollmentsForClient, listFeedEnrollmentsForClient
+    clients.ts                — listClients, searchClientsByName, searchClientsByPhone, searchClientIdsByName, getClient, insertClient, updateClient
+    enrollments.ts            — listClassesForDate, listEnrolledCountsForDate, listClientEnrolledClassIds, listEnrollmentsForClass, listSessionBalancesForClients, getClientSessionBalance, markAttendance, reverseAttendance, updateEnrollmentStatus, checkClientConflict, enrollClient
+    halls.ts                  — listHalls, listActiveHalls, insertHall, toggleHall
+    sales.ts                  — listSales, listAllSalesForFeed, listSalesForAccounting, listSalesForTrainers, listSalesForReconciliation, createSale, updateSale, deleteSale
+    tickets.ts                — listTickets, getTicketById, insertTicket, toggleTicket
+    trainer-rates.ts          — listTrainerRates, upsertTrainerRate, deleteTrainerRate
+    trainers.ts               — listTrainers, listActiveTrainers, insertTrainer, toggleTrainer, calcTrainerSalary, listTrainerPayments, insertTrainerPayment
+    training-types.ts         — listTrainingTypes, listActiveTrainingTypes, listTrainingTypeLabels, insertTrainingType, updateTrainingType, toggleTrainingType
+    series.ts (?)             — listSeriesTemplates
+
+types/
+  index.ts                    — PaymentMethod, Client, Ticket, Trainer, Sale, Hall, Class, Enrollment, ClassSeries, SeriesClient, ClientSessionBalance, SaleFormData, TrainingType
+  database.types.ts           — auto-generated Supabase types
 ```
 
-### CSS Design System
+### Архітектурні правила
 
-Всі стилі через CSS Modules + змінні з `app/globals.css`. Жодних HEX/rgba напряму в `*.module.css`.
+- **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
+- **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок.
+- **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
+- **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
+- **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
+- **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
+- **CSS**: CSS Modules + Tailwind співіснують. Нові компоненти — Tailwind. Старі module.css — не переписувати без потреби. Жодних HEX/rgba напряму в `*.module.css` — тільки `var()`.
 
-**Розміри:**
-- `--control-h: 32px` — висота всіх inputs і кнопок
-- `--topbar-py: 16px`, `--topbar-px: 28px` — padding топбара (64px висота скрізь)
-- `--radius: 10px`, `--radius-sm: 6px`
+### CSS Design System (globals.css)
 
-**Фони:**
-- `--bg: #0e0e0e`, `--bg-2: #161616`, `--bg-3: #1e1e1e`
+**Теми:** світла (`:root`) та темна (`@media (prefers-color-scheme: dark)`).
 
-**Бордери:**
-- `--border`, `--border-hover`, `--border-strong`
-
-**Текст:**
-- `--text`, `--text-2`, `--text-3`
-
-**Акцент** (лаймовий `#c8f060`):
-- `--accent`, `--accent-dim`, `--accent-text`
-- `--accent-border`, `--accent-border-hover`, `--accent-border-strong`
-
-**Стани:**
-- `--danger` / `--danger-dim` / `--danger-border*`
-- `--success` / `--success-dim`
-- `--warning` / `--warning-dim`
-
-**Кольори методів оплати:**
-- `--fop` / `--fop-dim` — синій (ФОП)
-- `--card` / `--card-dim` — жовтогарячий (особиста картка)
-- `--deposit` / `--deposit-dim` — фіолетовий (депозит)
-
-**Анімації:**
-- `--motion-fast: 0.12s ease-out`, `--motion-standard: 0.18s ease-in-out`
-- `@keyframes overlayIn`, `@keyframes modalIn` — для модалок
-
----
-
-## Pages (MVP Core)
-
-| Route | Назначение |
-|-------|-----------|
-| `/login` | Авторизация |
-| `/sales` | Запись продаж, история |
-| `/clients` | База клиентов, баланс |
-| `/clients/[id]` | Профіль клієнта: контакти, депозит, залишок занять, історія покупок |
-| `/tickets` | Управление тарифами |
-| `/trainers` | Управление тренерами |
-| `/halls` | Управление залами |
-| `/training-types` | Типи занять (довідник) |
-| `/schedule` | Розклад занять |
-| `/schedule/templates` | Шаблони тижня: create/edit class_series type='template', постійники, кнопка "Виставити тиждень" |
-| `/schedule/[classId]` | Деталі заняття, записи клієнтів, відвідуваність. Кнопки: «Редагувати», «Скасувати заняття» / «Відновити» (soft delete через `is_cancelled`) |
-| `/accounting` | Облік надходжень |
-| `/accounting/trainers` | Звіт по продажах тренерів |
-| `/accounting/trainers/salary` | Нарахування зарплати (по проведених заняттях) + виплати |
-| `/accounting/trainers/rates` | Управління ставками (глобальні + індивідуальні) |
+**Фони:** `--bg`, `--bg-2`, `--bg-3`
+**Текст:** `--text`, `--text-2`, `--text-3`
+**Бордери:** `--border`, `--border-hover`, `--border-strong`
+**Акцент (зелений):** `--accent`, `--accent-dim`, `--accent-text`, `--accent-border*`
+**Стани:** `--danger/dim/border*`, `--success/dim`, `--warning/dim`
+**Оплата:** `--fop/dim`, `--card/dim`, `--deposit/dim`
+**Анімації:** `--motion-fast: 0.12s ease-out`, `--motion-standard: 0.18s ease-in-out`
+**@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
+**Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
 
 ---
 
@@ -605,11 +470,11 @@ lib/
 
 0. **CLAUDE.md завжди актуальний** — після кожної задачі що змінює архітектуру, компоненти, хуки або DB — оновлювати CLAUDE.md в тому ж коміті.
 1. **RLS увімкнено** — authenticated = повний доступ. При нових таблицях: додавати GRANT + policy.
-2. **Грошовий баланс тільки через RPC** — `update_client_balance()`, не UPDATE напрямую. **Залишок занять тільки через `mark_attendance()`**.
-3. **Snapshots неизменяемы** — не трогать `sales.ticket_price`, `ticket_name`, `sessions`
-4. **Мягкие удаления** — везде `is_active` або `is_cancelled`, никогда не DELETE. `classes` використовує `is_cancelled=true`. Розклад фільтрує `is_cancelled=false`; архів показує `is_cancelled=true`.
-5. **Timestamps UTC** — всегда `timestamptz`
-6. **Деньги в гривнях** — `tickets.price`, `sales.price_paid`, `sales.amount_given` зберігаються в гривнях (₴), ділити на 100 не треба
-7. **GIN-индексы на clients** — использовать для fuzzy-поиска по фамилии и телефону (`%` или `similarity()`)
-
----
+2. **Грошовий баланс тільки через RPC** — `update_client_balance()`, не UPDATE напряму. **Залишок занять тільки через `mark_attendance()`**.
+3. **Snapshots незмінні** — не чіпати `sales.ticket_price`, `ticket_name`, `sessions`.
+4. **М'які видалення** — скрізь `is_active` або `is_cancelled`, ніколи не DELETE.
+5. **Timestamps UTC** — завжди `timestamptz`.
+6. **Гроші в гривнях** — `tickets.price`, `sales.price_paid`, `sales.amount_given` в ₴, ділити на 100 не треба.
+7. **GIN-індекси на clients** — використовувати для fuzzy-пошуку по прізвищу і телефону.
+8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`.
+9. **Скасування заняття** — тільки через `cancel_class_and_restore_sessions()` RPC, не прямим UPDATE.
