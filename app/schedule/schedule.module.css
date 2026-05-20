@@ -398,6 +398,7 @@
   top: 0;
   z-index: 5;
   flex-shrink: 0;
+  min-height: 80px;
 }
 
 /* sticky offset applied via inline style when filter bar is visible */
