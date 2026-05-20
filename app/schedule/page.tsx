@@ -363,20 +363,6 @@ export default function SchedulePage() {
         {/* Topbar row 1 */}
         <div className={styles.topbar}>
           <div className={styles.topbarLeft}>
-            <div className={styles.tabs}>
-              <button
-                className={`${styles.tab} ${tab === 'schedule' ? styles.tabActive : ''}`}
-                onClick={() => setTab('schedule')}
-              >
-                Розклад
-              </button>
-              <button
-                className={`${styles.tab} ${tab === 'archive' ? styles.tabActive : ''}`}
-                onClick={() => setTab('archive')}
-              >
-                Архів
-              </button>
-            </div>
             <div className={styles.dateChip}>
               <span className={styles.dateChipMonth}>{MONTHS_UK_SHORT[baseDate.getMonth()]}</span>
               <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
@@ -385,11 +371,12 @@ export default function SchedulePage() {
             <div className={styles.titleBlock}>
               <div className={styles.titleRow}>
                 <span className={styles.monthTitle}>{MONTHS_UK_FULL[baseDate.getMonth()]} {baseDate.getFullYear()}</span>
-                <span className={styles.weekBadge}>Тиждень {getISOWeek(baseDate)}</span>
               </div>
               <span className={styles.dayLabel}>{DAYS_UA_FULL[(baseDate.getDay() + 6) % 7].toLowerCase()}</span>
             </div>
+          </div>
 
+          <div className={styles.topbarRight}>
             <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
@@ -403,18 +390,6 @@ export default function SchedulePage() {
                 <path d="M5 2l5 5-5 5"/>
               </svg>
             </button>
-
-            <button className={styles.iconBtn} aria-label="Пошук">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="5.5" cy="5.5" r="3.5"/>
-                <path d="M9 9l3 3"/>
-              </svg>
-            </button>
-          </div>
-
-          <div className={styles.topbarRight}>
-            <span className={styles.viewLabel}>День</span>
-            <Link href="/schedule/templates" className={styles.btnTemplates}>Шаблони</Link>
             {tab === 'schedule' && (
               <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
