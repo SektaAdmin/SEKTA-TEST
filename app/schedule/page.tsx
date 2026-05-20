@@ -489,7 +489,6 @@ export default function SchedulePage() {
                 const isToday = isSameDay(day, today)
                 return (
                   <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                    <div className={styles.dayHeadBtn}>
                     {hallColumns.length > 1 && (
                       <div className={styles.dayHallsRow}>
                         {hallColumns.map(h => (
