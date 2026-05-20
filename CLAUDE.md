@@ -381,7 +381,9 @@ components/
   TrainerModal.tsx            — тренер
   TrainingTypeModal.tsx       — тип тренування
   HallWeekGrid.tsx            — сітка шаблонів (зали × дні)
-  CalendarPopover.tsx         — міні-календар з підсвіткою тижня
+  CalendarPopover.tsx         — міні-календар з підсвіткою тижня (portals, для інших сторінок)
+  ScheduleRightPanel.tsx      — права панель /schedule: міні-календар + деталі заняття (inline)
+  ScheduleDetailCard.tsx      — компактна картка деталей заняття у ScheduleRightPanel
   SalesDateRangePicker.tsx    — range picker для /sales
   DatePicker.tsx              — single date picker
   DateRangePicker.tsx         — range picker (shadcn Calendar)
@@ -462,7 +464,29 @@ types/
 **Оплата:** `--fop/dim`, `--card/dim`, `--deposit/dim`
 **Анімації:** `--motion-fast: 0.12s ease-out`, `--motion-standard: 0.18s ease-in-out`
 **@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
-**Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
+**Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--right-panel-w: 280px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
+
+### /schedule Page (станом на 2026-05-21)
+
+**Компоненти:**
+- `ScheduleRightPanel` — постійна права панель, завжди видима (крім mobile ≤900px)
+  - Міні-календар: інлайн (не портал), для навігації по датах
+  - Деталь заняття: `ScheduleDetailCard` при `detailClassId != null`
+- `ScheduleDetailCard` — компактна інфокартка заняття (тип, час, тренер, зал, записі)
+  - Кнопка «×» закриває kartку
+  - Кнопка «Докладніше» готова до подальшої інтеграції з повним модалом
+
+**Topbar (page.tsx):**
+- Новий layout: dateChip (міс. абр + число) + titleBlock (назва місяця, week badge, день тижня)
+- Навігація: ← → (раніше, пізніше), Сьогодні, іконка пошуку
+- Статична мітка «День» (week view implementation відстаньте)
+- Вкладки Розклад/Архів — залишаються як були
+- Видалено: DateRangePicker (портальний календар замінено на inline ScheduleRightPanel)
+
+**Layout:**
+- `.contentRow` — flex-row для grid + right-panel
+- `.gridArea` — flex-1 для розкладу/архіву
+- `.rightPanel` — 280px sidebar з календарем та деталями
 
 ---
 
