@@ -11,8 +11,9 @@ import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
+import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek } from '@/lib/dateUtils'
 import styles from './schedule.module.css'
-import DateRangePicker from '@/components/DateRangePicker'
+import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import Link from 'next/link'
 
 
@@ -376,30 +377,43 @@ export default function SchedulePage() {
                 Архів
               </button>
             </div>
+            <div className={styles.dateChip}>
+              <span className={styles.dateChipMonth}>{MONTHS_UK_SHORT[baseDate.getMonth()]}</span>
+              <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
+            </div>
+
+            <div className={styles.titleBlock}>
+              <div className={styles.titleRow}>
+                <span className={styles.monthTitle}>{MONTHS_UK_FULL[baseDate.getMonth()]} {baseDate.getFullYear()}</span>
+                <span className={styles.weekBadge}>Тиждень {getISOWeek(baseDate)}</span>
+              </div>
+              <span className={styles.dayLabel}>{DAYS_UA_FULL[(baseDate.getDay() + 6) % 7].toLowerCase()}</span>
+            </div>
+
             <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
             </button>
-            <DateRangePicker
-              startDate={weekDays[0]}
-              endDate={weekDays[0]}
-              onChange={setBaseDate}
-              label={navLabel}
-              activeDates={calActiveDates}
-              onMonthChange={(year, month) => setCalViewMonth({ year, month })}
-            />
+            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
+              Сьогодні
+            </button>
             <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
               </svg>
             </button>
-            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
-              Сьогодні
+
+            <button className={styles.iconBtn} aria-label="Пошук">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="5.5" cy="5.5" r="3.5"/>
+                <path d="M9 9l3 3"/>
+              </svg>
             </button>
           </div>
 
           <div className={styles.topbarRight}>
+            <span className={styles.viewLabel}>День</span>
             <Link href="/schedule/templates" className={styles.btnTemplates}>Шаблони</Link>
             {tab === 'schedule' && (
               <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
@@ -452,9 +466,12 @@ export default function SchedulePage() {
           </div>
         )}
 
-        {/* Archive tab */}
-        {tab === 'archive' && (
-          <div className={styles.archiveList}>
+        {/* Content row — grid area + right panel */}
+        <div className={styles.contentRow}>
+          <div className={styles.gridArea}>
+            {/* Archive tab */}
+            {tab === 'archive' && (
+              <div className={styles.archiveList}>
             {loading ? (
               <div className={styles.archiveEmpty}>Завантаження...</div>
             ) : cancelledClasses.length === 0 ? (
@@ -484,12 +501,12 @@ export default function SchedulePage() {
                 </button>
               )
             })}
-          </div>
-        )}
+            </div>
+            )}
 
-        {/* Schedule grid */}
-        {tab === 'schedule' && (
-          <div className={styles.gridCard}>
+            {/* Schedule grid */}
+            {tab === 'schedule' && (
+              <div className={styles.gridCard}>
             <div className={styles.gridScrollWrap}>
             {/* Day header */}
             <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px 1fr` }}>
@@ -589,11 +606,38 @@ export default function SchedulePage() {
                   </div>
                 )
               })}
+                </div>
+              </div>
+              </div>
             </div>
-            </div>
-            </div>
+            )}
           </div>
-        )}
+
+          {/* Right panel — schedule tab only */}
+          {tab === 'schedule' && (
+            <ScheduleRightPanel
+              viewYear={calViewMonth.year}
+              viewMonth={calViewMonth.month}
+              onPrevMonth={() => setCalViewMonth(m => {
+                const newMonth = m.month === 0 ? 11 : m.month - 1
+                const newYear = m.month === 0 ? m.year - 1 : m.year
+                return { year: newYear, month: newMonth }
+              })}
+              onNextMonth={() => setCalViewMonth(m => {
+                const newMonth = m.month === 11 ? 0 : m.month + 1
+                const newYear = m.month === 11 ? m.year + 1 : m.year
+                return { year: newYear, month: newMonth }
+              })}
+              activeDates={calActiveDates}
+              selectedDate={baseDate}
+              onDateSelect={setBaseDate}
+              detailClassId={detailClassId}
+              onDetailClose={() => setDetailClassId(null)}
+              onOpenFullDetail={() => {}}
+              onClassUpdated={fetchClasses}
+            />
+          )}
+        </div>
       </main>
 
       {detailClassId && (

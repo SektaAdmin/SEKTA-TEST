@@ -109,6 +109,118 @@
   background: var(--bg-3);
 }
 
+/* ── Date chip + title block ────────────────────────────────── */
+.dateChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dateChipMonth {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dateChipDay {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--mono);
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.monthTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.weekBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.dayLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* ── View label ─────────────────────────────────────────────── */
+.viewLabel {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+/* ── Icon button (search) ────────────────────────────────────── */
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+
+.iconBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
+/* ── Content row layout ─────────────────────────────────────── */
+.contentRow {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gridArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
 /* ── Tabs ───────────────────────────────────────────────────── */
 .topbarLeft {
   display: flex;

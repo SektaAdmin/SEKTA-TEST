@@ -1,0 +1,153 @@
+.rightPanel {
+  width: var(--right-panel-w);
+  flex-shrink: 0;
+  border-left: 0.5px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.miniCal {
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.miniCalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.monthLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+
+.monthNav:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+.monthNav:active {
+  transform: translateY(0.5px);
+}
+
+.miniCalGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px !important;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--motion-fast);
+}
+
+.day:hover {
+  color: var(--text);
+}
+
+.day:hover .dayNum {
+  background: var(--bg-3);
+}
+
+.dayNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  transition: background var(--motion-fast), color var(--motion-fast);
+  position: relative;
+  z-index: 1;
+}
+
+.dayOutside {
+  color: var(--text-3);
+  opacity: 0.4;
+}
+
+.daySelected .dayNum {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.daySelected:hover .dayNum {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.daySelected {
+  color: var(--accent-text);
+}
+
+.todayDot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  z-index: 2;
+}
+
+.classDot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+@media (max-width: 900px) {
+  .rightPanel {
+    display: none;
+  }
+}

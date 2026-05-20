@@ -32,3 +32,14 @@ export function toYMD(date: Date): string {
     String(date.getDate()).padStart(2, '0'),
   ].join('-')
 }
+
+export const MONTHS_UK_SHORT = ['СІЧ.', 'ЛЮТ.', 'БЕРЕ.', 'КВІТ.', 'ТРАВ.', 'ЧЕРВ.', 'ЛИП.', 'СЕРП.', 'ВЕРЕ.', 'ЖОВ.', 'ЛИСТ.', 'ГРУД.']
+export const MONTHS_UK_FULL = ['січень', 'лютий', 'березень', 'квітень', 'травень', 'червень', 'липень', 'серпень', 'вересень', 'жовтень', 'листопад', 'грудень']
+
+export function getISOWeek(date: Date): number {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
+  const week1 = new Date(d.getFullYear(), 0, 4)
+  return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+}

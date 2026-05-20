@@ -65,6 +65,7 @@
   --topbar-h: 64px;
   --filterbar-h: 52px;
   --bottom-nav-h: 56px;
+  --right-panel-w: 280px;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
