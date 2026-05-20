@@ -126,6 +126,9 @@
 
 .tabs {
   display: flex;
+  padding-right: 12px;
+  border-right: 0.5px solid var(--border);
+  margin-right: 4px;
 }
 
 .tab {
