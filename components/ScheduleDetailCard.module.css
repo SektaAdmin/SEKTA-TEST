@@ -79,23 +79,6 @@
   word-break: break-word;
 }
 
-.detailBtn {
-  margin-top: auto;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: var(--accent);
-  background: transparent;
-  border: 0.5px solid var(--accent-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--motion-fast);
-}
-
-.detailBtn:hover {
-  border-color: var(--accent-border-hover);
-  background: var(--accent-dim);
-}
-
 .skeleton {
   padding: 12px;
   color: var(--text-2);

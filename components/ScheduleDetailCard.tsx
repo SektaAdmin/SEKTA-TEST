@@ -196,9 +196,6 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
         )}
       </div>
 
-      <button className={styles.detailBtn} onClick={onEdit}>
-        Докладніше →
-      </button>
     </div>
   )
 }
