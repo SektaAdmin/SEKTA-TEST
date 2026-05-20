@@ -21,6 +21,7 @@
 .topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
@@ -38,54 +39,6 @@
   letter-spacing: 0.01em;
 }
 
-/* ── Tabs ────────────────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  gap: 2px;
-  padding: 12px 28px 0;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--bg);
-}
-
-.tab {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-3);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: color var(--motion-fast), border-color var(--motion-fast);
-  margin-bottom: -0.5px;
-  white-space: nowrap;
-}
-.tab:hover { color: var(--text-2); }
-.tabActive {
-  color: var(--text) !important;
-  border-bottom-color: var(--accent);
-}
-
-/* ── Tab content ─────────────────────────────────────────────── */
-.tabContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.tabSection {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px 28px;
-}
-
-.sectionHeader {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .btnNew {
   background: var(--accent);
   color: var(--accent-text);
@@ -100,6 +53,14 @@
   letter-spacing: 0.01em;
 }
 .btnNew:hover { opacity: 0.88; }
+
+/* ── Content ─────────────────────────────────────────────────── */
+.tabSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 28px;
+}
 
 /* ── States ──────────────────────────────────────────────────── */
 .empty {
