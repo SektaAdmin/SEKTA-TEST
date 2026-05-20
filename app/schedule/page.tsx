@@ -491,7 +491,6 @@ export default function SchedulePage() {
                   <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
                     <div className={styles.dayHeadBtn}>
                       <span className={styles.dayName}>{DAYS_UA_FULL[(day.getDay() + 6) % 7]}</span>
-                      <span className={styles.dayDate}>{formatDayDate(day)}</span>
                     </div>
                     {hallColumns.length > 1 && (
                       <div className={styles.dayHallsRow}>
