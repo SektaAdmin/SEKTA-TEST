@@ -364,7 +364,6 @@ export default function SchedulePage() {
         <div className={styles.topbar}>
           <div className={styles.topbarLeft}>
             <div className={styles.dateChip}>
-              <span className={styles.dateChipMonth}>{MONTHS_UK_SHORT[baseDate.getMonth()]}</span>
               <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
             </div>
 
@@ -490,11 +489,9 @@ export default function SchedulePage() {
                 const isToday = isSameDay(day, today)
                 return (
                   <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                    <div className={styles.dayHeadTop}>
-                      <div className={styles.dayHeadBtn}>
-                        <span className={styles.dayName}>{DAYS_UA_FULL[(day.getDay() + 6) % 7]}</span>
-                        <span className={styles.dayDate}>{formatDayDate(day)}</span>
-                      </div>
+                    <div className={styles.dayHeadBtn}>
+                      <span className={styles.dayName}>{DAYS_UA_FULL[(day.getDay() + 6) % 7]}</span>
+                      <span className={styles.dayDate}>{formatDayDate(day)}</span>
                     </div>
                     {hallColumns.length > 1 && (
                       <div className={styles.dayHallsRow}>

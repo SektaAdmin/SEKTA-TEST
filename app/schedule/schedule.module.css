@@ -112,7 +112,6 @@
 /* ── Date chip + title block ────────────────────────────────── */
 .dateChip {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 40px;
@@ -121,15 +120,6 @@
   border-radius: var(--radius-sm);
   background: var(--bg-3);
   flex-shrink: 0;
-  line-height: 1;
-}
-
-.dateChipMonth {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .dateChipDay {
@@ -428,11 +418,6 @@
 
 .dayHeaderToday {
   background: var(--accent-dim);
-}
-
-.dayHeadTop {
-  display: flex;
-  justify-content: center;
 }
 
 .dayHeadBtn {
