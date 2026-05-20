@@ -1,6 +1,6 @@
 .sidebar {
-  width: 196px;
-  min-width: 196px;
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
   height: 100vh;
   background: var(--bg-2);
   border-right: 0.5px solid var(--border);
@@ -28,6 +28,7 @@
   flex-direction: column;
   gap: 2px;
   padding: 0 8px;
+  overflow-y: auto;
 }
 
 .item {
