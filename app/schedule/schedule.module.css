@@ -636,6 +636,15 @@
   line-height: 1;
 }
 
+.nowLineDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
 .nowLineLine {
   flex: 1;
   height: 1px;
