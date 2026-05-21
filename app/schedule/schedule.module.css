@@ -622,7 +622,7 @@
   display: flex;
   align-items: center;
   pointer-events: none;
-  z-index: 0;
+  z-index: 2;
 }
 
 .nowLineTime {
