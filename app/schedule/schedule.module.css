@@ -647,109 +647,125 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 5px 7px 8px 7px;
-  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 18%, var(--bg-2));
-  border: none;
+  gap: 0;
+  padding: 6px 6px 9px 6px;
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 14%, var(--bg-2));
+  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, var(--bg-2));
   border-left: 3px solid var(--card-color, var(--border));
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
-  transition: background var(--motion-fast);
+  transition: background var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
   z-index: 1;
+  box-shadow: none;
 }
 .card:hover {
-  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 26%, var(--bg-2));
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 22%, var(--bg-2));
+  border-color: color-mix(in srgb, var(--card-color, var(--border)) 60%, var(--bg-2));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   z-index: 2;
 }
 
 .cardCancelled {
-  background: var(--bg-2) !important;
+  background: color-mix(in srgb, var(--border) 8%, var(--bg-2)) !important;
+  border-color: var(--border) !important;
   border-left-color: var(--border) !important;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .cardTitle {
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
 }
 .cardTitleCancelled { color: var(--text-3); }
 
 .cardTime {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.2;
-  color: var(--text);
+  line-height: 1.3;
+  color: var(--text-2);
   font-family: var(--mono);
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 3px;
+  letter-spacing: 0.01em;
 }
 
 .cardTrainerRow {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.2;
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
+  margin-bottom: 3px;
 }
 
 .cardTrainerIcon {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   flex-shrink: 0;
   color: var(--text-3);
 }
 
 .cardSlots {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
 }
 
 .cardSlotsCount {
   font-weight: 700;
   color: var(--accent);
+  letter-spacing: -0.01em;
 }
 
 .cardSlotsTotal {
   color: var(--text-3);
+  font-weight: 400;
 }
 
 .cardSlotsEmpty {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--danger);
   flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
 }
 
 .cardSlotsWaitlist {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
   color: var(--text-2);
   flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
 }
 
 .cardSlotsWaitlist strong {
@@ -764,7 +780,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.25;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .cardFooter {
@@ -772,20 +789,23 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 11px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   overflow: hidden;
   z-index: 10;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.02) 100%);
 }
 
 .cardProgressBar {
-  height: 3px;
+  height: 2.5px;
   flex-shrink: 0;
   border-radius: 1px;
+  margin: 0 6px 6px 6px;
+  background-color: var(--text-3);
 }
-.cardBar_free   { background: var(--success); }
-.cardBar_almost { background: var(--warning); }
-.cardBar_full   { background: var(--danger); }
-.cardBar_over   { background: var(--danger); }
+.cardBar_free   { background-color: var(--success) !important; }
+.cardBar_almost { background-color: var(--warning) !important; }
+.cardBar_full   { background-color: var(--danger) !important; }
+.cardBar_over   { background-color: var(--danger) !important; }

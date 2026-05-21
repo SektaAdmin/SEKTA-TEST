@@ -153,14 +153,14 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const full = isFull(cls.enrollments, cls.capacity)
   const almost = isAlmost(cls.enrollments, cls.capacity)
 
-  const timeLabel = `${formatTime(cls.starts_at)} – ${formatEndTime(cls.starts_at, cls.duration_min)}`
+  const timeLabel = `${formatTime(cls.starts_at)}–${formatEndTime(cls.starts_at, cls.duration_min)}`
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
 
+  const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
   const progressBar = cls.capacity != null && !cls.is_cancelled ? (() => {
     const pct = Math.min((activeCount / cls.capacity) * 100, 100)
-    const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
     return (
       <div className={styles.cardFooter}>
         <div
@@ -186,37 +186,37 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     >
       {isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-          {label} · {formatTime(cls.starts_at)}
+          {label} {formatTime(cls.starts_at)}
         </span>
       ) : (
         <>
-          <span className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
+          <div className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
             {label}
-          </span>
-          <span className={styles.cardTime}>{timeLabel}</span>
+          </div>
+          <div className={styles.cardTime}>{timeLabel}</div>
           {cls.trainers?.name && (
-            <span className={styles.cardTrainerRow}>
+            <div className={styles.cardTrainerRow}>
               <UserRound className={styles.cardTrainerIcon} />
-              {cls.trainers.name}
-            </span>
+              <span>{cls.trainers.name}</span>
+            </div>
           )}
           {cls.capacity != null && !cls.is_cancelled && (() => {
             const free = cls.capacity - activeCount
             if (waitlistCount > 0) {
               return (
-                <span className={styles.cardSlotsWaitlist}>
+                <div className={styles.cardSlotsWaitlist}>
                   Черга: <strong>{waitlistCount}</strong>
-                </span>
+                </div>
               )
             }
             if (free <= 0) {
-              return <span className={styles.cardSlotsEmpty}>Немає місць</span>
+              return <div className={styles.cardSlotsEmpty}>Немає місць</div>
             }
             return (
-              <span className={styles.cardSlots}>
-                Місць: <strong className={styles.cardSlotsCount}>{free}</strong>
-                <span className={styles.cardSlotsTotal}> / {cls.capacity}</span>
-              </span>
+              <div className={styles.cardSlots}>
+                <strong className={styles.cardSlotsCount}>{free}</strong>
+                <span className={styles.cardSlotsTotal}>/{cls.capacity}</span>
+              </div>
             )
           })()}
         </>
