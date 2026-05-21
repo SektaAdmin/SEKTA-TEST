@@ -565,7 +565,6 @@
   min-width: 0;
   border-right: 0.5px solid var(--border);
   height: 100%;
-  cursor: cell;
 }
 .hallSubCol:last-child { border-right: none; }
 
@@ -574,7 +573,7 @@
   left: 0;
   right: 0;
   z-index: 0;
-  cursor: cell;
+  cursor: default;
 }
 .hourSlot:hover {
   background: var(--bg-2);
