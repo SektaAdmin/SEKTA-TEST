@@ -209,19 +209,33 @@ interface HallColProps {
 
 function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
+  const [hoverHour, setHoverHour] = useState<number | null>(null)
+
+  function hourFromEvent(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const relY = e.clientY - rect.top
+    const h = Math.floor(relY / hourHeight) + MIN_HOUR
+    return Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, h))
+  }
+
   return (
-    <div className={styles.hallSubCol}>
+    <div
+      className={styles.hallSubCol}
+      onMouseMove={e => setHoverHour(hourFromEvent(e))}
+      onMouseLeave={() => setHoverHour(null)}
+      onClick={e => {
+        const h = hourFromEvent(e)
+        const d = new Date(day)
+        d.setHours(h, 0, 0, 0)
+        const pad = (n: number) => String(n).padStart(2, '0')
+        onSlotClick(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:00`)
+      }}
+    >
       {HOURS.map((h, i) => (
         <div
           key={h}
-          className={styles.hourSlot}
+          className={h === hoverHour ? styles.hourSlotActive : styles.hourSlot}
           style={{ top: `${(h - MIN_HOUR) * hourHeight}px`, height: `${hourHeight}px` }}
-          onClick={() => {
-            const d = new Date(day)
-            d.setHours(h, 0, 0, 0)
-            const pad = (n: number) => String(n).padStart(2, '0')
-            onSlotClick(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:00`)
-          }}
         >
           {i > 0 && <div className={styles.hourLine} />}
         </div>

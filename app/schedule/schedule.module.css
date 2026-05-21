@@ -572,13 +572,17 @@
   position: absolute;
   left: 0;
   right: 0;
-  z-index: 0;
   cursor: default;
+  transition: background var(--motion-fast);
 }
 .hourSlot:hover {
   background: var(--bg-2);
 }
-.hourSlot::after {
+.hourSlotActive {
+  background: var(--bg-2);
+}
+.hourSlot::after,
+.hourSlotActive::after {
   content: '+';
   position: absolute;
   right: 6px;
@@ -596,12 +600,14 @@
   opacity: 0;
   transition: opacity var(--motion-fast);
 }
-.hourSlot:hover::after {
+.hourSlot:hover::after,
+.hourSlotActive::after {
   opacity: 1;
 }
 
 .hourLine {
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
   height: 0.5px;
