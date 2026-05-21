@@ -212,10 +212,12 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
             if (free <= 0) {
               return <div className={styles.cardSlotsEmpty}>Немає місць</div>
             }
+            const freeText = free === 1 ? 'місце' : free >= 2 && free <= 4 ? 'місця' : 'місць'
             return (
               <div className={styles.cardSlots}>
-                <strong className={styles.cardSlotsCount}>{free}</strong>
+                <strong className={styles.cardSlotsCount}>{activeCount}</strong>
                 <span className={styles.cardSlotsTotal}>/{cls.capacity}</span>
+                <span className={styles.cardSlotsFree}>{free} {freeText}</span>
               </div>
             )
           })()}

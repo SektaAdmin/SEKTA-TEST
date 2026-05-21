@@ -800,6 +800,12 @@
   font-weight: 400;
 }
 
+.cardSlotsFree {
+  color: var(--success);
+  font-weight: 600;
+  margin-left: 4px;
+}
+
 .cardSlotsEmpty {
   font-size: 9px;
   font-weight: 600;
