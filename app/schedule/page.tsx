@@ -209,36 +209,25 @@ interface HallColProps {
 
 function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
-  const [hoverHour, setHoverHour] = useState<number | null>(null)
-
-  function hourFromEvent(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const relY = e.clientY - rect.top
-    const h = Math.floor(relY / hourHeight) + MIN_HOUR
-    return Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, h))
-  }
 
   return (
     <div
       className={styles.hallSubCol}
-      onMouseMove={e => setHoverHour(hourFromEvent(e))}
-      onMouseLeave={() => setHoverHour(null)}
-      onClick={e => {
-        const h = hourFromEvent(e)
-        const d = new Date(day)
-        d.setHours(h, 0, 0, 0)
-        const pad = (n: number) => String(n).padStart(2, '0')
-        onSlotClick(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:00`)
+      style={{ '--hour-h': `${hourHeight}px` } as React.CSSProperties}
+      onMouseMove={e => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        const relY = e.clientY - rect.top
+        const snapY = Math.floor(relY / hourHeight) * hourHeight
+        e.currentTarget.style.setProperty('--hover-y', `${snapY}px`)
+        e.currentTarget.style.setProperty('--hover-show', '1')
       }}
+      onMouseLeave={e => {
+        e.currentTarget.style.setProperty('--hover-show', '0')
+      }}
+      onClick={e => onSlotClick(slotTimeFromClick(e, day, hourHeight))}
     >
-      {HOURS.map((h, i) => (
-        <div
-          key={h}
-          className={h === hoverHour ? styles.hourSlotActive : styles.hourSlot}
-          style={{ top: `${(h - MIN_HOUR) * hourHeight}px`, height: `${hourHeight}px` }}
-        >
-          {i > 0 && <div className={styles.hourLine} />}
-        </div>
+      {HOURS.slice(1).map(h => (
+        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
       ))}
       {classes.map(cls => {
         const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }

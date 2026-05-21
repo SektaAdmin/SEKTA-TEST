@@ -565,28 +565,31 @@
   min-width: 0;
   border-right: 0.5px solid var(--border);
   height: 100%;
+  cursor: default;
+  --hover-show: 0;
+  --hover-y: 0px;
 }
 .hallSubCol:last-child { border-right: none; }
 
-.hourSlot {
+.hallSubCol::before {
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
-  cursor: default;
-  transition: background var(--motion-fast);
+  top: var(--hover-y);
+  height: var(--hour-h, 64px);
+  background: var(--bg-3);
+  opacity: var(--hover-show);
+  pointer-events: none;
+  transition: opacity var(--motion-fast), top 0s;
+  z-index: 0;
 }
-.hourSlot:hover {
-  background: var(--bg-2);
-}
-.hourSlotActive {
-  background: var(--bg-2);
-}
-.hourSlot::after,
-.hourSlotActive::after {
+
+.hallSubCol::after {
   content: '+';
   position: absolute;
   right: 6px;
-  bottom: 6px;
+  top: calc(var(--hover-y) + var(--hour-h, 64px) - 30px);
   width: 24px;
   height: 24px;
   border-radius: var(--radius-sm);
@@ -597,22 +600,19 @@
   line-height: 24px;
   text-align: center;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--motion-fast);
-}
-.hourSlot:hover::after,
-.hourSlotActive::after {
-  opacity: 1;
+  opacity: var(--hover-show);
+  transition: opacity var(--motion-fast), top 0s;
+  z-index: 0;
 }
 
 .hourLine {
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
   height: 0.5px;
   background: var(--border);
   pointer-events: none;
+  z-index: 1;
 }
 
 .nowLineOverlay {
