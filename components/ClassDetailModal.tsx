@@ -18,6 +18,7 @@ import {
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
+import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import type { Class, Client } from '@/types'
 import styles from './ClassDetailModal.module.css'
@@ -295,7 +296,13 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   aria-label="Копіювати деталі заняття"
                   type="button"
                 >
-                  {copied ? '✓' : '📋'}
+                  {copied ? (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                      <polyline points="2 8 6 12 14 4"/>
+                    </svg>
+                  ) : (
+                    <CopyIcon />
+                  )}
                 </button>
                 <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
                   Редагувати

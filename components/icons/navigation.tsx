@@ -55,3 +55,10 @@ export const LogoutIcon = () => (
     <line x1="14" y1="8" x2="6" y2="8"/>
   </svg>
 )
+
+export const CopyIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <rect x="4" y="4" width="8" height="8" rx="1"/>
+    <path d="M3.5 2.5h8a1 1 0 011 1v8"/>
+  </svg>
+)
