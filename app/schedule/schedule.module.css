@@ -568,10 +568,18 @@
   cursor: cell;
 }
 .hallSubCol:last-child { border-right: none; }
-.hallSubCol:hover {
+
+.hourSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  cursor: cell;
+}
+.hourSlot:hover {
   background: var(--bg-2);
 }
-.hallSubCol::after {
+.hourSlot::after {
   content: '+';
   position: absolute;
   right: 6px;
@@ -589,7 +597,7 @@
   opacity: 0;
   transition: opacity var(--motion-fast);
 }
-.hallSubCol:hover::after {
+.hourSlot:hover::after {
   opacity: 1;
 }
 

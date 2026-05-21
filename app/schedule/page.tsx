@@ -210,12 +210,21 @@ interface HallColProps {
 function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
   return (
-    <div
-      className={styles.hallSubCol}
-      onClick={e => onSlotClick(slotTimeFromClick(e, day, hourHeight))}
-    >
-      {HOURS.slice(1).map(h => (
-        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
+    <div className={styles.hallSubCol}>
+      {HOURS.map((h, i) => (
+        <div
+          key={h}
+          className={styles.hourSlot}
+          style={{ top: `${(h - MIN_HOUR) * hourHeight}px`, height: `${hourHeight}px` }}
+          onClick={() => {
+            const d = new Date(day)
+            d.setHours(h, 0, 0, 0)
+            const pad = (n: number) => String(n).padStart(2, '0')
+            onSlotClick(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:00`)
+          }}
+        >
+          {i > 0 && <div className={styles.hourLine} />}
+        </div>
       ))}
       {classes.map(cls => {
         const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }
