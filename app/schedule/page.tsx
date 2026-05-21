@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
@@ -154,8 +155,21 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
 
   const timeLabel = `${formatTime(cls.starts_at)} – ${formatEndTime(cls.starts_at, cls.duration_min)}`
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
-  const isCompact = cardHeight < 50
+  const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+
+  const progressBar = cls.capacity != null && !cls.is_cancelled ? (() => {
+    const pct = Math.min((activeCount / cls.capacity) * 100, 100)
+    const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
+    return (
+      <div className={styles.cardFooter}>
+        <div
+          className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    )
+  })() : null
 
   return (
     <button
@@ -181,41 +195,33 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
           </span>
           <span className={styles.cardTime}>{timeLabel}</span>
           {cls.trainers?.name && (
-            <span className={styles.cardTrainer}>{cls.trainers.name}</span>
+            <span className={styles.cardTrainerRow}>
+              <UserRound className={styles.cardTrainerIcon} />
+              {cls.trainers.name}
+            </span>
           )}
           {cls.capacity != null && !cls.is_cancelled && (() => {
             const free = cls.capacity - activeCount
-            const freePlural = free === 1 ? '1 місце' : free >= 2 && free <= 4 ? `${free} місця` : `${free} місць`
+            if (waitlistCount > 0) {
+              return (
+                <span className={styles.cardSlotsWaitlist}>
+                  Черга: <strong>{waitlistCount}</strong>
+                </span>
+              )
+            }
+            if (free <= 0) {
+              return <span className={styles.cardSlotsEmpty}>Немає місць</span>
+            }
             return (
               <span className={styles.cardSlots}>
-                {free > 0 ? freePlural : 'Немає місць'}
+                Місць: <strong className={styles.cardSlotsCount}>{free}</strong>
+                <span className={styles.cardSlotsTotal}> / {cls.capacity}</span>
               </span>
-            )
-          })()}
-          {cls.capacity != null && !cls.is_cancelled && (() => {
-            const pct = Math.min((activeCount / cls.capacity) * 100, 100)
-            const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-            return (
-              <div
-                className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
-                style={{ marginTop: 'auto', width: `${pct}%` }}
-              />
             )
           })()}
         </>
       )}
-      {cls.capacity != null && !cls.is_cancelled && isCompact && (() => {
-        const pct = Math.min((activeCount / cls.capacity) * 100, 100)
-        const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-        return (
-          <div className={styles.cardFooter}>
-            <div
-              className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        )
-      })()}
+      {progressBar}
     </button>
   )
 }
