@@ -158,6 +158,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
 
   return (
     <button
+      data-card
       className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
       style={{
         top: `${getCardTop(cls.starts_at, hourHeight)}px`,
@@ -215,6 +216,10 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
       className={styles.hallSubCol}
       style={{ '--hour-h': `${hourHeight}px` } as React.CSSProperties}
       onMouseMove={e => {
+        if ((e.target as HTMLElement).closest('[data-card]')) {
+          e.currentTarget.style.setProperty('--hover-show', '0')
+          return
+        }
         const rect = e.currentTarget.getBoundingClientRect()
         const relY = e.clientY - rect.top
         const snapY = Math.floor(relY / hourHeight) * hourHeight
