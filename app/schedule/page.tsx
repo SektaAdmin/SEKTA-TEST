@@ -24,6 +24,7 @@ const MIN_HOUR = 8
 const MAX_HOUR = 22
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const HOUR_HEIGHT = 64
+const CARD_GAP = 2
 
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -161,10 +162,10 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       data-card
       className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
       style={{
-        top: `${getCardTop(cls.starts_at, hourHeight)}px`,
-        height: `${cardHeight}px`,
-        left: `calc(${(laneIndex / laneCount) * 100}% + 4px)`,
-        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + 4px)`,
+        top: `${getCardTop(cls.starts_at, hourHeight) + CARD_GAP}px`,
+        height: `${Math.max(cardHeight - CARD_GAP * 2, 20)}px`,
+        left: `calc(${(laneIndex / laneCount) * 100}% + ${CARD_GAP}px)`,
+        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + ${CARD_GAP}px)`,
         ['--card-color' as string]: color,
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
