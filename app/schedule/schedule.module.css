@@ -647,44 +647,34 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 8px 6px 10px;
-  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--card-color, var(--border)) 35%, transparent);
+  gap: 1px;
+  padding: 5px 8px 5px 9px;
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 18%, var(--bg-2));
+  border: none;
+  border-left: 3px solid var(--card-color, var(--border));
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
-  transition: background var(--motion-fast), border-color var(--motion-fast);
+  transition: background var(--motion-fast);
   z-index: 1;
 }
 .card:hover {
-  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 25%, transparent);
-  border-color: color-mix(in srgb, var(--card-color, var(--border)) 55%, transparent);
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 26%, var(--bg-2));
   z-index: 2;
 }
 
 .cardCancelled {
   background: var(--bg-2) !important;
-  border: 1px solid var(--border) !important;
+  border-left-color: var(--border) !important;
   opacity: 0.55;
-}
-
-.cardTime {
-  font-size: 10px;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--card-color, var(--text-2)) 80%, white);
-  font-family: var(--mono);
-  flex-shrink: 0;
-  opacity: 0.85;
 }
 
 .cardType {
   font-size: 12px;
-  font-weight: 700;
-  color: color-mix(in srgb, var(--card-color, var(--text)) 60%, white);
+  font-weight: 600;
+  color: var(--text);
   line-height: 1.2;
-  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -692,25 +682,42 @@
 }
 .cardTypeCancelled { color: var(--text-3); }
 
+.cardTime {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-2);
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
 .cardTrainer {
   font-size: 10px;
-  color: color-mix(in srgb, var(--card-color, var(--text-3)) 60%, white);
-  opacity: 0.75;
+  color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
 }
 
+.cardCompact {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
 .countBadge {
   position: absolute;
   bottom: 5px;
-  right: 7px;
+  right: 6px;
   font-size: 10px;
   font-family: var(--mono);
-  color: color-mix(in srgb, var(--card-color, var(--text-2)) 70%, white);
-  background: color-mix(in srgb, var(--card-color, var(--bg)) 20%, black);
-  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, transparent);
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
   border-radius: 3px;
   padding: 1px 5px;
 }
@@ -726,31 +733,4 @@
   border-color: var(--danger-border);
   background: var(--danger-dim);
   font-weight: 600;
-}
-
-.cardHall {
-  position: absolute;
-  top: 6px;
-  right: 7px;
-  font-size: 10px;
-  color: color-mix(in srgb, var(--card-color, var(--text-3)) 70%, white);
-  background: color-mix(in srgb, var(--card-color, var(--bg)) 20%, black);
-  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, transparent);
-  border-radius: 3px;
-  padding: 1px 5px;
-  max-width: 80px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cancelledBadge {
-  position: absolute;
-  top: 5px;
-  right: 6px;
-  font-size: 10px;
-  color: var(--danger);
-  background: var(--danger-dim);
-  padding: 1px 5px;
-  border-radius: 3px;
 }

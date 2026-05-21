@@ -34,18 +34,18 @@ type ClassWithJoins = Class & {
 type Hall = { id: string; name: string; capacity: number; description: string | null; is_active: boolean }
 
 const TYPE_COLORS = [
-  '#5b8af5',
-  '#c8f060',
-  '#f07850',
-  '#a06cf0',
-  '#50c8d8',
-  '#f0c840',
-  '#e05080',
-  '#60d890',
+  '#4285f4',
+  '#0b8043',
+  '#d2562b',
+  '#8430ce',
+  '#0097a7',
+  '#e52592',
+  '#f6ae2d',
+  '#137333',
 ]
 
 function typeColor(code: string): string {
-  if (code === 'group') return '#5b8af5'
+  if (code === 'group') return '#4285f4'
   let h = 0
   for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
   return TYPE_COLORS[h % TYPE_COLORS.length]
@@ -169,21 +169,16 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
     >
-      {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
-      {cls.halls?.name && (
-        <span className={styles.cardHall}>{cls.halls.name}</span>
-      )}
       {isCompact ? (
-        <>
-          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>{label}</span>
-          <span className={styles.cardTime}>{timeLabel}</span>
-        </>
+        <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
+          {label} · {formatTime(cls.starts_at)}
+        </span>
       ) : (
         <>
-          <span className={styles.cardTime}>{timeLabel}</span>
           <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
             {label}
           </span>
+          <span className={styles.cardTime}>{timeLabel}</span>
           {cls.trainers?.name && (
             <span className={styles.cardTrainer}>{cls.trainers.name}</span>
           )}
