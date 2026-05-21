@@ -275,6 +275,14 @@
   flex-wrap: wrap;
 }
 
+.filterDivider {
+  width: 0.5px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
 .filterBtn {
   height: 26px;
   padding: 0 10px;

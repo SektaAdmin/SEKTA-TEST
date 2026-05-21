@@ -9,7 +9,6 @@ import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import SeriesModal from '@/components/SeriesModal'
 import HallWeekGrid from '@/components/HallWeekGrid'
-import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import CalendarPopover, { calStyles } from '@/components/CalendarPopover'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
@@ -54,6 +53,7 @@ export default function TemplatesPage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [filterHall, setFilterHall] = useState('')
   const [filterClient, setFilterClient] = useState<Client | null>(null)
   const [clientFilterKey, setClientFilterKey] = useState(0)
 
@@ -61,13 +61,14 @@ export default function TemplatesPage() {
   const templates = useMemo(() => {
     let result = [...rawTemplates]
     if (filterTrainer) result = result.filter(s => s.trainer_id === filterTrainer)
+    if (filterHall) result = result.filter(s => s.hall_id === filterHall)
     if (filterClient) result = result.filter(s => (s.series_clients ?? []).some(sc => sc.client_id === filterClient.id))
     return result.sort((a, b) => {
       const sa = a.day_of_week === 0 ? 7 : a.day_of_week
       const sb = b.day_of_week === 0 ? 7 : b.day_of_week
       return sa !== sb ? sa - sb : a.time_of_day.localeCompare(b.time_of_day)
     })
-  }, [rawTemplates, filterTrainer, filterClient])
+  }, [rawTemplates, filterTrainer, filterHall, filterClient])
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [prefillSeries, setPrefillSeries] = useState<{ day_of_week?: number; time_of_day?: string; hall_id?: string } | null>(null)
@@ -84,12 +85,6 @@ export default function TemplatesPage() {
   })
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
-  // Right panel calendar state (navigation only — templates have no dates)
-  const [rightPanelMonth, setRightPanelMonth] = useState<{ year: number; month: number }>(() => {
-    const d = new Date()
-    return { year: d.getFullYear(), month: d.getMonth() }
-  })
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
@@ -258,6 +253,24 @@ export default function TemplatesPage() {
       <div className={styles.filterBar}>
         <div className={styles.filterGroup}>
           <button
+            className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
+            onClick={() => setFilterHall('')}
+          >
+            Всі зали
+          </button>
+          {halls.filter(h => h.is_active).map(h => (
+            <button
+              key={h.id}
+              className={`${styles.filterBtn} ${filterHall === h.id ? styles.filterBtnActive : ''}`}
+              onClick={() => setFilterHall(f => f === h.id ? '' : h.id)}
+            >
+              {h.name}
+            </button>
+          ))}
+        </div>
+        <div className={styles.filterDivider} />
+        <div className={styles.filterGroup}>
+          <button
             className={`${styles.filterBtn} ${filterTrainer === '' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilterTrainer('')}
           >
@@ -387,23 +400,6 @@ export default function TemplatesPage() {
           )}
         </div>
 
-        {viewMode === 'grid' && (
-          <ScheduleRightPanel
-            viewYear={rightPanelMonth.year}
-            viewMonth={rightPanelMonth.month}
-            onPrevMonth={() => {
-              const d = new Date(rightPanelMonth.year, rightPanelMonth.month - 1, 1)
-              setRightPanelMonth({ year: d.getFullYear(), month: d.getMonth() })
-            }}
-            onNextMonth={() => {
-              const d = new Date(rightPanelMonth.year, rightPanelMonth.month + 1, 1)
-              setRightPanelMonth({ year: d.getFullYear(), month: d.getMonth() })
-            }}
-            activeDates={new Set<string>()}
-            selectedDate={new Date()}
-            onDateSelect={() => {}}
-          />
-        )}
       </div>
 
       {(showCreateModal || editingSeries) && (
