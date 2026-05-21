@@ -172,33 +172,34 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     >
       {isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-          {label} · {formatTime(cls.starts_at)}
+          {formatTime(cls.starts_at)} · {cls.trainers?.name || '—'}
         </span>
       ) : (
         <>
-          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-            {label}
-          </span>
           <span className={styles.cardTime}>{timeLabel}</span>
           {cls.trainers?.name && (
             <span className={styles.cardTrainer}>{cls.trainers.name}</span>
           )}
           {cls.capacity != null && !cls.is_cancelled && (() => {
             const free = cls.capacity - activeCount
+            const freePlural = free === 1 ? '1 місце' : free >= 2 && free <= 4 ? `${free} місця` : `${free} місць`
+            return (
+              <span className={styles.cardSlots}>
+                {free > 0 ? freePlural : 'Немає місць'}
+              </span>
+            )
+          })()}
+          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
+            {label}
+          </span>
+          {cls.capacity != null && !cls.is_cancelled && (() => {
             const pct = Math.min((activeCount / cls.capacity) * 100, 100)
             const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-            const freePlural = free === 1 ? '1 місце' : free >= 2 && free <= 4 ? `${free} місця` : `${free} місць`
-            const slotText = slotState === 'over' ? `+${waitlistCount} черга` : slotState === 'full' ? 'Немає місць' : freePlural
             return (
-              <div className={styles.cardFooter}>
-                <span className={`${styles.cardFreeSlots} ${styles['cardSlots_' + slotState]}`}>
-                  {slotText}
-                </span>
-                <div
-                  className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
+              <div
+                className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
+                style={{ marginTop: 'auto', width: `${pct}%` }}
+              />
             )
           })()}
         </>
