@@ -217,6 +217,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
               <div className={styles.cardSlots}>
                 <strong className={styles.cardSlotsCount}>{activeCount}</strong>
                 <span className={styles.cardSlotsTotal}>/{cls.capacity}</span>
+                <span className={styles.cardSlotsSeparator}>|</span>
                 <span className={styles.cardSlotsFree}>{free} {freeText}</span>
               </div>
             )

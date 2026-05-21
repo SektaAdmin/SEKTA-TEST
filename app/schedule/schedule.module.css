@@ -800,10 +800,14 @@
   font-weight: 400;
 }
 
+.cardSlotsSeparator {
+  color: var(--text-3);
+  margin: 0 3px;
+}
+
 .cardSlotsFree {
   color: var(--success);
   font-weight: 600;
-  margin-left: 4px;
 }
 
 .cardSlotsEmpty {
