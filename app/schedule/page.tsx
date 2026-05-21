@@ -187,7 +187,8 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
             const free = cls.capacity - activeCount
             const pct = Math.min((activeCount / cls.capacity) * 100, 100)
             const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-            const slotText = slotState === 'over' ? `+${waitlistCount} черга` : slotState === 'full' ? 'повно' : `${free} вільних`
+            const freePlural = free === 1 ? '1 місце' : free >= 2 && free <= 4 ? `${free} місця` : `${free} місць`
+            const slotText = slotState === 'over' ? `+${waitlistCount} черга` : slotState === 'full' ? 'Немає місць' : freePlural
             return (
               <div className={styles.cardFooter}>
                 <span className={`${styles.cardFreeSlots} ${styles['cardSlots_' + slotState]}`}>
