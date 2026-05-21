@@ -232,6 +232,14 @@ interface HallColProps {
 function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick }: HallColProps) {
   const lanes = computeLanes(classes)
 
+  function relYOverlapsCard(relY: number): boolean {
+    return classes.some(cls => {
+      const top = getCardTop(cls.starts_at, hourHeight)
+      const height = getCardHeight(cls.duration_min, hourHeight)
+      return relY >= top && relY <= top + height
+    })
+  }
+
   return (
     <div
       className={styles.hallSubCol}
@@ -243,6 +251,10 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
         }
         const rect = e.currentTarget.getBoundingClientRect()
         const relY = e.clientY - rect.top
+        if (relYOverlapsCard(relY)) {
+          e.currentTarget.style.setProperty('--hover-show', '0')
+          return
+        }
         const snapY = Math.floor(relY / hourHeight) * hourHeight
         e.currentTarget.style.setProperty('--hover-y', `${snapY}px`)
         e.currentTarget.style.setProperty('--hover-show', '1')
@@ -250,7 +262,13 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
       onMouseLeave={e => {
         e.currentTarget.style.setProperty('--hover-show', '0')
       }}
-      onClick={e => onSlotClick(slotTimeFromClick(e, day, hourHeight))}
+      onClick={e => {
+        if ((e.target as HTMLElement).closest('[data-card]')) return
+        const rect = e.currentTarget.getBoundingClientRect()
+        const relY = e.clientY - rect.top
+        if (relYOverlapsCard(relY)) return
+        onSlotClick(slotTimeFromClick(e, day, hourHeight))
+      }}
     >
       {HOURS.slice(1).map(h => (
         <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
