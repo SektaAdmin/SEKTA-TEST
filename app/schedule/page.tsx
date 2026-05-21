@@ -24,7 +24,7 @@ const DAYS_UA_FULL = ['Понеділок', 'Вівторок', 'Середа', 
 const MIN_HOUR = 8
 const MAX_HOUR = 22
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
-const HOUR_HEIGHT = 64
+const HOUR_HEIGHT = 83
 const CARD_GAP = 2
 
 type ClassWithJoins = Class & {
