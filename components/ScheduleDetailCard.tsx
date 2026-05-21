@@ -102,11 +102,11 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
             title={copied ? 'Скопійовано!' : 'Копіювати'}
           >
             {copied ? (
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M2.5 7.5l3.5 3.5 6.5-6.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             ) : (
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="4" y="4" width="8" height="8" rx="1" />
                 <path d="M3 10V3a1 1 0 0 1 1-1h7" strokeLinecap="round" />
               </svg>
@@ -118,12 +118,12 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
             aria-label="Редагувати заняття"
             title="Редагувати"
           >
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M10.5 2.5l2 2L5 12H3v-2l7.5-7.5z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           <button className={styles.actionBtn} onClick={onClose} aria-label="Закрити">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M3 3l9 9M12 3l-9 9" strokeLinecap="round" />
             </svg>
           </button>
@@ -133,7 +133,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
       <div className={styles.rows}>
         <div className={styles.row}>
           <span className={styles.rowIcon}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
               <rect x="1.5" y="2.5" width="11" height="10" rx="1.5" />
               <path d="M4.5 1v3M9.5 1v3M1.5 6.5h11" strokeLinecap="round" />
             </svg>
@@ -143,7 +143,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
 
         <div className={styles.row}>
           <span className={styles.rowIcon}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
               <circle cx="7" cy="7" r="5.5" />
               <path d="M7 4v3.5l2.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -154,7 +154,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
         {cls.halls && (
           <div className={styles.row}>
             <span className={styles.rowIcon}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <path d="M7 1.5C4.8 1.5 3 3.3 3 5.5c0 3.3 4 7 4 7s4-3.7 4-7c0-2.2-1.8-4-4-4z" />
                 <circle cx="7" cy="5.5" r="1.5" />
               </svg>
@@ -166,7 +166,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
         {cls.trainers && (
           <div className={styles.row}>
             <span className={styles.rowIcon}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <circle cx="7" cy="4.5" r="2.5" />
                 <path d="M1.5 12.5c0-2.8 2.5-5 5.5-5s5.5 2.2 5.5 5" strokeLinecap="round" />
               </svg>
@@ -177,7 +177,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
 
         <div className={styles.row}>
           <span className={styles.rowIcon}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
               <path d="M2 3.5h10M2 7h6M2 10.5h8" strokeLinecap="round" />
             </svg>
           </span>
@@ -187,7 +187,7 @@ export default function ScheduleDetailCard({ classId, onClose, onEdit }: Props) 
         {cls.notes && (
           <div className={styles.row}>
             <span className={styles.rowIcon}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <path d="M2 2.5h10v7H8.5L6 12v-2.5H2z" />
               </svg>
             </span>
