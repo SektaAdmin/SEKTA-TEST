@@ -189,12 +189,15 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
             const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
             const slotText = slotState === 'over' ? `+${waitlistCount} черга` : slotState === 'full' ? 'повно' : `${free} вільних`
             return (
-              <>
+              <div className={styles.cardFooter}>
                 <span className={`${styles.cardFreeSlots} ${styles['cardSlots_' + slotState]}`}>
                   {slotText}
                 </span>
-                <div className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`} style={{ width: `${pct}%` }} />
-              </>
+                <div
+                  className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             )
           })()}
         </>
@@ -202,7 +205,14 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       {cls.capacity != null && !cls.is_cancelled && isCompact && (() => {
         const pct = Math.min((activeCount / cls.capacity) * 100, 100)
         const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-        return <div className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`} style={{ width: `${pct}%` }} />
+        return (
+          <div className={styles.cardFooter}>
+            <div
+              className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )
       })()}
     </button>
   )
