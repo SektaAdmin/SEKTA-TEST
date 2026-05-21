@@ -522,6 +522,44 @@
   .hallSubCol { min-width: 80px; }
 }
 
+/* ── Week day header (week mode only) ──────────────────────── */
+.weekDayHeader {
+  display: grid;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.weekDayLabel {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: center;
+}
+
+.weekDayToday {
+  color: #fff;
+  font-weight: 600;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  margin: 2px 4px;
+}
+
+.weekFilterLabel {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 0 4px;
+  background: var(--bg-2);
+  border-bottom: 0.5px solid var(--border);
+}
+
 /* ── Calendar body grid ─────────────────────────────────────── */
 .bodyGrid {
   display: grid;
