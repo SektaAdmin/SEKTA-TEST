@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-21
+- **Last Updated**: 2026-05-22
 
 ## Commands
 
@@ -516,6 +516,15 @@ types/
 - `.contentRow` — flex-row для grid + right-panel
 - `.gridArea` — flex-1 для розкладу/архіву
 - `.rightPanel` — 280px sidebar з календарем та деталями
+
+**ClassCard (компонента в page.tsx, стилі в schedule.module.css):**
+- Дизайн по стандартам фітнес-студії: чітка ієрархія, компактність, кольорова кодування
+- **Повний режим** (висота ≥60px): título → час → тренер → місця (з progress bar)
+- **Компактний режим** (висота <60px): `title time` в одному рядку
+- **Progress bar**: знизу (знімається, в .cardFooter), висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
+- **Бордери**: тонка обводка (0.5px) з кольором типу (40%) + ліва смуга (3px solid) 
+- **Hover**: м'яка тінь (box-shadow) + більш світліший фон
+- **Скасовані заняття**: затемнена палітра + прозорість 0.5
 
 ---
 
