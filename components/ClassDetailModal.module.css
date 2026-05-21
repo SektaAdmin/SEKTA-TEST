@@ -41,8 +41,27 @@
   justify-content: space-between;
   padding: 14px 20px;
   border-bottom: 0.5px solid var(--border);
+  border-left: 3px solid var(--type-color, var(--border));
+  background: color-mix(in srgb, var(--type-color, var(--bg-2)) 10%, var(--bg-2));
   gap: 12px;
   flex-shrink: 0;
+}
+
+.topbarTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.typeLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--type-color, var(--text-3));
+  line-height: 1;
 }
 
 .topbarTitle {
@@ -188,6 +207,61 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+}
+
+.infoHero {
+  padding: 16px 20px 12px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoTime {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.infoMeta {
+  font-size: 12px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.infoCapacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoBar {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--bg-3);
+  min-width: 60px;
+}
+
+.infoBarFill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.infoCapacityCount {
+  font-size: 13px;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.infoCapacityCount strong {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .infoRow {
@@ -438,7 +512,11 @@
 }
 
 .btnAttend, .btnNoshow, .btnCancelEnroll, .btnReEnroll {
-  padding: 4px 10px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: var(--font);
@@ -448,6 +526,7 @@
   color: var(--text-3);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btnAttend {
@@ -528,10 +607,21 @@
   white-space: nowrap;
 }
 
+.hidden {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .overlay { padding: 0; align-items: flex-end; }
   .modal { border-radius: var(--radius) var(--radius) 0 0; max-width: 100%; }
-  .body { max-height: 85vh; }
+  .body { max-height: 85vh; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .content { padding: 16px; }
   .tableWrap { overflow-x: auto; }
+
+  /* Hide date and balance columns on mobile */
+  .table th:nth-child(3),
+  .table td:nth-child(3) { display: none; }
+
+  .table th:nth-child(4),
+  .table td:nth-child(4) { display: none; }
 }

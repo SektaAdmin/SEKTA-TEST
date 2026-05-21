@@ -20,6 +20,8 @@ import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import { typeColor } from '@/lib/typeColor'
+import { getActiveCount } from '@/lib/scheduleMetrics'
 import type { Class, Client } from '@/types'
 import styles from './ClassDetailModal.module.css'
 
@@ -82,6 +84,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
+  const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   const fetchClass = useCallback(async () => {
@@ -202,7 +205,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   }
 
   async function handleReverseAttendance(enrollmentId: string) {
-    if (!window.confirm('Скасувати відвідування? Заняття буде повернено на баланс клієнта.')) return
     setActionLoading(enrollmentId)
     const { success, error } = await reverseAttendance(supabase, enrollmentId)
     if (!success) {
@@ -210,6 +212,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     } else if (cls) {
       await fetchEnrollments(cls.ticket_type)
     }
+    setConfirmReverseId(null)
     setActionLoading(null)
   }
 
@@ -244,7 +247,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setCancellingClass(false)
   }
 
-  const activeCount = cls ? enrollments.filter(e => e.status === 'enrolled' || e.status === 'attended').length : 0
+  const activeCount = cls ? getActiveCount(enrollments) : 0
+  const isFull = cls && cls.capacity != null && activeCount >= cls.capacity
+  const isAlmost = cls && cls.capacity != null && activeCount < cls.capacity && activeCount >= cls.capacity * 0.8
+  const fillPctValue = cls && cls.capacity != null ? Math.min((activeCount / cls.capacity) * 100, 100) : 0
   const waitlist = enrollments.filter(e => e.status === 'waitlist')
   const mainEnrollments = enrollments.filter(e => e.status !== 'waitlist')
   const stillEnrolled = enrollments.filter(e => e.status === 'enrolled')
@@ -282,10 +288,20 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
         aria-modal="true"
       >
         {/* Header */}
-        <div className={styles.topbar}>
-          <span className={styles.topbarTitle}>
-            {loading ? 'Завантаження...' : cls ? (cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)) : ''}
-          </span>
+        <div
+          className={styles.topbar}
+          style={!loading && cls ? { ['--type-color' as string]: typeColor(cls.ticket_type) } : undefined}
+        >
+          <div className={styles.topbarTitleBlock}>
+            {!loading && cls && (
+              <span className={styles.typeLabel}>
+                {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+              </span>
+            )}
+            <span className={styles.topbarTitle}>
+              {loading ? 'Завантаження...' : cls ? (cls.title || timeRange) : ''}
+            </span>
+          </div>
           <div className={styles.topbarRight}>
             {!loading && cls && (
               <div className={styles.topbarActions}>
@@ -359,45 +375,52 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
               {/* Class info */}
               <div className={styles.infoCard}>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Тип</span>
-                  <span className={styles.infoValue}>
-                    {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-                    {cls.title ? ` · ${cls.title}` : ''}
-                  </span>
-                  {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Дата</span>
-                  <span className={styles.infoValue}>{formatSaleDatetime(cls.starts_at)}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Час</span>
-                  <span className={styles.infoValue}>{timeRange} ({cls.duration_min} хв)</span>
-                </div>
-                {cls.trainers && (
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Тренер</span>
-                    <span className={styles.infoValue}>{cls.trainers.name}</span>
+                <div className={styles.infoHero}>
+                  <div className={styles.infoTime}>{timeRange}</div>
+                  <div className={styles.infoMeta}>
+                    {cls.trainers && <span>{cls.trainers.name}</span>}
+                    {cls.trainers && cls.halls && <span>·</span>}
+                    {cls.halls && <span>{cls.halls.name}</span>}
                   </div>
-                )}
-                {cls.halls && (
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Зал</span>
-                    <span className={styles.infoValue}>{cls.halls.name}</span>
+                  <div className={styles.infoCapacity}>
+                    <div className={styles.infoBar}>
+                      <div
+                        className={styles.infoBarFill}
+                        style={{
+                          width: `${fillPctValue}%`,
+                          backgroundColor: isFull
+                            ? 'var(--danger)'
+                            : isAlmost
+                              ? 'var(--warning)'
+                              : 'var(--success)',
+                        }}
+                      />
+                    </div>
+                    <span className={styles.infoCapacityCount}>
+                      <strong>{activeCount}</strong>
+                      {cls.capacity != null && <span> / {cls.capacity}</span>}
+                    </span>
                   </div>
-                )}
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Записані</span>
-                  <span className={styles.infoValue}>
-                    {activeCount}{cls.capacity != null ? ` / ${cls.capacity}` : ''}
-                  </span>
                 </div>
-                {cls.notes && (
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Нотатки</span>
-                    <span className={styles.infoValue}>{cls.notes}</span>
-                  </div>
+                {(cls.notes || cls.is_cancelled) && (
+                  <>
+                    {cls.is_cancelled && (
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Статус</span>
+                        <span className={styles.cancelledBadge}>скасовано</span>
+                      </div>
+                    )}
+                    {cls.notes && (
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Нотатки</span>
+                        <span className={styles.infoValue}>{cls.notes}</span>
+                      </div>
+                    )}
+                    <div className={styles.infoRow}>
+                      <span className={styles.infoLabel}>Дата</span>
+                      <span className={styles.infoValue}>{formatSaleDatetime(cls.starts_at)}</span>
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -479,7 +502,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           <th>Клієнт</th>
                           <th>Статус</th>
                           <th>Баланс год.</th>
-                          <th>Дата запису</th>
+                          <th className={styles.hidden}>Дата запису</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -511,7 +534,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
                                 ) : '—'}
                               </td>
-                              <td className={styles.dateCell}>
+                              <td className={`${styles.dateCell} ${styles.hidden}`}>
                                 {formatSaleDatetime(e.created_at)}
                               </td>
                               <td>
@@ -545,14 +568,34 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     </>
                                   )}
                                   {e.status === 'attended' && (
-                                    <button
-                                      className={styles.btnCancelEnroll}
-                                      onClick={() => handleReverseAttendance(e.id)}
-                                      disabled={isLoading}
-                                      title="Скасувати відвідування"
-                                    >
-                                      —
-                                    </button>
+                                    confirmReverseId === e.id ? (
+                                      <>
+                                        <span className={styles.confirmPrompt}>Скасувати?</span>
+                                        <button
+                                          className={styles.btnEdit}
+                                          onClick={() => handleReverseAttendance(e.id)}
+                                          disabled={isLoading}
+                                        >
+                                          Так
+                                        </button>
+                                        <button
+                                          className={styles.btnCancelAdd}
+                                          onClick={() => setConfirmReverseId(null)}
+                                          disabled={isLoading}
+                                        >
+                                          Ні
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <button
+                                        className={styles.btnCancelEnroll}
+                                        onClick={() => setConfirmReverseId(e.id)}
+                                        disabled={isLoading}
+                                        title="Скасувати відвідування"
+                                      >
+                                        —
+                                      </button>
+                                    )
                                   )}
                                   {(e.status === 'cancelled' || e.status === 'noshow') && (
                                     <button
@@ -590,7 +633,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           <tr>
                             <th>Клієнт</th>
                             <th>Баланс год.</th>
-                            <th>Дата запису</th>
+                            <th className={styles.hidden}>Дата запису</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -613,7 +656,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
                                   ) : '—'}
                                 </td>
-                                <td className={styles.dateCell}>
+                                <td className={`${styles.dateCell} ${styles.hidden}`}>
                                   {formatSaleDatetime(e.created_at)}
                                 </td>
                                 <td>
