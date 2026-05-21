@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-22
+- **Last Updated**: 2026-05-22 (week view реалізована)
 
 ## Commands
 
@@ -370,7 +370,7 @@ npm run start
 | `/sales` | Продажі: створення, редагування, фільтр по датах |
 | `/clients` | База клієнтів, пошук |
 | `/clients/[id]` | Профіль: контакти, депозит, залишок занять, покупки, записи |
-| `/schedule` | Розклад занять: денний вид, фільтр по залах і тренерах, click-to-create, права панель з деталями |
+| `/schedule` | Розклад занять: день/тиждень view, фільтр по залах і тренерах (в week mode — по 1 залу), click-to-create, права панель з деталями (день mode) |
 | `/schedule/[classId]` | Деталі заняття, відвідуваність, запис клієнтів |
 | `/schedule/templates` | Шаблони тижня: HallWeekGrid, постійники, виставити тиждень |
 | `/halls`, `/trainers`, `/tickets`, `/training-types` | Standalone-сторінки довідників (редиректи або окремі views) |
@@ -495,36 +495,39 @@ types/
 **@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
 **Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--right-panel-w: 280px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
 
-### /schedule Page (станом на 2026-05-21)
+### /schedule Page (станом на 2026-05-22)
+
+**View modes:**
+- **Day view** — один день, всі зали в одну колонку, права панель з calendario + деталі
+- **Week view** — 7 днів (Пн–Нд), кожен день — одна колонка, права панель прихована. При перемиканні автоматично обирається перший зал (якщо фільтри порожні)
 
 **Компоненти:**
-- `ScheduleRightPanel` — постійна права панель, завжди видима (крім mobile ≤900px)
-  - Міні-календар: інлайн (не портал), для навігації по датах
-  - Деталь заняття: `ScheduleDetailCard` при `detailClassId != null`
-- `ScheduleDetailCard` — компактна інфокартка заняття (тип, час, тренер, зал, записі)
-  - Кнопка «×» закриває kartку
-  - Кнопка «Докладніше» готова до подальшої інтеграції з повним модалом
+- `ScheduleRightPanel` — права панель (видима в day mode), містить:
+  - Міні-календар: інлайн для навігації по датах
+  - `ScheduleDetailCard` при `detailClassId != null` — компактна інфокартка заняття
+- `ClassCard` (в page.tsx) — дизайн по стандартам фітнес-студії: чітка ієрархія, кольорова кодування
 
 **Topbar (page.tsx):**
-- Новий layout: dateChip (міс. абр + число) + titleBlock (назва місяця, week badge, день тижня)
-- Навігація: ← → (раніше, пізніше), Сьогодні, іконка пошуку
-- Статична мітка «День» (week view implementation відстаньте)
-- Вкладки Розклад/Архів — залишаються як були
-- Видалено: DateRangePicker (портальний календар замінено на inline ScheduleRightPanel)
+- dateChip + titleBlock (в day mode: "Август 2026" + "понеділок"; в week mode: "18.05 – 24.05.2026")
+- Навігація: ← → (±1 день у day mode, ±7 днів у week mode), Сьогодні
+- View toggle: [День] [Тиждень] кнопки (разом з фільтрами)
+
+**Week day headers (week mode only):**
+- `.weekDayHeader` — смуга з назвами днів (Пн 18, Вт 19...)
+- Сьогоднішній день підсвічений зеленим pill (контрастний)
+- `.weekFilterLabel` — рядок під датами з назвою фільтра (зал або тренер)
 
 **Layout:**
-- `.contentRow` — flex-row для grid + right-panel
+- `.contentRow` — flex-row для grid + right-panel (right-panel приховано в week mode)
 - `.gridArea` — flex-1 для розкладу/архіву
-- `.rightPanel` — 280px sidebar з календарем та деталями
+- `overflow-x: auto` в week mode для горизонтального скролу
 
-**ClassCard (компонента в page.tsx, стилі в schedule.module.css):**
-- Дизайн по стандартам фітнес-студії: чітка ієрархія, компактність, кольорова кодування
+**ClassCard стилі:**
 - **Повний режим** (висота ≥60px): título → час → тренер → місця (з progress bar)
 - **Компактний режим** (висота <60px): `title time` в одному рядку
-- **Progress bar**: знизу (знімається, в .cardFooter), висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
-- **Бордери**: тонка обводка (0.5px) з кольором типу (40%) + ліва смуга (3px solid) 
-- **Hover**: м'яка тінь (box-shadow) + більш світліший фон
-- **Скасовані заняття**: затемнена палітра + прозорість 0.5
+- **Progress bar**: знизу, висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
+- **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
+- **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
 
 ---
 
