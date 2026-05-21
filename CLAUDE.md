@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (ClassDetailModal — design refactor + code cleanup)
+- **Last Updated**: 2026-05-24 (templates — HallWeekGrid refactor: days=columns, TemplateCard style, right panel)
 
 ## Commands
 
@@ -494,6 +494,22 @@ types/
 **Анімації:** `--motion-fast: 0.12s ease-out`, `--motion-standard: 0.18s ease-in-out`
 **@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
 **Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--right-panel-w: 280px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
+
+### /schedule/templates Page (станом на 2026-05-24)
+
+**Grid mode (Сітка):**
+- `HallWeekGrid` — 7 колонок = 7 днів тижня (Пн–Нд), зали = підколонки всередині дня
+- `TemplateCard` (в HallWeekGrid.tsx) — стиль ідентичний `ClassCard` з /schedule: ліва акцент-смуга 3px, прогрес-бар знизу, компакт-режим при height < 60px
+- `HOUR_HEIGHT = 83` (як у /schedule)
+- Клік на картку → `SeriesModal`; клік на пустий слот → prefill SeriesModal з dow + time + hall
+- Права панель: `ScheduleRightPanel` з мини-календарем (тільки навігація, `activeDates = new Set()`)
+- Layout: `.contentRow` → `.gridArea` (з `.gridCard` обгорткою) + `ScheduleRightPanel`
+
+**List mode (Список):** таблиця без змін.
+
+**Topbar:** backLink ← Розклад + заголовок + [Сітка/Список] + Виставити тиждень + Видалити розклад + "+ Новий шаблон"
+
+---
 
 ### /schedule Page (станом на 2026-05-23)
 

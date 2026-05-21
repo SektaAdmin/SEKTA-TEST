@@ -9,6 +9,7 @@ import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
 import SeriesModal from '@/components/SeriesModal'
 import HallWeekGrid from '@/components/HallWeekGrid'
+import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import CalendarPopover, { calStyles } from '@/components/CalendarPopover'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import type { ClassSeries, Client } from '@/types'
@@ -83,6 +84,12 @@ export default function TemplatesPage() {
   })
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Right panel calendar state (navigation only — templates have no dates)
+  const [rightPanelMonth, setRightPanelMonth] = useState<{ year: number; month: number }>(() => {
+    const d = new Date()
+    return { year: d.getFullYear(), month: d.getMonth() }
+  })
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
@@ -287,93 +294,115 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      <div className={styles.content}>
-        {loading ? (
-          <span className={styles.loading}>...</span>
-        ) : templates.length === 0 ? (
-          <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
-        ) : viewMode === 'grid' ? (
-          <HallWeekGrid
-            series={templates}
-            halls={halls}
-            trainingTypes={trainingTypes}
-            onCardClick={s => setEditingSeries(s)}
-            onSlotClick={(dow, time, hallId) => {
-              setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
-              setShowCreateModal(true)
-            }}
-          />
-        ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>День</th>
-                  <th>Час</th>
-                  <th>Тип</th>
-                  <th>Тренер</th>
-                  <th>Зал</th>
-                  <th>Місткість</th>
-                  <th>Постійники</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {templates.map(series => {
-                  const clientCount = series.series_clients?.length ?? 0
-                  const overCapacity = getOverCapacityCount(clientCount, series.capacity)
-                  const trainerName = (series.trainers as { name: string } | null)?.name
-                  const hallName = (series.halls as { name: string } | null)?.name
-                  const typeLabel = trainingTypes.find(t => t.code === series.ticket_type)?.label ?? series.ticket_type
+      <div className={styles.contentRow}>
+        <div className={styles.gridArea}>
+          {loading ? (
+            <span className={styles.loading}>...</span>
+          ) : templates.length === 0 ? (
+            <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
+          ) : viewMode === 'grid' ? (
+            <div className={styles.gridCard}>
+              <HallWeekGrid
+                series={templates}
+                halls={halls}
+                trainingTypes={trainingTypes}
+                onCardClick={s => setEditingSeries(s)}
+                onSlotClick={(dow, time, hallId) => {
+                  setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
+                  setShowCreateModal(true)
+                }}
+              />
+            </div>
+          ) : (
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>День</th>
+                    <th>Час</th>
+                    <th>Тип</th>
+                    <th>Тренер</th>
+                    <th>Зал</th>
+                    <th>Місткість</th>
+                    <th>Постійники</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {templates.map(series => {
+                    const clientCount = series.series_clients?.length ?? 0
+                    const overCapacity = getOverCapacityCount(clientCount, series.capacity)
+                    const trainerName = (series.trainers as { name: string } | null)?.name
+                    const hallName = (series.halls as { name: string } | null)?.name
+                    const typeLabel = trainingTypes.find(t => t.code === series.ticket_type)?.label ?? series.ticket_type
 
-                  return (
-                    <tr key={series.id} className={styles.row}>
-                      <td>{DAY_LABELS[series.day_of_week]}</td>
-                      <td>{series.time_of_day.slice(0, 5)}</td>
-                      <td>{typeLabel}</td>
-                      <td>{trainerName ?? '—'}</td>
-                      <td>{hallName ?? '—'}</td>
-                      <td>{series.capacity ?? '—'}</td>
-                      <td>
-                        <button
-                          className={styles.btnClients}
-                          onClick={() => setEditingSeries(series)}
-                        >
-                          Постійники ({clientCount})
-                        </button>
-                        {overCapacity > 0 && (
-                          <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
-                        )}
-                      </td>
-                      <td className={styles.actions}>
-                        <button
-                          className={styles.btnEdit}
-                          onClick={() => setEditingSeries(series)}
-                        >
-                          Редагувати
-                        </button>
-                        {deletingId === series.id ? (
-                          <span className={styles.deleteConfirm}>
-                            Шаблон буде видалено. Вже створені заняття залишаться.{' '}
-                            <button className={styles.btnDanger} onClick={() => deleteSeries(series.id)}>Так, видалити</button>
-                            {' '}
-                            <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
-                          </span>
-                        ) : (
+                    return (
+                      <tr key={series.id} className={styles.row}>
+                        <td>{DAY_LABELS[series.day_of_week]}</td>
+                        <td>{series.time_of_day.slice(0, 5)}</td>
+                        <td>{typeLabel}</td>
+                        <td>{trainerName ?? '—'}</td>
+                        <td>{hallName ?? '—'}</td>
+                        <td>{series.capacity ?? '—'}</td>
+                        <td>
                           <button
-                            className={styles.btnDanger}
-                            onClick={() => setDeletingId(series.id)}
+                            className={styles.btnClients}
+                            onClick={() => setEditingSeries(series)}
                           >
-                            Видалити
+                            Постійники ({clientCount})
                           </button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                          {overCapacity > 0 && (
+                            <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
+                          )}
+                        </td>
+                        <td className={styles.actions}>
+                          <button
+                            className={styles.btnEdit}
+                            onClick={() => setEditingSeries(series)}
+                          >
+                            Редагувати
+                          </button>
+                          {deletingId === series.id ? (
+                            <span className={styles.deleteConfirm}>
+                              Шаблон буде видалено. Вже створені заняття залишаться.{' '}
+                              <button className={styles.btnDanger} onClick={() => deleteSeries(series.id)}>Так, видалити</button>
+                              {' '}
+                              <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
+                            </span>
+                          ) : (
+                            <button
+                              className={styles.btnDanger}
+                              onClick={() => setDeletingId(series.id)}
+                            >
+                              Видалити
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {viewMode === 'grid' && (
+          <ScheduleRightPanel
+            viewYear={rightPanelMonth.year}
+            viewMonth={rightPanelMonth.month}
+            onPrevMonth={() => {
+              const d = new Date(rightPanelMonth.year, rightPanelMonth.month - 1, 1)
+              setRightPanelMonth({ year: d.getFullYear(), month: d.getMonth() })
+            }}
+            onNextMonth={() => {
+              const d = new Date(rightPanelMonth.year, rightPanelMonth.month + 1, 1)
+              setRightPanelMonth({ year: d.getFullYear(), month: d.getMonth() })
+            }}
+            activeDates={new Set<string>()}
+            selectedDate={new Date()}
+            onDateSelect={() => {}}
+          />
         )}
       </div>
 

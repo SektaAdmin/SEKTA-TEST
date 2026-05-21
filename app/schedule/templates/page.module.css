@@ -341,12 +341,36 @@
 }
 .clientFilterClear:hover { opacity: 1; }
 
-/* ── Content ─────────────────────────────────────────────── */
-.content {
+/* ── Content row layout ──────────────────────────────────── */
+.contentRow {
+  display: flex;
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
   min-height: 0;
+  overflow: hidden;
+}
+
+.gridArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gridCard {
+  margin: 12px 16px 16px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: clip;
+}
+
+@media (max-width: 900px) {
+  .gridCard { margin: 8px; }
 }
 
 .loading {

@@ -1,108 +1,98 @@
 /* ── Root ─────────────────────────────────────────────────── */
 .root {
-  position: relative;
-  overflow: auto;
-  max-height: calc(100vh - 140px);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* ── Sticky top header (hall labels) ─────────────────────── */
-.stickyHeader {
-  display: grid;
+/* ── Sticky week header ──────────────────────────────────────── */
+.weekHeader {
+  display: flex;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg-2);
+  border-radius: var(--radius) var(--radius) 0 0;
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: var(--bg-2);
-  border-bottom: 0.5px solid var(--border-strong);
+  z-index: 5;
+  flex-shrink: 0;
 }
 
-.cornerCell {
-  background: var(--bg-2);
-  border-right: 0.5px solid var(--border-strong);
+.gutterCorner {
+  border-right: 0.5px solid var(--border);
+  flex-shrink: 0;
 }
 
-.hallHeaderCell {
+.dayHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  border-right: 0.5px solid var(--border);
+  background: var(--bg-2);
+  min-height: 40px;
+  overflow: hidden;
+}
+.dayHeader:last-child { border-right: none; }
+
+.dayHeaderText {
+  display: block;
+  padding: 8px 4px 6px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  user-select: none;
+}
+
+/* Sub-hall labels inside day header (when multiple halls in same day) */
+.dayHallsRow {
+  display: flex;
+}
+
+.dayHallLabel {
+  flex: 1;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   text-align: center;
-  padding: 8px 4px;
+  padding: 3px 2px;
   border-right: 0.5px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 0.5px solid var(--border);
 }
-.hallHeaderCell:last-child {
-  border-right: none;
-}
+.dayHallLabel:last-child { border-right: none; }
 
-/* ── Body ────────────────────────────────────────────────── */
-.scrollBody {
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Day block ───────────────────────────────────────────── */
-.dayBlock {
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Day header — sticky top within .root, spans full scroll width ── */
-.dayHeader {
-  display: flex;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  border-top: 1px solid var(--border-strong);
-  border-bottom: 0.5px solid var(--border-strong);
-}
-
-.dayBlock:first-child .dayHeader {
-  border-top: none;
-}
-
-.dayHeaderGutter {
-  flex-shrink: 0;
-  width: 48px;
-  background: var(--bg-2);
-  border-right: 0.5px solid var(--border-strong);
-}
-
-.dayHeaderText {
-  display: block;
+/* ── Scrollable body ─────────────────────────────────────────── */
+.bodyWrapper {
   flex: 1;
-  padding: 5px 10px 5px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  user-select: none;
-  background: var(--bg-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
-/* ── Day content row ─────────────────────────────────────── */
-.dayRow {
+/* ── Body grid (time gutter + day columns) ───────────────────── */
+.bodyGrid {
   display: flex;
+  position: relative;
 }
 
-/* ── Time gutter (sticky left, flow layout) ──────────────── */
+/* ── Time gutter ─────────────────────────────────────────────── */
 .timeGutter {
   flex-shrink: 0;
-  width: 48px;
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  background: var(--bg-2);
-  border-right: 0.5px solid var(--border-strong);
+  border-right: 0.5px solid var(--border);
   display: flex;
   flex-direction: column;
 }
 
 .timeRow {
-  height: 64px;
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
@@ -110,31 +100,72 @@
   padding: 3px 6px 0 0;
   border-bottom: 0.5px solid var(--border);
 }
-.timeRow:last-child {
-  border-bottom: none;
-}
+.timeRow:last-child { border-bottom: none; }
 
 .timeLabel {
   font-size: 10px;
   color: var(--text-3);
+  font-family: var(--mono);
   line-height: 1;
   user-select: none;
-  font-family: var(--mono);
 }
 
-/* ── Hall cell ───────────────────────────────────────────── */
-.cell {
-  flex: 1;
-  min-width: 140px;
-  position: relative;
+/* ── Day column ──────────────────────────────────────────────── */
+.dayCol {
+  display: flex;
+  flex-direction: row;
   border-right: 0.5px solid var(--border);
-  cursor: cell;
+  overflow: hidden;
 }
-.cell:last-child {
-  border-right: none;
+.dayCol:last-child { border-right: none; }
+
+/* ── Hall sub-column ─────────────────────────────────────────── */
+.hallSubCol {
+  flex: 1;
+  position: relative;
+  min-width: 120px;
+  border-right: 0.5px solid var(--border);
+  cursor: default;
+  --hover-show: 0;
+  --hover-y: 0px;
+}
+.hallSubCol:last-child { border-right: none; }
+
+.hallSubCol::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--hover-y);
+  height: var(--hour-h, 83px);
+  background: var(--bg-3);
+  opacity: var(--hover-show);
+  pointer-events: none;
+  transition: opacity var(--motion-fast), top 0s;
+  z-index: 0;
 }
 
-/* ── Hour lines ──────────────────────────────────────────── */
+.hallSubCol::after {
+  content: '+';
+  position: absolute;
+  right: 6px;
+  top: calc(var(--hover-y) + var(--hour-h, 83px) - 30px);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-3);
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  pointer-events: none;
+  opacity: var(--hover-show);
+  transition: opacity var(--motion-fast), top 0s;
+  z-index: 0;
+}
+
+/* ── Hour lines ──────────────────────────────────────────────── */
 .hourLine {
   position: absolute;
   left: 0;
@@ -142,92 +173,181 @@
   height: 0.5px;
   background: var(--border);
   pointer-events: none;
+  z-index: 1;
 }
 
-/* ── Class chip ──────────────────────────────────────────── */
-.chip {
+/* ── Class card ──────────────────────────────────────────────── */
+.card {
   position: absolute;
-  left: 3px;
-  right: 3px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 8px 6px 10px;
-  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--chip-color, var(--border)) 35%, transparent);
+  gap: 0;
+  padding: 6px 6px 9px 6px;
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 14%, var(--bg-2));
+  border: 0.5px solid color-mix(in srgb, var(--card-color, var(--border)) 40%, var(--bg-2));
+  border-left: 3px solid var(--card-color, var(--border));
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
   overflow: hidden;
-  font-family: inherit;
-  transition: background var(--motion-fast), border-color var(--motion-fast);
+  transition: background var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
   z-index: 1;
+  box-shadow: none;
+  font-family: inherit;
 }
-.chip:hover {
-  background: color-mix(in srgb, var(--chip-color, var(--bg-3)) 30%, transparent);
-  border-color: color-mix(in srgb, var(--chip-color, var(--border)) 70%, transparent);
-  border-width: 1.5px;
+.card:hover {
+  background: color-mix(in srgb, var(--card-color, var(--bg-3)) 22%, var(--bg-2));
+  border-color: color-mix(in srgb, var(--card-color, var(--border)) 60%, var(--bg-2));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   z-index: 2;
 }
 
-.chipTime {
-  font-size: 10px;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--chip-color, var(--text-2)) 80%, white);
-  font-family: var(--mono);
-  flex-shrink: 0;
-  opacity: 0.85;
-}
-
-.chipType {
+.cardTitle {
   font-size: 12px;
   font-weight: 700;
-  color: color-mix(in srgb, var(--chip-color, var(--text)) 60%, white);
-  line-height: 1.2;
-  text-transform: uppercase;
+  line-height: 1.25;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
 }
 
-.chipTrainer {
+.cardTime {
   font-size: 10px;
-  color: color-mix(in srgb, var(--chip-color, var(--text-3)) 60%, white);
-  opacity: 0.75;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 0;
-}
-
-.chipCapacityBadge {
-  position: absolute;
-  bottom: 5px;
-  right: 7px;
-  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-2);
   font-family: var(--mono);
-  color: color-mix(in srgb, var(--chip-color, var(--text-2)) 70%, white);
-  background: color-mix(in srgb, var(--chip-color, var(--bg)) 20%, black);
-  border: 0.5px solid color-mix(in srgb, var(--chip-color, var(--border)) 40%, transparent);
-  border-radius: 3px;
-  padding: 1px 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+  letter-spacing: 0.01em;
 }
 
-.chipCapacityAlmost {
-  color: var(--warning);
-  border-color: var(--warning);
-  background: var(--warning-dim);
+.cardTrainerRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  margin-bottom: 3px;
 }
 
-.chipCapacityFull {
-  color: var(--danger);
-  border-color: var(--danger-border);
-  background: var(--danger-dim);
+.cardTrainerIcon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+.cardSlots {
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.cardSlotsCount {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.cardSlotsTotal {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.cardSlotsSeparator {
+  color: var(--text-3);
+  margin: 0 3px;
+}
+
+.cardSlotsFree {
+  color: var(--success);
   font-weight: 600;
 }
 
+.cardSlotsEmpty {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--danger);
+  flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.cardSlotsWaitlist {
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-2);
+  flex-shrink: 0;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.cardSlotsWaitlist strong {
+  font-weight: 700;
+  color: var(--warning);
+}
+
+.cardCompact {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.cardFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  z-index: 10;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+.cardProgressBar {
+  height: 2.5px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  margin: 0 6px 6px 6px;
+  background-color: var(--text-3);
+}
+.cardBar_free   { background-color: var(--success) !important; }
+.cardBar_almost { background-color: var(--warning) !important; }
+.cardBar_full   { background-color: var(--danger) !important; }
+.cardBar_over   { background-color: var(--danger) !important; }
+
 @media (max-width: 640px) {
-  .cell { min-width: 100px; }
-  .hallHeaderCell { font-size: 10px; }
+  .hallSubCol { min-width: 80px; }
+  .dayHeaderText { font-size: 10px; }
 }
