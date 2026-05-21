@@ -773,6 +773,14 @@ export default function SchedulePage() {
         />
       )}
 
+      {viewMode === 'week' && detailClassId && (
+        <ClassDetailModal
+          classId={detailClassId}
+          onClose={() => setDetailClassId(null)}
+          onClassUpdated={() => { fetchClasses(); setDetailClassId(null) }}
+        />
+      )}
+
       {showModal && (
         <ClassModal
           onClose={() => { setShowModal(false); setPrefill(undefined) }}
