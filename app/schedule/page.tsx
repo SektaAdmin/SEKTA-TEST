@@ -499,7 +499,13 @@ export default function SchedulePage() {
                 <button
                   key={cls.id}
                   className={styles.archiveRow}
-                  onClick={() => setDetailClassId(cls.id)}
+                  onClick={() => {
+                    if (window.innerWidth <= 900) {
+                      setEditClassId(cls.id)
+                    } else {
+                      setDetailClassId(cls.id)
+                    }
+                  }}
                 >
                   <span className={styles.archiveDate}>{dayStr}</span>
                   <span className={styles.archiveTime}>{timeStr}</span>
@@ -587,7 +593,13 @@ export default function SchedulePage() {
                             typeLabels={typeLabels}
                             hourHeight={hourHeight}
                             day={day}
-                            onCardClick={id => setDetailClassId(id)}
+                            onCardClick={id => {
+                              if (window.innerWidth <= 900) {
+                                setEditClassId(id)
+                              } else {
+                                setDetailClassId(id)
+                              }
+                            }}
                             onSlotClick={startsAt => {
                               setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                               setShowModal(true)

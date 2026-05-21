@@ -689,6 +689,9 @@
   color: var(--text-2);
   font-family: var(--mono);
   flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cardTrainer {
