@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # sekta-crm — Supabase CRM
 
 ## Проект
@@ -7,7 +11,28 @@
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-20
+- **Last Updated**: 2026-05-21
+
+## Commands
+
+```bash
+npm run dev      # localhost:3000
+npm run build    # production build (also type-checks)
+npm run start    # serve production build
+```
+
+No test runner, no linter config. TypeScript errors surface via `npm run build`.
+
+**Env vars required** (`.env.local`):
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+**Schema sync** (after Supabase DB changes, regenerates `types/database.types.ts`):
+```bash
+npm run sync:schema
+```
 
 ---
 
@@ -291,6 +316,9 @@ INSERT у `sales` + `update_client_balance` в одній транзакції.
 `→ TABLE(conflict_class_id uuid, starts_at timestamptz, ticket_type text)`
 Перевіряє чи клієнт вже записаний на паралельне заняття.
 
+### `auto_close_classes()` — фоновий cron (pg_cron, кожні 5 хв)
+Автоматично закриває всі `enrolled` записи для занять що почались 5 хв–24 год тому — викликає `mark_attendance()` для кожного. Якщо у клієнта немає балансу (`success=false`) — enrollment **залишається `enrolled`** для ручного розбору адміном. Міграція: `supabase/migrations/20260501_auto_close_classes.sql`.
+
 ---
 
 ## Security
@@ -342,9 +370,10 @@ npm run start
 | `/sales` | Продажі: створення, редагування, фільтр по датах |
 | `/clients` | База клієнтів, пошук |
 | `/clients/[id]` | Профіль: контакти, депозит, залишок занять, покупки, записи |
-| `/schedule` | Розклад занять: тижень/день, фільтр по залах і тренерах, click-to-create |
+| `/schedule` | Розклад занять: денний вид, фільтр по залах і тренерах, click-to-create, права панель з деталями |
 | `/schedule/[classId]` | Деталі заняття, відвідуваність, запис клієнтів |
 | `/schedule/templates` | Шаблони тижня: HallWeekGrid, постійники, виставити тиждень |
+| `/halls`, `/trainers`, `/tickets`, `/training-types` | Standalone-сторінки довідників (редиректи або окремі views) |
 | `/accounting` | Облік надходжень по методах оплати |
 | `/accounting/reconciliation` | Звірка: FOP + картка, фільтр по датах |
 | `/accounting/trainers` | Звіт по тренерах |
@@ -435,7 +464,7 @@ lib/
     trainer-rates.ts          — listTrainerRates, upsertTrainerRate, deleteTrainerRate
     trainers.ts               — listTrainers, listActiveTrainers, insertTrainer, toggleTrainer, calcTrainerSalary, listTrainerPayments, insertTrainerPayment
     training-types.ts         — listTrainingTypes, listActiveTrainingTypes, listTrainingTypeLabels, insertTrainingType, updateTrainingType, toggleTrainingType
-    series.ts (?)             — listSeriesTemplates
+    (series queries are in classes.ts, not a separate file)
 
 types/
   index.ts                    — PaymentMethod, Client, Ticket, Trainer, Sale, Hall, Class, Enrollment, ClassSeries, SeriesClient, ClientSessionBalance, SaleFormData, TrainingType
@@ -445,7 +474,7 @@ types/
 ### Архітектурні правила
 
 - **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
-- **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок.
+- **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок. Також надає `refetchTickets/refetchTrainers/refetchHalls/refetchTrainingTypes` для примусового оновлення після мутацій у налаштуваннях.
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
@@ -500,5 +529,5 @@ types/
 5. **Timestamps UTC** — завжди `timestamptz`.
 6. **Гроші в гривнях** — `tickets.price`, `sales.price_paid`, `sales.amount_given` в ₴, ділити на 100 не треба.
 7. **GIN-індекси на clients** — використовувати для fuzzy-пошуку по прізвищу і телефону.
-8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`.
+8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`. Для enrollments: `getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`. Для шаблонів (client count): `isClientCountFull`, `isClientCountAlmost`, `clientFillPct`.
 9. **Скасування заняття** — тільки через `cancel_class_and_restore_sessions()` RPC, не прямим UPDATE.
