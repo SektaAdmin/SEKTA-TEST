@@ -709,28 +709,26 @@
   line-height: 1.3;
 }
 
-.countBadge {
-  position: absolute;
-  bottom: 5px;
-  right: 6px;
+.cardFreeSlots {
   font-size: 10px;
   font-family: var(--mono);
-  color: var(--text-3);
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-radius: 3px;
-  padding: 1px 5px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
+.cardSlots_free   { color: var(--success); }
+.cardSlots_almost { color: var(--warning); }
+.cardSlots_full   { color: var(--danger); font-weight: 600; }
+.cardSlots_over   { color: var(--danger); font-weight: 600; }
 
-.countBadgeAlmost {
-  color: var(--warning);
-  border-color: var(--warning);
-  background: var(--warning-dim);
+.cardProgressBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 0 0 0 calc(var(--radius-sm) - 3px);
+  transition: width 0.3s ease;
 }
-
-.countBadgeFull {
-  color: var(--danger);
-  border-color: var(--danger-border);
-  background: var(--danger-dim);
-  font-weight: 600;
-}
+.cardBar_free   { background: var(--success); }
+.cardBar_almost { background: var(--warning); }
+.cardBar_full   { background: var(--danger); }
+.cardBar_over   { background: var(--danger); }
