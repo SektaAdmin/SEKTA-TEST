@@ -294,9 +294,14 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
         >
           <div className={styles.topbarTitleBlock}>
             {!loading && cls && (
-              <span className={styles.typeLabel}>
-                {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-              </span>
+              <>
+                <span className={styles.typeLabel}>
+                  {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+                </span>
+                <span className={styles.topbarDate}>
+                  {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              </>
             )}
             <span className={styles.topbarTitle}>
               {loading ? 'Завантаження...' : cls ? (cls.title || timeRange) : ''}
@@ -416,10 +421,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                         <span className={styles.infoValue}>{cls.notes}</span>
                       </div>
                     )}
-                    <div className={styles.infoRow}>
-                      <span className={styles.infoLabel}>Дата</span>
-                      <span className={styles.infoValue}>{formatSaleDatetime(cls.starts_at)}</span>
-                    </div>
                   </>
                 )}
               </div>
