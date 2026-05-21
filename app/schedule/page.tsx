@@ -312,7 +312,6 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
-  const [detailClassId, setDetailClassId] = useState<string | null>(null)
   const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
@@ -570,13 +569,7 @@ export default function SchedulePage() {
                 <button
                   key={cls.id}
                   className={styles.archiveRow}
-                  onClick={() => {
-                    if (window.innerWidth <= 900) {
-                      setEditClassId(cls.id)
-                    } else {
-                      setDetailClassId(cls.id)
-                    }
-                  }}
+                  onClick={() => setEditClassId(cls.id)}
                 >
                   <span className={styles.archiveDate}>{dayStr}</span>
                   <span className={styles.archiveTime}>{timeStr}</span>
@@ -699,13 +692,7 @@ export default function SchedulePage() {
                             typeLabels={typeLabels}
                             hourHeight={hourHeight}
                             day={day}
-                            onCardClick={id => {
-                              if (window.innerWidth <= 900) {
-                                setEditClassId(id)
-                              } else {
-                                setDetailClassId(id)
-                              }
-                            }}
+                            onCardClick={id => setEditClassId(id)}
                             onSlotClick={startsAt => {
                               setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                               setShowModal(true)
@@ -756,10 +743,6 @@ export default function SchedulePage() {
               activeDates={calActiveDates}
               selectedDate={baseDate}
               onDateSelect={setBaseDate}
-              detailClassId={detailClassId}
-              onDetailClose={() => setDetailClassId(null)}
-              onEditDetail={() => detailClassId && setEditClassId(detailClassId)}
-              onClassUpdated={fetchClasses}
             />
           )}
         </div>
@@ -770,14 +753,6 @@ export default function SchedulePage() {
           classId={editClassId}
           onClose={() => setEditClassId(null)}
           onClassUpdated={() => { fetchClasses(); setEditClassId(null) }}
-        />
-      )}
-
-      {viewMode === 'week' && detailClassId && (
-        <ClassDetailModal
-          classId={detailClassId}
-          onClose={() => setDetailClassId(null)}
-          onClassUpdated={() => { fetchClasses(); setDetailClassId(null) }}
         />
       )}
 

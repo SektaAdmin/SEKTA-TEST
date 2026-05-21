@@ -81,6 +81,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const fetchClass = useCallback(async () => {
     const data = await getClassById(supabase, classId)
@@ -251,6 +252,26 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const endDate = cls ? new Date(startDate.getTime() + cls.duration_min * 60000) : new Date()
   const timeRange = `${formatTime(startDate)}–${formatTime(endDate)}`
 
+  function buildCopyText() {
+    if (!cls) return ''
+    const lines = [
+      cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type),
+      formatSaleDatetime(cls.starts_at),
+      timeRange,
+    ]
+    if (cls.halls?.name) lines.push(cls.halls.name)
+    if (cls.trainers?.name) lines.push(cls.trainers.name)
+    return lines.join('\n')
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(buildCopyText())
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {}
+  }
+
   return (
     <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div
@@ -267,6 +288,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
           <div className={styles.topbarRight}>
             {!loading && cls && (
               <div className={styles.topbarActions}>
+                <button
+                  className={styles.btnCopy}
+                  onClick={handleCopy}
+                  title={copied ? 'Скопійовано!' : 'Копіювати'}
+                  aria-label="Копіювати деталі заняття"
+                  type="button"
+                >
+                  {copied ? '✓' : '📋'}
+                </button>
                 <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
                   Редагувати
                 </button>

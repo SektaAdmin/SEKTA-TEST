@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-22 (week view реалізована)
+- **Last Updated**: 2026-05-23 (unified card click — ClassDetailModal for all views)
 
 ## Commands
 
@@ -495,17 +495,23 @@ types/
 **@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
 **Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--right-panel-w: 280px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
 
-### /schedule Page (станом на 2026-05-22)
+### /schedule Page (станом на 2026-05-23)
 
 **View modes:**
-- **Day view** — один день, всі зали в одну колонку, права панель з calendario + деталі
+- **Day view** — один день, всі зали в одну колонку, права панель з календарем
 - **Week view** — 7 днів (Пн–Нд), кожен день — одна колонка, права панель прихована. При перемиканні автоматично обирається перший зал (якщо фільтри порожні)
 
 **Компоненти:**
 - `ScheduleRightPanel` — права панель (видима в day mode), містить:
-  - Міні-календар: інлайн для навігації по датах
-  - `ScheduleDetailCard` при `detailClassId != null` — компактна інфокартка заняття
+  - Міні-календар: інлайн для навігації по датах (єдина функція в панелі)
 - `ClassCard` (в page.tsx) — дизайн по стандартам фітнес-студії: чітка ієрархія, кольорова кодування
+- `ClassDetailModal` — полнофункциональна модалка з управлінням записами, деталями заняття, кнопкою копіювання (відкривається клік на картку)
+
+**Click behavior:**
+- Day mode, desktop: клік на картку → `ClassDetailModal`
+- Day mode, mobile: клік на картку → `ClassDetailModal`
+- Week mode, desktop: клік на картку → `ClassDetailModal`
+- Archive tab: клік на рядок → `ClassDetailModal`
 
 **Topbar (page.tsx):**
 - dateChip + titleBlock (в day mode: "Август 2026" + "понеділок"; в week mode: "18.05 – 24.05.2026")

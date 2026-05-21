@@ -1,6 +1,5 @@
 'use client'
 import { buildCalendarDays, isSameDay, MONTHS_UK_FULL } from '@/lib/dateUtils'
-import ScheduleDetailCard from '@/components/ScheduleDetailCard'
 import styles from './ScheduleRightPanel.module.css'
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
@@ -13,10 +12,6 @@ interface Props {
   activeDates: Set<string>
   selectedDate: Date
   onDateSelect: (d: Date) => void
-  detailClassId: string | null
-  onDetailClose: () => void
-  onEditDetail: () => void
-  onClassUpdated: () => void
 }
 
 export default function ScheduleRightPanel({
@@ -27,10 +22,6 @@ export default function ScheduleRightPanel({
   activeDates,
   selectedDate,
   onDateSelect,
-  detailClassId,
-  onDetailClose,
-  onEditDetail,
-  onClassUpdated,
 }: Props) {
   const days = buildCalendarDays(viewYear, viewMonth)
 
@@ -91,10 +82,6 @@ export default function ScheduleRightPanel({
           {days.map(day => renderDay(day, day.getMonth() === viewMonth))}
         </div>
       </div>
-
-      {detailClassId && (
-        <ScheduleDetailCard classId={detailClassId} onClose={onDetailClose} onEdit={onEditDetail} />
-      )}
     </aside>
   )
 }

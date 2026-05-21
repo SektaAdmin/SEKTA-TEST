@@ -81,6 +81,19 @@
 }
 .close:hover { color: var(--text); }
 
+.btnCopy {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  line-height: 1;
+  transition: color var(--motion-fast);
+  flex-shrink: 0;
+}
+.btnCopy:hover { color: var(--text); }
+
 .btnEdit {
   background: transparent;
   border: 0.5px solid var(--border-hover);
