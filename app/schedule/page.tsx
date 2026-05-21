@@ -172,10 +172,13 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     >
       {isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-          {formatTime(cls.starts_at)} · {cls.trainers?.name || '—'}
+          {label} · {formatTime(cls.starts_at)}
         </span>
       ) : (
         <>
+          <span className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
+            {label}
+          </span>
           <span className={styles.cardTime}>{timeLabel}</span>
           {cls.trainers?.name && (
             <span className={styles.cardTrainer}>{cls.trainers.name}</span>
@@ -189,9 +192,6 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
               </span>
             )
           })()}
-          <span className={`${styles.cardType} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
-            {label}
-          </span>
           {cls.capacity != null && !cls.is_cancelled && (() => {
             const pct = Math.min((activeCount / cls.capacity) * 100, 100)
             const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
