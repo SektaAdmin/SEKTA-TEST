@@ -457,6 +457,11 @@
 
 .dayHeaderToday .dayDate { color: var(--accent); }
 
+/* In week mode, don't highlight the hall row for today — only highlight in day mode */
+.weekHeader .dayHeaderToday {
+  background: transparent;
+}
+
 /* Hall label row inside day header */
 .dayHallsRow {
   display: flex;
