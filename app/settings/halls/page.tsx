@@ -98,8 +98,8 @@ export default function HallsPage() {
             <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати зал</button>
           </div>
         ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <div className="data-table-wrap">
+            <table className="data-table">
               <thead><tr><th>Назва</th><th>Місткість</th><th>Опис</th><th>Статус</th></tr></thead>
               <tbody>
                 {active.map(h => (
@@ -117,8 +117,8 @@ export default function HallsPage() {
 
         <ArchiveSection label="Архів залів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <div className="data-table-wrap">
+              <table className="data-table">
                 <thead><tr><th>Назва</th><th>Місткість</th><th>Опис</th><th></th></tr></thead>
                 <tbody>
                   {archived.map(h => (

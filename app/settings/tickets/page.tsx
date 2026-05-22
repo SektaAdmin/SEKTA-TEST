@@ -84,8 +84,8 @@ export default function TicketsPage() {
             <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати абонемент</button>
           </div>
         ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <div className="data-table-wrap">
+            <table className="data-table">
               <thead><tr>
                 <th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th>Статус</th>
               </tr></thead>
@@ -106,8 +106,8 @@ export default function TicketsPage() {
 
         <ArchiveSection label="Архів абонементів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <div className="data-table-wrap">
+              <table className="data-table">
                 <thead><tr><th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th></th></tr></thead>
                 <tbody>
                   {archived.map(t => (

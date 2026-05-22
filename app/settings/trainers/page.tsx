@@ -98,8 +98,8 @@ export default function TrainersPage() {
             <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
           </div>
         ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <div className="data-table-wrap">
+            <table className="data-table">
               <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th>Статус</th></tr></thead>
               <tbody>
                 {active.map(t => (
@@ -117,8 +117,8 @@ export default function TrainersPage() {
 
         <ArchiveSection label="Архів тренерів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <div className="data-table-wrap">
+              <table className="data-table">
                 <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th></th></tr></thead>
                 <tbody>
                   {archived.map(t => (

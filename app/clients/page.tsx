@@ -155,8 +155,8 @@ export default function ClientsPage() {
             </div>
           ) : (
             <>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
+              <div className="data-table-wrap">
+                <table className="data-table">
                   <thead>
                     <tr>
                       <th>Ім'я</th>
