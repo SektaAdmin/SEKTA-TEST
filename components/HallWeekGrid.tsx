@@ -264,15 +264,25 @@ interface DayColProps {
   items: ClassSeries[]
   typeLabels: Map<string, string>
   dow: number
-  hallColumns: (Hall | null)[]
+  allHallColumns: (Hall | null)[]
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
 }
 
-function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotClick }: DayColProps) {
+function DayColumn({ items, typeLabels, dow, allHallColumns, onCardClick, onSlotClick }: DayColProps) {
+  // Only show sub-columns for halls that have series in this specific day
+  const dayHallColumns = useMemo(() => {
+    if (allHallColumns.length <= 1) return allHallColumns
+    const hallIdsInDay = new Set(items.map(s => s.hall_id).filter(Boolean))
+    const hasNoHall = items.some(s => !s.hall_id)
+    return allHallColumns.filter(h => h === null ? hasNoHall : hallIdsInDay.has(h.id))
+  }, [items, allHallColumns])
+
+  const cols = dayHallColumns.length > 0 ? dayHallColumns : [null as null]
+
   return (
     <div className={styles.dayCol} style={{ height: TOTAL_H }}>
-      {hallColumns.map(hall => {
+      {cols.map(hall => {
         const hallItems = hall === null
           ? items.filter(s => !s.hall_id)
           : items.filter(s => s.hall_id === hall.id)
@@ -325,20 +335,27 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
       {/* ── Sticky header: gutter | day columns ── */}
       <div className={styles.weekHeader}>
         <div className={styles.gutterCorner} style={{ width: TIME_GUTTER_W, flexShrink: 0 }} />
-        {visibleDays.map(({ label, dow }) => (
-          <div key={dow} className={styles.dayHeader}>
-            <span className={styles.dayHeaderText}>{label}</span>
-            {hallColumns.length > 1 && (
-              <div className={styles.dayHallsRow}>
-                {hallColumns.map(h => (
-                  <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
-                    {h ? h.name : '—'}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        {visibleDays.map(({ label, dow }) => {
+          const dayItems = byDow.get(dow) ?? []
+          const dayHallIds = new Set(dayItems.map(s => s.hall_id).filter(Boolean))
+          const dayHasNoHall = dayItems.some(s => !s.hall_id)
+          const dayHallCols = hallColumns.filter(h => h === null ? dayHasNoHall : dayHallIds.has(h.id))
+          const showHallLabels = hallColumns.length > 1 && dayHallCols.length > 1
+          return (
+            <div key={dow} className={styles.dayHeader}>
+              <span className={styles.dayHeaderText}>{label}</span>
+              {showHallLabels && (
+                <div className={styles.dayHallsRow}>
+                  {dayHallCols.map(h => (
+                    <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                      {h ? h.name : '—'}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* ── Scrollable body ── */}
@@ -360,7 +377,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
               items={byDow.get(dow) ?? []}
               typeLabels={typeLabels}
               dow={dow}
-              hallColumns={hallColumns}
+              allHallColumns={hallColumns}
               onCardClick={onCardClick}
               onSlotClick={onSlotClick}
             />
