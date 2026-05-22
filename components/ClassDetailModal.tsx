@@ -19,8 +19,6 @@ import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { CopyIcon } from '@/components/icons/navigation'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
@@ -356,9 +354,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                 <div className={styles.detailsRow}>
                   <div className={styles.detailsTime}>{timeRange}</div>
                   {cls.is_cancelled && (
-                    <Badge variant="destructive" className={styles.cancelledBadge}>
+                    <span className={`${styles.badge} ${styles.badgeNoshow} ${styles.cancelledBadge}`}>
                       скасовано
-                    </Badge>
+                    </span>
                   )}
                 </div>
 
@@ -476,15 +474,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   <div className={styles.empty}>Нікого не записано</div>
                 ) : (
                   <div className={styles.tableContainer}>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Клієнт</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead className="text-right">Дія</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Клієнт</th>
+                          <th>Статус</th>
+                          <th className={styles.thRight}>Дія</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {mainEnrollments.map(e => {
                           const name = e.clients
                             ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
@@ -492,26 +490,19 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           const isLoading = actionLoading === e.id
                           const hoursLabel = formatHoursLabel(e.hours_attended, cls.starts_at)
                           return (
-                            <TableRow key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
-                              <TableCell>
+                            <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
+                              <td>
                                 <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                   {name}
                                 </a>
                                 {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={
-                                    e.status === 'enrolled' ? 'secondary'
-                                      : e.status === 'attended' ? 'default'
-                                      : e.status === 'noshow' ? 'destructive'
-                                      : 'outline'
-                                  }
-                                >
+                              </td>
+                              <td>
+                                <span className={`${styles.badge} ${styles[STATUS_STYLES[e.status]]}`}>
                                   {STATUS_LABELS[e.status]}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className={styles.actionsCell}>
+                                </span>
+                              </td>
+                              <td className={styles.actionsCell}>
                                 <div className={styles.actions}>
                                   {e.status === 'enrolled' && (
                                     <>
@@ -588,12 +579,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     <span className={styles.rowError}>{actionError[e.id]}</span>
                                   )}
                                 </div>
-                              </TableCell>
-                            </TableRow>
+                              </td>
+                            </tr>
                           )
                         })}
-                      </TableBody>
-                    </Table>
+                      </tbody>
+                    </table>
                   </div>
                 )}
 
@@ -601,27 +592,27 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   <div className={styles.waitlistSection}>
                     <h3 className={styles.waitlistTitle}>Черга ({waitlist.length})</h3>
                     <div className={styles.tableContainer}>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Клієнт</TableHead>
-                            <TableHead className="text-right">Дія</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Клієнт</th>
+                            <th className={styles.thRight}>Дія</th>
+                          </tr>
+                        </thead>
+                        <tbody>
                           {waitlist.map(e => {
                             const name = e.clients
                               ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                               : '—'
                             const isLoading = actionLoading === e.id
                             return (
-                              <TableRow key={e.id}>
-                                <TableCell>
+                              <tr key={e.id}>
+                                <td>
                                   <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                     {name}
                                   </a>
-                                </TableCell>
-                                <TableCell className={styles.actionsCell}>
+                                </td>
+                                <td className={styles.actionsCell}>
                                   <div className={styles.actions}>
                                     <button
                                       className={styles.btnReEnroll}
@@ -646,12 +637,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       <span className={styles.rowError}>{actionError[e.id]}</span>
                                     )}
                                   </div>
-                                </TableCell>
-                              </TableRow>
+                                </td>
+                              </tr>
                             )
                           })}
-                        </TableBody>
-                      </Table>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}
