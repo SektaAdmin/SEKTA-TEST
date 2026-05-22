@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phases A–F — enrollmentStatusLabel() titles; MSG.empty×20; badge CSS; .btn-primary/.loading-dots в globals.css; -133 рядки дублів CSS)
+- **Last Updated**: 2026-05-24 (Phases A–G — enrollmentStatusLabel() titles; MSG.empty×20; badge CSS; globals.css utilities: .btn-primary/.loading-dots/.data-table-wrap/.data-table; -268 рядків CSS дублів)
 
 ## Commands
 
@@ -497,7 +497,7 @@ types/
 - **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
 - **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок. Також надає `refetchTickets/refetchTrainers/refetchHalls/refetchTrainingTypes` для примусового оновлення після мутацій у налаштуваннях.
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
-- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка, замінює `.btnNew` скрізь), `.loading-dots` (3-крапковий спінер, замінює `.loading` скрізь). Використовувати як звичайний рядок: `className="btn-primary"`, `className="loading-dots"`.
+- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка, замінює `.btnNew` скрізь), `.loading-dots` (3-крапковий спінер, замінює `.loading` скрізь), `.data-table-wrap` + `.data-table` (стандартна таблиця з bg-2/border/radius). Використовувати як звичайний рядок: `className="btn-primary"`, `className="loading-dots"`, `className="data-table-wrap"` / `className="data-table"`. Нестандартні таблиці (accounting, reconciliation, salary, rates) — залишаються в module.css через унікальні overrides.
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
