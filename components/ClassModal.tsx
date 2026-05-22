@@ -344,7 +344,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         footer={
           <ModalFooter
             onCancel={onClose}
-            onSave={undefined}
+            onSave={handleSubmit(onSubmit)}
             saveLabel={isSeries && !isEdit ? 'Створити серію' : 'Зберегти'}
             loading={loading}
             saveType="submit"

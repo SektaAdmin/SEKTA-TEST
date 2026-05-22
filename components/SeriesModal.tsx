@@ -183,16 +183,14 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
         onClose={handleClose}
         width={520}
         footer={
-          <form>
-            <ModalFooter
-              onCancel={handleClose}
-              onSave={createdSeries ? undefined : () => {}}
-              cancelLabel={createdSeries ? 'Готово' : 'Скасувати'}
-              saveLabel="Створити"
-              loading={isSubmitting}
-              saveType="submit"
-            />
-          </form>
+          <ModalFooter
+            onCancel={handleClose}
+            onSave={createdSeries ? undefined : handleSubmit(onSubmit)}
+            cancelLabel={createdSeries ? 'Готово' : 'Скасувати'}
+            saveLabel="Створити"
+            loading={isSubmitting}
+            saveType="submit"
+          />
         }
       >
         <FormField id="sm-type" label="Тип заняття" required error={errors.ticket_type}>

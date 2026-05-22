@@ -90,7 +90,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         footer={
           <ModalFooter
             onCancel={onClose}
-            onSave={undefined}
+            onSave={handleSubmit(onSubmit)}
             loading={busy}
             saveType="submit"
           />
