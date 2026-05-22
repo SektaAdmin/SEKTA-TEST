@@ -62,6 +62,42 @@
   white-space: nowrap;
 }
 
+/* ── Day navigation (day view) ───────────────────────────────── */
+.dayNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+  flex-shrink: 0;
+}
+.navBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
+.dayNavLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  min-width: 90px;
+  text-align: center;
+}
+
 /* ── Generate dialog ─────────────────────────────────────── */
 .generateWrap {
   position: relative;
@@ -379,6 +415,46 @@
 
 @media (max-width: 900px) {
   .gridCard { margin: 8px; }
+}
+
+/* ── Day view header (weekday pills) ─────────────────────────── */
+.dayViewHeader {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg-2);
+  flex-shrink: 0;
+}
+
+.dayPill {
+  height: 26px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+  white-space: nowrap;
+}
+.dayPill:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
+.dayPillActive {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+  cursor: default;
+}
+.dayPillActive:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
 }
 
 .loading {

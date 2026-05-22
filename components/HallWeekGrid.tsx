@@ -94,6 +94,8 @@ interface Props {
   trainingTypes: TrainingType[]
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
+  // When set, renders only that single day (day view mode)
+  singleDayDow?: number
 }
 
 // ── Template card ─────────────────────────────────────────────────
@@ -261,7 +263,7 @@ function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColP
 }
 
 // ── Main component ────────────────────────────────────────────────
-export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlotClick }: Props) {
+export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlotClick, singleDayDow }: Props) {
   const typeLabels = useMemo(() => {
     const m = new Map<string, string>()
     for (const t of trainingTypes) m.set(t.code, t.label)
@@ -276,12 +278,16 @@ export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlo
     return map
   }, [series])
 
+  const visibleDays = singleDayDow !== undefined
+    ? DAYS.filter(d => d.dow === singleDayDow)
+    : DAYS
+
   return (
     <div className={styles.root}>
       {/* ── Sticky header: gutter | day columns ── */}
       <div className={styles.weekHeader}>
         <div className={styles.gutterCorner} style={{ width: TIME_GUTTER_W, flexShrink: 0 }} />
-        {DAYS.map(({ label, dow }) => (
+        {visibleDays.map(({ label, dow }) => (
           <div key={dow} className={styles.dayHeader}>
             <span className={styles.dayHeaderText}>{label}</span>
           </div>
@@ -301,7 +307,7 @@ export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlo
           </div>
 
           {/* Day columns — always equal width (flex: 1 each) */}
-          {DAYS.map(({ dow }) => (
+          {visibleDays.map(({ dow }) => (
             <DayColumn
               key={dow}
               items={byDow.get(dow) ?? []}

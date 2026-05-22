@@ -17,10 +17,12 @@ import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import styles from './page.module.css'
 
-// indexed by JS getDay(): 0=Нд, 1=Пн...6=Сб
-const DAY_LABELS: Record<number, string> = { 0: 'Нд', 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' }
+// dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
+const DAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]
+const DAY_LABELS_SHORT: Record<number, string> = { 0: 'Нд', 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' }
+const DAY_LABELS_FULL: Record<number, string> = { 0: 'Неділя', 1: 'Понеділок', 2: 'Вівторок', 3: 'Середа', 4: 'Четвер', 5: 'Пʼятниця', 6: 'Субота' }
 
-// Поточний або наступний понеділок у київському часі (якщо сьогодні пн → сьогодні)
+// Поточний або наступний понеділок у київському часі
 function thisOrNextMondayKyiv(): string {
   const kyivDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Kyiv' }))
   const day = kyivDate.getDay()
@@ -51,13 +53,16 @@ export default function TemplatesPage() {
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'list'>('week')
+  // activeDow: index into DAYS_ORDER (0=Пн…6=Нд)
+  const [activeDowIndex, setActiveDowIndex] = useState(0)
+  const activeDow = DAYS_ORDER[activeDowIndex]
+
   const [filterTrainer, setFilterTrainer] = useState('')
   const [filterHall, setFilterHall] = useState('')
   const [filterClient, setFilterClient] = useState<Client | null>(null)
   const [clientFilterKey, setClientFilterKey] = useState(0)
 
-  // Sort Mon(1)–Sun(0): map 0→7 so Sunday sorts last
   const templates = useMemo(() => {
     let result = [...rawTemplates]
     if (filterTrainer) result = result.filter(s => s.trainer_id === filterTrainer)
@@ -70,12 +75,17 @@ export default function TemplatesPage() {
     })
   }, [rawTemplates, filterTrainer, filterHall, filterClient])
 
+  // Templates for the active day (day view)
+  const dayTemplates = useMemo(
+    () => templates.filter(s => s.day_of_week === activeDow),
+    [templates, activeDow]
+  )
+
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [prefillSeries, setPrefillSeries] = useState<{ day_of_week?: number; time_of_day?: string; hall_id?: string } | null>(null)
   const [editingSeries, setEditingSeries] = useState<ClassSeries | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  // Shared calendar state for generate/delete dialogs
   const [showGenerate, setShowGenerate] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [selectedMondays, setSelectedMondays] = useState<string[]>(() => [thisOrNextMondayKyiv()])
@@ -88,6 +98,13 @@ export default function TemplatesPage() {
 
   const generateWrapRef = useRef<HTMLDivElement>(null)
   const deleteWrapRef = useRef<HTMLDivElement>(null)
+
+  function goPrevDay() {
+    setActiveDowIndex(i => (i - 1 + DAYS_ORDER.length) % DAYS_ORDER.length)
+  }
+  function goNextDay() {
+    setActiveDowIndex(i => (i + 1) % DAYS_ORDER.length)
+  }
 
   const deleteSeries = useCallback(async (id: string) => {
     const { error } = await supabase.from('class_series').delete().eq('id', id)
@@ -163,6 +180,8 @@ export default function TemplatesPage() {
 
   if (fetchError) toast.error(fetchError)
 
+  const isGridMode = viewMode === 'day' || viewMode === 'week'
+
   return (
     <div className={styles.layout}>
     <Sidebar />
@@ -172,14 +191,35 @@ export default function TemplatesPage() {
         <div className={styles.topbarLeft}>
           <Link href="/schedule" className={styles.backLink}>← Розклад</Link>
           <h1 className={styles.title}>Шаблони тижня</h1>
+          {viewMode === 'day' && (
+            <div className={styles.dayNav}>
+              <button className={styles.navBtn} onClick={goPrevDay} aria-label="Попередній день">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 2L4 7l5 5"/>
+                </svg>
+              </button>
+              <span className={styles.dayNavLabel}>{DAY_LABELS_FULL[activeDow]}</span>
+              <button className={styles.navBtn} onClick={goNextDay} aria-label="Наступний день">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M5 2l5 5-5 5"/>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
         <div className={styles.topbarRight}>
           <div className={styles.viewToggle}>
             <button
-              className={viewMode === 'grid' ? styles.toggleActive : styles.toggleBtn}
-              onClick={() => setViewMode('grid')}
+              className={viewMode === 'day' ? styles.toggleActive : styles.toggleBtn}
+              onClick={() => setViewMode('day')}
             >
-              Сітка
+              День
+            </button>
+            <button
+              className={viewMode === 'week' ? styles.toggleActive : styles.toggleBtn}
+              onClick={() => setViewMode('week')}
+            >
+              Тиждень
             </button>
             <button
               className={viewMode === 'list' ? styles.toggleActive : styles.toggleBtn}
@@ -311,9 +351,32 @@ export default function TemplatesPage() {
         <div className={styles.gridArea}>
           {loading ? (
             <span className={styles.loading}>...</span>
-          ) : templates.length === 0 ? (
-            <p className={styles.empty}>Немає шаблонів. Створіть перший шаблон тижня.</p>
-          ) : viewMode === 'grid' ? (
+          ) : viewMode === 'day' ? (
+            <div className={styles.gridCard}>
+              <div className={styles.dayViewHeader}>
+                {DAYS_ORDER.map((dow, i) => (
+                  <button
+                    key={dow}
+                    className={`${styles.dayPill} ${i === activeDowIndex ? styles.dayPillActive : ''}`}
+                    onClick={() => setActiveDowIndex(i)}
+                  >
+                    {DAY_LABELS_SHORT[dow]}
+                  </button>
+                ))}
+              </div>
+              <HallWeekGrid
+                series={dayTemplates}
+                halls={halls}
+                trainingTypes={trainingTypes}
+                onCardClick={s => setEditingSeries(s)}
+                onSlotClick={(dow, time, hallId) => {
+                  setPrefillSeries({ day_of_week: dow, time_of_day: time, hall_id: hallId ?? undefined })
+                  setShowCreateModal(true)
+                }}
+                singleDayDow={activeDow}
+              />
+            </div>
+          ) : viewMode === 'week' ? (
             <div className={styles.gridCard}>
               <HallWeekGrid
                 series={templates}
@@ -351,7 +414,7 @@ export default function TemplatesPage() {
 
                     return (
                       <tr key={series.id} className={styles.row}>
-                        <td>{DAY_LABELS[series.day_of_week]}</td>
+                        <td>{DAY_LABELS_SHORT[series.day_of_week]}</td>
                         <td>{series.time_of_day.slice(0, 5)}</td>
                         <td>{typeLabel}</td>
                         <td>{trainerName ?? '—'}</td>
@@ -399,7 +462,6 @@ export default function TemplatesPage() {
             </div>
           )}
         </div>
-
       </div>
 
       {(showCreateModal || editingSeries) && (
