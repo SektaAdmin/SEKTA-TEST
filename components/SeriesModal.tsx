@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
@@ -194,57 +195,49 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
           </form>
         }
       >
-        <div className={styles.field}>
-          <label htmlFor="sm-type">Тип заняття <span className={styles.required}>*</span></label>
+        <FormField id="sm-type" label="Тип заняття" required error={errors.ticket_type}>
           <select id="sm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={isSubmitting}>
             {trainingTypes.map(t => (
               <option key={t.code} value={t.code}>{t.label}</option>
             ))}
           </select>
-          {errors.ticket_type && <p className={styles.errorHint}>{errors.ticket_type.message}</p>}
-        </div>
+        </FormField>
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="sm-trainer">Тренер</label>
+          <FormField id="sm-trainer" label="Тренер">
             <select id="sm-trainer" {...register('trainer_id')} disabled={isSubmitting}>
               <option value="">— без тренера —</option>
               {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-hall">Зал</label>
+          </FormField>
+          <FormField id="sm-hall" label="Зал">
             <select id="sm-hall" {...register('hall_id')} disabled={isSubmitting}>
               <option value="">— без залу —</option>
               {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="sm-dow">День тижня <span className={styles.required}>*</span></label>
+          <FormField id="sm-dow" label="День тижня" required>
             <select id="sm-dow" {...register('day_of_week')} disabled={isSubmitting}>
               {DAY_OPTIONS.map(({ label, value }) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-time">Час початку <span className={styles.required}>*</span></label>
+          </FormField>
+          <FormField id="sm-time" label="Час початку" required error={errors.time_of_day}>
             <input
               id="sm-time"
               type="time"
               {...register('time_of_day', { required: VM.required.time })}
               disabled={isSubmitting}
             />
-            {errors.time_of_day && <p className={styles.errorHint}>{errors.time_of_day.message}</p>}
-          </div>
+          </FormField>
         </div>
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="sm-dur">Тривалість, хв</label>
+          <FormField id="sm-dur" label="Тривалість, хв" error={errors.duration_min}>
             <input
               id="sm-dur"
               type="number"
@@ -253,10 +246,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
               {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
               disabled={isSubmitting}
             />
-            {errors.duration_min && <p className={styles.errorHint}>{errors.duration_min.message}</p>}
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-cap">Ліміт місць</label>
+          </FormField>
+          <FormField id="sm-cap" label="Ліміт місць">
             <input
               id="sm-cap"
               type="number"
@@ -265,11 +256,10 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
               {...register('capacity')}
               disabled={isSubmitting}
             />
-          </div>
+          </FormField>
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor="sm-title">Назва (опц.)</label>
+        <FormField id="sm-title" label="Назва (опц.)">
           <input
             id="sm-title"
             type="text"
@@ -277,10 +267,9 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
             {...register('title')}
             disabled={isSubmitting}
           />
-        </div>
+        </FormField>
 
-        <div className={styles.field}>
-          <label htmlFor="sm-notes">Нотатки</label>
+        <FormField id="sm-notes" label="Нотатки">
           <textarea
             id="sm-notes"
             rows={2}
@@ -288,7 +277,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
             {...register('notes')}
             disabled={isSubmitting}
           />
-        </div>
+        </FormField>
 
         {isEdit && (
           <>

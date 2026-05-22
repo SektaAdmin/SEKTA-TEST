@@ -8,6 +8,7 @@ import { searchClientsByPhone, searchClientsByName, insertClient, updateClient }
 import { listClientTransactions } from '@/lib/queries/balance-transactions'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
@@ -153,10 +154,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
       }
     >
       <div className={styles.row}>
-        <div className={styles.field}>
-          <label htmlFor="client-first-name">
-            Ім'я <span className={styles.required}>*</span>
-          </label>
+        <FormField id="client-first-name" label="Ім'я" required error={errors.first_name}>
           <input
             id="client-first-name"
             type="text"
@@ -164,15 +162,9 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
             placeholder="Анна"
             disabled={loading}
           />
-          {errors.first_name && (
-            <p className={styles.errorHint} role="alert">{errors.first_name.message}</p>
-          )}
-        </div>
+        </FormField>
 
-        <div className={styles.field}>
-          <label htmlFor="client-last-name">
-            Прізвище <span className={styles.required}>*</span>
-          </label>
+        <FormField id="client-last-name" label="Прізвище" required error={errors.last_name}>
           <input
             id="client-last-name"
             type="text"
@@ -180,14 +172,10 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
             placeholder="Іваненко"
             disabled={loading}
           />
-          {errors.last_name && (
-            <p className={styles.errorHint} role="alert">{errors.last_name.message}</p>
-          )}
-        </div>
+        </FormField>
       </div>
 
-      <div className={styles.field}>
-        <label htmlFor="client-phone">Телефон</label>
+      <FormField id="client-phone" label="Телефон">
         <input
           id="client-phone"
           type="tel"
@@ -195,7 +183,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
           placeholder="+380 XX XXX XX XX"
           disabled={loading}
         />
-      </div>
+      </FormField>
 
       <SocialHandleInput
         id="client-instagram"

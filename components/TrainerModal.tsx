@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { VM } from '@/lib/validation-messages'
 import styles from './TrainerModal.module.css'
@@ -65,10 +66,12 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
         />
       }
     >
-      <div className={styles.field}>
-        <label htmlFor="trainer-name">
-          Ім&apos;я <span className={styles.required}>*</span>
-        </label>
+      <FormField
+        id="trainer-name"
+        label="Ім'я"
+        required
+        error={errors.name}
+      >
         <input
           id="trainer-name"
           type="text"
@@ -76,10 +79,7 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
           placeholder="Ім'я тренера"
           disabled={loading}
         />
-        {errors.name && (
-          <p className={styles.errorHint} role="alert">{errors.name.message}</p>
-        )}
-      </div>
+      </FormField>
 
       <SocialHandleInput
         id="trainer-instagram"

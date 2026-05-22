@@ -7,6 +7,7 @@ import { listActiveHalls } from '@/lib/queries/halls'
 import { listActiveTrainingTypes } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { isoToDatetimeLocal } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
@@ -370,49 +371,39 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           </div>
         )}
 
-        <div className={styles.field}>
-          <label htmlFor="cm-type">Тип заняття <span className={styles.required}>*</span></label>
+        <FormField id="cm-type" label="Тип заняття" required error={errors.ticket_type}>
           <select id="cm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={loading}>
             {trainingTypes.map(t => (
               <option key={t.code} value={t.code}>{t.label}</option>
             ))}
           </select>
-          {errors.ticket_type && <p className={styles.errorHint}>{errors.ticket_type.message}</p>}
-        </div>
+        </FormField>
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="cm-trainer">Тренер</label>
+          <FormField id="cm-trainer" label="Тренер">
             <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
               <option value="">— без тренера —</option>
               {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="cm-hall">Зал</label>
+          </FormField>
+          <FormField id="cm-hall" label="Зал">
             <select id="cm-hall" {...register('hall_id')} disabled={loading}>
               <option value="">— без залу —</option>
               {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="cm-starts">
-              {isSeries ? 'Перше заняття' : 'Дата і час'}
-              {' '}<span className={styles.required}>*</span>
-            </label>
+          <FormField id="cm-starts" label={isSeries ? 'Перше заняття' : 'Дата і час'} required error={errors.starts_at}>
             <input
               id="cm-starts"
               type="datetime-local"
               {...register('starts_at', { required: VM.required.field })}
               disabled={loading}
             />
-            {errors.starts_at && <p className={styles.errorHint}>{errors.starts_at.message}</p>}
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="cm-dur">Тривалість, хв</label>
+          </FormField>
+          <FormField id="cm-dur" label="Тривалість, хв" error={errors.duration_min}>
             <input
               id="cm-dur"
               type="number"
@@ -421,23 +412,20 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
               disabled={loading}
             />
-            {errors.duration_min && <p className={styles.errorHint}>{errors.duration_min.message}</p>}
-          </div>
+          </FormField>
         </div>
 
         {/* Series-specific fields */}
         {isSeries && !isEdit && (
           <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="cm-dow">День тижня</label>
+            <FormField id="cm-dow" label="День тижня">
               <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
                 {DAY_OPTIONS.map(({ label, value }) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="cm-weeks">Кількість тижнів <span className={styles.required}>*</span></label>
+            </FormField>
+            <FormField id="cm-weeks" label="Кількість тижнів" required error={errors.weeks}>
               <input
                 id="cm-weeks"
                 type="number"
@@ -446,14 +434,12 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
                 {...register('weeks', { min: { value: 1, message: VM.invalid.weeksRange }, max: { value: 52, message: VM.invalid.weeksRange }, valueAsNumber: true })}
                 disabled={loading}
               />
-              {errors.weeks && <p className={styles.errorHint}>{errors.weeks.message}</p>}
-            </div>
+            </FormField>
           </div>
         )}
 
         <div className={styles.row}>
-          <div className={styles.field}>
-            <label htmlFor="cm-cap">Ліміт місць</label>
+          <FormField id="cm-cap" label="Ліміт місць">
             <input
               id="cm-cap"
               type="number"
@@ -462,9 +448,8 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               {...register('capacity')}
               disabled={loading}
             />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="cm-title">Назва (опц.)</label>
+          </FormField>
+          <FormField id="cm-title" label="Назва (опц.)">
             <input
               id="cm-title"
               type="text"
@@ -472,11 +457,10 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               {...register('title')}
               disabled={loading}
             />
-          </div>
+          </FormField>
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor="cm-notes">Нотатки</label>
+        <FormField id="cm-notes" label="Нотатки">
           <textarea
             id="cm-notes"
             rows={2}
@@ -484,7 +468,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
             {...register('notes')}
             disabled={loading}
           />
-        </div>
+        </FormField>
 
         {serverError && <p className={styles.error} role="alert">{serverError}</p>}
       </ModalShell>

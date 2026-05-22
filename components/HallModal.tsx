@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { VM } from '@/lib/validation-messages'
 import styles from './HallModal.module.css'
 
@@ -62,40 +63,37 @@ export default function HallModal({ onClose, onSaved }: Props) {
         />
       }
     >
-      <div className={styles.field}>
-        <label className={styles.label}>Назва залу *</label>
+      <FormField id="hall-name" label="Назва залу" required>
         <input
-          className={styles.input}
+          id="hall-name"
           type="text"
           placeholder="Наприклад: Великий зал"
           value={name}
           onChange={e => setName(e.target.value)}
           autoFocus
         />
-      </div>
+      </FormField>
 
-      <div className={styles.field}>
-        <label className={styles.label}>Місткість (осіб) *</label>
+      <FormField id="hall-capacity" label="Місткість (осіб)" required>
         <input
-          className={styles.input}
+          id="hall-capacity"
           type="number"
           min="1"
           placeholder="Наприклад: 20"
           value={capacity}
           onChange={e => setCapacity(e.target.value)}
         />
-      </div>
+      </FormField>
 
-      <div className={styles.field}>
-        <label className={styles.label}>Опис</label>
+      <FormField id="hall-description" label="Опис">
         <textarea
-          className={styles.textarea}
+          id="hall-description"
           placeholder="Необов'язково"
           value={description}
           onChange={e => setDescription(e.target.value)}
           rows={3}
         />
-      </div>
+      </FormField>
 
       {error && <div className={styles.error}>{error}</div>}
     </ModalShell>

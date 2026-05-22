@@ -2,7 +2,7 @@
   display: flex;
   gap: 12px;
 }
-.row .field { flex: 1; min-width: 0; }
+.row > div { flex: 1; min-width: 0; }
 
 .field { display: flex; flex-direction: column; gap: 5px; }
 

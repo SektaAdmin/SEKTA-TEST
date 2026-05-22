@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phase 7 gap fixes — full VM.* coverage)
+- **Last Updated**: 2026-05-24 (Phase 4 — FormField component, all 8 modals migrated)
 
 ## Commands
 
@@ -424,6 +424,7 @@ components/
   ui/
     ModalShell.tsx            — обгортка модалок (shadcn Dialog)
     ModalFooter.tsx           — уніфіковані footer-кнопки (Скасувати/Зберегти) для всіх модалок
+    FormField.tsx             — уніфікований wrapper поля форми: label + input/select/textarea + errorHint + hint. Props: id, label, required, registration, error, hint, children, className. Використовується в усіх 8 модалках.
     SocialHandleInput.tsx     — input для instagram/telegram
     button.tsx, calendar.tsx, command.tsx, dialog.tsx, popover.tsx, select.tsx  — shadcn
 

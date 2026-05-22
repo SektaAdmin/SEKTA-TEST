@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TrainingTypeModal.module.css'
@@ -63,10 +64,13 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
         />
       }
     >
-      <div className={styles.field}>
-        <label htmlFor="tt-code">
-          Код <span className={styles.required}>*</span>
-        </label>
+      <FormField
+        id="tt-code"
+        label="Код"
+        required
+        error={errors.code}
+        hint={!existing ? 'Незмінний ідентифікатор. Використовується в абонементах і розкладі.' : undefined}
+      >
         <input
           id="tt-code"
           type="text"
@@ -77,18 +81,14 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
           placeholder="group"
           disabled={loading || !!existing}
         />
-        {errors.code && <p className={styles.errorHint} role="alert">{errors.code.message}</p>}
-        {!existing && (
-          <span className={styles.codeHint}>
-            Незмінний ідентифікатор. Використовується в абонементах і розкладі.
-          </span>
-        )}
-      </div>
+      </FormField>
 
-      <div className={styles.field}>
-        <label htmlFor="tt-label">
-          Назва <span className={styles.required}>*</span>
-        </label>
+      <FormField
+        id="tt-label"
+        label="Назва"
+        required
+        error={errors.label}
+      >
         <input
           id="tt-label"
           type="text"
@@ -96,8 +96,7 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
           placeholder="Групові"
           disabled={loading}
         />
-        {errors.label && <p className={styles.errorHint} role="alert">{errors.label.message}</p>}
-      </div>
+      </FormField>
 
       {serverError && <p className={styles.error} role="alert">{serverError}</p>}
     </ModalShell>

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
@@ -79,10 +80,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
         />
       }
     >
-      <div className={styles.field}>
-        <label htmlFor="ticket-name">
-          Назва <span className={styles.required}>*</span>
-        </label>
+      <FormField id="ticket-name" label="Назва" required error={errors.name}>
         <input
           id="ticket-name"
           type="text"
@@ -90,15 +88,9 @@ export default function TicketModal({ onClose, onSaved }: Props) {
           placeholder="Групове Yoga 8 занять"
           disabled={loading}
         />
-        {errors.name && (
-          <p className={styles.errorHint} role="alert">{errors.name.message}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div className={styles.field}>
-        <label htmlFor="ticket-type">
-          Тип <span className={styles.required}>*</span>
-        </label>
+      <FormField id="ticket-type" label="Тип" required error={errors.ticket_type}>
         <select
           id="ticket-type"
           {...register('ticket_type', {
@@ -111,16 +103,10 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             <option key={t.code} value={t.code}>{t.label}</option>
           ))}
         </select>
-        {errors.ticket_type && (
-          <p className={styles.errorHint} role="alert">{errors.ticket_type.message}</p>
-        )}
-      </div>
+      </FormField>
 
       <div className={styles.row}>
-        <div className={styles.field}>
-          <label htmlFor="ticket-sessions">
-            Кількість занять <span className={styles.required}>*</span>
-          </label>
+        <FormField id="ticket-sessions" label="Кількість занять" required error={errors.sessions}>
           <input
             id="ticket-sessions"
             type="number"
@@ -138,15 +124,9 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             placeholder="8"
             disabled={loading}
           />
-          {errors.sessions && (
-            <p className={styles.errorHint} role="alert">{errors.sessions.message}</p>
-          )}
-        </div>
+        </FormField>
 
-        <div className={styles.field}>
-          <label htmlFor="ticket-price">
-            Ціна (₴) <span className={styles.required}>*</span>
-          </label>
+        <FormField id="ticket-price" label="Ціна (₴)" required error={errors.price}>
           <input
             id="ticket-price"
             type="number"
@@ -164,10 +144,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             placeholder="2400"
             disabled={loading}
           />
-          {errors.price && (
-            <p className={styles.errorHint} role="alert">{errors.price.message}</p>
-          )}
-        </div>
+        </FormField>
       </div>
 
       {serverError && <p className={styles.error} role="alert">{serverError}</p>}

@@ -8,6 +8,7 @@ import { paymentLabel } from '@/lib/badges'
 import { formatMoney } from '@/lib/formatters'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import ClientSearchCombobox from './features/ClientSearchCombobox'
 import DateTimePicker from './DateTimePicker'
 import type { Client, PaymentMethod } from '@/types'
@@ -96,14 +97,13 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         }
       >
         {/* Дата і час */}
-        <div className={styles.field}>
-          <label>Дата та час</label>
+        <FormField id="sale-datetime" label="Дата та час">
           <DateTimePicker
             value={saleDatetime}
             onChange={setSaleDatetime}
             disabled={busy}
           />
-        </div>
+        </FormField>
 
         {/* Клієнт */}
         <div className={styles.field}>
@@ -129,8 +129,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         </div>
 
         {/* Абонемент */}
-        <div className={styles.field}>
-          <label htmlFor="sale-ticket">Абонемент</label>
+        <FormField id="sale-ticket" label="Абонемент">
           <select
             id="sale-ticket"
             value={ticketId}
@@ -145,7 +144,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               <option key={t.id} value={t.id}>{t.name} — {formatMoney(t.price)}</option>
             ))}
           </select>
-        </div>
+        </FormField>
 
         {/* Таб-переключатель: Звичайна оплата / Депозит */}
         <div className={styles.field}>
@@ -281,8 +280,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         </div>}
 
         {/* Коментар / Причина */}
-        <div className={styles.field}>
-          <label htmlFor="sale-notes">Коментар</label>
+        <FormField id="sale-notes" label="Коментар" error={errors.notes}>
           <textarea
             id="sale-notes"
             {...register('notes')}
@@ -290,10 +288,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             rows={2}
             disabled={busy}
           />
-          {errors.notes && (
-            <p className={styles.errorHint} role="alert">{errors.notes.message}</p>
-          )}
-        </div>
+        </FormField>
 
         {error && <p className={styles.error} role="alert">{error}</p>}
       </ModalShell>
