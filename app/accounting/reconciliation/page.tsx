@@ -6,25 +6,26 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { paymentLabel, paymentClass } from '@/lib/badges'
+import { formatMoney, formatDateShort } from '@/lib/formatters'
+import { toYMD } from '@/lib/dateUtils'
 import styles from './reconciliation.module.css'
 
 type MethodFilter = 'both' | 'fop' | 'card'
 
 function getToday(): string {
-  const d = new Date()
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')
+  return toYMD(new Date())
 }
 
 function getMonthStart(): string {
   const d = new Date()
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), '01'].join('-')
+  return toYMD(new Date(d.getFullYear(), d.getMonth(), 1))
 }
 
 function getWeekStart(): string {
   const d = new Date()
   const day = d.getDay()
   d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')
+  return toYMD(d)
 }
 
 function revenue(s: ReconciliationSale): number {
@@ -33,9 +34,8 @@ function revenue(s: ReconciliationSale): number {
 
 function fmtDate(iso: string): { date: string; time: string } {
   const d = new Date(iso)
-  const date = [String(d.getDate()).padStart(2,'0'), String(d.getMonth()+1).padStart(2,'0')].join('.')
   const time = [String(d.getHours()).padStart(2,'0'), String(d.getMinutes()).padStart(2,'0')].join(':')
-  return { date, time }
+  return { date: formatDateShort(d), time }
 }
 
 function clientName(s: ReconciliationSale): string {
@@ -88,9 +88,7 @@ export default function ReconciliationPage() {
     setDateFrom(from); setDateTo(to)
   }
 
-  function fmtMoney(n: number): string {
-    return `${n.toLocaleString('uk-UA')} ₴`
-  }
+  const fmtMoney = formatMoney
 
   return (
     <div className={styles.layout}>

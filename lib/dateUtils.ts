@@ -33,6 +33,11 @@ export function toYMD(date: Date): string {
   ].join('-')
 }
 
+// ISO-рядок (або Date) → РРРР-ММ-ДД (local time). Для value у <input type="date">.
+export function isoToYMD(input: string | Date): string {
+  return toYMD(typeof input === 'string' ? new Date(input) : input)
+}
+
 export const MONTHS_UK_SHORT = ['СІЧ.', 'ЛЮТ.', 'БЕРЕ.', 'КВІТ.', 'ТРАВ.', 'ЧЕРВ.', 'ЛИП.', 'СЕРП.', 'ВЕРЕ.', 'ЖОВ.', 'ЛИСТ.', 'ГРУД.']
 export const MONTHS_UK_FULL = ['січень', 'лютий', 'березень', 'квітень', 'травень', 'червень', 'липень', 'серпень', 'вересень', 'жовтень', 'листопад', 'грудень']
 

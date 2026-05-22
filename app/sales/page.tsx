@@ -8,7 +8,7 @@ import SaleModal from '@/components/SaleModal'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
-import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import type { Sale } from '@/types'
 import styles from './sales.module.css'
@@ -183,17 +183,17 @@ export default function SalesPage() {
                       </td>
                       <td className={styles.sessions}>{s.sessions ?? '—'}</td>
                       <td className={styles.price}>
-                        {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : '—'}
+                        {s.ticket_price != null ? formatMoney(s.ticket_price) : '—'}
                       </td>
                       <td className={styles.price}>
                         {s.ticket_id != null && s.payment_method !== 'deposit'
-                          ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
+                          ? formatMoney(s.price_paid)
                           : '—'}
                       </td>
                       <td className={styles.deposit}>
                         {depDelta !== 0 ? (
                           <span className={depDelta > 0 ? styles.depositPos : styles.depositNeg}>
-                            {depDelta > 0 ? '+' : ''}{depDelta.toLocaleString('uk-UA')} ₴
+                            {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
                           </span>
                         ) : <span className={styles.depositZero}>—</span>}
                       </td>

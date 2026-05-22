@@ -450,8 +450,8 @@ lib/
   scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
   badges.ts                   — ЄДИНИЙ словник лейблів/класів: enrollmentStatusLabel/Class, paymentLabel/Class, ticketTypeShortLabel/TICKET_TYPE_SHORT_LABELS. Не дублювати STATUS_LABELS/PAYMENT_LABELS у компонентах
   typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
-  formatters.ts               — formatClientName, formatClientLabel, formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
-  dateUtils.ts                — утиліти дат + ЄДИНІ дні тижня: DOW_LABELS_SHORT/FULL (Sunday-based, 0=Нд = day_of_week з БД), WEEKDAYS_SHORT/FULL (Monday-based, для заголовків сітки), dowMondayIndex(date), MONTHS_UK_*
+  formatters.ts               — formatClientName, formatClientLabel, formatMoney, formatDate/formatDateShort/formatDateYY (display-дати), formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
+  dateUtils.ts                — toYMD/isoToYMD (РРРР-ММ-ДД), getMondayOf, buildCalendarDays, getISOWeek + ЄДИНІ дні тижня: DOW_LABELS_SHORT/FULL (Sunday-based, 0=Нд = day_of_week з БД), WEEKDAYS_SHORT/FULL (Monday-based, для заголовків сітки), dowMondayIndex(date), MONTHS_UK_*
   utils.ts                    — cn() для merge Tailwind classNames
   queries/
     balance-transactions.ts   — listClientTransactions, listBalanceAfterBySaleIds
@@ -481,9 +481,12 @@ types/
 - **Короткі ярлики типів тренувань** (звіти/ставки тренерів) → `lib/badges.ts` (`ticketTypeShortLabel`). Повні людські назви (dropdown, дисплеї) — `label` з БД через RefsContext / `listTrainingTypeLabels`.
 - **Дні тижня** → `lib/dateUtils.ts`. ⚠️ ДВІ конвенції: `DOW_LABELS_SHORT/FULL` (0=Нд, індексувати значенням `day_of_week` з БД) vs `WEEKDAYS_SHORT/FULL` (0=Пн, для заголовків сітки Пн→Нд). Для JS Date → MONDAY-based: `dowMondayIndex(date)`. Не плутати індексації.
 - **Місяці** → `lib/dateUtils.ts` (`MONTHS_UK_SHORT/FULL`).
+- **Гроші** → `lib/formatters.ts` (`formatMoney(n)` → «1 000 ₴»). Знак ± і «— для 0» — на місці виклику. Виняток: компактна таблиця транзакцій у ClientModal показує голі числа без ₴ (навмисно).
+- **Дати (display)** → `lib/formatters.ts`: `formatDate` (ДД.ММ.РРРР), `formatDateShort` (ДД.ММ), `formatDateYY` (ДД.ММ.РР). Вхід — ISO-рядок або Date.
+- **Дата → РРРР-ММ-ДД** (value для `<input type=date>`) → `lib/dateUtils.ts`: `toYMD(date)` / `isoToYMD(iso)`. Не писати `getFullYear()+padStart…` локально.
 - **CSS бейджів**: класи `.badge*` локальні в `*.module.css`, але форма єдина: `var(--badge-radius)`, `padding: 3px 9px`, `font-size: 11px`; кольори — тільки `var()`-токени.
 
-Ще НЕ централізовано (одне місце, чекає на друге перед виносом): `TX_LABELS` (типи балансових транзакцій, ClientModal). Форматування грошей (~48 inline `toLocaleString`/`₴`) та частина дат-форматтерів у accounting/* — дублюються, але поки не уніфіковані.
+Ще НЕ централізовано (одне місце, чекає на друге перед виносом): `TX_LABELS` (типи балансових транзакцій, ClientModal).
 
 ### Архітектурні правила
 

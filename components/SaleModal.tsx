@@ -5,6 +5,7 @@ import { useSaleForm, resolveSubmitValues } from '@/hooks/useSaleForm'
 import { useSaleSubmit } from '@/hooks/useSaleSubmit'
 import { formatClientLabel } from '@/lib/formatters'
 import { paymentLabel } from '@/lib/badges'
+import { formatMoney } from '@/lib/formatters'
 import { ModalShell } from '@/components/ui/ModalShell'
 import ClientSearchCombobox from './features/ClientSearchCombobox'
 import DateTimePicker from './DateTimePicker'
@@ -121,7 +122,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           />
           {clientId && clientBalance !== null && (
             <span className={`${styles.depositHint} ${clientBalance > 0 ? styles.depositPos : clientBalance < 0 ? styles.depositNeg : styles.depositZero}`}>
-              Депозит: {clientBalance > 0 ? '+' : ''}{clientBalance.toLocaleString('uk-UA')} ₴
+              Депозит: {clientBalance > 0 ? '+' : ''}{formatMoney(clientBalance)}
             </span>
           )}
         </div>
@@ -140,7 +141,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               <option value={ticketId}>{editSale!.ticket_name}</option>
             )}
             {tickets.map(t => (
-              <option key={t.id} value={t.id}>{t.name} — {t.price.toLocaleString('uk-UA')} ₴</option>
+              <option key={t.id} value={t.id}>{t.name} — {formatMoney(t.price)}</option>
             ))}
           </select>
         </div>
@@ -167,7 +168,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           </div>
           {payFromDeposit && clientBalance !== null && clientBalance < pricePaid && (
             <span className={`${styles.depositHint} ${styles.depositNeg}`}>
-              На депозиті {clientBalance.toLocaleString('uk-UA')} ₴ — може не вистачити
+              На депозиті {formatMoney(clientBalance)} — може не вистачити
             </span>
           )}
         </div>
@@ -235,7 +236,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             />
             {payFromDeposit && pricePaid > 0 && (
               <span className={`${styles.depositHint} ${styles.depositNeg}`}>
-                −{pricePaid.toLocaleString('uk-UA')} ₴ з депозиту
+                −{formatMoney(pricePaid)} з депозиту
               </span>
             )}
           </div>
@@ -265,15 +266,15 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           {ticketId && depositDelta !== 0 && (
             <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
               {depositDelta > 0
-                ? `+${depositDelta.toLocaleString('uk-UA')} ₴ на депозит`
-                : `${depositDelta.toLocaleString('uk-UA')} ₴ з депозиту`}
+                ? `+${formatMoney(depositDelta)} на депозит`
+                : `${formatMoney(depositDelta)} з депозиту`}
             </span>
           )}
           {!ticketId && amountGiven !== 0 && (
             <span className={`${styles.depositHint} ${amountGiven > 0 ? styles.depositPos : styles.depositNeg}`}>
               {amountGiven > 0
-                ? `+${amountGiven.toLocaleString('uk-UA')} ₴ на депозит`
-                : `${amountGiven.toLocaleString('uk-UA')} ₴ з депозиту`}
+                ? `+${formatMoney(amountGiven)} на депозит`
+                : `${formatMoney(amountGiven)} з депозиту`}
             </span>
           )}
         </div>}

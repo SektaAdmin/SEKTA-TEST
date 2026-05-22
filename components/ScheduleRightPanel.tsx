@@ -1,5 +1,5 @@
 'use client'
-import { buildCalendarDays, isSameDay, MONTHS_UK_FULL, WEEKDAYS_SHORT } from '@/lib/dateUtils'
+import { buildCalendarDays, isSameDay, MONTHS_UK_FULL, WEEKDAYS_SHORT, toYMD } from '@/lib/dateUtils'
 import styles from './ScheduleRightPanel.module.css'
 
 interface Props {
@@ -23,16 +23,10 @@ export default function ScheduleRightPanel({
 }: Props) {
   const days = buildCalendarDays(viewYear, viewMonth)
 
-  function formatYMD(d: Date): string {
-    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join(
-      '-'
-    )
-  }
-
   function renderDay(day: Date, inMonth: boolean) {
     const isToday = isSameDay(day, new Date())
     const isSelected = isSameDay(day, selectedDate)
-    const hasClasses = activeDates.has(formatYMD(day))
+    const hasClasses = activeDates.has(toYMD(day))
     const dayClasses = [styles.day]
 
     if (!inMonth) dayClasses.push(styles.dayOutside)

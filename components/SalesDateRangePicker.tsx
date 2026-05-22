@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays, WEEKDAYS_SHORT } from '@/lib/dateUtils'
+import { buildCalendarDays, WEEKDAYS_SHORT, toYMD } from '@/lib/dateUtils'
 import styles from './SalesDateRangePicker.module.css'
 
 const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
@@ -14,9 +14,6 @@ interface Props {
   onClear: () => void
 }
 
-function toYMD(d: Date): string {
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')
-}
 
 function parseYMD(ymd: string): Date | null {
   if (!ymd) return null

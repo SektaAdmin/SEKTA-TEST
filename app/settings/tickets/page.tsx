@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import TicketModal from '@/components/TicketModal'
 import { useTickets } from '@/hooks/useTickets'
 import { useRefs } from '@/contexts/RefsContext'
+import { formatMoney } from '@/lib/formatters'
 import styles from '../settings.module.css'
 
 function ToggleBtns({ id, active, toggling, onToggle }: {
@@ -93,7 +94,7 @@ export default function TicketsPage() {
                     <td className={styles.name}>{t.name}</td>
                     <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
                     <td className={styles.mono}>{t.sessions}</td>
-                    <td className={styles.mono}>{t.price.toLocaleString('uk-UA')} ₴</td>
+                    <td className={styles.mono}>{formatMoney(t.price)}</td>
                     <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} /></td>
                   </tr>
                 ))}
@@ -113,7 +114,7 @@ export default function TicketsPage() {
                       <td className={styles.name}>{t.name}</td>
                       <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
                       <td className={styles.mono}>{t.sessions}</td>
-                      <td className={styles.mono}>{t.price.toLocaleString('uk-UA')} ₴</td>
+                      <td className={styles.mono}>{formatMoney(t.price)}</td>
                       <td>
                         <button className={styles.restoreBtn} onClick={() => toggle(t.id, true)} disabled={toggling === t.id}>
                           {toggling === t.id ? '...' : 'Відновити'}

@@ -13,6 +13,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
 import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { formatDate, formatDateShort } from '@/lib/formatters'
 import styles from './schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import Link from 'next/link'
@@ -67,7 +68,7 @@ function formatEndTime(iso: string, durationMin: number) {
 }
 
 function formatDayDate(d: Date) {
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+  return formatDate(d)
 }
 
 function getCardTop(iso: string, hourHeight: number): number {
@@ -117,7 +118,7 @@ function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
 
 function formatDayFull(d: Date) {
   const dayName = WEEKDAYS_FULL[dowMondayIndex(d)]
-  return `${dayName}, ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+  return `${dayName}, ${formatDate(d)}`
 }
 
 // ── Slot click → time calculation ────────────────────────────────
@@ -446,7 +447,7 @@ export default function SchedulePage() {
     }
     const start = weekDays[0]
     const end = weekDays[6]
-    return `${String(start.getDate()).padStart(2, '0')}.${String(start.getMonth() + 1).padStart(2, '0')} – ${String(end.getDate()).padStart(2, '0')}.${String(end.getMonth() + 1).padStart(2, '0')}.${end.getFullYear()}`
+    return `${formatDateShort(start)} – ${formatDate(end)}`
   }, [weekDays, viewMode])
 
   // ── Render ────────────────────────────────────────────────────

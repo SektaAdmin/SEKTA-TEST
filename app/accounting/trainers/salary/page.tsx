@@ -14,6 +14,8 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
 import { ticketTypeShortLabel } from '@/lib/badges'
+import { formatMoney, formatDate } from '@/lib/formatters'
+import { isoToYMD } from '@/lib/dateUtils'
 import styles from './salary.module.css'
 
 function getMonthRange(year: number, month: number) {
@@ -25,11 +27,6 @@ function getMonthRange(year: number, month: number) {
     startDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
     endDate: `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`,
   }
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
 function formatPeriod(start: string, end: string) {
@@ -106,7 +103,7 @@ export default function TrainerSalaryPage() {
 
   function openPaymentModal() {
     const today = new Date()
-    setPaymentDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`)
+    setPaymentDate(isoToYMD(today))
     setPaymentAmount(String(totalCalculated))
     setPaymentNotes('')
     setPaymentError(null)
@@ -192,10 +189,10 @@ export default function TrainerSalaryPage() {
                           </td>
                           <td className={styles.num}>{r.sessions_total}</td>
                           <td className={r.rate === null ? styles.noRate : styles.rateVal}>
-                            {r.rate === null ? 'не задано' : `${Number(r.rate).toLocaleString('uk-UA')} ₴/год`}
+                            {r.rate === null ? 'не задано' : `${formatMoney(Number(r.rate))}/год`}
                           </td>
                           <td className={styles.amount}>
-                            {r.rate === null ? '—' : `${r.amount.toLocaleString('uk-UA')} ₴`}
+                            {r.rate === null ? '—' : `${formatMoney(r.amount)}`}
                           </td>
                         </tr>
                       ))}
@@ -203,7 +200,7 @@ export default function TrainerSalaryPage() {
                     <tfoot>
                       <tr className={styles.totalRow}>
                         <td colSpan={3}>Нараховано</td>
-                        <td className={styles.totalAmount}>{totalCalculated.toLocaleString('uk-UA')} ₴</td>
+                        <td className={styles.totalAmount}>{formatMoney(totalCalculated)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -248,8 +245,8 @@ export default function TrainerSalaryPage() {
                         <tr key={p.id}>
                           <td className={styles.dateCell}>{formatDate(p.payment_date)}</td>
                           <td className={styles.periodCell}>{formatPeriod(p.period_start, p.period_end)}</td>
-                          <td className={styles.num}>{Number(p.calculated_amount).toLocaleString('uk-UA')} ₴</td>
-                          <td className={styles.paidAmount}>{Number(p.paid_amount).toLocaleString('uk-UA')} ₴</td>
+                          <td className={styles.num}>{formatMoney(Number(p.calculated_amount))}</td>
+                          <td className={styles.paidAmount}>{formatMoney(Number(p.paid_amount))}</td>
                           <td className={styles.notes}>{p.notes ?? '—'}</td>
                         </tr>
                       ))}
@@ -257,7 +254,7 @@ export default function TrainerSalaryPage() {
                     <tfoot>
                       <tr className={styles.totalRow}>
                         <td colSpan={3}>Виплачено всього</td>
-                        <td className={styles.paidAmount}>{totalPaid.toLocaleString('uk-UA')} ₴</td>
+                        <td className={styles.paidAmount}>{formatMoney(totalPaid)}</td>
                         <td></td>
                       </tr>
                     </tfoot>
@@ -279,7 +276,7 @@ export default function TrainerSalaryPage() {
             </div>
             <div className={styles.modalBody}>
               <div className={styles.modalHint}>
-                Нараховано за місяць: <strong>{totalCalculated.toLocaleString('uk-UA')} ₴</strong>
+                Нараховано за місяць: <strong>{formatMoney(totalCalculated)}</strong>
               </div>
 
               <label className={styles.label}>Виплачено ₴</label>

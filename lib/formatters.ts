@@ -12,6 +12,33 @@ export function formatClientLabel(c: NameFields & Pick<Client, 'phone' | 'id'>):
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
+/* ── Гроші ──────────────────────────────────────────────────────
+   Єдине форматування. Грн (₴), без копійок. uk-UA → пробіл-роздільник тисяч.
+   Знак ± і «— для 0» лишаються на місці виклику. */
+export function formatMoney(n: number): string {
+  return `${n.toLocaleString('uk-UA')} ₴`
+}
+
+/* ── Дати (display) ─────────────────────────────────────────────
+   formatDate      → ДД.ММ.РРРР
+   formatDateShort → ДД.ММ (без року)
+   formatDateYY    → ДД.ММ.РР (2-значний рік)
+   Вхід — ISO-рядок або Date. Для РРРР-ММ-ДД (input value) див. dateUtils: toYMD/isoToYMD. */
+export function formatDate(input: string | Date): string {
+  const d = typeof input === 'string' ? new Date(input) : input
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`
+}
+
+export function formatDateShort(input: string | Date): string {
+  const d = typeof input === 'string' ? new Date(input) : input
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`
+}
+
+export function formatDateYY(input: string | Date): string {
+  const d = typeof input === 'string' ? new Date(input) : input
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${String(d.getFullYear()).slice(2)}`
+}
+
 export function formatSaleDatetime(iso: string): string {
   const d = new Date(iso)
   const date = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { isSameDay } from '@/lib/dateUtils'
+import { isSameDay, toYMD } from '@/lib/dateUtils'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DatePicker.module.css'
 
@@ -14,14 +14,6 @@ function parseYMD(ymd: string): Date | null {
   if (!ymd) return null
   const [y, m, d] = ymd.split('-').map(Number)
   return new Date(y, m - 1, d)
-}
-
-function toYMD(date: Date): string {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0'),
-  ].join('-')
 }
 
 function formatDisplay(ymd: string): string {

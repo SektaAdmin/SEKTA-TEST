@@ -8,6 +8,7 @@ import { searchClientsByPhone, searchClientsByName, insertClient, updateClient }
 import { listClientTransactions } from '@/lib/queries/balance-transactions'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
+import { formatDateYY } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
@@ -29,11 +30,6 @@ const TX_LABELS: Record<string, string> = {
   refund:           'Повернення',
   adjustment:       'Коригування',
   admin_adjustment: 'Коригування',
-}
-
-function formatTxDate(iso: string) {
-  const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(2)}`
 }
 
 const clientSchema = z.object({
@@ -244,10 +240,11 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
                   <tbody>
                     {transactions.map(tx => (
                       <tr key={tx.id}>
-                        <td className={styles.txDate}>{formatTxDate(tx.created_at)}</td>
+                        <td className={styles.txDate}>{formatDateYY(tx.created_at)}</td>
                         <td className={styles.txType}>
                           {TX_LABELS[tx.transaction_type] ?? tx.transaction_type}
                         </td>
+                        {/* Голі числа без ₴ — навмисно (компактна таблиця транзакцій), не formatMoney */}
                         <td className={`${styles.txAmount} ${tx.amount > 0 ? styles.txPos : styles.txNeg}`}>
                           {tx.amount > 0 ? '+' : ''}{Number(tx.amount).toLocaleString('uk-UA')}
                         </td>

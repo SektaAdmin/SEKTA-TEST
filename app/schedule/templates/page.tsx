@@ -15,7 +15,7 @@ import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
-import { DOW_LABELS_SHORT, DOW_LABELS_FULL } from '@/lib/dateUtils'
+import { DOW_LABELS_SHORT, DOW_LABELS_FULL, toYMD, getMondayOf } from '@/lib/dateUtils'
 import styles from './page.module.css'
 
 // dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
@@ -33,17 +33,6 @@ function thisOrNextMondayKyiv(): string {
   return `${y}-${m}-${d}`
 }
 
-function toDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function getMondayOf(d: Date): Date {
-  const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  const monday = new Date(d)
-  monday.setDate(d.getDate() + diff)
-  return monday
-}
 
 
 export default function TemplatesPage() {
@@ -494,7 +483,7 @@ function MiniCalendar({ anchorRef, open, onClose, calendarMonth, setCalendarMont
       footer={footer}
       renderDay={(day, inMonth, i) => {
         const monday = getMondayOf(day)
-        const mondayStr = toDateStr(monday)
+        const mondayStr = toYMD(monday)
         const isWeekSelected = selectedMondays.includes(mondayStr)
         const isStart = day.getDay() === 1
         const isEnd = day.getDay() === 0

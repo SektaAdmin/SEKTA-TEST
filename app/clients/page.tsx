@@ -7,7 +7,7 @@ import { listClients } from '@/lib/queries/clients'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
-import { formatClientName } from '@/lib/formatters'
+import { formatClientName, formatMoney } from '@/lib/formatters'
 import type { Client } from '@/types'
 import styles from './clients.module.css'
 
@@ -202,7 +202,7 @@ export default function ClientsPage() {
                                 ? styles.balanceNeg
                                 : styles.balanceZero
                           }>
-                            {c.balance ?? 0} ₴
+                            {formatMoney(c.balance ?? 0)}
                           </span>
                         </td>
                       </tr>

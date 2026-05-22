@@ -5,6 +5,8 @@ import { listSalesForAccounting } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
+import { formatMoney } from '@/lib/formatters'
+import { isoToYMD, toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod } from '@/types'
 import styles from './accounting.module.css'
 
@@ -21,12 +23,7 @@ type Totals = { cash: number; fop: number; card: number; deposit: number }
 type DayRow = Totals & { date: string; real: number }
 
 function toDateKey(iso: string): string {
-  const d = new Date(iso)
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
-  ].join('-')
+  return isoToYMD(iso)
 }
 
 // Ticket sale: price_paid = real money. Deposit top-up (no ticket): amount_given = real money.
@@ -57,29 +54,29 @@ function aggregate(sales: SaleRow[]): { rows: DayRow[]; totals: Totals & { real:
   return { rows, totals }
 }
 
+// Сторінкове правило: 0 → «—». Решта — через єдиний formatMoney.
 function fmt(n: number): string {
-  return n === 0 ? '—' : `${n.toLocaleString('uk-UA')} ₴`
+  return n === 0 ? '—' : formatMoney(n)
 }
 
 function fmtTotal(n: number): string {
-  return `${n.toLocaleString('uk-UA')} ₴`
+  return formatMoney(n)
 }
 
 function getToday(): string {
-  const d = new Date()
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')
+  return toYMD(new Date())
 }
 
 function getMonthStart(): string {
   const d = new Date()
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), '01'].join('-')
+  return toYMD(new Date(d.getFullYear(), d.getMonth(), 1))
 }
 
 function getWeekStart(): string {
   const d = new Date()
   const day = d.getDay()
   d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
-  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')
+  return toYMD(d)
 }
 
 export default function AccountingPage() {

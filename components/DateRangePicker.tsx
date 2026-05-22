@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { isSameDay } from '@/lib/dateUtils'
+import { isSameDay, toYMD } from '@/lib/dateUtils'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DateRangePicker.module.css'
 
@@ -72,7 +72,7 @@ export default function DateRangePicker({ startDate, endDate, onChange, label, a
         renderDay={(day, inMonth, i) => {
           const isSelected = isSameDay(day, startDate)
           const isToday = isSameDay(day, today)
-          const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+          const dateKey = toYMD(day)
           const hasClasses = activeDates?.has(dateKey) ?? false
 
           return (

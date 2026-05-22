@@ -8,6 +8,7 @@ import type { Trainer } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { TICKET_TYPE_SHORT_LABELS, ticketTypeShortLabel } from '@/lib/badges'
+import { formatMoney } from '@/lib/formatters'
 import styles from './rates.module.css'
 
 type ModalState =
@@ -132,7 +133,7 @@ export default function TrainerRatesPage() {
                     <tr key={r.id} className={styles.row} onClick={() => openEdit(r)}>
                       <td><span className={styles.typeChip}>{ticketLabel(r.ticket_type)}</span></td>
                       <td className={r.trainer_id ? '' : styles.global}>{rateLabel(r)}</td>
-                      <td className={styles.rateCell}>{Number(r.rate).toLocaleString('uk-UA')} ₴</td>
+                      <td className={styles.rateCell}>{formatMoney(Number(r.rate))}</td>
                       <td className={styles.deleteCell}>
                         <button
                           className={styles.deleteBtn}

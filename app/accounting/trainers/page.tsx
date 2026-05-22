@@ -5,7 +5,8 @@ import { listSalesForTrainers } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
-import { paymentLabel } from '@/lib/badges'
+import { paymentLabel, ticketTypeShortLabel } from '@/lib/badges'
+import { formatMoney } from '@/lib/formatters'
 import styles from './trainers.module.css'
 
 
@@ -152,12 +153,12 @@ export default function TrainerReportsPage() {
                       <td className={styles.trainerName}>{s.name}</td>
                       <td className={styles.num}>{s.salesCount}</td>
                       <td className={styles.num}>{s.totalSessions}</td>
-                      <td className={styles.revenue}>{s.totalRevenue.toLocaleString('uk-UA')} ₴</td>
+                      <td className={styles.revenue}>{formatMoney(s.totalRevenue)}</td>
                       <td>
                         <div className={styles.byType}>
                           {Object.entries(s.byType).map(([type, data]) => (
                             <span key={type} className={styles.typeChip}>
-                              {type}: {data.sessions}г · {data.revenue.toLocaleString('uk-UA')} ₴
+                              {ticketTypeShortLabel(type)}: {data.sessions}г · {formatMoney(data.revenue)}
                             </span>
                           ))}
                         </div>
@@ -170,7 +171,7 @@ export default function TrainerReportsPage() {
                     <td>Всього</td>
                     <td className={styles.num}>{totals.salesCount}</td>
                     <td className={styles.num}>{totals.totalSessions}</td>
-                    <td className={styles.revenue}>{totals.totalRevenue.toLocaleString('uk-UA')} ₴</td>
+                    <td className={styles.revenue}>{formatMoney(totals.totalRevenue)}</td>
                     <td></td>
                   </tr>
                 </tfoot>

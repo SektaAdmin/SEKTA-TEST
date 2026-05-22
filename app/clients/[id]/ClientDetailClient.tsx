@@ -15,7 +15,7 @@ import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
-import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
@@ -310,7 +310,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   balance < 0 ? styles.balanceNeg :
                   styles.balanceZero
                 }>
-                  {balance.toLocaleString('uk-UA')} ₴
+                  {formatMoney(balance)}
                 </span>
                 {balance < 0 && <span className={styles.warningBadge}>Від&apos;ємний депозит</span>}
               </div>
@@ -692,24 +692,24 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             </td>
                             <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
                             <td className={styles.numCell}>
-                              {s.ticket_price != null ? `${s.ticket_price.toLocaleString('uk-UA')} ₴` : <span className={styles.empty2}>—</span>}
+                              {s.ticket_price != null ? formatMoney(s.ticket_price) : <span className={styles.empty2}>—</span>}
                             </td>
                             <td className={styles.numCell}>
                               {s.ticket_id != null && s.payment_method !== 'deposit'
-                                ? `${s.price_paid.toLocaleString('uk-UA')} ₴`
+                                ? formatMoney(s.price_paid)
                                 : <span className={styles.empty2}>—</span>}
                             </td>
                             <td className={styles.numCell}>
                               {delta > 0
-                                ? <span className={styles.deltaPos}>+{delta.toLocaleString('uk-UA')} ₴</span>
+                                ? <span className={styles.deltaPos}>+{formatMoney(delta)}</span>
                                 : delta < 0
-                                  ? <span className={styles.deltaNeg}>{delta.toLocaleString('uk-UA')} ₴</span>
+                                  ? <span className={styles.deltaNeg}>{formatMoney(delta)}</span>
                                   : <span className={styles.empty2}>—</span>
                               }
                             </td>
                             <td className={styles.numCell}>
                               {balAfter !== undefined
-                                ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{balAfter.toLocaleString('uk-UA')} ₴</span>
+                                ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{formatMoney(balAfter)}</span>
                                 : <span className={styles.empty2}>—</span>
                               }
                             </td>
