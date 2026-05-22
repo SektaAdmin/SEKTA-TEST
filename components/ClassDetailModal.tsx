@@ -19,6 +19,8 @@ import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { CopyIcon } from '@/components/icons/navigation'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
@@ -288,66 +290,37 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
         aria-modal="true"
       >
         {/* Header */}
-        <div
-          className={styles.topbar}
-          style={!loading && cls ? { ['--type-color' as string]: typeColor(cls.ticket_type) } : undefined}
-        >
+        <div className={styles.topbar}>
           <div className={styles.topbarTitleBlock}>
             {!loading && cls && (
               <>
                 <span className={styles.typeLabel}>
-                  {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+                  {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
                 </span>
                 <span className={styles.topbarDate}>
                   {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
               </>
             )}
-            <span className={styles.topbarTitle}>
-              {loading ? 'Завантаження...' : cls ? (cls.title || timeRange) : ''}
-            </span>
+            {loading && <span className={styles.topbarTitle}>Завантаження...</span>}
           </div>
           <div className={styles.topbarRight}>
             {!loading && cls && (
-              <div className={styles.topbarActions}>
-                <button
-                  className={styles.btnCopy}
-                  onClick={handleCopy}
-                  title={copied ? 'Скопійовано!' : 'Копіювати'}
-                  aria-label="Копіювати деталі заняття"
-                  type="button"
-                >
-                  {copied ? (
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-                      <polyline points="2 8 6 12 14 4"/>
-                    </svg>
-                  ) : (
-                    <CopyIcon />
-                  )}
-                </button>
-                <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
-                  Редагувати
-                </button>
-                {cls.is_cancelled ? (
-                  <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
-                    Відновити
-                  </button>
-                ) : confirmCancelClass ? (
-                  <>
-                    <span className={styles.confirmPrompt}>Скасувати заняття?</span>
-                    <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
-                      Так
-                    </button>
-                    <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
-                      Ні
-                    </button>
-                  </>
+              <button
+                className={styles.btnCopy}
+                onClick={handleCopy}
+                title={copied ? 'Скопійовано!' : 'Копіювати'}
+                aria-label="Копіювати деталі заняття"
+                type="button"
+              >
+                {copied ? (
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                    <polyline points="2 8 6 12 14 4"/>
+                  </svg>
                 ) : (
-                  <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
-                    Скасувати заняття
-                  </button>
+                  <CopyIcon />
                 )}
-              </div>
+              </button>
             )}
             <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
           </div>
@@ -378,60 +351,66 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                 </div>
               )}
 
-              {/* Class info */}
-              <div className={styles.infoCard}>
-                <div className={styles.infoHero}>
-                  <div className={styles.infoTime}>{timeRange}</div>
-                  <div className={styles.infoMeta}>
-                    {cls.trainers && <span>{cls.trainers.name}</span>}
-                    {cls.trainers && cls.halls && <span>·</span>}
-                    {cls.halls && <span>{cls.halls.name}</span>}
-                  </div>
-                  <div className={styles.infoCapacity}>
-                    <div className={styles.infoBar}>
-                      <div
-                        className={styles.infoBarFill}
-                        style={{
-                          width: `${fillPctValue}%`,
-                          backgroundColor: isFull
-                            ? 'var(--danger)'
-                            : isAlmost
-                              ? 'var(--warning)'
-                              : 'var(--success)',
-                        }}
-                      />
-                    </div>
-                    <span className={styles.infoCapacityCount}>
+              {/* Class details card */}
+              <div className={styles.detailsCard}>
+                <div className={styles.detailsRow}>
+                  <div className={styles.detailsTime}>{timeRange}</div>
+                  {cls.is_cancelled && (
+                    <Badge variant="destructive" className={styles.cancelledBadge}>
+                      скасовано
+                    </Badge>
+                  )}
+                </div>
+
+                <div className={styles.detailsMeta}>
+                  {cls.trainers && <span>{cls.trainers.name}</span>}
+                  {cls.trainers && cls.halls && <span>·</span>}
+                  {cls.halls && <span>{cls.halls.name}</span>}
+                </div>
+
+                <div className={styles.detailsDivider} />
+
+                <div className={styles.capacityRow}>
+                  <div className={styles.capacityLabel}>
+                    <span>Місця</span>
+                    <span className={styles.capacityCount}>
                       <strong>{activeCount}</strong>
                       {cls.capacity != null && <span> / {cls.capacity}</span>}
                     </span>
                   </div>
+                  <div className={styles.capacityBar}>
+                    <div
+                      className={styles.capacityBarFill}
+                      style={{
+                        width: `${fillPctValue}%`,
+                        backgroundColor: isFull
+                          ? 'var(--danger)'
+                          : isAlmost
+                            ? 'var(--warning)'
+                            : 'var(--accent)',
+                      }}
+                    />
+                  </div>
                 </div>
-                {(cls.notes || cls.is_cancelled) && (
+
+                {cls.notes && (
                   <>
-                    {cls.is_cancelled && (
-                      <div className={styles.infoRow}>
-                        <span className={styles.infoLabel}>Статус</span>
-                        <span className={styles.cancelledBadge}>скасовано</span>
-                      </div>
-                    )}
-                    {cls.notes && (
-                      <div className={styles.infoRow}>
-                        <span className={styles.infoLabel}>Нотатки</span>
-                        <span className={styles.infoValue}>{cls.notes}</span>
-                      </div>
-                    )}
+                    <div className={styles.detailsDivider} />
+                    <div className={styles.notesRow}>
+                      <span className={styles.notesLabel}>Нотатки</span>
+                      <span className={styles.notesValue}>{cls.notes}</span>
+                    </div>
                   </>
                 )}
               </div>
 
               {/* Enrollment section */}
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Записані клієнти</h2>
+              <div className={styles.enrollmentSection}>
+                <div className={styles.enrollmentHeader}>
+                  <h2 className={styles.enrollmentTitle}>Записані клієнти</h2>
                   {!addingClient && cls?.ticket_type !== 'self_training' && (
                     <button className={styles.btnAdd} onClick={() => { setAddingClient(true); setEnrollError(null) }}>
-                      + Записати клієнта
+                      + Записати
                     </button>
                   )}
                 </div>
@@ -449,8 +428,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                         {clientBalance != null && (
                           <span className={clientBalance > 0 ? styles.balanceOk : styles.balanceWarn}>
                             {clientBalance > 0
-                              ? `${clientBalance} год. на балансі`
-                              : 'Немає занять — потрібен абонемент'}
+                              ? `${clientBalance} год.`
+                              : 'Немає занять'}
                           </span>
                         )}
                       </div>
@@ -496,49 +475,43 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                 {mainEnrollments.length === 0 ? (
                   <div className={styles.empty}>Нікого не записано</div>
                 ) : (
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Клієнт</th>
-                          <th>Статус</th>
-                          <th>Баланс год.</th>
-                          <th className={styles.hidden}>Дата запису</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <div className={styles.tableContainer}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Клієнт</TableHead>
+                          <TableHead>Статус</TableHead>
+                          <TableHead className="text-right">Дія</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {mainEnrollments.map(e => {
                           const name = e.clients
                             ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                             : '—'
-                          const bal = balanceMap[e.client_id]
                           const isLoading = actionLoading === e.id
                           const hoursLabel = formatHoursLabel(e.hours_attended, cls.starts_at)
                           return (
-                            <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
-                              <td>
+                            <TableRow key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
+                              <TableCell>
                                 <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                   {name}
                                 </a>
-                                {hoursLabel && (
-                                  <span className={styles.hoursTag}>{hoursLabel}</span>
-                                )}
-                              </td>
-                              <td>
-                                <span className={`${styles.badge} ${styles[STATUS_STYLES[e.status]]}`}>
+                                {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    e.status === 'enrolled' ? 'secondary'
+                                      : e.status === 'attended' ? 'default'
+                                      : e.status === 'noshow' ? 'destructive'
+                                      : 'outline'
+                                  }
+                                >
                                   {STATUS_LABELS[e.status]}
-                                </span>
-                              </td>
-                              <td className={styles.balanceCell}>
-                                {bal != null ? (
-                                  <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
-                                ) : '—'}
-                              </td>
-                              <td className={`${styles.dateCell} ${styles.hidden}`}>
-                                {formatSaleDatetime(e.created_at)}
-                              </td>
-                              <td>
+                                </Badge>
+                              </TableCell>
+                              <TableCell className={styles.actionsCell}>
                                 <div className={styles.actions}>
                                   {e.status === 'enrolled' && (
                                     <>
@@ -571,7 +544,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   {e.status === 'attended' && (
                                     confirmReverseId === e.id ? (
                                       <>
-                                        <span className={styles.confirmPrompt}>Скасувати?</span>
                                         <button
                                           className={styles.btnEdit}
                                           onClick={() => handleReverseAttendance(e.id)}
@@ -592,7 +564,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnCancelEnroll}
                                         onClick={() => setConfirmReverseId(e.id)}
                                         disabled={isLoading}
-                                        title="Скасувати відвідування"
+                                        title="Скасувати"
                                       >
                                         —
                                       </button>
@@ -609,58 +581,47 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       }}
                                       disabled={isLoading}
                                     >
-                                      Повернути
+                                      Вернути
                                     </button>
                                   )}
                                   {actionError[e.id] && (
                                     <span className={styles.rowError}>{actionError[e.id]}</span>
                                   )}
                                 </div>
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
                           )
                         })}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
 
                 {waitlist.length > 0 && (
                   <div className={styles.waitlistSection}>
-                    <h3 className={styles.waitlistTitle}>Список очікування ({waitlist.length})</h3>
-                    <div className={styles.tableWrap}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr>
-                            <th>Клієнт</th>
-                            <th>Баланс год.</th>
-                            <th className={styles.hidden}>Дата запису</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                    <h3 className={styles.waitlistTitle}>Черга ({waitlist.length})</h3>
+                    <div className={styles.tableContainer}>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Клієнт</TableHead>
+                            <TableHead className="text-right">Дія</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
                           {waitlist.map(e => {
                             const name = e.clients
                               ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                               : '—'
-                            const bal = balanceMap[e.client_id]
                             const isLoading = actionLoading === e.id
                             return (
-                              <tr key={e.id}>
-                                <td>
+                              <TableRow key={e.id}>
+                                <TableCell>
                                   <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                     {name}
                                   </a>
-                                </td>
-                                <td className={styles.balanceCell}>
-                                  {bal != null ? (
-                                    <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
-                                  ) : '—'}
-                                </td>
-                                <td className={`${styles.dateCell} ${styles.hidden}`}>
-                                  {formatSaleDatetime(e.created_at)}
-                                </td>
-                                <td>
+                                </TableCell>
+                                <TableCell className={styles.actionsCell}>
                                   <div className={styles.actions}>
                                     <button
                                       className={styles.btnReEnroll}
@@ -678,7 +639,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       className={styles.btnCancelEnroll}
                                       onClick={() => handleUpdateStatus(e.id, 'cancelled')}
                                       disabled={isLoading}
-                                      title="Скасувати"
                                     >
                                       —
                                     </button>
@@ -686,14 +646,39 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       <span className={styles.rowError}>{actionError[e.id]}</span>
                                     )}
                                   </div>
-                                </td>
-                              </tr>
+                                </TableCell>
+                              </TableRow>
                             )
                           })}
-                        </tbody>
-                      </table>
+                        </TableBody>
+                      </Table>
                     </div>
                   </div>
+                )}
+              </div>
+
+              {/* Footer actions */}
+              <div className={styles.footerActions}>
+                <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
+                  Редагувати
+                </button>
+                {cls.is_cancelled ? (
+                  <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                    Відновити
+                  </button>
+                ) : confirmCancelClass ? (
+                  <>
+                    <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                      Скасувати заняття
+                    </button>
+                    <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
+                      Скасувати
+                    </button>
+                  </>
+                ) : (
+                  <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
+                    Скасувати заняття
+                  </button>
                 )}
               </div>
             </div>
