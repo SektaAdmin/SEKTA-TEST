@@ -6,6 +6,7 @@ import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listActiveHalls } from '@/lib/queries/halls'
 import { listActiveTrainingTypes } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { isoToDatetimeLocal } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
@@ -340,18 +341,13 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         onClose={onClose}
         width={480}
         footer={
-          <>
-            <button type="button" className={styles.btnCancel} onClick={onClose} disabled={loading}>
-              Скасувати
-            </button>
-            <button type="submit" className={styles.btnSave} disabled={loading}>
-              {loading
-                ? 'Збереження...'
-                : isSeries && !isEdit
-                  ? 'Створити серію'
-                  : 'Зберегти'}
-            </button>
-          </>
+          <ModalFooter
+            onCancel={onClose}
+            onSave={undefined}
+            saveLabel={isSeries && !isEdit ? 'Створити серію' : 'Зберегти'}
+            loading={loading}
+            saveType="submit"
+          />
         }
       >
         {/* Series toggle (only for new classes) */}

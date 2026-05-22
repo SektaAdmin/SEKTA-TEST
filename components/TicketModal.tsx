@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
@@ -71,14 +72,11 @@ export default function TicketModal({ onClose, onSaved }: Props) {
       title="Новий абонемент"
       onClose={onClose}
       footer={
-        <>
-          <button className={styles.btnCancel} onClick={onClose} disabled={loading}>
-            Скасувати
-          </button>
-          <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
-            {loading ? 'Збереження...' : 'Зберегти'}
-          </button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSave={handleSubmit(onSubmit)}
+          loading={loading}
+        />
       }
     >
       <div className={styles.field}>

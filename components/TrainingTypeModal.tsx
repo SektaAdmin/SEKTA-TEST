@@ -3,6 +3,7 @@ import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TrainingTypeModal.module.css'
@@ -108,12 +109,12 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
           </div>
 
           <div className={styles.footer}>
-            <button type="button" className={styles.btnCancel} onClick={onClose} disabled={loading}>
-              Скасувати
-            </button>
-            <button type="submit" className={styles.btnSave} disabled={loading}>
-              {loading ? 'Збереження...' : 'Зберегти'}
-            </button>
+            <ModalFooter
+              onCancel={onClose}
+              onSave={undefined}
+              loading={loading}
+              saveType="submit"
+            />
           </div>
         </form>
       </div>

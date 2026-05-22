@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { searchClientsByPhone, searchClientsByName, insertClient, updateClient } from '@/lib/queries/clients'
 import { listClientTransactions } from '@/lib/queries/balance-transactions'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
@@ -143,14 +144,12 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
       title={isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
       onClose={onClose}
       footer={
-        <>
-          <button className={styles.btnCancel} onClick={onClose} disabled={loading}>
-            Скасувати
-          </button>
-          <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
-            {loading ? 'Збереження...' : isEdit ? 'Оновити' : 'Зберегти'}
-          </button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSave={handleSubmit(onSubmit)}
+          saveLabel={isEdit ? 'Оновити' : 'Зберегти'}
+          loading={loading}
+        />
       }
     >
       <div className={styles.row}>

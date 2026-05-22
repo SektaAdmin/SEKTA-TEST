@@ -57,33 +57,6 @@
   margin-top: 2px;
 }
 
-.btnCancel {
-  background: transparent;
-  border: 0.5px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  padding: 8px 16px;
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 13px;
-  transition: border-color 0.12s, color 0.12s;
-}
-.btnCancel:hover { border-color: var(--text-3); color: var(--text); }
-.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btnSave {
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 8px 18px;
-  color: var(--accent-text);
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 13px;
-  transition: opacity 0.12s;
-}
-.btnSave:hover { opacity: 0.88; }
-.btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
-
 /* ── Transaction history ─────────────────────────────────────── */
 .historyToggle {
   background: none;

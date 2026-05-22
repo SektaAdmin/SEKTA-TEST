@@ -1,0 +1,43 @@
+.btnCancel {
+  height: var(--control-h);
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+
+.btnCancel:hover:not(:disabled) {
+  border-color: var(--text-3);
+}
+
+.btnCancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSave {
+  height: var(--control-h);
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--accent-text);
+  cursor: pointer;
+  transition: opacity var(--motion-fast);
+}
+
+.btnSave:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btnSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

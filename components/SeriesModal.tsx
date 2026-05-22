@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { MSG } from '@/lib/messages'
 import type { ClassSeries, Trainer, Hall, TrainingType, Client } from '@/types'
@@ -180,16 +181,16 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
         onClose={handleClose}
         width={520}
         footer={
-          <>
-            <button type="button" className={styles.btnCancel} onClick={handleClose} disabled={isSubmitting}>
-              {createdSeries ? 'Готово' : 'Скасувати'}
-            </button>
-            {!createdSeries && (
-              <button type="submit" className={styles.btnSave} disabled={isSubmitting}>
-                {isSubmitting ? 'Збереження...' : 'Створити'}
-              </button>
-            )}
-          </>
+          <form>
+            <ModalFooter
+              onCancel={handleClose}
+              onSave={createdSeries ? undefined : () => {}}
+              cancelLabel={createdSeries ? 'Готово' : 'Скасувати'}
+              saveLabel="Створити"
+              loading={isSubmitting}
+              saveType="submit"
+            />
+          </form>
         }
       >
         <div className={styles.field}>

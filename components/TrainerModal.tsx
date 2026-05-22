@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { VM } from '@/lib/validation-messages'
 import styles from './TrainerModal.module.css'
@@ -57,14 +58,11 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
       onClose={onClose}
       width={380}
       footer={
-        <>
-          <button className={styles.btnCancel} onClick={onClose} disabled={loading}>
-            Скасувати
-          </button>
-          <button className={styles.btnSave} onClick={handleSubmit(onSubmit)} disabled={loading}>
-            {loading ? 'Збереження...' : 'Зберегти'}
-          </button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSave={handleSubmit(onSubmit)}
+          loading={loading}
+        />
       }
     >
       <div className={styles.field}>

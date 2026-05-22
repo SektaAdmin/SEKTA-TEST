@@ -7,6 +7,7 @@ import { formatClientLabel } from '@/lib/formatters'
 import { paymentLabel } from '@/lib/badges'
 import { formatMoney } from '@/lib/formatters'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import ClientSearchCombobox from './features/ClientSearchCombobox'
 import DateTimePicker from './DateTimePicker'
 import type { Client, PaymentMethod } from '@/types'
@@ -86,12 +87,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         onClose={onClose}
         modalClassName={styles.modal}
         footer={
-          <>
-            <button type="button" className={styles.btnCancel} onClick={onClose} disabled={busy}>Скасувати</button>
-            <button type="submit" className={styles.btnSave} disabled={busy}>
-              {busy ? 'Збереження...' : 'Зберегти'}
-            </button>
-          </>
+          <ModalFooter
+            onCancel={onClose}
+            onSave={undefined}
+            loading={busy}
+            saveType="submit"
+          />
         }
       >
         {/* Дата і час */}

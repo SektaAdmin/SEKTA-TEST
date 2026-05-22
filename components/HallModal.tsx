@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import styles from './HallModal.module.css'
 
 
@@ -53,14 +54,11 @@ export default function HallModal({ onClose, onSaved }: Props) {
       width={440}
       modalClassName={styles.modal}
       footer={
-        <>
-          <button className={styles.btnCancel} onClick={onClose} disabled={saving}>
-            Скасувати
-          </button>
-          <button className={styles.btnSave} onClick={handleSubmit} disabled={saving}>
-            {saving ? 'Збереження...' : 'Зберегти'}
-          </button>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSave={handleSubmit}
+          loading={saving}
+        />
       }
     >
       <div className={styles.field}>
