@@ -16,6 +16,7 @@ import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import { enrollmentStatusLabel, enrollmentStatusClass, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
@@ -50,34 +51,7 @@ type UpcomingEnrollment = {
   } | null
 }
 
-
-const PAYMENT_LABELS: Record<string, string> = {
-  cash:          'Готівка',
-  fop:           'ФОП',
-  personal_card: 'Карта',
-  deposit:       'Депозит',
-}
-
-const PAYMENT_CLASS: Record<string, string> = {
-  cash:          'badgeCash',
-  fop:           'badgeFop',
-  personal_card: 'badgeCard',
-  deposit:       'badgeDeposit',
-}
-
 const SALES_PAGE_SIZE = 20
-
-const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
-  attended:  'Відвідала',
-  noshow:    'Не прийшла',
-  cancelled: 'Скасувала',
-}
-
-const ENROLLMENT_STATUS_CLASS: Record<string, string> = {
-  attended:  'badgeAttended',
-  noshow:    'badgeNoshow',
-  cancelled: 'badgeCancelled',
-}
 
 export default function ClientDetailClient({ id }: { id: string }) {
   const router = useRouter()
@@ -567,8 +541,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
                                 </td>
                                 <td>
-                                  <span className={`${styles.badge} ${styles[ENROLLMENT_STATUS_CLASS[e.status] ?? '']}`}>
-                                    {ENROLLMENT_STATUS_LABELS[e.status] ?? e.status}
+                                  <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                    {enrollmentStatusLabel(e.status)}
                                   </span>
                                 </td>
                                 <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
@@ -603,8 +577,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 </td>
                                 <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                                 <td>
-                                  <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
-                                    {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
+                                  <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                    {paymentLabel(s.payment_method)}
                                   </span>
                                 </td>
                                 <td className={styles.numCell}>
@@ -741,8 +715,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               }
                             </td>
                             <td>
-                              <span className={`${styles.badge} ${styles[PAYMENT_CLASS[s.payment_method] ?? '']}`}>
-                                {PAYMENT_LABELS[s.payment_method] ?? s.payment_method}
+                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                {paymentLabel(s.payment_method)}
                               </span>
                             </td>
                             <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>

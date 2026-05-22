@@ -356,16 +356,16 @@
 /* ── Status badges ───────────────────────────────────────────── */
 .badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: var(--badge-radius);
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
 }
 
-.badgeEnrolled  { background: rgba(100,160,255,0.12); color: var(--fop); }
+.badgeEnrolled  { background: var(--bg-3); color: var(--text-2); }
 .badgeAttended  { background: var(--accent-dim); color: var(--accent); }
-.badgeCancelled { background: rgba(255,255,255,0.05); color: var(--text-3); }
+.badgeCancelled { background: var(--bg-3); color: var(--text-3); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
 .badgeWaitlist  { background: var(--warning-dim); color: var(--warning); }
 

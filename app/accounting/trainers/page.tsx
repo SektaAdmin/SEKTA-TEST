@@ -5,6 +5,7 @@ import { listSalesForTrainers } from '@/lib/queries/sales'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
+import { paymentLabel } from '@/lib/badges'
 import styles from './trainers.module.css'
 
 
@@ -32,13 +33,6 @@ function getMonthRange(year: number, month: number) {
   return { start: start.toISOString(), end: end.toISOString() }
 }
 
-
-const PAYMENT_LABELS: Record<string, string> = {
-  cash: 'Готівка',
-  fop: 'ФОП',
-  personal_card: 'Картка',
-  deposit: 'Депозит',
-}
 
 export default function TrainerReportsPage() {
   const now = new Date()
@@ -129,7 +123,7 @@ export default function TrainerReportsPage() {
                 className={`${styles.filterBtn} ${paymentFilter === v ? styles.filterBtnActive : ''}`}
                 onClick={() => setPaymentFilter(v)}
               >
-                {v === 'all' ? 'Всі методи' : PAYMENT_LABELS[v]}
+                {v === 'all' ? 'Всі методи' : paymentLabel(v)}
               </button>
             ))}
           </div>

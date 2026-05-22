@@ -9,23 +9,10 @@ import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
-import type { Sale, PaymentMethod } from '@/types'
+import { paymentLabel, paymentClass } from '@/lib/badges'
+import type { Sale } from '@/types'
 import styles from './sales.module.css'
 
-
-const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  cash: 'Готівка',
-  fop: 'ФОП',
-  personal_card: 'Особиста карта',
-  deposit: 'Депозит',
-}
-
-const PAYMENT_CLASS: Record<PaymentMethod, string> = {
-  cash: styles.badgeCash,
-  fop: styles.badgeFop,
-  personal_card: styles.badgeCard,
-  deposit: styles.badgeDeposit,
-}
 
 function getPageRange(current: number, total: number): (number | '...')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i)
@@ -211,8 +198,8 @@ export default function SalesPage() {
                         ) : <span className={styles.depositZero}>—</span>}
                       </td>
                       <td>
-                        <span className={`${styles.badge} ${PAYMENT_CLASS[s.payment_method]}`}>
-                          {PAYMENT_LABELS[s.payment_method]}
+                        <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                          {paymentLabel(s.payment_method)}
                         </span>
                       </td>
                       <td className={styles.trainer}>{s.trainers?.name ?? '—'}</td>

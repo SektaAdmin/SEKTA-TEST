@@ -417,7 +417,7 @@ export default function TemplatesPage() {
                             Постійники ({clientCount})
                           </button>
                           {overCapacity > 0 && (
-                            <span className={styles.waitlistBadge}>+{overCapacity} резерв</span>
+                            <span className={styles.waitlistBadge}>+{overCapacity} у черзі</span>
                           )}
                         </td>
                         <td className={styles.actions}>

@@ -421,8 +421,8 @@
   font-weight: 500;
   white-space: nowrap;
 }
-.badgeEnrolled  { background: var(--fop-dim); color: var(--fop); }
-.badgeAttended  { background: rgba(200,240,96,0.1); color: var(--accent); }
+.badgeEnrolled  { background: var(--bg-3); color: var(--text-2); }
+.badgeAttended  { background: var(--accent-dim); color: var(--accent); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
 .badgeCancelled { background: var(--bg-3); color: var(--text-3); }
 .badgeWaitlist  { background: var(--warning-dim); color: var(--warning); }

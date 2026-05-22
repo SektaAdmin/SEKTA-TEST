@@ -445,7 +445,7 @@
   font-weight: 500;
   white-space: nowrap;
 }
-.badgeCash    { background: rgba(200,240,96,0.12); color: var(--accent); }
+.badgeCash    { background: var(--accent-dim); color: var(--accent); }
 .badgeFop     { background: var(--fop-dim);  color: var(--fop); }
 .badgeCard    { background: var(--card-dim);  color: var(--card); }
 .badgeDeposit { background: var(--deposit-dim);  color: var(--deposit); }
@@ -494,7 +494,7 @@
 .tabActive { color: var(--text) !important; border-bottom-color: var(--accent); }
 
 /* ── Feed badges ────────────────────────────────────────────── */
-.badgeAttended  { background: rgba(200,240,96,0.1); color: var(--accent); }
+.badgeAttended  { background: var(--accent-dim); color: var(--accent); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
 .badgeCancelled { background: var(--bg-3); color: var(--text-3); }
 .badgeSale      { background: var(--success-dim); color: var(--success); }

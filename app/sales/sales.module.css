@@ -202,7 +202,7 @@
   white-space: nowrap;
 }
 
-.badgeCash { background: rgba(200,240,96,0.12); color: var(--accent); }
+.badgeCash { background: var(--accent-dim); color: var(--accent); }
 .badgeFop { background: var(--fop-dim); color: var(--fop); }
 .badgeCard { background: var(--card-dim); color: var(--card); }
 .badgeDeposit { background: var(--deposit-dim); color: var(--deposit); }

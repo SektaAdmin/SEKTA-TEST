@@ -5,6 +5,7 @@ import { listSalesForReconciliation, type ReconciliationSale } from '@/lib/queri
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
+import { paymentLabel, paymentClass } from '@/lib/badges'
 import styles from './reconciliation.module.css'
 
 type MethodFilter = 'both' | 'fop' | 'card'
@@ -199,8 +200,8 @@ export default function ReconciliationPage() {
                             <td>{clientName(s)}</td>
                             <td className={styles.ticketCell}>{s.ticket_name ?? '—'}</td>
                             <td>
-                              <span className={s.payment_method === 'fop' ? styles.badgeFop : styles.badgeCard}>
-                                {s.payment_method === 'fop' ? 'ФОП' : 'Картка'}
+                              <span className={styles[paymentClass(s.payment_method)]}>
+                                {paymentLabel(s.payment_method)}
                               </span>
                             </td>
                             <td className={styles.amtCell}>{amt > 0 ? fmtMoney(amt) : '—'}</td>

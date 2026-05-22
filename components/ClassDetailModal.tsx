@@ -22,6 +22,7 @@ import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
+import { enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import styles from './ClassDetailModal.module.css'
 
@@ -38,22 +39,6 @@ type EnrollmentRow = {
   hours_attended: number[] | null
   created_at: string
   clients: { first_name: string | null; last_name: string | null } | null
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  enrolled:  'Записана',
-  attended:  'Відвідала',
-  cancelled: 'Скасована',
-  noshow:    'Не прийшла',
-  waitlist:  'Черга',
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  enrolled:  'badgeEnrolled',
-  attended:  'badgeAttended',
-  cancelled: 'badgeCancelled',
-  noshow:    'badgeNoshow',
-  waitlist:  'badgeWaitlist',
 }
 
 interface Props {
@@ -498,8 +483,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                 {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
                               </td>
                               <td>
-                                <span className={`${styles.badge} ${styles[STATUS_STYLES[e.status]]}`}>
-                                  {STATUS_LABELS[e.status]}
+                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                  {enrollmentStatusLabel(e.status)}
                                 </span>
                               </td>
                               <td className={styles.actionsCell}>

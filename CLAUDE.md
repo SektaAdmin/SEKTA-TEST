@@ -448,6 +448,7 @@ lib/
   useRealtime.ts              — Supabase Realtime підписки (debounce 300ms, JWT header)
   useSupabaseList.ts          — generic хук для простих list-запитів
   scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
+  badges.ts                   — ЄДИНИЙ словник лейблів/класів бейджів: enrollmentStatusLabel/Class, paymentLabel/Class. Не дублювати STATUS_LABELS/PAYMENT_LABELS у компонентах
   typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
   formatters.ts               — formatClientName, formatClientLabel, formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
   dateUtils.ts                — утиліти дат
@@ -573,3 +574,4 @@ types/
 7. **GIN-індекси на clients** — використовувати для fuzzy-пошуку по прізвищу і телефону.
 8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`. Для enrollments: `getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`. Для шаблонів (client count): `isClientCountFull`, `isClientCountAlmost`, `clientFillPct`.
 9. **Скасування заняття** — тільки через `cancel_class_and_restore_sessions()` RPC, не прямим UPDATE.
+10. **Бейджі уніфіковані** — лейбли і CSS-класи статусів/методів оплати тільки з `lib/badges.ts` (`enrollmentStatusLabel/Class`, `paymentLabel/Class`). Не оголошувати локальні `STATUS_LABELS`/`PAYMENT_LABELS` у компонентах. Форма бейджа: `border-radius: var(--badge-radius)`, `padding: 3px 9px`, `font-size: 11px`. Кольори — тільки `var()`-токени, без HEX/rgba. Статус «Записалась» = нейтральний (`--bg-3`/`--text-2`), синій `--fop` зарезервовано за методом оплати ФОП. shadcn `ui/badge.tsx` видалено. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга).

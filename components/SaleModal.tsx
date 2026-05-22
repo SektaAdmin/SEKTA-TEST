@@ -4,17 +4,12 @@ import { useRefs } from '@/contexts/RefsContext'
 import { useSaleForm, resolveSubmitValues } from '@/hooks/useSaleForm'
 import { useSaleSubmit } from '@/hooks/useSaleSubmit'
 import { formatClientLabel } from '@/lib/formatters'
+import { paymentLabel } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import ClientSearchCombobox from './features/ClientSearchCombobox'
 import DateTimePicker from './DateTimePicker'
 import type { Client, PaymentMethod } from '@/types'
 import styles from './SaleModal.module.css'
-
-const PAYMENT_LABELS: Record<string, string> = {
-  cash: 'Готівка',
-  fop: 'ФОП',
-  personal_card: 'Особиста карта',
-}
 
 export interface EditSaleSnapshot {
   id: string
@@ -190,7 +185,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
                   onClick={() => setValue('payment_method', method)}
                   disabled={busy}
                 >
-                  {PAYMENT_LABELS[method]}
+                  {paymentLabel(method)}
                 </button>
               ))}
             </div>

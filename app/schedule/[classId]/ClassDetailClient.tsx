@@ -21,6 +21,7 @@ import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
+import { enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import styles from './class-detail.module.css'
 
@@ -38,22 +39,6 @@ type EnrollmentRow = {
   hours_attended: number[] | null
   created_at: string
   clients: { first_name: string | null; last_name: string | null } | null
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  enrolled:  'Записана',
-  attended:  'Відвідала',
-  cancelled: 'Скасована',
-  noshow:    'Не прийшла',
-  waitlist:  'Черга',
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  enrolled:  'badgeEnrolled',
-  attended:  'badgeAttended',
-  cancelled: 'badgeCancelled',
-  noshow:    'badgeNoshow',
-  waitlist:  'badgeWaitlist',
 }
 
 export default function ClassDetailClient({ classId }: { classId: string }) {
@@ -472,8 +457,8 @@ if (loading) {
                             )}
                           </td>
                           <td>
-                            <span className={`${styles.badge} ${styles[STATUS_STYLES[e.status]]}`}>
-                              {STATUS_LABELS[e.status]}
+                            <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                              {enrollmentStatusLabel(e.status)}
                             </span>
                           </td>
                           <td className={styles.balanceCell}>

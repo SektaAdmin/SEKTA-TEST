@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import TicketModal from '@/components/TicketModal'
 import { useTickets } from '@/hooks/useTickets'
+import { useRefs } from '@/contexts/RefsContext'
 import styles from '../settings.module.css'
 
 function ToggleBtns({ id, active, toggling, onToggle }: {
@@ -47,8 +48,12 @@ function ArchiveSection({ label, count, open, onToggle, children }: {
 
 export default function TicketsPage() {
   const { tickets, loading, fetchError, toggling, toggle, refetch } = useTickets()
+  const { trainingTypes } = useRefs()
   const [showModal, setShowModal] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
+
+  const typeLabel = (code: string) =>
+    trainingTypes.find(t => t.code === code)?.label ?? code
 
   function handleSaved() {
     setShowModal(false)
@@ -86,7 +91,7 @@ export default function TicketsPage() {
                 {active.map(t => (
                   <tr key={t.id}>
                     <td className={styles.name}>{t.name}</td>
-                    <td><span className={styles.typeBadge}>{t.ticket_type}</span></td>
+                    <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
                     <td className={styles.mono}>{t.sessions}</td>
                     <td className={styles.mono}>{t.price.toLocaleString('uk-UA')} ₴</td>
                     <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} /></td>
@@ -106,7 +111,7 @@ export default function TicketsPage() {
                   {archived.map(t => (
                     <tr key={t.id} className={styles.archivedRow}>
                       <td className={styles.name}>{t.name}</td>
-                      <td><span className={styles.typeBadge}>{t.ticket_type}</span></td>
+                      <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
                       <td className={styles.mono}>{t.sessions}</td>
                       <td className={styles.mono}>{t.price.toLocaleString('uk-UA')} ₴</td>
                       <td>
