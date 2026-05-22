@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phases A–G — enrollmentStatusLabel() titles; MSG.empty×20; badge CSS; globals.css utilities: .btn-primary/.loading-dots/.data-table-wrap/.data-table; -268 рядків CSS дублів)
+- **Last Updated**: 2026-05-24 (Schedule archive: 30-day navigation limit + /settings/archive tab with filters & pagination)
 
 ## Commands
 
@@ -370,7 +370,7 @@ npm run start
 | `/sales` | Продажі: створення, редагування, фільтр по датах |
 | `/clients` | База клієнтів, пошук |
 | `/clients/[id]` | Профіль: контакти, депозит, залишок занять, покупки, записи |
-| `/schedule` | Розклад занять: день/тиждень view, фільтр по залах і тренерах (в week mode — по 1 залу), click-to-create, права панель з деталями (день mode) |
+| `/schedule` | Розклад занять: день/тиждень view, фільтр по залах і тренерах; навігація назад обмежена 30 днів (редірект на сьогодні при натисканні далі) |
 | `/schedule/[classId]` | Деталі заняття, відвідуваність, запис клієнтів |
 | `/schedule/templates` | Шаблони тижня: HallWeekGrid, постійники, виставити тиждень |
 | `/halls`, `/trainers`, `/tickets`, `/training-types` | Standalone-сторінки довідників (редиректи або окремі views) |
@@ -379,7 +379,8 @@ npm run start
 | `/accounting/trainers` | Звіт по тренерах |
 | `/accounting/trainers/salary` | Нарахування зарплати + виплати |
 | `/accounting/trainers/rates` | Ставки тренерів (глобальні + індивідуальні) |
-| `/settings` | Таби: Абонементи / Тренери / Зали / Типи тренувань |
+| `/settings` | Таби: Абонементи / Тренери / Зали / Типи тренувань / **Архів занять** |
+| `/settings/archive` | Архів занять: таблиця заняття старших 30 днів, фільтри по датах/тренеру/залу/типу, пагінація, клік → ClassDetailModal |
 
 ---
 
@@ -543,7 +544,9 @@ types/
 
 ---
 
-### /schedule Page (станом на 2026-05-23)
+### /schedule Page (станом на 2026-05-24)
+
+**Navigation limit:** Назад обмежено 30 днів. При натисканні "←" якщо нова дата < `today - 30 дн` → редірект на сьогодні. Кнопка `disabled` на межі.
 
 **View modes:**
 - **Day view** — один день, всі зали в одну колонку, права панель з календарем
@@ -582,6 +585,20 @@ types/
 - **Progress bar**: знизу, висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
 - **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
+
+### /settings/archive Page (станом на 2026-05-24)
+
+**Назначение:** Архів занять старших 30 днів. Редагування через існуючий `ClassDetailModal` без змін.
+
+**Компоненти:**
+- **Filter bar**: HTML5 date inputs (від/до), dropdown: тренер/зал/тип тренування
+- **Table**: 20 рядків/сторінка, наступні колонки: Дата | Час | Тип | Тренер | Зал | Записів | Скасовано
+- **Pagination**: Prev/Next + counter (Сторінка X з Y)
+- **Click on row** → `ClassDetailModal` з повним редаганням (тренер, зал, час, скасування, відвідуваність)
+
+**Query:** `listArchivedClasses(supabase, page, pageSize, filters)` — в `lib/queries/classes.ts`
+- Фільтри: `dateFrom`, `dateTo`, `hallId`, `trainerId`, `ticketType`
+- Повертає: `{ data: ClassWithJoins[], count: number, error: string | null }`
 
 ---
 
