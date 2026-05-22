@@ -89,12 +89,12 @@ export default function TrainingTypesPage() {
     <>
       <div className={styles.topbar}>
         <h1 className={styles.title}>Типи тренувань</h1>
-        <button className={styles.btnNew} onClick={() => { setEditing(null); setShowModal(true) }}>+ Додати тип</button>
+        <button className="btn-primary" onClick={() => { setEditing(null); setShowModal(true) }}>+ Додати тип</button>
       </div>
 
       <div className={styles.tabSection}>
         {loading ? (
-          <div className={styles.loading}><span /><span /><span /></div>
+          <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (

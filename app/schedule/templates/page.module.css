@@ -241,21 +241,6 @@
 .btnDelete:hover { background: var(--danger-border); }
 .btnDelete:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btnNew {
-  height: var(--control-h);
-  padding: 0 14px;
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--accent-text);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity var(--motion-fast);
-  white-space: nowrap;
-}
-.btnNew:hover { opacity: 0.88; }
 
 .btnCancel {
   height: var(--control-h);

@@ -109,7 +109,7 @@ export default function ClientsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Клієнти</h1>
-          <button className={styles.btnNew} onClick={() => setShowModal(true)}>
+          <button className="btn-primary" onClick={() => setShowModal(true)}>
             + Додати клієнта
           </button>
         </div>
@@ -138,7 +138,7 @@ export default function ClientsPage() {
 
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.loading}>
+            <div className="loading-dots">
               <span /><span /><span />
             </div>
           ) : fetchError ? (
@@ -149,7 +149,7 @@ export default function ClientsPage() {
                 ? `За запитом «${search}» нічого не знайдено`
                 : <>
                     <span>{MSG.empty.clients}</span>
-                    <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати клієнта</button>
+                    <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати клієнта</button>
                   </>
               }
             </div>

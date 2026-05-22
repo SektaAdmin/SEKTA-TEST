@@ -270,7 +270,7 @@ export default function TemplatesPage() {
             />
           </div>
           <button
-            className={styles.btnNew}
+            className="btn-primary"
             onClick={() => setShowCreateModal(true)}
           >
             + Новий шаблон

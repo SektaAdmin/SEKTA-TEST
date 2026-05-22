@@ -84,18 +84,18 @@ export default function TrainersPage() {
     <>
       <div className={styles.topbar}>
         <h1 className={styles.title}>Тренери</h1>
-        <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати тренера</button>
+        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
       </div>
 
       <div className={styles.tabSection}>
         {loading ? (
-          <div className={styles.loading}><span /><span /><span /></div>
+          <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
           <div className={styles.empty}>
             <span>{MSG.empty.trainers}</span>
-            <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати тренера</button>
+            <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
           </div>
         ) : (
           <div className={styles.tableWrap}>

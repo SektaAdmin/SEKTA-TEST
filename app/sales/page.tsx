@@ -102,7 +102,7 @@ export default function SalesPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className={styles.title}>Продажи</h1>
-          <button className={styles.btnNew} onClick={() => { setEditSale(null); setShowModal(true) }}>
+          <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
             + Нова продажа
           </button>
         </div>
@@ -139,14 +139,14 @@ export default function SalesPage() {
 
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.loading}><span /><span /><span /></div>
+            <div className="loading-dots"><span /><span /><span /></div>
           ) : fetchError ? (
             <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : sales.length === 0 ? (
             <div className={styles.empty}>
               <span>{search || dateFrom || dateTo ? MSG.empty.salesFiltered : MSG.empty.sales}</span>
               {!search && !dateFrom && !dateTo && (
-                <button className={styles.btnNew} onClick={() => { setEditSale(null); setShowModal(true) }}>+ Записати продаж</button>
+                <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>+ Записати продаж</button>
               )}
             </div>
           ) : (

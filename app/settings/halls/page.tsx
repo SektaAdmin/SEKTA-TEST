@@ -84,18 +84,18 @@ export default function HallsPage() {
     <>
       <div className={styles.topbar}>
         <h1 className={styles.title}>Зали</h1>
-        <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати зал</button>
+        <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати зал</button>
       </div>
 
       <div className={styles.tabSection}>
         {loading ? (
-          <div className={styles.loading}><span /><span /><span /></div>
+          <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
           <div className={styles.empty}>
             <span>{MSG.empty.halls}</span>
-            <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати зал</button>
+            <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати зал</button>
           </div>
         ) : (
           <div className={styles.tableWrap}>

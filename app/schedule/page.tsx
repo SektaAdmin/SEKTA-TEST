@@ -500,7 +500,7 @@ export default function SchedulePage() {
               </div>
             )}
             {tab === 'schedule' && (
-              <button className={styles.btnNew} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
+              <button className="btn-primary" onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
               </button>
             )}
