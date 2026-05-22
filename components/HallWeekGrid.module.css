@@ -25,6 +25,8 @@
 }
 
 .dayHeader {
+  flex: 1;
+  min-width: 120px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
