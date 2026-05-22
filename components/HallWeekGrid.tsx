@@ -45,6 +45,49 @@ function endTime(timeOfDay: string, durationMin: number): string {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
+// Lane computation: place overlapping cards side-by-side
+type LaneInfo = { laneIndex: number; laneCount: number }
+
+function computeLanes(items: ClassSeries[]): Map<string, LaneInfo> {
+  if (items.length === 0) return new Map()
+  const sorted = [...items].sort((a, b) => a.time_of_day.localeCompare(b.time_of_day))
+  const laneAssignments = new Map<string, number>()
+  const laneEndTimes: string[] = []
+
+  for (const s of sorted) {
+    const [h, m] = s.time_of_day.split(':').map(Number)
+    const startMin = h * 60 + m
+    const endMin = startMin + s.duration_min
+    let assigned = -1
+    for (let i = 0; i < laneEndTimes.length; i++) {
+      const [eh, em] = laneEndTimes[i].split(':').map(Number)
+      if (eh * 60 + em <= startMin) { assigned = i; laneEndTimes[i] = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`; break }
+    }
+    if (assigned === -1) {
+      assigned = laneEndTimes.length
+      laneEndTimes.push(`${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`)
+    }
+    laneAssignments.set(s.id, assigned)
+  }
+
+  const result = new Map<string, LaneInfo>()
+  for (const s of sorted) {
+    const [h, m] = s.time_of_day.split(':').map(Number)
+    const startMin = h * 60 + m
+    const endMin = startMin + s.duration_min
+    let maxLane = laneAssignments.get(s.id)!
+    for (const other of sorted) {
+      if (other.id === s.id) continue
+      const [oh, om] = other.time_of_day.split(':').map(Number)
+      const os = oh * 60 + om
+      const oe = os + other.duration_min
+      if (os < endMin && oe > startMin) maxLane = Math.max(maxLane, laneAssignments.get(other.id)!)
+    }
+    result.set(s.id, { laneIndex: laneAssignments.get(s.id)!, laneCount: maxLane + 1 })
+  }
+  return result
+}
+
 interface Props {
   series: ClassSeries[]
   halls: Hall[]
@@ -59,10 +102,12 @@ interface CardProps {
   typeLabel: string
   height: number
   top: number
+  laneIndex: number
+  laneCount: number
   onCardClick: (s: ClassSeries) => void
 }
 
-function TemplateCard({ s, typeLabel, height, top, onCardClick }: CardProps) {
+function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardClick }: CardProps) {
   const color = typeColor(s.ticket_type)
   const clientCount = s.series_clients?.length ?? 0
   const capacity = s.capacity
@@ -94,8 +139,8 @@ function TemplateCard({ s, typeLabel, height, top, onCardClick }: CardProps) {
       style={{
         top: `${top + CARD_GAP}px`,
         height: `${Math.max(height - CARD_GAP * 2, 20)}px`,
-        left: `${CARD_GAP}px`,
-        right: `${CARD_GAP}px`,
+        left: `calc(${(laneIndex / laneCount) * 100}% + ${CARD_GAP}px)`,
+        right: `calc(${((laneCount - laneIndex - 1) / laneCount) * 100}% + ${CARD_GAP}px)`,
         ['--card-color' as string]: color,
       }}
       onClick={e => { e.stopPropagation(); onCardClick(s) }}
@@ -141,17 +186,18 @@ function TemplateCard({ s, typeLabel, height, top, onCardClick }: CardProps) {
   )
 }
 
-// ── Hall sub-column ───────────────────────────────────────────────
-interface HallSubColProps {
+// ── Day column ────────────────────────────────────────────────────
+interface DayColProps {
   items: ClassSeries[]
   typeLabels: Map<string, string>
   dow: number
-  hallId: string | null
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
 }
 
-function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }: HallSubColProps) {
+function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColProps) {
+  const lanes = useMemo(() => computeLanes(items), [items])
+
   function relYOverlapsCard(relY: number): boolean {
     return items.some(s => {
       const top = cardTop(s.time_of_day)
@@ -162,7 +208,7 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }
 
   return (
     <div
-      className={styles.hallSubCol}
+      className={styles.dayCol}
       style={{ height: TOTAL_H, '--hour-h': `${HOUR_HEIGHT}px` } as React.CSSProperties}
       onMouseMove={e => {
         if ((e.target as HTMLElement).closest('[data-card]')) {
@@ -187,54 +233,46 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }
         if (relYOverlapsCard(relY)) return
         if (!onSlotClick) return
         const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + relY / HOUR_HEIGHT)))
+        // Pass hallId of first item in this day as hint, or null
+        const hallId = items[0]?.hall_id ?? null
         onSlotClick(dow, `${String(hour).padStart(2, '0')}:00`, hallId)
       }}
     >
       {HOURS.slice(1).map(h => (
         <div key={h} className={styles.hourLine} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }} />
       ))}
-      {items.map(s => (
-        <TemplateCard
-          key={s.id}
-          s={s}
-          typeLabel={typeLabels.get(s.ticket_type) ?? s.ticket_type}
-          height={cardHeight(s.duration_min)}
-          top={cardTop(s.time_of_day)}
-          onCardClick={onCardClick}
-        />
-      ))}
+      {items.map(s => {
+        const { laneIndex, laneCount } = lanes.get(s.id) ?? { laneIndex: 0, laneCount: 1 }
+        return (
+          <TemplateCard
+            key={s.id}
+            s={s}
+            typeLabel={typeLabels.get(s.ticket_type) ?? s.ticket_type}
+            height={cardHeight(s.duration_min)}
+            top={cardTop(s.time_of_day)}
+            laneIndex={laneIndex}
+            laneCount={laneCount}
+            onCardClick={onCardClick}
+          />
+        )
+      })}
     </div>
   )
 }
 
 // ── Main component ────────────────────────────────────────────────
-export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick }: Props) {
-  const activeHalls = useMemo(() => halls.filter(h => h.is_active), [halls])
-
+export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlotClick }: Props) {
   const typeLabels = useMemo(() => {
     const m = new Map<string, string>()
     for (const t of trainingTypes) m.set(t.code, t.label)
     return m
   }, [trainingTypes])
 
-  // Halls that actually appear in the series (+ null for no-hall)
-  const hallCols = useMemo(() => {
-    const hallIds = new Set(series.map(s => s.hall_id ?? null))
-    const result: (Hall | null)[] = activeHalls.filter(h => hallIds.has(h.id))
-    if (hallIds.has(null)) result.push(null)
-    return result
-  }, [series, activeHalls])
-
-  // Index: dow → hallId → series[]
-  const byDowHall = useMemo(() => {
-    const map = new Map<number, Map<string | null, ClassSeries[]>>()
-    for (const { dow } of DAYS) map.set(dow, new Map())
-    for (const s of series) {
-      const dowMap = map.get(s.day_of_week)!
-      const key = s.hall_id ?? null
-      if (!dowMap.has(key)) dowMap.set(key, [])
-      dowMap.get(key)!.push(s)
-    }
+  // Index: dow → series[]
+  const byDow = useMemo(() => {
+    const map = new Map<number, ClassSeries[]>()
+    for (const { dow } of DAYS) map.set(dow, [])
+    for (const s of series) map.get(s.day_of_week)!.push(s)
     return map
   }, [series])
 
@@ -243,29 +281,15 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
       {/* ── Sticky header: gutter | day columns ── */}
       <div className={styles.weekHeader}>
         <div className={styles.gutterCorner} style={{ width: TIME_GUTTER_W, flexShrink: 0 }} />
-        {DAYS.map(({ label, dow }) => {
-          const dowMap = byDowHall.get(dow)!
-          const cols = hallCols.filter(h => dowMap.has(h?.id ?? null))
-          const colCount = Math.max(cols.length, 1)
-          return (
-            <div key={dow} className={styles.dayHeader} style={{ flex: colCount }}>
-              <span className={styles.dayHeaderText}>{label}</span>
-              {cols.length > 1 && (
-                <div className={styles.dayHallsRow}>
-                  {cols.map(hall => (
-                    <div key={hall?.id ?? '__nohall'} className={styles.dayHallLabel}>
-                      {hall ? hall.name : 'Без залу'}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })}
+        {DAYS.map(({ label, dow }) => (
+          <div key={dow} className={styles.dayHeader}>
+            <span className={styles.dayHeaderText}>{label}</span>
+          </div>
+        ))}
       </div>
 
       {/* ── Scrollable body ── */}
-      <div className={styles.bodyWrapper} ref={undefined}>
+      <div className={styles.bodyWrapper}>
         <div className={styles.bodyGrid}>
           {/* Time gutter */}
           <div className={styles.timeGutter} style={{ width: TIME_GUTTER_W }}>
@@ -276,34 +300,17 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
             ))}
           </div>
 
-          {/* Day columns */}
-          {DAYS.map(({ dow }) => {
-            const dowMap = byDowHall.get(dow)!
-            const cols = hallCols.filter(h => dowMap.has(h?.id ?? null))
-            const effectiveCols = cols.length > 0 ? cols : [null as null | Hall]
-
-            return (
-              <div key={dow} className={styles.dayCol} style={{ flex: Math.max(cols.length, 1) }}>
-                {effectiveCols.map(hall => {
-                  const hallId = hall?.id ?? null
-                  const items = (dowMap.get(hallId) ?? []).sort((a, b) =>
-                    a.time_of_day.localeCompare(b.time_of_day)
-                  )
-                  return (
-                    <HallSubCol
-                      key={hallId ?? '__nohall'}
-                      items={cols.length > 0 ? items : []}
-                      typeLabels={typeLabels}
-                      dow={dow}
-                      hallId={cols.length > 0 ? hallId : null}
-                      onCardClick={onCardClick}
-                      onSlotClick={onSlotClick}
-                    />
-                  )
-                })}
-              </div>
-            )
-          })}
+          {/* Day columns — always equal width (flex: 1 each) */}
+          {DAYS.map(({ dow }) => (
+            <DayColumn
+              key={dow}
+              items={byDow.get(dow) ?? []}
+              typeLabels={typeLabels}
+              dow={dow}
+              onCardClick={onCardClick}
+              onSlotClick={onSlotClick}
+            />
+          ))}
         </div>
       </div>
     </div>
