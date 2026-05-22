@@ -449,6 +449,8 @@ lib/
   useSupabaseList.ts          — generic хук для простих list-запитів
   scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
   badges.ts                   — ЄДИНИЙ словник лейблів/класів: enrollmentStatusLabel/Class, paymentLabel/Class, ticketTypeShortLabel/TICKET_TYPE_SHORT_LABELS. Не дублювати STATUS_LABELS/PAYMENT_LABELS у компонентах
+  validation-messages.ts      — VM.required/invalid — zod & RHF validation messages ("Ім'я обов'язкове", "Кількість занять > 0" та ін.)
+  messages.ts                 — MSG.empty — empty-state UI messages ("Клієнтів ще немає", "Транзакцій немає" та ін.)
   typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
   formatters.ts               — formatClientName, formatClientLabel, formatMoney, formatDate/formatDateShort/formatDateYY (display-дати), formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
   dateUtils.ts                — toYMD/isoToYMD (РРРР-ММ-ДД), getMondayOf, buildCalendarDays, getISOWeek + ЄДИНІ дні тижня: DOW_LABELS_SHORT/FULL (Sunday-based, 0=Нд = day_of_week з БД), WEEKDAYS_SHORT/FULL (Monday-based, для заголовків сітки), dowMondayIndex(date), MONTHS_UK_*
@@ -591,3 +593,5 @@ types/
 8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`. Для enrollments: `getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`. Для шаблонів (client count): `isClientCountFull`, `isClientCountAlmost`, `clientFillPct`.
 9. **Скасування заняття** — тільки через `cancel_class_and_restore_sessions()` RPC, не прямим UPDATE.
 10. **Бейджі уніфіковані** — лейбли і CSS-класи статусів/методів оплати тільки з `lib/badges.ts` (`enrollmentStatusLabel/Class`, `paymentLabel/Class`). Не оголошувати локальні `STATUS_LABELS`/`PAYMENT_LABELS` у компонентах. Форма бейджа: `border-radius: var(--badge-radius)`, `padding: 3px 9px`, `font-size: 11px`. Кольори — тільки `var()`-токени, без HEX/rgba. Статус «Записалась» = нейтральний (`--bg-3`/`--text-2`), синій `--fop` зарезервовано за методом оплати ФОП. shadcn `ui/badge.tsx` видалено. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга).
+11. **Validation messages** — централізовано в `lib/validation-messages.ts` (`VM.required.*` і `VM.invalid.*`). Всі zod-схеми та RHF register() звертаються до VM, не hardcode строк. Якщо тон/мова зміниться — меняємо в одному місці.
+12. **Empty-state messages** — централізовано в `lib/messages.ts` (`MSG.empty.*`). Всі компоненти показують empty states звертаючись до MSG, не硬код. Забезпечує єдину тон і формулювання скрізь.
