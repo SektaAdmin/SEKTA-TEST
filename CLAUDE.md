@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phase 7 — ENROLLMENT_STATUS_ICON in lib/badges.ts; status badges now show icons in ClassDetailModal, ClassDetailClient, ClientDetailClient)
+- **Last Updated**: 2026-05-24 (Phase A+B+F — enrollmentStatusLabel() in button titles; MSG.empty expanded to 20 keys; badge CSS fixed in sales/reconciliation)
 
 ## Commands
 
