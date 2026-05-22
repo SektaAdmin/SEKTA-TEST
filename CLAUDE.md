@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (ModalFooter component — Phase 2 unification)
+- **Last Updated**: 2026-05-24 (TrainingTypeModal → ModalShell — Phase 3 unification)
 
 ## Commands
 
@@ -499,6 +499,7 @@ types/
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
+- **ModalShell** (`components/ui/ModalShell.tsx`) — обгортка для всіх модалок (overlay, header з title + close, body, footer). Всі 9 модалок (`SaleModal`, `ClientModal`, `ClassModal`, `HallModal`, `TicketModal`, `SeriesModal`, `TrainerModal`, `TrainingTypeModal` + `ModalShell` для `ClassDetailModal`) мають уніфіковану оболонку. Props: `title`, `onClose`, `footer`, `children`, `width` (дефолт 420), `modalClassName`, `bodyClassName`.
 - **ModalFooter** (`components/ui/ModalFooter.tsx`) — уніфіковані footer-кнопки для всіх модалок. Props: `onCancel`, `onSave` (optional), `saveLabel` (дефолт: "Зберегти"), `cancelLabel` (дефолт: "Скасувати"), `loading`, `saveType` ('button'|'submit'), `disabled`. Кнопки рендеряться лише якщо `onSave` передана.
 - **CSS**: CSS Modules + Tailwind співіснують. Нові компоненти — Tailwind. Старі module.css — не переписувати без потреби. Жодних HEX/rgba напряму в `*.module.css` — тільки `var()`.
 
