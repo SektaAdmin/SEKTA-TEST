@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (templates — HallWeekGrid hall sub-columns, removed day pills strip)
+- **Last Updated**: 2026-05-24 (ClassDetailModal redesign — simplified header, gray details card, shadcn Table + Badge)
 
 ## Commands
 
