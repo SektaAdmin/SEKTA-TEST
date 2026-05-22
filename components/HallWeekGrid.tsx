@@ -45,7 +45,6 @@ function endTime(timeOfDay: string, durationMin: number): string {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
-// Lane computation: place overlapping cards side-by-side
 type LaneInfo = { laneIndex: number; laneCount: number }
 
 function computeLanes(items: ClassSeries[]): Map<string, LaneInfo> {
@@ -94,7 +93,6 @@ interface Props {
   trainingTypes: TrainingType[]
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
-  // When set, renders only that single day (day view mode)
   singleDayDow?: number
 }
 
@@ -188,16 +186,17 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
   )
 }
 
-// ── Day column ────────────────────────────────────────────────────
-interface DayColProps {
+// ── Hall sub-column ───────────────────────────────────────────────
+interface HallSubColProps {
   items: ClassSeries[]
   typeLabels: Map<string, string>
   dow: number
+  hallId: string | null
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
 }
 
-function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColProps) {
+function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }: HallSubColProps) {
   const lanes = useMemo(() => computeLanes(items), [items])
 
   function relYOverlapsCard(relY: number): boolean {
@@ -210,8 +209,8 @@ function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColP
 
   return (
     <div
-      className={styles.dayCol}
-      style={{ height: TOTAL_H, '--hour-h': `${HOUR_HEIGHT}px` } as React.CSSProperties}
+      className={styles.hallSubCol}
+      style={{ '--hour-h': `${HOUR_HEIGHT}px` } as React.CSSProperties}
       onMouseMove={e => {
         if ((e.target as HTMLElement).closest('[data-card]')) {
           e.currentTarget.style.setProperty('--hover-show', '0')
@@ -235,8 +234,6 @@ function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColP
         if (relYOverlapsCard(relY)) return
         if (!onSlotClick) return
         const hour = Math.max(MIN_HOUR, Math.min(MAX_HOUR - 1, Math.floor(MIN_HOUR + relY / HOUR_HEIGHT)))
-        // Pass hallId of first item in this day as hint, or null
-        const hallId = items[0]?.hall_id ?? null
         onSlotClick(dow, `${String(hour).padStart(2, '0')}:00`, hallId)
       }}
     >
@@ -262,8 +259,41 @@ function DayColumn({ items, typeLabels, dow, onCardClick, onSlotClick }: DayColP
   )
 }
 
+// ── Day column ────────────────────────────────────────────────────
+interface DayColProps {
+  items: ClassSeries[]
+  typeLabels: Map<string, string>
+  dow: number
+  hallColumns: (Hall | null)[]
+  onCardClick: (s: ClassSeries) => void
+  onSlotClick?: (dow: number, time: string, hallId: string | null) => void
+}
+
+function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotClick }: DayColProps) {
+  return (
+    <div className={styles.dayCol} style={{ height: TOTAL_H }}>
+      {hallColumns.map(hall => {
+        const hallItems = hall === null
+          ? items.filter(s => !s.hall_id)
+          : items.filter(s => s.hall_id === hall.id)
+        return (
+          <HallSubCol
+            key={hall?.id ?? 'no-hall'}
+            items={hallItems}
+            typeLabels={typeLabels}
+            dow={dow}
+            hallId={hall?.id ?? null}
+            onCardClick={onCardClick}
+            onSlotClick={onSlotClick}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────
-export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlotClick, singleDayDow }: Props) {
+export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick, singleDayDow }: Props) {
   const typeLabels = useMemo(() => {
     const m = new Map<string, string>()
     for (const t of trainingTypes) m.set(t.code, t.label)
@@ -278,6 +308,14 @@ export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlo
     return map
   }, [series])
 
+  // Hall columns: halls that appear in the series, in the order from halls[]
+  const hallColumns = useMemo(() => {
+    const hallIdsInSeries = new Set(series.map(s => s.hall_id).filter(Boolean))
+    const visHalls = halls.filter(h => hallIdsInSeries.has(h.id))
+    const hasNoHall = series.some(s => !s.hall_id)
+    return [...visHalls, ...(hasNoHall ? [null as null] : [])]
+  }, [series, halls])
+
   const visibleDays = singleDayDow !== undefined
     ? DAYS.filter(d => d.dow === singleDayDow)
     : DAYS
@@ -290,6 +328,15 @@ export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlo
         {visibleDays.map(({ label, dow }) => (
           <div key={dow} className={styles.dayHeader}>
             <span className={styles.dayHeaderText}>{label}</span>
+            {hallColumns.length > 1 && (
+              <div className={styles.dayHallsRow}>
+                {hallColumns.map(h => (
+                  <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                    {h ? h.name : '—'}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -306,13 +353,14 @@ export default function HallWeekGrid({ series, trainingTypes, onCardClick, onSlo
             ))}
           </div>
 
-          {/* Day columns — always equal width (flex: 1 each) */}
+          {/* Day columns */}
           {visibleDays.map(({ dow }) => (
             <DayColumn
               key={dow}
               items={byDow.get(dow) ?? []}
               typeLabels={typeLabels}
               dow={dow}
+              hallColumns={hallColumns}
               onCardClick={onCardClick}
               onSlotClick={onSlotClick}
             />

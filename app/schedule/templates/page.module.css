@@ -417,45 +417,6 @@
   .gridCard { margin: 8px; }
 }
 
-/* ── Day view header (weekday pills) ─────────────────────────── */
-.dayViewHeader {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--bg-2);
-  flex-shrink: 0;
-}
-
-.dayPill {
-  height: 26px;
-  padding: 0 10px;
-  background: transparent;
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 12px;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-  white-space: nowrap;
-}
-.dayPill:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-
-.dayPillActive {
-  border-color: var(--accent-border);
-  color: var(--accent);
-  background: var(--accent-dim);
-  cursor: default;
-}
-.dayPillActive:hover {
-  border-color: var(--accent-border);
-  background: var(--accent-dim);
-}
 
 .loading {
   font-size: 13px;

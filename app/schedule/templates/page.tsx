@@ -353,17 +353,6 @@ export default function TemplatesPage() {
             <span className={styles.loading}>...</span>
           ) : viewMode === 'day' ? (
             <div className={styles.gridCard}>
-              <div className={styles.dayViewHeader}>
-                {DAYS_ORDER.map((dow, i) => (
-                  <button
-                    key={dow}
-                    className={`${styles.dayPill} ${i === activeDowIndex ? styles.dayPillActive : ''}`}
-                    onClick={() => setActiveDowIndex(i)}
-                  >
-                    {DAY_LABELS_SHORT[dow]}
-                  </button>
-                ))}
-              </div>
               <HallWeekGrid
                 series={dayTemplates}
                 halls={halls}

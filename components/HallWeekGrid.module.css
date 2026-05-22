@@ -48,6 +48,28 @@
   user-select: none;
 }
 
+/* ── Hall labels row inside day header ──────────────────────── */
+.dayHallsRow {
+  display: flex;
+  border-top: 0.5px solid var(--border);
+}
+
+.dayHallLabel {
+  flex: 1;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 3px 2px;
+  border-right: 0.5px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dayHallLabel:last-child { border-right: none; }
+
 
 /* ── Scrollable body ─────────────────────────────────────────── */
 .bodyWrapper {
@@ -92,16 +114,27 @@
 /* ── Day column ──────────────────────────────────────────────── */
 .dayCol {
   flex: 1;
+  display: flex;
   position: relative;
   min-width: 120px;
   border-right: 0.5px solid var(--border);
+}
+.dayCol:last-child { border-right: none; }
+
+/* ── Hall sub-column ─────────────────────────────────────────── */
+.hallSubCol {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  border-right: 0.5px solid var(--border);
+  height: 100%;
   cursor: default;
   --hover-show: 0;
   --hover-y: 0px;
 }
-.dayCol:last-child { border-right: none; }
+.hallSubCol:last-child { border-right: none; }
 
-.dayCol::before {
+.hallSubCol::before {
   content: '';
   position: absolute;
   left: 0;
@@ -115,7 +148,7 @@
   z-index: 0;
 }
 
-.dayCol::after {
+.hallSubCol::after {
   content: '+';
   position: absolute;
   right: 6px;

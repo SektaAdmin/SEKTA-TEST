@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (templates — HallWeekGrid refactor: days=columns, TemplateCard style, right panel)
+- **Last Updated**: 2026-05-24 (templates — HallWeekGrid hall sub-columns, removed day pills strip)
 
 ## Commands
 
@@ -497,17 +497,25 @@ types/
 
 ### /schedule/templates Page (станом на 2026-05-24)
 
-**Grid mode (Сітка):**
-- `HallWeekGrid` — 7 колонок = 7 днів тижня (Пн–Нд), зали = підколонки всередині дня
-- `TemplateCard` (в HallWeekGrid.tsx) — стиль ідентичний `ClassCard` з /schedule: ліва акцент-смуга 3px, прогрес-бар знизу, компакт-режим при height < 60px
+**View modes:** День / Тиждень / Список
+
+**Week view (Тиждень):**
+- `HallWeekGrid` — 7 колонок = 7 днів (Пн–Нд)
+- Кожна колонка дня розбита на підколонки по залах (`HallSubCol`)
+- Заголовок дня містить рядок з назвами залів (якщо залів > 1)
+- `TemplateCard` — стиль ідентичний `ClassCard` з /schedule: ліва акцент-смуга 3px, прогрес-бар знизу, компакт-режим при height < 60px
 - `HOUR_HEIGHT = 83` (як у /schedule)
-- Клік на картку → `SeriesModal`; клік на пустий слот → prefill SeriesModal з dow + time + hall
-- Права панель: `ScheduleRightPanel` з мини-календарем (тільки навігація, `activeDates = new Set()`)
-- Layout: `.contentRow` → `.gridArea` (з `.gridCard` обгорткою) + `ScheduleRightPanel`
+- Клік на картку → `SeriesModal`; клік на пустий слот → prefill SeriesModal з dow + time + hallId
+
+**Day view (День):**
+- Той самий `HallWeekGrid` з `singleDayDow={activeDow}` — одна колонка
+- Навігація по днях тижня у topbar: ← [Повна назва дня] →
+- Підколонки залів всередині дня (як у week view)
 
 **List mode (Список):** таблиця без змін.
 
-**Topbar:** backLink ← Розклад + заголовок + [Сітка/Список] + Виставити тиждень + Видалити розклад + "+ Новий шаблон"
+**Topbar:** backLink ← Розклад + заголовок + [dayNav в день-вью] + [День/Тиждень/Список] + Виставити тиждень + Видалити розклад + "+ Новий шаблон"
+**FilterBar:** фільтр залів + фільтр тренерів + пошук за клієнтом
 
 ---
 
