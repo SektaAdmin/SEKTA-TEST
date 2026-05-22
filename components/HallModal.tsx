@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { VM } from '@/lib/validation-messages'
 import styles from './HallModal.module.css'
 
 
@@ -20,11 +21,11 @@ export default function HallModal({ onClose, onSaved }: Props) {
 
   async function handleSubmit() {
     if (!name.trim()) {
-      setError('Введіть назву залу')
+      setError(VM.required.hallName)
       return
     }
     if (!capacity || Number(capacity) <= 0) {
-      setError('Введіть коректну місткість')
+      setError(VM.invalid.capacityPositive)
       return
     }
 

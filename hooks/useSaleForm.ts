@@ -5,11 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { fetchClientBalance } from '@/hooks/useClientBalance'
 import { nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay } from '@/lib/formatters'
+import { VM } from '@/lib/validation-messages'
 import type { Ticket, PaymentMethod } from '@/types'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 
 export const saleSchema = z.object({
-  client_id: z.string().min(1, 'Оберіть клієнта'),
+  client_id: z.string().min(1, VM.required.selectClient),
   ticket_id: z.string().optional().or(z.literal('')),
   trainer_id: z.string().optional().or(z.literal('')),
   price_paid: z.number().min(0),
@@ -18,10 +19,10 @@ export const saleSchema = z.object({
   notes: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.ticket_id && !data.trainer_id && data.payment_method === 'cash') {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Оберіть тренера', path: ['trainer_id'] })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: VM.required.selectTrainer, path: ['trainer_id'] })
   }
   if (!data.ticket_id && data.amount_given === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Сума не може бути 0', path: ['amount_given'] })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: VM.invalid.amountNonZero, path: ['amount_given'] })
   }
 })
 

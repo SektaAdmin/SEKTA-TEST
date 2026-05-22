@@ -372,11 +372,12 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
 
         <div className={styles.field}>
           <label htmlFor="cm-type">Тип заняття <span className={styles.required}>*</span></label>
-          <select id="cm-type" {...register('ticket_type', { required: true })} disabled={loading}>
+          <select id="cm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={loading}>
             {trainingTypes.map(t => (
               <option key={t.code} value={t.code}>{t.label}</option>
             ))}
           </select>
+          {errors.ticket_type && <p className={styles.errorHint}>{errors.ticket_type.message}</p>}
         </div>
 
         <div className={styles.row}>
@@ -417,9 +418,10 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               type="number"
               min={15}
               step={15}
-              {...register('duration_min', { min: 15, valueAsNumber: true })}
+              {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
               disabled={loading}
             />
+            {errors.duration_min && <p className={styles.errorHint}>{errors.duration_min.message}</p>}
           </div>
         </div>
 
@@ -441,9 +443,10 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
                 type="number"
                 min={1}
                 max={52}
-                {...register('weeks', { min: 1, max: 52, valueAsNumber: true })}
+                {...register('weeks', { min: { value: 1, message: VM.invalid.weeksRange }, max: { value: 52, message: VM.invalid.weeksRange }, valueAsNumber: true })}
                 disabled={loading}
               />
+              {errors.weeks && <p className={styles.errorHint}>{errors.weeks.message}</p>}
             </div>
           </div>
         )}

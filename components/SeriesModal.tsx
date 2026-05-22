@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
+import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
 import type { ClassSeries, Trainer, Hall, TrainingType, Client } from '@/types'
 import styles from './SeriesModal.module.css'
@@ -195,12 +196,12 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
       >
         <div className={styles.field}>
           <label htmlFor="sm-type">Тип заняття <span className={styles.required}>*</span></label>
-          <select id="sm-type" {...register('ticket_type', { required: true })} disabled={isSubmitting}>
+          <select id="sm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={isSubmitting}>
             {trainingTypes.map(t => (
               <option key={t.code} value={t.code}>{t.label}</option>
             ))}
           </select>
-          {errors.ticket_type && <p className={styles.errorHint}>Оберіть тип</p>}
+          {errors.ticket_type && <p className={styles.errorHint}>{errors.ticket_type.message}</p>}
         </div>
 
         <div className={styles.row}>
@@ -234,10 +235,10 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
             <input
               id="sm-time"
               type="time"
-              {...register('time_of_day', { required: true })}
+              {...register('time_of_day', { required: VM.required.time })}
               disabled={isSubmitting}
             />
-            {errors.time_of_day && <p className={styles.errorHint}>Вкажіть час</p>}
+            {errors.time_of_day && <p className={styles.errorHint}>{errors.time_of_day.message}</p>}
           </div>
         </div>
 
@@ -249,9 +250,10 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
               type="number"
               min={15}
               step={15}
-              {...register('duration_min', { min: 15, valueAsNumber: true })}
+              {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
               disabled={isSubmitting}
             />
+            {errors.duration_min && <p className={styles.errorHint}>{errors.duration_min.message}</p>}
           </div>
           <div className={styles.field}>
             <label htmlFor="sm-cap">Ліміт місць</label>

@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (TrainingTypeModal → ModalShell — Phase 3 unification)
+- **Last Updated**: 2026-05-24 (Phase 7 gap fixes — full VM.* coverage)
 
 ## Commands
 
@@ -450,7 +450,7 @@ lib/
   useSupabaseList.ts          — generic хук для простих list-запитів
   scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
   badges.ts                   — ЄДИНИЙ словник лейблів/класів: enrollmentStatusLabel/Class, paymentLabel/Class, ticketTypeShortLabel/TICKET_TYPE_SHORT_LABELS. Не дублювати STATUS_LABELS/PAYMENT_LABELS у компонентах
-  validation-messages.ts      — VM.required/invalid — zod & RHF validation messages ("Ім'я обов'язкове", "Кількість занять > 0" та ін.)
+  validation-messages.ts      — VM.required/invalid — zod & RHF validation messages ("Ім'я обов'язкове", "Кількість занять > 0" та ін.). Всі модалки і хуки мігровані (включно з HallModal, ClassModal, SeriesModal, useSaleForm)
   messages.ts                 — MSG.empty — empty-state UI messages ("Клієнтів ще немає", "Транзакцій немає" та ін.)
   typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
   formatters.ts               — formatClientName, formatClientLabel, formatMoney, formatDate/formatDateShort/formatDateYY (display-дати), formatSaleDatetime, nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay, parseDisplayToDatetimeLocal
