@@ -74,7 +74,7 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
     setEnrollingId(classId)
     const { error, isDuplicate } = await enrollClient(supabase, classId, client.id)
     if (error) {
-      toast.error(isDuplicate ? 'Клієнт вже записаний на це заняття' : error)
+      toast.error(isDuplicate ? 'Клієнт вже записана на це заняття' : error)
       setEnrollingId(null)
       return
     }
@@ -137,7 +137,7 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
                       {enrollingId === cls.id
                         ? '...'
                         : cls.alreadyEnrolled
-                          ? 'Записаний'
+                          ? 'Записана'
                           : isFull
                             ? 'Немає місць'
                             : 'Записати'}

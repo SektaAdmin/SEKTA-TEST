@@ -41,10 +41,10 @@ type EnrollmentRow = {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  enrolled:  'Записаний',
-  attended:  'Відвідав',
-  cancelled: 'Скасовано',
-  noshow:    'Не прийшов',
+  enrolled:  'Записана',
+  attended:  'Відвідала',
+  cancelled: 'Скасована',
+  noshow:    'Не прийшла',
   waitlist:  'Черга',
 }
 
@@ -135,7 +135,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
     const already = enrollments.find(e => e.client_id === selectedClient.id)
     if (already) {
-      setEnrollError('Клієнт вже записаний на це заняття')
+      setEnrollError('Клієнт вже записана на це заняття')
       setEnrolling(false)
       return
     }
@@ -143,7 +143,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     const conflict = await checkClientConflict(supabase, selectedClient.id, cls.id)
     if (conflict) {
       const when = new Date(conflict.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
-      setEnrollError(`Клієнт вже записаний на інше заняття о ${when}`)
+      setEnrollError(`Клієнт вже записана на інше заняття о ${when}`)
       setEnrolling(false)
       return
     }
@@ -151,7 +151,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     const hoursArg = isTwoHour(cls) ? selectedHours.slice().sort() : undefined
     const { error, isDuplicate } = await enrollClientQuery(supabase, cls.id, selectedClient.id, hoursArg)
     if (error) {
-      setEnrollError(isDuplicate ? 'Клієнт вже записаний на це заняття' : 'Помилка при записі клієнта')
+      setEnrollError(isDuplicate ? 'Клієнт вже записана на це заняття' : 'Помилка при записі клієнта')
       setEnrolling(false)
       return
     }
@@ -341,7 +341,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   <span className={styles.calloutIcon}>⚠</span>
                   <span>
                     {stillEnrolled.length === 1
-                      ? '1 клієнт не відмічений'
+                      ? '1 клієнт не відмічена'
                       : `${stillEnrolled.length} клієнти не відмічені`}
                     {' '}&mdash; немає балансу або auto-close ще не спрацював.
                     Відмітьте вручну через ✓ / ✗ у таблиці нижче.
@@ -510,7 +510,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnAttend}
                                         onClick={() => handleMarkAttended(e)}
                                         disabled={isLoading}
-                                        title="Відвідав"
+                                        title="Відвідала"
                                       >
                                         ✓
                                       </button>
@@ -518,7 +518,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnNoshow}
                                         onClick={() => handleUpdateStatus(e.id, 'noshow')}
                                         disabled={isLoading}
-                                        title="Не прийшов"
+                                        title="Не прийшла"
                                       >
                                         ✗
                                       </button>
