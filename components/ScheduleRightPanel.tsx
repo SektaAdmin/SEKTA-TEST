@@ -1,8 +1,6 @@
 'use client'
-import { buildCalendarDays, isSameDay, MONTHS_UK_FULL } from '@/lib/dateUtils'
+import { buildCalendarDays, isSameDay, MONTHS_UK_FULL, WEEKDAYS_SHORT } from '@/lib/dateUtils'
 import styles from './ScheduleRightPanel.module.css'
-
-const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 interface Props {
   viewYear: number
@@ -74,7 +72,7 @@ export default function ScheduleRightPanel({
         </div>
 
         <div className={styles.miniCalGrid}>
-          {WEEKDAYS.map(d => (
+          {WEEKDAYS_SHORT.map(d => (
             <div key={d} className={styles.weekday}>
               {d}
             </div>

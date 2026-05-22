@@ -15,12 +15,11 @@ import type { ClassSeries, Client } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
+import { DOW_LABELS_SHORT, DOW_LABELS_FULL } from '@/lib/dateUtils'
 import styles from './page.module.css'
 
 // dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
 const DAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]
-const DAY_LABELS_SHORT: Record<number, string> = { 0: 'Нд', 1: 'Пн', 2: 'Вт', 3: 'Ср', 4: 'Чт', 5: 'Пт', 6: 'Сб' }
-const DAY_LABELS_FULL: Record<number, string> = { 0: 'Неділя', 1: 'Понеділок', 2: 'Вівторок', 3: 'Середа', 4: 'Четвер', 5: 'Пʼятниця', 6: 'Субота' }
 
 // Поточний або наступний понеділок у київському часі
 function thisOrNextMondayKyiv(): string {
@@ -198,7 +197,7 @@ export default function TemplatesPage() {
                   <path d="M9 2L4 7l5 5"/>
                 </svg>
               </button>
-              <span className={styles.dayNavLabel}>{DAY_LABELS_FULL[activeDow]}</span>
+              <span className={styles.dayNavLabel}>{DOW_LABELS_FULL[activeDow]}</span>
               <button className={styles.navBtn} onClick={goNextDay} aria-label="Наступний день">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 2l5 5-5 5"/>
@@ -403,7 +402,7 @@ export default function TemplatesPage() {
 
                     return (
                       <tr key={series.id} className={styles.row}>
-                        <td>{DAY_LABELS_SHORT[series.day_of_week]}</td>
+                        <td>{DOW_LABELS_SHORT[series.day_of_week]}</td>
                         <td>{series.time_of_day.slice(0, 5)}</td>
                         <td>{typeLabel}</td>
                         <td>{trainerName ?? '—'}</td>

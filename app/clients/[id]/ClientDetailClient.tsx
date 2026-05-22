@@ -18,10 +18,9 @@ import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
+import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
-
-const DOW_LABELS = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
 type PermanentEnrollment = {
   id: string
@@ -370,7 +369,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     return (
                       <div key={e.id} className={styles.sessionCard}>
                         <span className={styles.sessionType}>
-                          {DOW_LABELS[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
+                          {DOW_LABELS_SHORT[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
                           {s.trainers?.name ? ` · ${s.trainers.name}` : ''}
                         </span>
                       </div>

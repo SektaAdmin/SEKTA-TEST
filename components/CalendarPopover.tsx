@@ -1,11 +1,10 @@
 'use client'
 import { useState, useEffect, useRef, ReactNode, RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays } from '@/lib/dateUtils'
+import { buildCalendarDays, WEEKDAYS_SHORT } from '@/lib/dateUtils'
 import styles from './CalendarPopover.module.css'
 
 const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
-const WEEKDAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
 
 export { styles as calStyles }
 
@@ -86,7 +85,7 @@ export default function CalendarPopover({
         </div>
 
         <div className={styles.grid}>
-          {WEEKDAYS.map(d => (
+          {WEEKDAYS_SHORT.map(d => (
             <div key={d} className={styles.weekday}>{d}</div>
           ))}
           {days.map((day, i) => renderDay(day, day.getMonth() === viewMonth, i))}

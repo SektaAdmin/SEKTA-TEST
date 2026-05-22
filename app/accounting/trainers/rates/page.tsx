@@ -7,18 +7,8 @@ import type { TrainerRate } from '@/lib/queries/trainer-rates'
 import type { Trainer } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
+import { TICKET_TYPE_SHORT_LABELS, ticketTypeShortLabel } from '@/lib/badges'
 import styles from './rates.module.css'
-
-const TICKET_TYPE_LABELS: Record<string, string> = {
-  group: 'Груп',
-  individual: 'Індив',
-  individualduo: 'Дует',
-  individualtrio: 'Тріо',
-  hallrental: 'Оренда залу',
-  smallhallrental: 'Мал. зал',
-  pylonrental: 'Пілон',
-  striprental: 'Стріп',
-}
 
 type ModalState =
   | { open: false }
@@ -105,7 +95,7 @@ export default function TrainerRatesPage() {
   }
 
   function ticketLabel(type: string) {
-    return TICKET_TYPE_LABELS[type] ?? type
+    return ticketTypeShortLabel(type)
   }
 
   return (
@@ -179,7 +169,7 @@ export default function TrainerRatesPage() {
                 disabled={modal.mode === 'edit'}
               >
                 <option value="">— Оберіть —</option>
-                {Object.entries(TICKET_TYPE_LABELS).map(([val, label]) => (
+                {Object.entries(TICKET_TYPE_SHORT_LABELS).map(([val, label]) => (
                   <option key={val} value={val}>{label}</option>
                 ))}
               </select>

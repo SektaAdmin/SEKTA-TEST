@@ -43,3 +43,24 @@ export function getISOWeek(date: Date): number {
   const week1 = new Date(d.getFullYear(), 0, 4)
   return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
 }
+
+/* ── Дні тижня ──────────────────────────────────────────────────
+   ⚠️ ДВІ конвенції індексації, не плутати:
+   - SUNDAY-based (0=Нд..6=Сб) = БД `day_of_week`, `series.day_of_week`,
+     `activeDow`. Індексувати ТІЛЬКИ значенням з БД.
+   - MONDAY-based (0=Пн..6=Нд) = порядок відображення (заголовки сітки
+     Пн→Нд, week view). Для JS Date: dowMondayIndex(date).
+   Не індексувати MONDAY-масив значенням day_of_week і навпаки. */
+
+// SUNDAY-based: індекс = day_of_week з БД (0=Нд)
+export const DOW_LABELS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
+export const DOW_LABELS_FULL = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота'] as const
+
+// MONDAY-based: порядок відображення (0=Пн..6=Нд)
+export const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'] as const
+export const WEEKDAYS_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя'] as const
+
+// JS Date.getDay() (0=Нд) → MONDAY-based індекс (0=Пн..6=Нд)
+export function dowMondayIndex(date: Date): number {
+  return (date.getDay() + 6) % 7
+}

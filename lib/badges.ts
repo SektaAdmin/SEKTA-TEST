@@ -64,3 +64,23 @@ export function paymentLabel(method: string): string {
 export function paymentClass(method: string): string {
   return PAYMENT_CLASS[method as PaymentMethod] ?? ''
 }
+
+/* ── Короткі ярлики типів тренувань ─────────────────────────────── */
+// Скорочені підписи для щільних таблиць (звіти тренерів, ставки).
+// Це НЕ training_types.label з БД — це навмисно стислі форми.
+// Для повних людських назв (dropdown, дисплеї) читати label з БД через RefsContext.
+
+export const TICKET_TYPE_SHORT_LABELS: Record<string, string> = {
+  group:           'Груп',
+  individual:      'Індив',
+  individualduo:   'Дует',
+  individualtrio:  'Тріо',
+  hallrental:      'Оренда залу',
+  smallhallrental: 'Мал. зал',
+  pylonrental:     'Пілон',
+  striprental:     'Стріп',
+}
+
+export function ticketTypeShortLabel(type: string): string {
+  return TICKET_TYPE_SHORT_LABELS[type] ?? type
+}

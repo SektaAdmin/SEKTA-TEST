@@ -13,18 +13,8 @@ import type { Trainer } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
+import { ticketTypeShortLabel } from '@/lib/badges'
 import styles from './salary.module.css'
-
-const TICKET_TYPE_LABELS: Record<string, string> = {
-  group: 'Груп',
-  individual: 'Індив',
-  individualduo: 'Дует',
-  individualtrio: 'Тріо',
-  hallrental: 'Оренда залу',
-  smallhallrental: 'Мал. зал',
-  pylonrental: 'Пілон',
-  striprental: 'Стріп',
-}
 
 function getMonthRange(year: number, month: number) {
   const start = new Date(year, month, 1)
@@ -197,7 +187,7 @@ export default function TrainerSalaryPage() {
                         <tr key={r.ticket_type}>
                           <td>
                             <span className={styles.typeChip}>
-                              {TICKET_TYPE_LABELS[r.ticket_type] ?? r.ticket_type}
+                              {ticketTypeShortLabel(r.ticket_type)}
                             </span>
                           </td>
                           <td className={styles.num}>{r.sessions_total}</td>

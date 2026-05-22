@@ -12,14 +12,10 @@ import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
-import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek } from '@/lib/dateUtils'
+import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import styles from './schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import Link from 'next/link'
-
-
-const DAYS_UA = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-const DAYS_UA_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя']
 
 const MIN_HOUR = 8
 const MAX_HOUR = 22
@@ -120,7 +116,7 @@ function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
 
 
 function formatDayFull(d: Date) {
-  const dayName = DAYS_UA_FULL[(d.getDay() + 6) % 7]
+  const dayName = WEEKDAYS_FULL[dowMondayIndex(d)]
   return `${dayName}, ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 }
 
@@ -472,7 +468,7 @@ export default function SchedulePage() {
                 <span className={styles.monthTitle}>{navLabel}</span>
               </div>
               {viewMode === 'day' && (
-                <span className={styles.dayLabel}>{DAYS_UA_FULL[(baseDate.getDay() + 6) % 7].toLowerCase()}</span>
+                <span className={styles.dayLabel}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
               )}
             </div>
           </div>
@@ -567,7 +563,7 @@ export default function SchedulePage() {
               const start = new Date(cls.starts_at)
               const end = new Date(start.getTime() + cls.duration_min * 60000)
               const timeStr = `${formatTime(cls.starts_at)}–${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`
-              const dayStr = `${DAYS_UA[(start.getDay() + 6) % 7]}, ${formatDayDate(start)}`
+              const dayStr = `${WEEKDAYS_SHORT[dowMondayIndex(start)]}, ${formatDayDate(start)}`
               return (
                 <button
                   key={cls.id}
@@ -602,7 +598,7 @@ export default function SchedulePage() {
                   const isToday = isSameDay(day, today)
                   return (
                     <div key={di} className={`${styles.weekDayLabel} ${isToday ? styles.weekDayToday : ''}`}>
-                      {DAYS_UA[(day.getDay() + 6) % 7]} {String(day.getDate()).padStart(2, '0')}
+                      {WEEKDAYS_SHORT[dowMondayIndex(day)]} {String(day.getDate()).padStart(2, '0')}
                     </div>
                   )
                 })}

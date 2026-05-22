@@ -1,11 +1,10 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays } from '@/lib/dateUtils'
+import { buildCalendarDays, WEEKDAYS_SHORT } from '@/lib/dateUtils'
 import styles from './SalesDateRangePicker.module.css'
 
 const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
-const WEEKDAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
 
 interface Props {
   dateFrom: string
@@ -489,7 +488,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
                   <div className={styles.monthNavPlaceholder} />
                 </div>
                 <div className={styles.grid}>
-                  {WEEKDAYS.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                  {WEEKDAYS_SHORT.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
                   {renderMonthGrid(leftYear, leftMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
                 </div>
               </div>
@@ -506,7 +505,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
                   </button>
                 </div>
                 <div className={styles.grid}>
-                  {WEEKDAYS.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                  {WEEKDAYS_SHORT.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
                   {renderMonthGrid(rightYear, rightMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
                 </div>
               </div>
