@@ -3,6 +3,7 @@ import { useState, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { useModalFocus } from '@/hooks/useModalFocus'
+import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TrainingTypeModal.module.css'
 
@@ -75,8 +76,8 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
                 id="tt-code"
                 type="text"
                 {...register('code', {
-                  required: 'Код обов\'язковий',
-                  pattern: { value: /^[a-z0-9]+$/, message: 'Тільки малі латинські букви та цифри' },
+                  required: VM.required.code,
+                  pattern: { value: /^[a-z0-9]+$/, message: VM.invalid.codePattern },
                 })}
                 placeholder="group"
                 disabled={loading || !!existing}
@@ -96,7 +97,7 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
               <input
                 id="tt-label"
                 type="text"
-                {...register('label', { required: 'Назва обов\'язкова' })}
+                {...register('label', { required: VM.required.title })}
                 placeholder="Групові"
                 disabled={loading}
               />

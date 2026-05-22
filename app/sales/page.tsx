@@ -10,6 +10,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { paymentLabel, paymentClass } from '@/lib/badges'
+import { MSG } from '@/lib/messages'
 import type { Sale } from '@/types'
 import styles from './sales.module.css'
 
@@ -143,7 +144,7 @@ export default function SalesPage() {
             <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : sales.length === 0 ? (
             <div className={styles.empty}>
-              <span>{search || dateFrom || dateTo ? 'За вашим фільтром нічого не знайдено' : 'Продажів ще немає'}</span>
+              <span>{search || dateFrom || dateTo ? MSG.empty.salesFiltered : MSG.empty.sales}</span>
               {!search && !dateFrom && !dateTo && (
                 <button className={styles.btnNew} onClick={() => { setEditSale(null); setShowModal(true) }}>+ Записати продаж</button>
               )}

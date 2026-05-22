@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
+import { MSG } from '@/lib/messages'
 import type { ClassSeries, Trainer, Hall, TrainingType, Client } from '@/types'
 import styles from './SeriesModal.module.css'
 
@@ -322,7 +323,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
             {clientsLoading ? (
               <span className={styles.clientsLoading}>Завантаження...</span>
             ) : clients.length === 0 ? (
-              <span className={styles.noClients}>Немає постійників</span>
+              <span className={styles.noClients}>{MSG.empty.seriesClients}</span>
             ) : (
               <div className={styles.clientList}>
                 {clients.map((row, i) => {

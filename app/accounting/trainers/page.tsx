@@ -7,6 +7,7 @@ import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
 import { paymentLabel, ticketTypeShortLabel } from '@/lib/badges'
 import { formatMoney } from '@/lib/formatters'
+import { MSG } from '@/lib/messages'
 import styles from './trainers.module.css'
 
 
@@ -134,7 +135,7 @@ export default function TrainerReportsPage() {
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
           ) : summaries.length === 0 ? (
-            <div className={styles.empty}>Немає продажів з тренером за цей період</div>
+            <div className={styles.empty}>{MSG.empty.trainerSales}</div>
           ) : (
             <div className={styles.tableWrap}>
               <table className={styles.table}>

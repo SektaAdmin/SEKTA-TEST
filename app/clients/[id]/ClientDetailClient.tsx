@@ -19,6 +19,7 @@ import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatt
 import { enrollmentStatusLabel, enrollmentStatusClass, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
+import { MSG } from '@/lib/messages'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
 
@@ -325,7 +326,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               <h2 className={styles.cardTitle}>Залишок занять</h2>
               {sessionBalances.length === 0 ? (
                 <div className={styles.emptySection}>
-                  <span className={styles.empty2}>Немає активних занять</span>
+                  <span className={styles.empty2}>{MSG.empty.activeEnrollments}</span>
                 </div>
               ) : (
                 <div className={styles.sessionCards}>
@@ -356,7 +357,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               </div>
               {permanentEnrollments.length === 0 ? (
                 <div className={styles.emptySection}>
-                  <span className={styles.empty2}>Немає постійних записів</span>
+                  <span className={styles.empty2}>{MSG.empty.permanentRecords}</span>
                 </div>
               ) : (
                 <div className={styles.sessionCards}>
@@ -390,7 +391,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </div>
             {upcomingEnrollments.length === 0 ? (
               <div className={styles.emptySection}>
-                <span className={styles.empty2}>Немає майбутніх записів</span>
+                <span className={styles.empty2}>{MSG.empty.futureEnrollments}</span>
               </div>
             ) : (
               <div className={styles.tableWrap}>

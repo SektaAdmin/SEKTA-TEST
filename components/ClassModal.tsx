@@ -7,6 +7,7 @@ import { listActiveHalls } from '@/lib/queries/halls'
 import { listActiveTrainingTypes } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { isoToDatetimeLocal } from '@/lib/formatters'
+import { VM } from '@/lib/validation-messages'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
 import styles from './ClassModal.module.css'
 
@@ -408,7 +409,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
             <input
               id="cm-starts"
               type="datetime-local"
-              {...register('starts_at', { required: "Обов'язкове поле" })}
+              {...register('starts_at', { required: VM.required.field })}
               disabled={loading}
             />
             {errors.starts_at && <p className={styles.errorHint}>{errors.starts_at.message}</p>}

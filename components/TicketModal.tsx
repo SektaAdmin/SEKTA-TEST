@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
+import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
 import styles from './TicketModal.module.css'
 
@@ -87,7 +88,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
         <input
           id="ticket-name"
           type="text"
-          {...register('name', { required: 'Назва обов\'язкова' })}
+          {...register('name', { required: VM.required.title })}
           placeholder="Групове Yoga 8 занять"
           disabled={loading}
         />
@@ -103,7 +104,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
         <select
           id="ticket-type"
           {...register('ticket_type', {
-            validate: v => trainingTypes.some(t => t.code === v) || 'Оберіть тип абонементу',
+            validate: v => trainingTypes.some(t => t.code === v) || VM.required.selectType,
           })}
           disabled={loading}
         >
@@ -128,11 +129,11 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             min={1}
             step={1}
             {...register('sessions', {
-              required: 'Кількість занять обов\'язкова',
+              required: VM.required.sessions,
               validate: v => {
                 const n = parseInt(v, 10)
-                if (isNaN(n) || n <= 0) return 'Кількість занять > 0'
-                if (!Number.isInteger(n)) return 'Тільки ціле число'
+                if (isNaN(n) || n <= 0) return VM.invalid.sessionsPositive
+                if (!Number.isInteger(n)) return VM.invalid.integerOnly
                 return true
               },
             })}
@@ -154,11 +155,11 @@ export default function TicketModal({ onClose, onSaved }: Props) {
             min={1}
             step={1}
             {...register('price', {
-              required: 'Ціна обов\'язкова',
+              required: VM.required.price,
               validate: v => {
                 const n = parseInt(v, 10)
-                if (isNaN(n) || n <= 0) return 'Ціна > 0'
-                if (!Number.isInteger(n)) return 'Тільки ціле число'
+                if (isNaN(n) || n <= 0) return VM.invalid.pricePositive
+                if (!Number.isInteger(n)) return VM.invalid.integerOnly
                 return true
               },
             })}

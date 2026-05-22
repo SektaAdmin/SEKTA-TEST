@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
+import { VM } from '@/lib/validation-messages'
 import styles from './TrainerModal.module.css'
 
 
@@ -73,7 +74,7 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
         <input
           id="trainer-name"
           type="text"
-          {...register('name', { required: 'Ім\'я обов\'язкове' })}
+          {...register('name', { required: VM.required.name })}
           placeholder="Ім'я тренера"
           disabled={loading}
         />

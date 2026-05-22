@@ -9,6 +9,8 @@ import { listClientTransactions } from '@/lib/queries/balance-transactions'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
+import { VM } from '@/lib/validation-messages'
+import { MSG } from '@/lib/messages'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
@@ -33,8 +35,8 @@ const TX_LABELS: Record<string, string> = {
 }
 
 const clientSchema = z.object({
-  first_name: z.string().min(1, "Ім'я обов'язкове"),
-  last_name: z.string().min(1, "Прізвище обов'язкове"),
+  first_name: z.string().min(1, VM.required.name),
+  last_name: z.string().min(1, VM.required.lastName),
   phone: z.string().optional().or(z.literal('')),
   instagram_username: z.string().optional().or(z.literal('')),
   telegram_username: z.string().optional().or(z.literal('')),
@@ -225,7 +227,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
               {historyLoading ? (
                 <p className={styles.historyLoading}>Завантаження...</p>
               ) : transactions.length === 0 ? (
-                <p className={styles.historyEmpty}>Транзакцій немає</p>
+                <p className={styles.historyEmpty}>{MSG.empty.transactions}</p>
               ) : (
                 <table className={styles.historyTable}>
                   <thead>

@@ -8,6 +8,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import { formatClientName, formatMoney } from '@/lib/formatters'
+import { MSG } from '@/lib/messages'
 import type { Client } from '@/types'
 import styles from './clients.module.css'
 
@@ -147,7 +148,7 @@ export default function ClientsPage() {
               {search
                 ? `За запитом «${search}» нічого не знайдено`
                 : <>
-                    <span>Клієнтів ще немає</span>
+                    <span>{MSG.empty.clients}</span>
                     <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати клієнта</button>
                   </>
               }
