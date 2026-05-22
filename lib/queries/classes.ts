@@ -97,3 +97,51 @@ export async function listSeriesTemplates(
     .order('time_of_day')
   return { data: (data as ClassSeries[]) ?? [], error: error?.message ?? null }
 }
+
+export async function listArchivedClasses(
+  supabase: SupabaseClient,
+  page: number,
+  pageSize: number = 20,
+  filters?: {
+    dateFrom?: string
+    dateTo?: string
+    hallId?: string
+    trainerId?: string
+    ticketType?: string
+  }
+): Promise<{ data: ClassWithJoins[]; count: number; error: string | null }> {
+  const ARCHIVE_CUTOFF = new Date()
+  ARCHIVE_CUTOFF.setDate(ARCHIVE_CUTOFF.getDate() - 30)
+  const cutoffISO = ARCHIVE_CUTOFF.toISOString()
+
+  let query = supabase
+    .from('classes')
+    .select('*, trainers(name), halls(name), enrollments(id, status)', { count: 'exact' })
+    .lt('starts_at', cutoffISO)
+
+  if (filters?.dateFrom) {
+    query = query.gte('starts_at', filters.dateFrom)
+  }
+  if (filters?.dateTo) {
+    query = query.lte('starts_at', filters.dateTo)
+  }
+  if (filters?.hallId) {
+    query = query.eq('hall_id', filters.hallId)
+  }
+  if (filters?.trainerId) {
+    query = query.eq('trainer_id', filters.trainerId)
+  }
+  if (filters?.ticketType) {
+    query = query.eq('ticket_type', filters.ticketType)
+  }
+
+  query = query.order('starts_at', { ascending: false })
+
+  const from = page * pageSize
+  const to = from + pageSize - 1
+  query = query.range(from, to)
+
+  const { data, count, error } = await query
+
+  return { data: (data ?? []) as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
+}

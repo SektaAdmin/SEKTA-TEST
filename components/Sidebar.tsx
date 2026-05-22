@@ -20,6 +20,7 @@ const settingsSubNav = [
   { href: '/settings/trainers', label: 'Тренери' },
   { href: '/settings/halls', label: 'Зали' },
   { href: '/settings/training-types', label: 'Типи тренувань' },
+  { href: '/settings/archive', label: 'Архів занять' },
 ]
 
 export default function Sidebar() {

@@ -304,6 +304,7 @@ export default function SchedulePage() {
   const { trainers, halls, trainingTypes } = useRefs()
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
+  const ARCHIVE_CUTOFF_DAYS = 30
   const [tab, setTab] = useState<'schedule' | 'archive'>('schedule')
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
   const [baseDate, setBaseDate] = useState(() => new Date())
@@ -432,8 +433,31 @@ export default function SchedulePage() {
   }
   function goPrev() {
     const step = viewMode === 'week' ? 7 : 1
-    setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() - step); return n })
+    setBaseDate(d => {
+      const n = new Date(d)
+      n.setDate(d.getDate() - step)
+
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const cutoff = new Date(today)
+      cutoff.setDate(today.getDate() - ARCHIVE_CUTOFF_DAYS)
+
+      if (n < cutoff) {
+        return new Date()
+      }
+      return n
+    })
   }
+
+  const isPrevDisabled = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const cutoff = new Date(today)
+    cutoff.setDate(today.getDate() - ARCHIVE_CUTOFF_DAYS)
+    const checkDate = new Date(baseDate)
+    checkDate.setHours(0, 0, 0, 0)
+    return checkDate <= cutoff
+  }, [baseDate])
 
   function handleSetWeekMode() {
     setViewMode('week')
@@ -476,7 +500,7 @@ export default function SchedulePage() {
           </div>
 
           <div className={styles.topbarRight}>
-            <button className={styles.navBtn} onClick={goPrev} aria-label="Назад">
+            <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
