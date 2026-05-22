@@ -21,7 +21,7 @@ import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
-import { enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import styles from './class-detail.module.css'
 
@@ -457,9 +457,15 @@ if (loading) {
                             )}
                           </td>
                           <td>
-                            <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
-                              {enrollmentStatusLabel(e.status)}
-                            </span>
+                            {(() => {
+                              const Icon = enrollmentStatusIcon(e.status)
+                              return (
+                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                  {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                  {enrollmentStatusLabel(e.status)}
+                                </span>
+                              )
+                            })()}
                           </td>
                           <td className={styles.balanceCell}>
                             {bal != null ? (

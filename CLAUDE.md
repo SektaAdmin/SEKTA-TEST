@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phase 5 — dead CSS cleanup, 6 modal CSS files stripped of .field/.required/.errorHint)
+- **Last Updated**: 2026-05-24 (Phase 7 — ENROLLMENT_STATUS_ICON in lib/badges.ts; status badges now show icons in ClassDetailModal, ClassDetailClient, ClientDetailClient)
 
 ## Commands
 
@@ -480,7 +480,7 @@ types/
 
 Осі коду, що були централізовані — нові місця беруть звідси, не оголошувати локальні копії:
 
-- **Лейбли статусів запису** (enrolled/attended/…) → `lib/badges.ts` (`enrollmentStatusLabel/Class`). Дієслова: Записалась/Відвідала/Не прийшла/Скасувала/Черга.
+- **Лейбли статусів запису** (enrolled/attended/…) → `lib/badges.ts` (`enrollmentStatusLabel/Class/Icon`). Дієслова: Записалась/Відвідала/Не прийшла/Скасувала/Черга. Іконки (lucide-react): Clock/CheckCircle2/X/XCircle/Users — `enrollmentStatusIcon(status)` → `LucideIcon | null`.
 - **Лейбли + кольори методів оплати** (cash/fop/personal_card/deposit) → `lib/badges.ts` (`paymentLabel/Class`). personal_card = «Картка» скрізь.
 - **Короткі ярлики типів тренувань** (звіти/ставки тренерів) → `lib/badges.ts` (`ticketTypeShortLabel`). Повні людські назви (dropdown, дисплеї) — `label` з БД через RefsContext / `listTrainingTypeLabels`.
 - **Дні тижня** → `lib/dateUtils.ts`. ⚠️ ДВІ конвенції: `DOW_LABELS_SHORT/FULL` (0=Нд, індексувати значенням `day_of_week` з БД) vs `WEEKDAYS_SHORT/FULL` (0=Пн, для заголовків сітки Пн→Нд). Для JS Date → MONDAY-based: `dowMondayIndex(date)`. Не плутати індексації.

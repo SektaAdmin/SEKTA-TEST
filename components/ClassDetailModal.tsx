@@ -22,7 +22,7 @@ import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-import { enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import styles from './ClassDetailModal.module.css'
 
@@ -483,9 +483,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                 {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
                               </td>
                               <td>
-                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
-                                  {enrollmentStatusLabel(e.status)}
-                                </span>
+                                {(() => {
+                                  const Icon = enrollmentStatusIcon(e.status)
+                                  return (
+                                    <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                      {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                      {enrollmentStatusLabel(e.status)}
+                                    </span>
+                                  )
+                                })()}
                               </td>
                               <td className={styles.actionsCell}>
                                 <div className={styles.actions}>

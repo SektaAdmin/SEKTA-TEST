@@ -355,7 +355,9 @@
 
 /* ── Status badges ───────────────────────────────────────────── */
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 3px 9px;
   border-radius: var(--badge-radius);
   font-size: 11px;

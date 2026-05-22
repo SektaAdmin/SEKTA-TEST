@@ -16,7 +16,7 @@ import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
-import { enrollmentStatusLabel, enrollmentStatusClass, paymentLabel, paymentClass } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
@@ -541,9 +541,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
                                 </td>
                                 <td>
-                                  <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
-                                    {enrollmentStatusLabel(e.status)}
-                                  </span>
+                                  {(() => {
+                                    const Icon = enrollmentStatusIcon(e.status)
+                                    return (
+                                      <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                        {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                        {enrollmentStatusLabel(e.status)}
+                                      </span>
+                                    )
+                                  })()}
                                 </td>
                                 <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
                                 <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>

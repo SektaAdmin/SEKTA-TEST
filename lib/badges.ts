@@ -5,6 +5,8 @@
 // в кожному *.module.css. Тут лежать тільки КЛЮЧІ класів — компонент бере
 // `styles[BADGE_CLASS]`. Лейбли — текст українською (дієслова для статусів).
 
+import { Clock, CheckCircle2, XCircle, X, Users } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { PaymentMethod } from '@/types'
 
 /* ── Статус запису клієнта на заняття ───────────────────────────── */
@@ -33,12 +35,24 @@ export const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
   waitlist:  'badgeWaitlist',
 }
 
+export const ENROLLMENT_STATUS_ICON: Record<EnrollmentStatus, LucideIcon> = {
+  enrolled:  Clock,
+  attended:  CheckCircle2,
+  cancelled: X,
+  noshow:    XCircle,
+  waitlist:  Users,
+}
+
 export function enrollmentStatusLabel(status: string): string {
   return ENROLLMENT_STATUS_LABELS[status as EnrollmentStatus] ?? status
 }
 
 export function enrollmentStatusClass(status: string): string {
   return ENROLLMENT_STATUS_CLASS[status as EnrollmentStatus] ?? ''
+}
+
+export function enrollmentStatusIcon(status: string): LucideIcon | null {
+  return ENROLLMENT_STATUS_ICON[status as EnrollmentStatus] ?? null
 }
 
 /* ── Метод оплати ───────────────────────────────────────────────── */
