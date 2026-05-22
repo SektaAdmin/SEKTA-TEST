@@ -4,52 +4,9 @@
 }
 .row > div { flex: 1; min-width: 0; }
 
-.field { display: flex; flex-direction: column; gap: 5px; }
-
 @media (max-width: 640px) {
   .row { flex-direction: column; }
 }
-
-.field label {
-  font-size: 11px;
-  color: var(--text-2);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.field input,
-.field select,
-.field textarea {
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 9px 11px;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.12s;
-  width: 100%;
-  font-size: 13px;
-  font-family: inherit;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus { border-color: var(--accent); }
-.field input::placeholder,
-.field textarea::placeholder { color: var(--text-3); }
-.field input:disabled,
-.field select:disabled,
-.field textarea:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.field select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555250' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 28px;
-  cursor: pointer;
-}
-
-.field textarea { resize: vertical; min-height: 60px; }
 
 /* ── Постійники секція ───────────────────────────────────── */
 .divider {
@@ -179,15 +136,4 @@
 }
 .btnRemoveConfirm:hover { background: var(--danger-border); }
 
-.required {
-  color: var(--accent);
-  font-size: 10px;
-  margin-left: 2px;
-}
-
-.errorHint {
-  font-size: 11px;
-  color: var(--danger);
-  margin-top: 2px;
-}
 

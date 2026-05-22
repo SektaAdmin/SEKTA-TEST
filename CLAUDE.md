@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-24 (Phase 4 — FormField component, all 8 modals migrated)
+- **Last Updated**: 2026-05-24 (Phase 5 — dead CSS cleanup, 6 modal CSS files stripped of .field/.required/.errorHint)
 
 ## Commands
 

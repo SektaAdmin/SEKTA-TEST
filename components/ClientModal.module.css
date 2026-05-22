@@ -4,42 +4,8 @@
   gap: 10px;
 }
 
-.field { display: flex; flex-direction: column; gap: 5px; }
-
 @media (max-width: 640px) {
   .row { grid-template-columns: 1fr; }
-}
-
-.field label {
-  font-size: 11px;
-  color: var(--text-2);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.field input,
-.field textarea {
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 9px 11px;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.12s;
-  width: 100%;
-  font-size: 13px;
-  font-family: inherit;
-}
-.field input:focus,
-.field textarea:focus { border-color: var(--accent); }
-.field input::placeholder,
-.field textarea::placeholder { color: var(--text-3); }
-.field input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.required {
-  color: var(--accent);
-  font-size: 10px;
-  margin-left: 2px;
 }
 
 .error {
@@ -49,12 +15,6 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   line-height: 1.4;
-}
-
-.errorHint {
-  font-size: 11px;
-  color: var(--danger);
-  margin-top: 2px;
 }
 
 /* ── Transaction history ─────────────────────────────────────── */
