@@ -22,6 +22,7 @@ import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
+import { MSG } from '@/lib/messages'
 import type { Class, Client } from '@/types'
 import styles from './class-detail.module.css'
 
@@ -425,7 +426,7 @@ if (loading) {
 
             {/* Enrollments table */}
             {mainEnrollments.length === 0 ? (
-              <div className={styles.empty}>Нікого не записано</div>
+              <div className={styles.empty}>{MSG.empty.enrollments}</div>
             ) : (
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
@@ -483,7 +484,7 @@ if (loading) {
                                     className={styles.btnAttend}
                                     onClick={() => handleMarkAttended(e)}
                                     disabled={isLoading}
-                                    title="Відвідала"
+                                    title={enrollmentStatusLabel('attended')}
                                   >
                                     ✓
                                   </button>
@@ -491,7 +492,7 @@ if (loading) {
                                     className={styles.btnNoshow}
                                     onClick={() => handleUpdateStatus(e.id, 'noshow')}
                                     disabled={isLoading}
-                                    title="Не прийшла"
+                                    title={enrollmentStatusLabel('noshow')}
                                   >
                                     ✗
                                   </button>
@@ -499,7 +500,7 @@ if (loading) {
                                     className={styles.btnCancelEnroll}
                                     onClick={() => handleUpdateStatus(e.id, 'cancelled')}
                                     disabled={isLoading}
-                                    title="Скасувати"
+                                    title={enrollmentStatusLabel('cancelled')}
                                   >
                                     —
                                   </button>

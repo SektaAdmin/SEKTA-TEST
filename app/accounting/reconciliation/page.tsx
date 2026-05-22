@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { paymentLabel, paymentClass } from '@/lib/badges'
+import { MSG } from '@/lib/messages'
 import { formatMoney, formatDateShort } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
 import styles from './reconciliation.module.css'
@@ -173,7 +174,7 @@ export default function ReconciliationPage() {
               </div>
 
               {sales.length === 0 ? (
-                <div className={styles.empty}>За цей період операцій немає</div>
+                <div className={styles.empty}>{MSG.empty.operations}</div>
               ) : (
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>
@@ -198,7 +199,7 @@ export default function ReconciliationPage() {
                             <td>{clientName(s)}</td>
                             <td className={styles.ticketCell}>{s.ticket_name ?? '—'}</td>
                             <td>
-                              <span className={styles[paymentClass(s.payment_method)]}>
+                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
                                 {paymentLabel(s.payment_method)}
                               </span>
                             </td>

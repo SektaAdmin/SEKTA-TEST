@@ -286,25 +286,21 @@
   color: var(--text) !important;
 }
 
-.badgeFop {
-  display: inline-block;
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 3px 9px;
   border-radius: var(--badge-radius);
   font-size: 11px;
   font-weight: 500;
-  background: var(--fop-dim);
-  color: var(--fop);
+  white-space: nowrap;
 }
 
-.badgeCard {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: var(--badge-radius);
-  font-size: 11px;
-  font-weight: 500;
-  background: var(--card-dim);
-  color: var(--card);
-}
+.badgeCash    { background: var(--accent-dim);  color: var(--accent); }
+.badgeFop     { background: var(--fop-dim);     color: var(--fop); }
+.badgeCard    { background: var(--card-dim);    color: var(--card); }
+.badgeDeposit { background: var(--deposit-dim); color: var(--deposit); }
 
 /* ── Footer ──────────────────────────────────────────────────── */
 .footRow td {

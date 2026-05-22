@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { MSG } from '@/lib/messages'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { useRealtime } from '@/lib/useRealtime'
 import Sidebar from '@/components/Sidebar'
@@ -558,7 +559,7 @@ export default function SchedulePage() {
             {loading ? (
               <div className={styles.archiveEmpty}>Завантаження...</div>
             ) : cancelledClasses.length === 0 ? (
-              <div className={styles.archiveEmpty}>Скасованих занять за цей період немає</div>
+              <div className={styles.archiveEmpty}>{MSG.empty.scheduleCancelled}</div>
             ) : cancelledClasses.map(cls => {
               const activeCount = getActiveCount(cls.enrollments)
               const start = new Date(cls.starts_at)

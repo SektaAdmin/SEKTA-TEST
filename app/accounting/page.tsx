@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney } from '@/lib/formatters'
+import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod } from '@/types'
 import styles from './accounting.module.css'
@@ -176,7 +177,7 @@ export default function AccountingPage() {
               </div>
 
               {rows.length === 0 ? (
-                <div className={styles.empty}>За цей період продажів немає</div>
+                <div className={styles.empty}>{MSG.empty.salesPeriod}</div>
               ) : (
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import TrainingTypeModal from '@/components/TrainingTypeModal'
+import { MSG } from '@/lib/messages'
 import type { TrainingType } from '@/types'
 import styles from '../settings.module.css'
 
@@ -97,7 +98,7 @@ export default function TrainingTypesPage() {
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
-          <div className={styles.empty}>Активних типів немає</div>
+          <div className={styles.empty}>{MSG.empty.trainingTypes}</div>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>

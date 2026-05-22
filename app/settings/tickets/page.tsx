@@ -5,6 +5,7 @@ import TicketModal from '@/components/TicketModal'
 import { useTickets } from '@/hooks/useTickets'
 import { useRefs } from '@/contexts/RefsContext'
 import { formatMoney } from '@/lib/formatters'
+import { MSG } from '@/lib/messages'
 import styles from '../settings.module.css'
 
 function ToggleBtns({ id, active, toggling, onToggle }: {
@@ -79,7 +80,7 @@ export default function TicketsPage() {
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
           <div className={styles.empty}>
-            <span>Активних абонементів немає</span>
+            <span>{MSG.empty.tickets}</span>
             <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати абонемент</button>
           </div>
         ) : (

@@ -501,7 +501,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnAttend}
                                         onClick={() => handleMarkAttended(e)}
                                         disabled={isLoading}
-                                        title="Відвідала"
+                                        title={enrollmentStatusLabel('attended')}
                                       >
                                         ✓
                                       </button>
@@ -509,7 +509,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnNoshow}
                                         onClick={() => handleUpdateStatus(e.id, 'noshow')}
                                         disabled={isLoading}
-                                        title="Не прийшла"
+                                        title={enrollmentStatusLabel('noshow')}
                                       >
                                         ✗
                                       </button>
@@ -517,7 +517,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnCancelEnroll}
                                         onClick={() => handleUpdateStatus(e.id, 'cancelled')}
                                         disabled={isLoading}
-                                        title="Скасувати"
+                                        title={enrollmentStatusLabel('cancelled')}
                                       >
                                         —
                                       </button>
@@ -546,7 +546,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         className={styles.btnCancelEnroll}
                                         onClick={() => setConfirmReverseId(e.id)}
                                         disabled={isLoading}
-                                        title="Скасувати"
+                                        title={enrollmentStatusLabel('cancelled')}
                                       >
                                         —
                                       </button>

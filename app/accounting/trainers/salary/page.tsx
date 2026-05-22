@@ -14,6 +14,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import MonthNav from '@/components/MonthNav'
 import { ticketTypeShortLabel } from '@/lib/badges'
+import { MSG } from '@/lib/messages'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { isoToYMD } from '@/lib/dateUtils'
 import styles from './salary.module.css'
@@ -166,7 +167,7 @@ export default function TrainerSalaryPage() {
             {loadingSalary ? (
               <div className={styles.empty}>Завантаження...</div>
             ) : salaryRows.length === 0 ? (
-              <div className={styles.empty}>Проведених занять за цей місяць немає</div>
+              <div className={styles.empty}>{MSG.empty.salaryPeriod}</div>
             ) : (
               <>
                 <div className={styles.tableWrap}>
@@ -226,7 +227,7 @@ export default function TrainerSalaryPage() {
             {loadingPayments ? (
               <div className={styles.empty}>Завантаження...</div>
             ) : payments.length === 0 ? (
-              <div className={styles.empty}>Виплат за цей місяць немає</div>
+              <div className={styles.empty}>{MSG.empty.paymentsPeriod}</div>
             ) : (
               <>
                 <div className={styles.tableWrap}>

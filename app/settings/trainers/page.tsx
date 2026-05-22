@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import TrainerModal from '@/components/TrainerModal'
+import { MSG } from '@/lib/messages'
 import type { Trainer } from '@/types'
 import styles from '../settings.module.css'
 
@@ -93,7 +94,7 @@ export default function TrainersPage() {
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
           <div className={styles.empty}>
-            <span>Активних тренерів немає</span>
+            <span>{MSG.empty.trainers}</span>
             <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати тренера</button>
           </div>
         ) : (

@@ -508,7 +508,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
               if (items.length === 0) return (
                 <div className={styles.emptySection}>
-                  <span className={styles.empty2}>Ще немає подій</span>
+                  <span className={styles.empty2}>{MSG.empty.events}</span>
                 </div>
               )
 

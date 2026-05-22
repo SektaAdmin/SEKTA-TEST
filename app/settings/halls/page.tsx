@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import HallModal from '@/components/HallModal'
+import { MSG } from '@/lib/messages'
 import type { Hall } from '@/types'
 import styles from '../settings.module.css'
 
@@ -93,7 +94,7 @@ export default function HallsPage() {
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (
           <div className={styles.empty}>
-            <span>Активних залів немає</span>
+            <span>{MSG.empty.halls}</span>
             <button className={styles.btnNew} onClick={() => setShowModal(true)}>+ Додати зал</button>
           </div>
         ) : (
