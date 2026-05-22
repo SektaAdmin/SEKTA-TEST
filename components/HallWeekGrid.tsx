@@ -174,7 +174,7 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
               <div className={styles.cardSlots}>
                 <strong className={styles.cardSlotsCount}>{clientCount}</strong>
                 <span className={styles.cardSlotsTotal}>/{capacity}</span>
-                <span className={styles.cardSlotsSeparator}>|</span>
+                <span className={styles.cardSlotsSeparator}>·</span>
                 <span className={styles.cardSlotsFree}>{free} {freeText}</span>
               </div>
             )
