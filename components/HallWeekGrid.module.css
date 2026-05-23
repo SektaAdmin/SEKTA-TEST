@@ -355,4 +355,5 @@
 @media (max-width: 640px) {
   .hallSubCol { min-width: 80px; }
   .dayHeaderText { font-size: 10px; }
+  .dayHeader { min-width: 80px; }
 }
