@@ -5,16 +5,12 @@ import { supabase } from '@/lib/supabase'
 import { listPastClasses, type ClassWithJoins } from '@/lib/queries/classes'
 import { useRefs } from '@/contexts/RefsContext'
 import ClassDetailModal from '@/components/ClassDetailModal'
-import { formatDate } from '@/lib/formatters'
+import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
-import { toYMD } from '@/lib/dateUtils'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-
-function formatTime(iso: string) {
-  const d = new Date(iso)
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
+import styles from '../settings/settings.module.css'
+import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
 
@@ -66,20 +62,17 @@ export default function JournalPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '24px 28px', flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Журнал занять</h1>
-        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-          {total > 0 ? `${total} занять` : ''}
-        </span>
+    <>
+      {/* Topbar */}
+      <div className={styles.topbar}>
+        <h1 className={styles.title}>Журнал занять</h1>
+        {total > 0 && (
+          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>
+        )}
       </div>
 
       {/* Filter bar */}
-      <div style={{
-        display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
-        padding: 16, background: 'var(--bg-2)',
-        border: '0.5px solid var(--border)', borderRadius: 'var(--radius)',
-      }}>
+      <div className={jStyles.filterBar}>
         <input
           type="date"
           value={dateFrom}
@@ -134,89 +127,76 @@ export default function JournalPage() {
         </select>
       </div>
 
-      {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
-          Завантаження...
-        </div>
-      ) : data.length === 0 ? (
-        <div style={{ padding: '60px 24px', textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
-          {MSG.empty.journalEmpty}
-        </div>
-      ) : (
-        <>
-          <div className="data-table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Дата</th>
-                  <th>Час</th>
-                  <th>Тип</th>
-                  <th>Назва</th>
-                  <th>Тренер</th>
-                  <th>Зал</th>
-                  <th>Записів</th>
-                  <th>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map(cls => (
-                  <tr
-                    key={cls.id}
-                    onClick={() => setSelectedClassId(cls.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td>{formatDate(cls.starts_at)}</td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatTime(cls.starts_at)}</td>
-                    <td>{ticketTypeShortLabel(cls.ticket_type)}</td>
-                    <td style={{ color: 'var(--text-2)' }}>{cls.title ?? '—'}</td>
-                    <td>{cls.trainers?.name ?? '—'}</td>
-                    <td>{cls.halls?.name ?? '—'}</td>
-                    <td>{getActiveCount(cls.enrollments)}</td>
-                    <td>
-                      {cls.is_cancelled ? (
-                        <span style={{
-                          fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-sm)',
-                          background: 'var(--danger-dim)', color: 'var(--danger)',
-                          border: '0.5px solid var(--danger-border)',
-                        }}>
-                          Скасовано
-                        </span>
-                      ) : (
-                        <span style={{
-                          fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-sm)',
-                          background: 'var(--success-dim)', color: 'var(--success)',
-                        }}>
-                          Проведено
-                        </span>
-                      )}
-                    </td>
+      {/* Content */}
+      <div className={jStyles.content}>
+        {loading ? (
+          <div className="loading-dots"><span /><span /><span /></div>
+        ) : data.length === 0 ? (
+          <div className={jStyles.empty}>{MSG.empty.journalEmpty}</div>
+        ) : (
+          <>
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Час</th>
+                    <th>Тип</th>
+                    <th>Назва</th>
+                    <th>Тренер</th>
+                    <th>Зал</th>
+                    <th>Записів</th>
+                    <th>Статус</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {data.map(cls => (
+                    <tr
+                      key={cls.id}
+                      onClick={() => setSelectedClassId(cls.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td>{formatDate(cls.starts_at)}</td>
+                      <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatTime(cls.starts_at)}</td>
+                      <td>{ticketTypeShortLabel(cls.ticket_type)}</td>
+                      <td>{trainingTypes.find(t => t.code === cls.ticket_type)?.label ?? cls.ticket_type}</td>
+                      <td>{cls.trainers?.name ?? '—'}</td>
+                      <td>{cls.halls?.name ?? '—'}</td>
+                      <td>{getActiveCount(cls.enrollments)}</td>
+                      <td>
+                        {cls.is_cancelled
+                          ? <span className={jStyles.badgeCancelled}>Скасовано</span>
+                          : <span className={jStyles.badgeCompleted}>Проведено</span>
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, padding: 16 }}>
-            <button
-              disabled={page === 0 || loading}
-              onClick={() => setPage(p => p - 1)}
-              style={paginationBtnStyle(page === 0 || loading)}
-            >
-              ← Назад
-            </button>
-            <span style={{ color: 'var(--text-2)', fontSize: 12, fontFamily: 'var(--mono)', minWidth: 200, textAlign: 'center' }}>
-              Сторінка {page + 1} з {totalPages} (всього: {total})
-            </span>
-            <button
-              disabled={page + 1 >= totalPages || loading}
-              onClick={() => setPage(p => p + 1)}
-              style={paginationBtnStyle(page + 1 >= totalPages || loading)}
-            >
-              Вперед →
-            </button>
-          </div>
-        </>
-      )}
+            <div className={jStyles.pagination}>
+              <button
+                disabled={page === 0 || loading}
+                onClick={() => setPage(p => p - 1)}
+                className={styles.editBtn}
+              >
+                ← Назад
+              </button>
+              <span className={jStyles.paginationCounter}>
+                Сторінка {page + 1} з {totalPages} (всього: {total})
+              </span>
+              <button
+                disabled={page + 1 >= totalPages || loading}
+                onClick={() => setPage(p => p + 1)}
+                className={styles.editBtn}
+              >
+                Вперед →
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       {selectedClassId && (
         <ClassDetailModal
@@ -228,7 +208,7 @@ export default function JournalPage() {
           }}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -241,18 +221,4 @@ const selectStyle: React.CSSProperties = {
   fontSize: 13,
   fontFamily: 'var(--font)',
   cursor: 'pointer',
-}
-
-function paginationBtnStyle(disabled: boolean): React.CSSProperties {
-  return {
-    padding: '8px 16px',
-    borderRadius: 'var(--radius-sm)',
-    border: '0.5px solid var(--border)',
-    background: 'var(--bg)',
-    color: 'var(--text)',
-    fontSize: 12,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    fontFamily: 'var(--font)',
-    opacity: disabled ? 0.5 : 1,
-  }
 }

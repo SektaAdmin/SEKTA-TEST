@@ -39,6 +39,11 @@ export function formatDateYY(input: string | Date): string {
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${String(d.getFullYear()).slice(2)}`
 }
 
+export function formatTime(iso: string): string {
+  const d = new Date(iso)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export function formatSaleDatetime(iso: string): string {
   const d = new Date(iso)
   const date = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`
