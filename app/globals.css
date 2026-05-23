@@ -170,7 +170,7 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
   background: var(--bg-2);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .data-table {

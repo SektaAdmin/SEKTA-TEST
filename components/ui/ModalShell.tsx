@@ -26,7 +26,7 @@ export function ModalShell({ title, onClose, footer, children, width = 420, moda
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        style={{ width }}
+        style={{ width, maxWidth: '100%' }}
       >
         <div className={styles.header}>
           <h2 id={titleId}>{title}</h2>

@@ -62,3 +62,24 @@
   border: 0.5px solid var(--danger-border);
   white-space: nowrap;
 }
+
+@media (max-width: 640px) {
+  .filterBar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 10px 16px;
+    height: auto;
+    gap: 8px;
+  }
+  .content { padding: 16px; }
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .paginationCounter {
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+  }
+}

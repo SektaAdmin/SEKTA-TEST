@@ -232,7 +232,7 @@ const selectStyle: React.CSSProperties = {
   border: '0.5px solid var(--border)',
   background: 'var(--bg)',
   color: 'var(--text)',
-  fontSize: 13,
+  fontSize: 16,
   fontFamily: 'var(--font)',
   cursor: 'pointer',
 }

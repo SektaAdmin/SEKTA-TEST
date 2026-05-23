@@ -509,6 +509,8 @@
     min-width: 480px;
   }
   .hallSubCol { min-width: 80px; }
+  .navBtn { width: 44px; height: 44px; }
+  .filterBtn { height: 36px; padding: 0 12px; }
 }
 
 /* ── Week day header (week mode only) ──────────────────────── */
