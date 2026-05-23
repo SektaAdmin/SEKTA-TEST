@@ -20,5 +20,6 @@ export const MSG = {
     trainers:           'Активних тренерів немає',
     halls:              'Активних залів немає',
     trainingTypes:      'Активних типів немає',
+    journalEmpty:       'Занять за цей період не знайдено',
   },
 } as const

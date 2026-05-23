@@ -1,10 +1,9 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { UserRound } from 'lucide-react'
-import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { MSG } from '@/lib/messages'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
+import { typeColor } from '@/lib/typeColor'
 import { useRealtime } from '@/lib/useRealtime'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
@@ -33,25 +32,6 @@ type ClassWithJoins = Class & {
 
 type Hall = { id: string; name: string; capacity: number; description: string | null; is_active: boolean }
 
-const TYPE_COLORS = [
-  '#4285f4',
-  '#0b8043',
-  '#d2562b',
-  '#8430ce',
-  '#0097a7',
-  '#e52592',
-  '#f6ae2d',
-  '#137333',
-]
-
-function typeColor(code: string): string {
-  if (code === 'group') return '#4285f4'
-  let h = 0
-  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
-  return TYPE_COLORS[h % TYPE_COLORS.length]
-}
-
-
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
@@ -66,10 +46,6 @@ function formatTime(iso: string) {
 function formatEndTime(iso: string, durationMin: number) {
   const d = new Date(new Date(iso).getTime() + durationMin * 60000)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
-function formatDayDate(d: Date) {
-  return formatDate(d)
 }
 
 function getCardTop(iso: string, hourHeight: number): number {
@@ -305,11 +281,9 @@ export default function SchedulePage() {
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
   const ARCHIVE_CUTOFF_DAYS = 30
-  const [tab, setTab] = useState<'schedule' | 'archive'>('schedule')
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
-  const [cancelledClasses, setCancelledClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -353,9 +327,8 @@ export default function SchedulePage() {
 
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const { active, cancelled } = await listClassesForWeek(supabase, weekStartISO, weekEndISO)
+    const { active } = await listClassesForWeek(supabase, weekStartISO, weekEndISO)
     setClasses(active as ClassWithJoins[])
-    setCancelledClasses(cancelled as ClassWithJoins[])
     setLoading(false)
   }, [weekStartISO, weekEndISO])
 
@@ -513,8 +486,7 @@ export default function SchedulePage() {
                 <path d="M5 2l5 5-5 5"/>
               </svg>
             </button>
-            {tab === 'schedule' && (
-              <div className={styles.viewToggle}>
+            <div className={styles.viewToggle}>
                 <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
                   День
                 </button>
@@ -522,18 +494,14 @@ export default function SchedulePage() {
                   Тиждень
                 </button>
               </div>
-            )}
-            {tab === 'schedule' && (
-              <button className="btn-primary" onClick={() => { setPrefill(undefined); setShowModal(true) }}>
+            <button className="btn-primary" onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
               </button>
-            )}
           </div>
         </div>
 
-        {/* Filter bar — only for schedule tab */}
-        {tab === 'schedule' && (
-          <div className={styles.filterBar}>
+        {/* Filter bar */}
+        <div className={styles.filterBar}>
             <div className={styles.filterGroup}>
               <button
                 className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
@@ -572,49 +540,12 @@ export default function SchedulePage() {
                 ))}
             </div>
           </div>
-        )}
 
         {/* Content row — grid area + right panel */}
         <div className={styles.contentRow}>
           <div className={styles.gridArea}>
-            {/* Archive tab */}
-            {tab === 'archive' && (
-              <div className={styles.archiveList}>
-            {loading ? (
-              <div className={styles.archiveEmpty}>Завантаження...</div>
-            ) : cancelledClasses.length === 0 ? (
-              <div className={styles.archiveEmpty}>{MSG.empty.scheduleCancelled}</div>
-            ) : cancelledClasses.map(cls => {
-              const activeCount = getActiveCount(cls.enrollments)
-              const start = new Date(cls.starts_at)
-              const end = new Date(start.getTime() + cls.duration_min * 60000)
-              const timeStr = `${formatTime(cls.starts_at)}–${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`
-              const dayStr = `${WEEKDAYS_SHORT[dowMondayIndex(start)]}, ${formatDayDate(start)}`
-              return (
-                <button
-                  key={cls.id}
-                  className={styles.archiveRow}
-                  onClick={() => setEditClassId(cls.id)}
-                >
-                  <span className={styles.archiveDate}>{dayStr}</span>
-                  <span className={styles.archiveTime}>{timeStr}</span>
-                  <span className={styles.archiveType} style={{ color: typeColor(cls.ticket_type) }}>
-                    {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-                    {cls.title ? ` · ${cls.title}` : ''}
-                  </span>
-                  {cls.trainers && <span className={styles.archiveMeta}>{cls.trainers.name}</span>}
-                  {cls.trainers && cls.halls && <span className={styles.archiveMetaSep}>·</span>}
-                  {cls.halls && <span className={styles.archiveMeta}>{cls.halls.name}</span>}
-                  <span className={styles.archiveCount}>{activeCount} записані</span>
-                </button>
-              )
-            })}
-            </div>
-            )}
-
             {/* Schedule grid */}
-            {tab === 'schedule' && (
-              <div className={styles.gridCard}>
+            <div className={styles.gridCard}>
             <div className={styles.gridScrollWrap}>
             {/* Week day names — only in week mode */}
             {viewMode === 'week' && (
@@ -747,11 +678,10 @@ export default function SchedulePage() {
               </div>
               </div>
             </div>
-            )}
           </div>
 
-          {/* Right panel — schedule tab + day view only */}
-          {tab === 'schedule' && viewMode === 'day' && (
+          {/* Right panel — day view only */}
+          {viewMode === 'day' && (
             <ScheduleRightPanel
               viewYear={calViewMonth.year}
               viewMonth={calViewMonth.month}

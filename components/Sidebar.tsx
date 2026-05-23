@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon } from './icons/navigation'
+import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
 
 const nav = [
@@ -11,7 +11,7 @@ const nav = [
   { href: '/clients', label: 'Клієнти', icon: <ClientsIcon /> },
   { href: '/schedule', label: 'Розклад', icon: <ScheduleIcon /> },
   { href: '/schedule/templates', label: 'Шаблони', icon: <TemplatesIcon /> },
-  { href: '/schedule/archive', label: 'Архів', icon: <ScheduleIcon /> },
+  { href: '/journal', label: 'Журнал', icon: <JournalIcon /> },
   { href: '/accounting', label: 'Звітність', icon: <AccountingIcon /> },
 ]
 
@@ -20,7 +20,6 @@ const settingsSubNav = [
   { href: '/settings/trainers', label: 'Тренери' },
   { href: '/settings/halls', label: 'Зали' },
   { href: '/settings/training-types', label: 'Типи тренувань' },
-  { href: '/settings/archive', label: 'Архів занять' },
 ]
 
 export default function Sidebar() {

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Class, ClassSeries } from '@/types'
 
-type ClassWithJoins = Class & {
+export type ClassWithJoins = Class & {
   trainers: { name: string } | null
   halls: { name: string } | null
   enrollments: { id: string; status: string }[]
@@ -98,7 +98,7 @@ export async function listSeriesTemplates(
   return { data: (data as ClassSeries[]) ?? [], error: error?.message ?? null }
 }
 
-export async function listArchivedClasses(
+export async function listPastClasses(
   supabase: SupabaseClient,
   page: number,
   pageSize: number = 20,
@@ -108,32 +108,24 @@ export async function listArchivedClasses(
     hallId?: string
     trainerId?: string
     ticketType?: string
+    isCancelled?: boolean
   }
 ): Promise<{ data: ClassWithJoins[]; count: number; error: string | null }> {
-  const ARCHIVE_CUTOFF = new Date()
-  ARCHIVE_CUTOFF.setDate(ARCHIVE_CUTOFF.getDate() - 30)
-  const cutoffISO = ARCHIVE_CUTOFF.toISOString()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const cutoffISO = today.toISOString()
 
   let query = supabase
     .from('classes')
     .select('*, trainers(name), halls(name), enrollments(id, status)', { count: 'exact' })
     .lt('starts_at', cutoffISO)
 
-  if (filters?.dateFrom) {
-    query = query.gte('starts_at', filters.dateFrom)
-  }
-  if (filters?.dateTo) {
-    query = query.lte('starts_at', filters.dateTo)
-  }
-  if (filters?.hallId) {
-    query = query.eq('hall_id', filters.hallId)
-  }
-  if (filters?.trainerId) {
-    query = query.eq('trainer_id', filters.trainerId)
-  }
-  if (filters?.ticketType) {
-    query = query.eq('ticket_type', filters.ticketType)
-  }
+  if (filters?.dateFrom) query = query.gte('starts_at', filters.dateFrom)
+  if (filters?.dateTo)   query = query.lte('starts_at', filters.dateTo)
+  if (filters?.hallId)   query = query.eq('hall_id', filters.hallId)
+  if (filters?.trainerId) query = query.eq('trainer_id', filters.trainerId)
+  if (filters?.ticketType) query = query.eq('ticket_type', filters.ticketType)
+  if (filters?.isCancelled !== undefined) query = query.eq('is_cancelled', filters.isCancelled)
 
   query = query.order('starts_at', { ascending: false })
 
@@ -142,6 +134,5 @@ export async function listArchivedClasses(
   query = query.range(from, to)
 
   const { data, count, error } = await query
-
   return { data: (data ?? []) as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
 }

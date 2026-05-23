@@ -56,6 +56,15 @@ export const LogoutIcon = () => (
   </svg>
 )
 
+export const JournalIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <rect x="2" y="2" width="12" height="12" rx="1.5"/>
+    <line x1="5" y1="6" x2="11" y2="6"/>
+    <line x1="5" y1="9" x2="11" y2="9"/>
+    <line x1="5" y1="12" x2="8" y2="12"/>
+  </svg>
+)
+
 export const CopyIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
     <rect x="4" y="4" width="8" height="8" rx="1"/>

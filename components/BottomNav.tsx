@@ -39,6 +39,7 @@ const primaryNav = [
 
 const moreNav = [
   { href: '/schedule/templates', label: 'Шаблони' },
+  { href: '/journal', label: 'Журнал' },
   { href: '/accounting/trainers', label: 'Тренери' },
   { href: '/settings', label: 'Налаштування' },
 ]
