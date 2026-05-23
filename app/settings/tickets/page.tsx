@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import TicketModal from '@/components/TicketModal'
 import { useTickets } from '@/hooks/useTickets'
@@ -7,6 +8,13 @@ import { useRefs } from '@/contexts/RefsContext'
 import { formatMoney } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import styles from '../settings.module.css'
+
+const SETTINGS_TABS = [
+  { href: '/settings/tickets', label: 'Абонементи' },
+  { href: '/settings/trainers', label: 'Тренери' },
+  { href: '/settings/halls', label: 'Зали' },
+  { href: '/settings/training-types', label: 'Типи' },
+]
 
 function ToggleBtns({ id, active, toggling, onToggle }: {
   id: string; active: boolean; toggling: string | null; onToggle: (id: string, v: boolean) => void
@@ -49,6 +57,7 @@ function ArchiveSection({ label, count, open, onToggle, children }: {
 }
 
 export default function TicketsPage() {
+  const pathname = usePathname()
   const { tickets, loading, fetchError, toggling, toggle, refetch } = useTickets()
   const { trainingTypes } = useRefs()
   const [showModal, setShowModal] = useState(false)
@@ -71,6 +80,11 @@ export default function TicketsPage() {
       <div className={styles.topbar}>
         <h1 className={styles.title}>Абонементи</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати абонемент</button>
+        <nav className={styles.mobileTabNav}>
+          {SETTINGS_TABS.map(tab => (
+            <a key={tab.href} href={tab.href} className={`${styles.mobileTabLink} ${pathname === tab.href ? styles.mobileTabLinkActive : ''}`}>{tab.label}</a>
+          ))}
+        </nav>
       </div>
 
       <div className={styles.tabSection}>

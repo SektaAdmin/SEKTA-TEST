@@ -1,11 +1,19 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import HallModal from '@/components/HallModal'
 import { MSG } from '@/lib/messages'
 import type { Hall } from '@/types'
 import styles from '../settings.module.css'
+
+const SETTINGS_TABS = [
+  { href: '/settings/tickets', label: 'Абонементи' },
+  { href: '/settings/trainers', label: 'Тренери' },
+  { href: '/settings/halls', label: 'Зали' },
+  { href: '/settings/training-types', label: 'Типи' },
+]
 
 function ToggleBtns({ id, active, toggling, onToggle }: {
   id: string; active: boolean; toggling: string | null; onToggle: (id: string, v: boolean) => void
@@ -48,6 +56,7 @@ function ArchiveSection({ label, count, open, onToggle, children }: {
 }
 
 export default function HallsPage() {
+  const pathname = usePathname()
   const [halls, setHalls] = useState<Hall[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -85,6 +94,11 @@ export default function HallsPage() {
       <div className={styles.topbar}>
         <h1 className={styles.title}>Зали</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати зал</button>
+        <nav className={styles.mobileTabNav}>
+          {SETTINGS_TABS.map(tab => (
+            <a key={tab.href} href={tab.href} className={`${styles.mobileTabLink} ${pathname === tab.href ? styles.mobileTabLinkActive : ''}`}>{tab.label}</a>
+          ))}
+        </nav>
       </div>
 
       <div className={styles.tabSection}>
