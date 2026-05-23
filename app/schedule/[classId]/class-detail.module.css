@@ -305,6 +305,8 @@
 @media (max-width: 640px) {
   .content { padding: 16px; }
   .tableWrap { overflow-x: auto; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbarActions { flex-wrap: wrap; }
 }
 
 .table {
