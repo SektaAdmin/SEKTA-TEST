@@ -178,6 +178,13 @@ export default function JournalPage() {
             <div className={jStyles.pagination}>
               <button
                 disabled={page === 0 || loading}
+                onClick={() => setPage(0)}
+                className={styles.editBtn}
+              >
+                «
+              </button>
+              <button
+                disabled={page === 0 || loading}
                 onClick={() => setPage(p => p - 1)}
                 className={styles.editBtn}
               >
@@ -192,6 +199,13 @@ export default function JournalPage() {
                 className={styles.editBtn}
               >
                 Вперед →
+              </button>
+              <button
+                disabled={page + 1 >= totalPages || loading}
+                onClick={() => setPage(totalPages - 1)}
+                className={styles.editBtn}
+              >
+                »
               </button>
             </div>
           </>
