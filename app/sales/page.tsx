@@ -89,7 +89,7 @@ export default function SalesPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Продажи</h1>
+          <h1 className="page-title">Продажи</h1>
           <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
             + Нова продажа
           </button>
