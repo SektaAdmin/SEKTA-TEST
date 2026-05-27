@@ -15,12 +15,16 @@
 @media (max-width: 640px) {
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .filters { overflow-x: auto; flex-wrap: nowrap; padding: 8px 16px; }
+  .filters { flex-wrap: wrap; padding: 8px 16px; overflow-x: visible; }
+  .filterSearch { width: 100%; }
+  .filterSearchInput { width: 100%; }
+  .filterSearchInput:focus { width: 100%; }
   .content { padding: 16px; }
   .pagination { flex-wrap: wrap; gap: 8px; padding: 12px 0 0; }
   .paginationLeft { width: 100%; justify-content: space-between; }
   .paginationBtns { width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px; }
   .pageBtn { min-width: 36px; padding: 6px 0; }
+  .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 }
 
 .topbar {

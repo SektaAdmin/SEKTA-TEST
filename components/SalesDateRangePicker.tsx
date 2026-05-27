@@ -233,6 +233,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   const triggerRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   const presets = buildPresets()
   const activePreset = getActivePreset(dateFrom, dateTo)
@@ -303,6 +304,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
 
   // Синхронізувати pending при відкритті
   function handleOpen() {
+    setIsMobile(typeof window !== 'undefined' && window.innerWidth <= 640)
     setPendingFrom(dateFrom)
     setPendingTo(dateTo)
     setRawFrom(ymdToRaw(dateFrom))
@@ -316,11 +318,11 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   }
 
   useEffect(() => {
-    if (!open || !triggerRef.current) return
+    if (!open || isMobile || !triggerRef.current) return
     const rect = triggerRef.current.getBoundingClientRect()
     // Перевірити чи попап вліз справа, інакше вирівняти по правому краю тригера
     setPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX })
-  }, [open])
+  }, [open, isMobile])
 
   useEffect(() => {
     if (!open) return
@@ -449,11 +451,14 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
         </svg>
       </button>
 
-      {open && pos && createPortal(
+      {open && (isMobile || pos) && createPortal(
         <div
           ref={popoverRef}
           className={styles.popover}
-          style={{ position: 'absolute', top: pos.top, left: pos.left }}
+          style={isMobile
+            ? { position: 'fixed', bottom: 0, left: 0, right: 0 }
+            : { position: 'absolute', top: pos!.top, left: pos!.left }
+          }
           role="dialog"
           aria-modal="true"
           aria-label="Вибір діапазону дат"

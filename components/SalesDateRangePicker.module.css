@@ -314,3 +314,89 @@
 }
 .btnApply:hover { opacity: 0.88; }
 .btnApply:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Mobile (≤640px): bottom sheet layout ─────────────────────── */
+@media (max-width: 640px) {
+  .trigger { flex: 1; justify-content: center; }
+
+  .popover {
+    flex-direction: column;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: none;
+    max-height: 92dvh;
+    overflow-y: auto;
+    animation: bottomSheetIn var(--motion-fast) both;
+  }
+
+  /* Presets: горизонтальний скрол замість вертикальної колонки */
+  .presets {
+    width: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 0.5px solid var(--border);
+    padding: 10px 12px;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
+  }
+
+  .presetBtn {
+    white-space: nowrap;
+    width: auto;
+    flex-shrink: 0;
+    padding: 7px 14px;
+  }
+
+  /* Правий блок займає всю ширину */
+  .right { width: 100%; }
+
+  /* Показуємо лише один місяць */
+  .calendars {
+    flex-direction: column;
+    padding: 12px 16px 6px;
+  }
+
+  .calDivider { display: none; }
+
+  /* Другий calWrap (правий місяць) прихований */
+  .calWrap:nth-child(3) { display: none; }
+
+  .calWrap {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  /* Grid: рівномірні клітинки по ширині */
+  .grid { gap: 0; }
+
+  .day { height: 40px; }
+
+  .dayNum { width: 32px; height: 32px; }
+
+  /* Footer: дати і кнопки стеком */
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .footerDates { justify-content: center; }
+
+  .dateField { width: 120px; }
+
+  .footerBtns {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .btnCancel,
+  .btnApply {
+    flex: 1;
+    height: 44px;
+    font-size: 14px;
+    justify-content: center;
+  }
+}
