@@ -572,14 +572,14 @@
 
   .itemCardDate {
     font-size: 13px;
-    color: var(--text-3);
+    color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .itemCardSub {
     font-size: 13px;
-    color: var(--text-2);
+    color: var(--text);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -588,14 +588,14 @@
 
   .itemCardTime {
     font-size: 13px;
-    color: var(--text-2);
+    color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .itemCardMeta {
     font-size: 13px;
-    color: var(--text-3);
+    color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
   }
