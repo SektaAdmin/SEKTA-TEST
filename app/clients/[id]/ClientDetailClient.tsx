@@ -81,6 +81,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [feedSales, setFeedSales] = useState<FeedSale[]>([])
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
+  const [isMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth <= 640
+  )
 
   const fetchAllClientData = useCallback(async () => {
     const { client, sessionBalances, permanentEnrollments, upcomingEnrollments } =
@@ -514,92 +517,167 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
               return (
                 <>
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Дата і час</th>
-                          <th>Подія</th>
-                          <th>Тип / Операція</th>
-                          <th>Тренер</th>
-                          <th>Деталі</th>
-                          <th>Залишок</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visible.map(item => {
-                          if (item.kind === 'enrollment') {
-                            const e = item.data
-                            const cls = e.classes!
-                            const start = new Date(cls.starts_at)
-                            const end = new Date(start.getTime() + cls.duration_min * 60000)
-                            const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                            const bal = item.runningBalance[cls.ticket_type]
-                            return (
-                              <tr key={`e-${e.id}`}>
-                                <td className={styles.dateCell}>
-                                  {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
-                                </td>
-                                <td>
-                                  {(() => {
-                                    const Icon = enrollmentStatusIcon(e.status)
-                                    return (
-                                      <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
-                                        {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
-                                        {enrollmentStatusLabel(e.status)}
-                                      </span>
-                                    )
-                                  })()}
-                                </td>
-                                <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
-                                <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                                <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
-                                <td className={styles.numCell}>
-                                  {bal !== undefined
-                                    ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
-                                    : <span className={styles.empty2}>—</span>
-                                  }
-                                </td>
-                              </tr>
-                            )
-                          } else {
-                            const s = item.data
-                            const delta = s.amount_given - s.price_paid
-                            const type = s.ticket_type
-                            const bal = type ? item.runningBalance[type] : undefined
-                            return (
-                              <tr key={`s-${s.id}`}>
-                                <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
-                                <td>
-                                  <span className={`${styles.badge} ${styles.badgeSale}`}>Продаж</span>
-                                </td>
-                                <td>
-                                  {s.ticket_name
-                                    ? s.ticket_name
-                                    : delta >= 0
-                                      ? <span className={styles.opTopup}>↑ Поповнення</span>
-                                      : <span className={styles.opDeduction}>↓ Списання</span>
-                                  }
-                                </td>
-                                <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                                <td>
-                                  <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                                    {paymentLabel(s.payment_method)}
+                  {!isMobile && (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Дата і час</th>
+                            <th>Подія</th>
+                            <th>Тип / Операція</th>
+                            <th>Тренер</th>
+                            <th>Деталі</th>
+                            <th>Залишок</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visible.map(item => {
+                            if (item.kind === 'enrollment') {
+                              const e = item.data
+                              const cls = e.classes!
+                              const start = new Date(cls.starts_at)
+                              const end = new Date(start.getTime() + cls.duration_min * 60000)
+                              const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                              const bal = item.runningBalance[cls.ticket_type]
+                              return (
+                                <tr key={`e-${e.id}`}>
+                                  <td className={styles.dateCell}>
+                                    {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                                  </td>
+                                  <td>
+                                    {(() => {
+                                      const Icon = enrollmentStatusIcon(e.status)
+                                      return (
+                                        <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                          {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                          {enrollmentStatusLabel(e.status)}
+                                        </span>
+                                      )
+                                    })()}
+                                  </td>
+                                  <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                                  <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                  <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                  <td className={styles.numCell}>
+                                    {bal !== undefined
+                                      ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
+                                      : <span className={styles.empty2}>—</span>
+                                    }
+                                  </td>
+                                </tr>
+                              )
+                            } else {
+                              const s = item.data
+                              const delta = s.amount_given - s.price_paid
+                              const type = s.ticket_type
+                              const bal = type ? item.runningBalance[type] : undefined
+                              return (
+                                <tr key={`s-${s.id}`}>
+                                  <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
+                                  <td>
+                                    <span className={`${styles.badge} ${styles.badgeSale}`}>Продаж</span>
+                                  </td>
+                                  <td>
+                                    {s.ticket_name
+                                      ? s.ticket_name
+                                      : delta >= 0
+                                        ? <span className={styles.opTopup}>↑ Поповнення</span>
+                                        : <span className={styles.opDeduction}>↓ Списання</span>
+                                    }
+                                  </td>
+                                  <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                  <td>
+                                    <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                      {paymentLabel(s.payment_method)}
+                                    </span>
+                                  </td>
+                                  <td className={styles.numCell}>
+                                    {bal !== undefined
+                                      ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
+                                      : <span className={styles.empty2}>—</span>
+                                    }
+                                  </td>
+                                </tr>
+                              )
+                            }
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {isMobile && (
+                    <div className={styles.cardList}>
+                      {visible.map(item => {
+                        if (item.kind === 'enrollment') {
+                          const e = item.data
+                          const cls = e.classes!
+                          const start = new Date(cls.starts_at)
+                          const end = new Date(start.getTime() + cls.duration_min * 60000)
+                          const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                          const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                          const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
+                          const bal = item.runningBalance[cls.ticket_type]
+                          const Icon = enrollmentStatusIcon(e.status)
+                          return (
+                            <div key={`e-${e.id}`} className={styles.itemCard}>
+                              <div className={styles.itemCardRow}>
+                                <span className={styles.itemCardMain}>{typeName}</span>
+                                <span className={styles.itemCardDate}>{dateStr}</span>
+                              </div>
+                              <div className={styles.itemCardRow}>
+                                <span className={styles.itemCardSub}>{cls.trainers?.name ?? '—'}</span>
+                                <span className={styles.itemCardTime}>{timeStr}</span>
+                              </div>
+                              <div className={styles.itemCardRow}>
+                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                  {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                  {enrollmentStatusLabel(e.status)}
+                                </span>
+                                {bal !== undefined
+                                  ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
+                                      {bal}
+                                    </span>
+                                  : null
+                                }
+                              </div>
+                            </div>
+                          )
+                        } else {
+                          const s = item.data
+                          const delta = s.amount_given - s.price_paid
+                          const type = s.ticket_type
+                          const bal = type ? item.runningBalance[type] : undefined
+                          const opLabel = s.ticket_name
+                            ? s.ticket_name
+                            : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
+                          return (
+                            <div key={`s-${s.id}`} className={styles.itemCard}>
+                              <div className={styles.itemCardRow}>
+                                <span className={styles.itemCardMain}>{opLabel}</span>
+                                <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
+                              </div>
+                              <div className={styles.itemCardRow}>
+                                <span className={styles.itemCardSub}>{s.trainers?.name ?? '—'}</span>
+                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                  {paymentLabel(s.payment_method)}
+                                </span>
+                              </div>
+                              {bal !== undefined && (
+                                <div className={styles.itemCardRow}>
+                                  <span />
+                                  <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
+                                    {bal}
                                   </span>
-                                </td>
-                                <td className={styles.numCell}>
-                                  {bal !== undefined
-                                    ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
-                                    : <span className={styles.empty2}>—</span>
-                                  }
-                                </td>
-                              </tr>
-                            )
-                          }
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        }
+                      })}
+                    </div>
+                  )}
+
                   {!feedShowAll && items.length > FEED_PAGE && (
                     <button className={styles.btnLoadMore} onClick={() => setFeedShowAll(true)}>
                       Показати всі ({items.length - FEED_PAGE} більше)
@@ -616,38 +694,70 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 </div>
               ) : (
                 <>
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Дата і час</th>
-                          <th>Тип</th>
-                          <th>Тренер</th>
-                          <th>Зал</th>
-                          <th>Занять</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pastEnrollments.filter(e => e.classes).map(e => {
-                          const cls = e.classes!
-                          const start = new Date(cls.starts_at)
-                          const end = new Date(start.getTime() + cls.duration_min * 60000)
-                          const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                          return (
-                            <tr key={e.id}>
-                              <td className={styles.dateCell}>
-                                {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
-                              </td>
-                              <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
-                              <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                              <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
-                              <td className={styles.numCell}>{e.sessions_used}</td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                  {!isMobile && (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Дата і час</th>
+                            <th>Тип</th>
+                            <th>Тренер</th>
+                            <th>Зал</th>
+                            <th>Занять</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pastEnrollments.filter(e => e.classes).map(e => {
+                            const cls = e.classes!
+                            const start = new Date(cls.starts_at)
+                            const end = new Date(start.getTime() + cls.duration_min * 60000)
+                            const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                            return (
+                              <tr key={e.id}>
+                                <td className={styles.dateCell}>
+                                  {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                                </td>
+                                <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                                <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                <td className={styles.numCell}>{e.sessions_used}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {isMobile && (
+                    <div className={styles.cardList}>
+                      {pastEnrollments.filter(e => e.classes).map(e => {
+                        const cls = e.classes!
+                        const start = new Date(cls.starts_at)
+                        const end = new Date(start.getTime() + cls.duration_min * 60000)
+                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                        const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
+                        return (
+                          <div key={e.id} className={styles.itemCard}>
+                            <div className={styles.itemCardRow}>
+                              <span className={styles.itemCardMain}>{typeName}</span>
+                              <span className={styles.itemCardDate}>{dateStr}</span>
+                            </div>
+                            <div className={styles.itemCardRow}>
+                              <span className={styles.itemCardSub}>{cls.trainers?.name ?? '—'}</span>
+                              <span className={styles.itemCardTime}>{timeStr}</span>
+                            </div>
+                            <div className={styles.itemCardRow}>
+                              <span className={styles.itemCardSub}>{cls.halls?.name ?? '—'}</span>
+                              <span className={styles.itemCardMeta}>{e.sessions_used} зан.</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
                   {pastEnrollments.length < pastTotal && (
                     <button className={styles.btnLoadMore} onClick={handleLoadMorePast}>
                       Завантажити ще ({pastTotal - pastEnrollments.length})
@@ -664,106 +774,183 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 </div>
               ) : (
                 <>
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Дата</th>
-                          <th>Операція</th>
-                          <th>Занять</th>
-                          <th>Ціна</th>
-                          <th>Оплачено</th>
-                          <th>Δ Депозит</th>
-                          <th>Депозит після</th>
-                          <th>Спосіб</th>
-                          <th>Тренер</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sales.map(s => {
-                          const delta = s.amount_given - s.price_paid
-                          const balAfter = balanceAfterMap.get(s.id)
-                          return (
-                          <tr key={s.id}>
-                            <td className={styles.dateCell}>
-                              {formatSaleDatetime(s.created_at)}
-                            </td>
-                            <td>
-                              {s.ticket_name
-                                ? s.ticket_name
-                                : delta >= 0
-                                  ? <span className={styles.opTopup}>↑ Поповнення</span>
-                                  : <span className={styles.opDeduction}>↓ Списання</span>
-                              }
-                            </td>
-                            <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
-                            <td className={styles.numCell}>
-                              {s.ticket_price != null ? formatMoney(s.ticket_price) : <span className={styles.empty2}>—</span>}
-                            </td>
-                            <td className={styles.numCell}>
-                              {s.ticket_id != null && s.payment_method !== 'deposit'
-                                ? formatMoney(s.price_paid)
-                                : <span className={styles.empty2}>—</span>}
-                            </td>
-                            <td className={styles.numCell}>
-                              {delta > 0
-                                ? <span className={styles.deltaPos}>+{formatMoney(delta)}</span>
-                                : delta < 0
-                                  ? <span className={styles.deltaNeg}>{formatMoney(delta)}</span>
+                  {!isMobile && (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Дата</th>
+                            <th>Операція</th>
+                            <th>Занять</th>
+                            <th>Ціна</th>
+                            <th>Оплачено</th>
+                            <th>Δ Депозит</th>
+                            <th>Депозит після</th>
+                            <th>Спосіб</th>
+                            <th>Тренер</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sales.map(s => {
+                            const delta = s.amount_given - s.price_paid
+                            const balAfter = balanceAfterMap.get(s.id)
+                            return (
+                            <tr key={s.id}>
+                              <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
+                              <td>
+                                {s.ticket_name
+                                  ? s.ticket_name
+                                  : delta >= 0
+                                    ? <span className={styles.opTopup}>↑ Поповнення</span>
+                                    : <span className={styles.opDeduction}>↓ Списання</span>
+                                }
+                              </td>
+                              <td className={styles.numCell}>{s.sessions ?? <span className={styles.empty2}>—</span>}</td>
+                              <td className={styles.numCell}>
+                                {s.ticket_price != null ? formatMoney(s.ticket_price) : <span className={styles.empty2}>—</span>}
+                              </td>
+                              <td className={styles.numCell}>
+                                {s.ticket_id != null && s.payment_method !== 'deposit'
+                                  ? formatMoney(s.price_paid)
+                                  : <span className={styles.empty2}>—</span>}
+                              </td>
+                              <td className={styles.numCell}>
+                                {delta > 0
+                                  ? <span className={styles.deltaPos}>+{formatMoney(delta)}</span>
+                                  : delta < 0
+                                    ? <span className={styles.deltaNeg}>{formatMoney(delta)}</span>
+                                    : <span className={styles.empty2}>—</span>
+                                }
+                              </td>
+                              <td className={styles.numCell}>
+                                {balAfter !== undefined
+                                  ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{formatMoney(balAfter)}</span>
                                   : <span className={styles.empty2}>—</span>
-                              }
-                            </td>
-                            <td className={styles.numCell}>
-                              {balAfter !== undefined
-                                ? <span className={balAfter >= 0 ? styles.deltaPos : styles.deltaNeg}>{formatMoney(balAfter)}</span>
-                                : <span className={styles.empty2}>—</span>
-                              }
-                            </td>
-                            <td>
+                                }
+                              </td>
+                              <td>
+                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                  {paymentLabel(s.payment_method)}
+                                </span>
+                              </td>
+                              <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                              <td>
+                                <div className={styles.actions}>
+                                  <button
+                                    className={styles.btnRowEdit}
+                                    onClick={() => setEditingSale({
+                                      id: s.id,
+                                      client_id: s.client_id,
+                                      client_name: formatClientName(s.clients),
+                                      ticket_id: s.ticket_id,
+                                      ticket_name: s.ticket_name,
+                                      ticket_price: s.ticket_price,
+                                      ticket_type: s.ticket_type ?? null,
+                                      sessions: s.sessions,
+                                      trainer_id: s.trainer_id,
+                                      trainer_name: s.trainers?.name ?? null,
+                                      price_paid: s.price_paid,
+                                      amount_given: s.amount_given,
+                                      payment_method: s.payment_method,
+                                      notes: s.notes,
+                                      created_at: s.created_at,
+                                    })}
+                                  >
+                                    Змінити
+                                  </button>
+                                  <button className={styles.btnRowDel} onClick={() => setDeleteId(s.id)}>
+                                    Видалити
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {isMobile && (
+                    <div className={styles.cardList}>
+                      {sales.map(s => {
+                        const delta = s.amount_given - s.price_paid
+                        const balAfter = balanceAfterMap.get(s.id)
+                        const opLabel = s.ticket_name
+                          ? s.ticket_name
+                          : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
+                        return (
+                          <div key={s.id} className={styles.itemCard}>
+                            <div className={styles.itemCardRow}>
+                              <span className={styles.itemCardMain}>{opLabel}</span>
+                              <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
+                            </div>
+                            <div className={styles.itemCardRow}>
+                              <span className={styles.itemCardSub}>{s.trainers?.name ?? '—'}</span>
                               <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
                                 {paymentLabel(s.payment_method)}
                               </span>
-                            </td>
-                            <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                            <td>
-                              <div className={styles.actions}>
-                                <button
-                                  className={styles.btnRowEdit}
-                                  onClick={() => setEditingSale({
-                                    id: s.id,
-                                    client_id: s.client_id,
-                                    client_name: formatClientName(s.clients),
-                                    ticket_id: s.ticket_id,
-                                    ticket_name: s.ticket_name,
-                                    ticket_price: s.ticket_price,
-                                    ticket_type: s.ticket_type ?? null,
-                                    sessions: s.sessions,
-                                    trainer_id: s.trainer_id,
-                                    trainer_name: s.trainers?.name ?? null,
-                                    price_paid: s.price_paid,
-                                    amount_given: s.amount_given,
-                                    payment_method: s.payment_method,
-                                    notes: s.notes,
-                                    created_at: s.created_at,
-                                  })}
-                                >
-                                  Змінити
-                                </button>
-                                <button
-                                  className={styles.btnRowDel}
-                                  onClick={() => setDeleteId(s.id)}
-                                >
-                                  Видалити
-                                </button>
+                            </div>
+                            {(s.ticket_price != null || (s.ticket_id != null && s.payment_method !== 'deposit')) && (
+                              <div className={styles.itemCardRow}>
+                                {s.ticket_price != null
+                                  ? <span className={styles.itemCardSub}>Ціна: {formatMoney(s.ticket_price)}</span>
+                                  : <span />
+                                }
+                                {s.ticket_id != null && s.payment_method !== 'deposit'
+                                  ? <span className={styles.itemCardMeta}>Оплачено: {formatMoney(s.price_paid)}</span>
+                                  : <span />
+                                }
                               </div>
-                            </td>
-                          </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                            )}
+                            <div className={styles.itemCardRow}>
+                              {delta !== 0
+                                ? <span className={delta > 0 ? styles.deltaPos : styles.deltaNeg}>
+                                    {delta > 0 ? '+' : ''}{formatMoney(delta)}
+                                  </span>
+                                : <span />
+                              }
+                              {balAfter !== undefined
+                                ? <span className={styles.itemCardMeta}>
+                                    Депозит: {formatMoney(balAfter)}
+                                  </span>
+                                : <span />
+                              }
+                            </div>
+                            <div className={styles.itemCardActions}>
+                              <button
+                                className={styles.btnRowEdit}
+                                onClick={() => setEditingSale({
+                                  id: s.id,
+                                  client_id: s.client_id,
+                                  client_name: formatClientName(s.clients),
+                                  ticket_id: s.ticket_id,
+                                  ticket_name: s.ticket_name,
+                                  ticket_price: s.ticket_price,
+                                  ticket_type: s.ticket_type ?? null,
+                                  sessions: s.sessions,
+                                  trainer_id: s.trainer_id,
+                                  trainer_name: s.trainers?.name ?? null,
+                                  price_paid: s.price_paid,
+                                  amount_given: s.amount_given,
+                                  payment_method: s.payment_method,
+                                  notes: s.notes,
+                                  created_at: s.created_at,
+                                })}
+                              >
+                                Змінити
+                              </button>
+                              <button className={styles.btnRowDel} onClick={() => setDeleteId(s.id)}>
+                                Видалити
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
                   {sales.length < salesTotal && (
                     <button className={styles.btnLoadMore} onClick={handleLoadMore}>
                       Завантажити ще ({salesTotal - sales.length})
