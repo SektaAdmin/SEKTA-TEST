@@ -151,7 +151,8 @@ export default function SalesPage() {
             </div>
           ) : (
             <>
-            <div className="data-table-wrap">
+            {/* ── Десктоп: таблиця ── */}
+            <div className={`data-table-wrap ${styles.tableDesktop}`}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -219,6 +220,61 @@ export default function SalesPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* ── Мобільний: картки ── */}
+            <div className={styles.cardList}>
+              {sales.map(s => {
+                const depDelta = s.amount_given - s.price_paid
+                const isDeposit = !s.ticket_id
+                return (
+                  <div key={s.id} className={styles.card}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardClient}>{formatClientName(s.clients)}</span>
+                      <span className={styles.cardDate}>{formatSaleDatetime(s.created_at)}</span>
+                    </div>
+                    <div className={styles.cardOperation}>
+                      {s.ticket_name
+                        ? `${s.ticket_name}${s.sessions ? ` · ${s.sessions} зан.` : ''}`
+                        : depDelta >= 0
+                          ? <span className={styles.opTopup}>↑ Поповнення</span>
+                          : <span className={styles.opDeduction}>↓ Списання</span>
+                      }
+                    </div>
+                    <div className={styles.cardMeta}>
+                      {!isDeposit && s.payment_method !== 'deposit' && (
+                        <>
+                          <span className={styles.cardMetaLabel}>Оплачено</span>
+                          <span className={styles.cardMetaValue}>{formatMoney(s.price_paid)}</span>
+                          <span>·</span>
+                        </>
+                      )}
+                      <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                        {paymentLabel(s.payment_method)}
+                      </span>
+                    </div>
+                    {depDelta !== 0 && (
+                      <div className={styles.cardMeta}>
+                        <span className={styles.cardMetaLabel}>Депозит</span>
+                        <span className={depDelta > 0 ? styles.depositPos : styles.depositNeg}>
+                          {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
+                        </span>
+                      </div>
+                    )}
+                    {s.trainers?.name && (
+                      <div className={styles.cardTrainer}>Тренер: {s.trainers.name}</div>
+                    )}
+                    <div className={styles.cardActions}>
+                      <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
+                        Змінити
+                      </button>
+                      <button className={styles.btnDel} onClick={() => setDeleteId(s.id)}>
+                        Видалити
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             <div className={styles.pagination}>
