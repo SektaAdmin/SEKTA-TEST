@@ -498,6 +498,12 @@
 .tab:hover { color: var(--text-2); }
 .tabActive { color: var(--text) !important; border-bottom-color: var(--accent); }
 
+.tabActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0 4px;
+}
+
 /* ── Feed badges ────────────────────────────────────────────── */
 .badgeAttended  { background: var(--accent-dim); color: var(--accent); }
 .badgeNoshow    { background: var(--danger-dim); color: var(--danger); }

@@ -461,12 +461,14 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   Продажі
                 </button>
               </div>
-              {activeTab === 'sales' && (
+            </div>
+            {activeTab === 'sales' && (
+              <div className={styles.tabActions}>
                 <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
                   Записати продаж
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {activeTab === 'feed' && (() => {
               type FeedItem =
@@ -626,7 +628,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <span className={styles.itemCardDate}>{dateStr}</span>
                               </div>
                               <div className={styles.itemCardRow}>
-                                <span className={styles.itemCardSub}>{cls.trainers?.name ?? '—'}</span>
+                                <span className={styles.itemCardSub}>
+                                  {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ') || '—'}
+                                </span>
                                 <span className={styles.itemCardTime}>{timeStr}</span>
                               </div>
                               <div className={styles.itemCardRow}>
@@ -636,7 +640,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 </span>
                                 {bal !== undefined
                                   ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
-                                      {bal}
+                                      залишок: {bal} год.
                                     </span>
                                   : null
                                 }
@@ -745,13 +749,17 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               <span className={styles.itemCardDate}>{dateStr}</span>
                             </div>
                             <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardSub}>{cls.trainers?.name ?? '—'}</span>
+                              <span className={styles.itemCardSub}>
+                                {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ') || '—'}
+                              </span>
                               <span className={styles.itemCardTime}>{timeStr}</span>
                             </div>
-                            <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardSub}>{cls.halls?.name ?? '—'}</span>
-                              <span className={styles.itemCardMeta}>{e.sessions_used} зан.</span>
-                            </div>
+                            {e.sessions_used > 1 && (
+                              <div className={styles.itemCardRow}>
+                                <span />
+                                <span className={styles.itemCardMeta}>списано: {e.sessions_used} год.</span>
+                              </div>
+                            )}
                           </div>
                         )
                       })}
@@ -876,10 +884,10 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     <div className={styles.cardList}>
                       {sales.map(s => {
                         const delta = s.amount_given - s.price_paid
-                        const balAfter = balanceAfterMap.get(s.id)
                         const opLabel = s.ticket_name
                           ? s.ticket_name
                           : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
+                        const isCash = s.payment_method === 'cash'
                         return (
                           <div key={s.id} className={styles.itemCard}>
                             <div className={styles.itemCardRow}>
@@ -887,37 +895,29 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
                             </div>
                             <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardSub}>{s.trainers?.name ?? '—'}</span>
-                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                                {paymentLabel(s.payment_method)}
-                              </span>
+                              {isCash && s.trainers?.name
+                                ? <span className={styles.itemCardSub}>{s.trainers.name}</span>
+                                : <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                    {paymentLabel(s.payment_method)}
+                                  </span>
+                              }
+                              {s.sessions != null
+                                ? <span className={delta > 0 ? styles.sessionsPos : delta < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
+                                    {delta > 0 ? '+' : ''}{s.sessions} год.
+                                  </span>
+                                : <span className={delta > 0 ? styles.deltaPos : delta < 0 ? styles.deltaNeg : styles.itemCardMeta}>
+                                    {delta > 0 ? '+' : ''}{formatMoney(Math.abs(delta))}
+                                  </span>
+                              }
                             </div>
-                            {(s.ticket_price != null || (s.ticket_id != null && s.payment_method !== 'deposit')) && (
+                            {isCash && s.trainers?.name && (
                               <div className={styles.itemCardRow}>
-                                {s.ticket_price != null
-                                  ? <span className={styles.itemCardSub}>Ціна: {formatMoney(s.ticket_price)}</span>
-                                  : <span />
-                                }
-                                {s.ticket_id != null && s.payment_method !== 'deposit'
-                                  ? <span className={styles.itemCardMeta}>Оплачено: {formatMoney(s.price_paid)}</span>
-                                  : <span />
-                                }
+                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                  {paymentLabel(s.payment_method)}
+                                </span>
+                                <span />
                               </div>
                             )}
-                            <div className={styles.itemCardRow}>
-                              {delta !== 0
-                                ? <span className={delta > 0 ? styles.deltaPos : styles.deltaNeg}>
-                                    {delta > 0 ? '+' : ''}{formatMoney(delta)}
-                                  </span>
-                                : <span />
-                              }
-                              {balAfter !== undefined
-                                ? <span className={styles.itemCardMeta}>
-                                    Депозит: {formatMoney(balAfter)}
-                                  </span>
-                                : <span />
-                              }
-                            </div>
                             <div className={styles.itemCardActions}>
                               <button
                                 className={styles.btnRowEdit}
