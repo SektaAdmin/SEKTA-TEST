@@ -12,20 +12,8 @@ import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatt
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import type { Sale } from '@/types'
+import Pagination from '@/components/ui/Pagination'
 import styles from './sales.module.css'
-
-
-function getPageRange(current: number, total: number): (number | '...')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i)
-  const pages: (number | '...')[] = [0]
-  if (current > 2) pages.push('...')
-  const start = Math.max(1, current - 1)
-  const end = Math.min(total - 2, current + 1)
-  for (let i = start; i <= end; i++) pages.push(i)
-  if (current < total - 3) pages.push('...')
-  pages.push(total - 1)
-  return pages
-}
 
 export default function SalesPage() {
   const { tickets, trainers } = useRefs()
@@ -277,52 +265,14 @@ export default function SalesPage() {
               })}
             </div>
 
-            <div className={styles.pagination}>
-              <div className={styles.paginationLeft}>
-                <select
-                  className={styles.pageSizeSelect}
-                  value={pageSize}
-                  onChange={e => handlePageSize(Number(e.target.value) as PageSize)}
-                  aria-label="Продажів на сторінці"
-                >
-                  {PAGE_SIZES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-                <span className={styles.paginationInfo}>
-                  {total === 0 ? '0' : `${from + 1}–${Math.min(from + pageSize, total)}`} з {total}
-                </span>
-              </div>
-
-              {totalPages > 1 ? (
-                <div className={styles.paginationBtns}>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() => setPage(p => p - 1)}
-                    disabled={page === 0}
-                    aria-label="Попередня сторінка"
-                  >←</button>
-
-                  {getPageRange(page, totalPages).map((p, i) =>
-                    p === '...'
-                      ? <span key={`el-${i}`} className={styles.pageEllipsis}>…</span>
-                      : <button
-                          key={p}
-                          className={`${styles.pageBtn}${p === page ? ` ${styles.pageBtnActive}` : ''}`}
-                          onClick={() => setPage(p as number)}
-                          aria-current={p === page ? 'page' : undefined}
-                        >{(p as number) + 1}</button>
-                  )}
-
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={page >= totalPages - 1}
-                    aria-label="Наступна сторінка"
-                  >→</button>
-                </div>
-              ) : <div />}
-            </div>
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onPage={setPage}
+              onPageSize={handlePageSize}
+              pageSizeLabel="Продажів на сторінці"
+            />
             </>
           )}
         </div>

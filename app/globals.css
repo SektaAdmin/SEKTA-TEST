@@ -126,6 +126,19 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 /* ── Shared page utilities ────────────────────────────────────────── */
 
 /* Primary action button — replaces .btnNew in 5 page modules */
+/* Typography scale — L1: 20/600, L2: 16/500, L3: 14px (body default) */
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
 .btn-primary {
   background: var(--accent);
   color: var(--accent-text);
@@ -133,7 +146,7 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
   border-radius: var(--radius-sm);
   height: var(--control-h);
   padding: 0 14px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: var(--font);
   cursor: pointer;
@@ -176,7 +189,7 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .data-table thead tr { background: var(--bg-3); }

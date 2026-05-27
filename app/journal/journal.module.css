@@ -32,9 +32,8 @@
 }
 
 .paginationCounter {
-  color: var(--text-2);
-  font-size: 12px;
-  font-family: var(--mono);
+  color: var(--text);
+  font-size: 14px;
   min-width: 200px;
   text-align: center;
 }
