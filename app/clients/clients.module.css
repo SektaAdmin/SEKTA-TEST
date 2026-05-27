@@ -122,7 +122,7 @@
 .content { flex: 1; padding: 24px 28px; }
 
 @media (max-width: 640px) {
-  .filterBar { padding: 0 16px; overflow-x: auto; flex-wrap: nowrap; }
+  .filterBar { padding: 8px 16px; overflow-x: auto; flex-wrap: nowrap; height: auto; }
   .content { padding: 16px; }
   .searchInput { width: 100% !important; }
   .searchInput:focus { width: 100% !important; }
