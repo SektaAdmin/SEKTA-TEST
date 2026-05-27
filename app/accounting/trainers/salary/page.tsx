@@ -138,7 +138,7 @@ export default function TrainerSalaryPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Нарахування тренерів</h1>
+          <h1 className="page-title">Нарахування тренерів</h1>
           <div className={styles.topbarActions}>
             <a href="/accounting/trainers" className={styles.navLink}>← Тренери</a>
             <a href="/accounting/trainers/rates" className={styles.navLink}>Ставки →</a>

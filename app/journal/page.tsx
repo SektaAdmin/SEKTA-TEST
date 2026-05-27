@@ -65,7 +65,7 @@ export default function JournalPage() {
     <>
       {/* Topbar */}
       <div className={styles.topbar}>
-        <h1 className={styles.title}>Журнал занять</h1>
+        <h1 className="page-title">Журнал занять</h1>
         {total > 0 && (
           <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>
         )}

@@ -105,7 +105,7 @@ export default function TrainerRatesPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Ставки тренерів</h1>
+          <h1 className="page-title">Ставки тренерів</h1>
           <div className={styles.topbarActions}>
             <a href="/accounting/trainers/salary" className={styles.backLink}>← Нарахування</a>
             <button className={styles.addBtn} onClick={openAdd}>+ Додати ставку</button>

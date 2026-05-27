@@ -178,7 +178,7 @@ export default function TemplatesPage() {
       <div className={styles.topbar}>
         <div className={styles.topbarLeft}>
           <Link href="/schedule" className={styles.backLink}>← Розклад</Link>
-          <h1 className={styles.title}>Шаблони тижня</h1>
+          <h1 className="page-title">Шаблони тижня</h1>
           {viewMode === 'day' && (
             <div className={styles.dayNav}>
               <button className={styles.navBtn} onClick={goPrevDay} aria-label="Попередній день">

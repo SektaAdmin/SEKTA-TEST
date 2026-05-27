@@ -108,7 +108,7 @@ export default function TrainerReportsPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Звіти по тренерах</h1>
+          <h1 className="page-title">Звіти по тренерах</h1>
           <div style={{ display: 'flex', gap: '8px' }}>
             <a href="/accounting/trainers/salary" className={styles.backLink}>Нарахування</a>
             <a href="/accounting/trainers/rates" className={styles.backLink}>Ставки</a>

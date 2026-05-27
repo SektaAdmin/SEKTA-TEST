@@ -55,13 +55,6 @@
 }
 .backLink:hover { color: var(--text); }
 
-.title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  white-space: nowrap;
-}
-
 /* ── Day navigation (day view) ───────────────────────────────── */
 .dayNav {
   display: flex;

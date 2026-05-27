@@ -92,7 +92,7 @@ export default function TrainersPage() {
   return (
     <>
       <div className={styles.topbar}>
-        <h1 className={styles.title}>Тренери</h1>
+        <h1 className="page-title">Тренери</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
         <nav className={styles.mobileTabNav}>
           {SETTINGS_TABS.map(tab => (

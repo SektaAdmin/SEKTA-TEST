@@ -92,7 +92,7 @@ export default function HallsPage() {
   return (
     <>
       <div className={styles.topbar}>
-        <h1 className={styles.title}>Зали</h1>
+        <h1 className="page-title">Зали</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати зал</button>
         <nav className={styles.mobileTabNav}>
           {SETTINGS_TABS.map(tab => (

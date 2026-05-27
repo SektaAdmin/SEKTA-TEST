@@ -78,7 +78,7 @@ export default function TicketsPage() {
   return (
     <>
       <div className={styles.topbar}>
-        <h1 className={styles.title}>Абонементи</h1>
+        <h1 className="page-title">Абонементи</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати абонемент</button>
         <nav className={styles.mobileTabNav}>
           {SETTINGS_TABS.map(tab => (

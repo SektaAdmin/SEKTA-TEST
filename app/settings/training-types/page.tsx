@@ -97,7 +97,7 @@ export default function TrainingTypesPage() {
   return (
     <>
       <div className={styles.topbar}>
-        <h1 className={styles.title}>Типи тренувань</h1>
+        <h1 className="page-title">Типи тренувань</h1>
         <button className="btn-primary" onClick={() => { setEditing(null); setShowModal(true) }}>+ Додати тип</button>
         <nav className={styles.mobileTabNav}>
           {SETTINGS_TABS.map(tab => (

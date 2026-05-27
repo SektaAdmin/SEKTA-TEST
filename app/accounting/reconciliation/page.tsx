@@ -97,7 +97,7 @@ export default function ReconciliationPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Звірка надходжень</h1>
+          <h1 className="page-title">Звірка надходжень</h1>
           <a href="/accounting" className={styles.backLink}>← Звітність</a>
         </div>
 
