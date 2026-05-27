@@ -144,6 +144,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     <ModalShell
       title={isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
       onClose={onClose}
+      fullScreen
       footer={
         <ModalFooter
           onCancel={onClose}
