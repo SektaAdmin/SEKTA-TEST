@@ -589,6 +589,16 @@ types/
 - **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
 
+### /clients Page (станом на 2026-05-27)
+
+**Mobile adaptation (≤640px):**
+- **Filter bar**: `flex-wrap: wrap`. `searchWrap` — `width: 100%` (повна ширина). ⚠️ `@media` блок завжди в **кінці** `clients.module.css`
+- **Таблиця**: на десктопі `.tableDesktop` (звичайна таблиця), на мобільному `.cardList` (картки). Перемикання через CSS `display: none/flex` — обидва рендеряться в JSX одночасно
+- **Client card**: ім'я + депозит (завжди, з кольоровим бейджем) в рядку; телефон як `<a href="tel:">` + instagram/telegram — тільки заповнені поля
+- Тап на картку → перехід на `/clients/[id]`
+
+---
+
 ### /sales Page (станом на 2026-05-27)
 
 **Mobile adaptation (≤640px):**

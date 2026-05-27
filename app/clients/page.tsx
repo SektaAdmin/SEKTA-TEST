@@ -155,7 +155,8 @@ export default function ClientsPage() {
             </div>
           ) : (
             <>
-              <div className="data-table-wrap">
+              {/* Desktop table */}
+              <div className={`data-table-wrap ${styles.tableDesktop}`}>
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -210,6 +211,50 @@ export default function ClientsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className={styles.cardList}>
+                {clients.map(c => (
+                  <div
+                    key={c.id}
+                    className={styles.clientCard}
+                    onClick={() => router.push(`/clients/${c.id}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter') router.push(`/clients/${c.id}`) }}
+                  >
+                    <div className={styles.cardRow1}>
+                      <span className={styles.cardName}>{formatClientName(c)}</span>
+                      <span className={
+                        (c.balance ?? 0) > 0
+                          ? styles.balancePos
+                          : (c.balance ?? 0) < 0
+                            ? styles.balanceNeg
+                            : styles.balanceZero
+                      }>
+                        {formatMoney(c.balance ?? 0)}
+                      </span>
+                    </div>
+                    {(c.phone || c.instagram_username || c.telegram_username) && (
+                      <div className={styles.cardContacts}>
+                        {c.phone && (
+                          <a
+                            href={`tel:${c.phone}`}
+                            className={styles.cardPhone}
+                            onClick={e => e.stopPropagation()}
+                          >{c.phone}</a>
+                        )}
+                        {c.instagram_username && (
+                          <span className={styles.cardHandle}>@{c.instagram_username.replace(/^@/, '')}</span>
+                        )}
+                        {c.telegram_username && (
+                          <span className={styles.cardHandle}>tg: @{c.telegram_username.replace(/^@/, '')}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div className={styles.pagination}>
