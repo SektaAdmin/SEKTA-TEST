@@ -80,7 +80,7 @@
   /* fullScreen overlay: розтягує модалку на весь екран без vh */
   .overlayFullScreen {
     align-items: stretch;
-    background: none;
+    background: var(--bg);
     backdrop-filter: none;
     animation: none;
   }
