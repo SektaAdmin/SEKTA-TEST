@@ -12,9 +12,10 @@ interface ModalShellProps {
   width?: number
   modalClassName?: string
   bodyClassName?: string
+  fullScreen?: boolean
 }
 
-export function ModalShell({ title, onClose, footer, children, width = 420, modalClassName, bodyClassName }: ModalShellProps) {
+export function ModalShell({ title, onClose, footer, children, width = 420, modalClassName, bodyClassName, fullScreen }: ModalShellProps) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
 
@@ -22,7 +23,7 @@ export function ModalShell({ title, onClose, footer, children, width = 420, moda
     <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div
         ref={modalRef}
-        className={[styles.modal, modalClassName].filter(Boolean).join(' ')}
+        className={[styles.modal, fullScreen ? styles.modalFullScreen : undefined, modalClassName].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

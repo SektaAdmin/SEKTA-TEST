@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 300;
   backdrop-filter: blur(2px);
   animation: overlayIn var(--motion-fast) both;
 }
@@ -75,5 +75,12 @@
     border-radius: var(--radius) var(--radius) 0 0;
     border-bottom: none;
     animation: bottomSheetIn var(--motion-fast) both;
+  }
+
+  .modalFullScreen {
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
   }
 }

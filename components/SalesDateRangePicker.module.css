@@ -317,7 +317,8 @@
 
 /* ── Mobile (≤640px): bottom sheet layout ─────────────────────── */
 @media (max-width: 640px) {
-  .trigger { flex: 1; justify-content: center; }
+  .wrap { width: 100%; }
+  .trigger { width: 100%; justify-content: center; }
 
   .popover {
     flex-direction: column;

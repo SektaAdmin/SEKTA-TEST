@@ -86,6 +86,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
       <ModalShell
         title={isEdit ? 'Редагувати продажу' : 'Нова продажа'}
         onClose={onClose}
+        fullScreen
         modalClassName={styles.modal}
         footer={
           <ModalFooter
