@@ -260,7 +260,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             <button className={styles.backBtn} onClick={() => router.push('/clients')}>
               ← Клієнти
             </button>
-            <h1 className={styles.title}>
+            <h1 className="page-title">
               {clientName || <span className={styles.noName}>Клієнт без імені</span>}
             </h1>
           </div>
@@ -273,7 +273,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <div className={styles.topGrid}>
 
             <section className={styles.card}>
-              <h2 className={styles.cardTitle}>Контакти</h2>
+              <h2 className={styles.sectionTitle}>Контакти</h2>
               <dl className={styles.fields}>
                 <div className={styles.field}>
                   <dt>Телефон</dt>
@@ -307,7 +307,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </section>
 
             <section className={styles.card}>
-              <h2 className={styles.cardTitle}>Депозит</h2>
+              <h2 className={styles.sectionTitle}>Депозит</h2>
               <div className={styles.balanceRow}>
                 <span className={
                   balance > 0 ? styles.balancePos :
@@ -326,7 +326,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </section>
 
             <section className={styles.card}>
-              <h2 className={styles.cardTitle}>Залишок занять</h2>
+              <h2 className={styles.sectionTitle}>Залишок занять</h2>
               {sessionBalances.length === 0 ? (
                 <div className={styles.emptySection}>
                   <span className={styles.empty2}>{MSG.empty.activeEnrollments}</span>
@@ -353,7 +353,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
             <section className={styles.card}>
               <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Постійні записи</h2>
+                <h2 className={styles.sectionTitle}>Постійні записи</h2>
                 <button className={styles.btnPrimary} onClick={() => router.push('/schedule/templates')}>
                   Шаблони →
                 </button>
@@ -387,7 +387,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
           <section className={styles.card}>
             <div className={styles.cardHeader}>
-              <h2 className={styles.cardTitle}>Майбутні записи</h2>
+              <h2 className={styles.sectionTitle}>Майбутні записи</h2>
               <button className={styles.btnPrimary} onClick={() => setShowEnrollModal(true)}>
                 Записати на заняття
               </button>

@@ -92,7 +92,7 @@ export default function ClientsPage() {
       <BottomNav />
       <main className={styles.main}>
         <div className={styles.topbar}>
-          <h1 className={styles.title}>Клієнти</h1>
+          <h1 className="page-title">Клієнти</h1>
           <button className="btn-primary" onClick={() => setShowModal(true)}>
             + Додати клієнта
           </button>
