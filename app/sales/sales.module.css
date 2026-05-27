@@ -242,7 +242,7 @@
 }
 
 .cardClient {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text);
   flex: 1;
@@ -253,15 +253,14 @@
 }
 
 .cardDate {
-  font-size: 12px;
-  color: var(--text-3);
-  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
   flex-shrink: 0;
 }
 
 .cardOperation {
   font-size: 13px;
-  color: var(--text-2);
+  color: var(--text);
 }
 
 .cardMeta {
@@ -273,19 +272,18 @@
 }
 
 .cardMetaLabel {
-  font-size: 12px;
-  color: var(--text-3);
+  font-size: 13px;
+  color: var(--text);
 }
 
 .cardMetaValue {
-  font-family: var(--mono);
   font-size: 13px;
   color: var(--text);
 }
 
 .cardTrainer {
-  font-size: 12px;
-  color: var(--text-3);
+  font-size: 13px;
+  color: var(--text);
 }
 
 .cardActions {
@@ -296,8 +294,8 @@
 }
 
 .depositInfo {
-  color: var(--text-3);
-  font-size: 11px;
+  color: var(--text);
+  font-size: 13px;
   display: block;
   margin-top: 4px;
 }
