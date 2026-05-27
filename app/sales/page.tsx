@@ -235,7 +235,7 @@ export default function SalesPage() {
                     </div>
                     <div className={styles.cardOperation}>
                       {s.ticket_name
-                        ? `${s.ticket_name}${s.sessions ? ` · ${s.sessions} зан.` : ''}`
+                        ? s.ticket_name
                         : depDelta >= 0
                           ? <span className={styles.opTopup}>↑ Поповнення</span>
                           : <span className={styles.opDeduction}>↓ Списання</span>
