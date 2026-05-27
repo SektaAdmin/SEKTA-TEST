@@ -12,22 +12,6 @@
   min-height: 100vh;
 }
 
-@media (max-width: 640px) {
-  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .filters { flex-wrap: wrap; padding: 8px 16px; overflow-x: visible; }
-  .filters { gap: 8px; }
-  .filterSearch { width: 100%; flex: 0 0 100%; min-width: 0; }
-  .filterSearchInput { width: 100%; box-sizing: border-box; transition: border-color 0.12s; }
-  .filterSearchInput:focus { width: 100%; }
-  .content { padding: 16px; }
-  .pagination { flex-wrap: wrap; gap: 8px; padding: 12px 0 0; }
-  .paginationLeft { width: 100%; justify-content: space-between; }
-  .paginationBtns { width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px; }
-  .pageBtn { min-width: 36px; padding: 6px 0; }
-  .confirmBox { width: calc(100% - 32px); max-width: 360px; }
-}
-
 .topbar {
   display: flex;
   align-items: center;
@@ -81,7 +65,8 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  height: var(--control-h); padding: 0 12px 0 30px;
+  height: var(--control-h);
+  padding: 0 12px 0 30px;
   color: var(--text);
   font-size: 13px;
   font-family: var(--font);
@@ -91,7 +76,6 @@
 }
 .filterSearchInput:focus { border-color: var(--accent); width: 240px; }
 .filterSearchInput::placeholder { color: var(--text-3); }
-
 
 .filterClear {
   background: transparent;
@@ -144,10 +128,10 @@
   white-space: nowrap;
 }
 
-.badgeCash { background: var(--accent-dim); color: var(--accent); }
-.badgeFop { background: var(--fop-dim); color: var(--fop); }
-.badgeCard { background: var(--card-dim); color: var(--card); }
-.badgeDeposit { background: var(--deposit-dim); color: var(--deposit); }
+.badgeCash    { background: var(--accent-dim);   color: var(--accent); }
+.badgeFop     { background: var(--fop-dim);       color: var(--fop); }
+.badgeCard    { background: var(--card-dim);      color: var(--card); }
+.badgeDeposit { background: var(--deposit-dim);   color: var(--deposit); }
 
 .actions { display: flex; gap: 6px; }
 
@@ -163,8 +147,9 @@
   white-space: nowrap;
 }
 .btnEdit:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.btnDel:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
 
+/* ── Confirm dialog ──────────────────────────────────────────── */
 .confirmOverlay {
   position: fixed;
   inset: 0;
@@ -231,17 +216,12 @@
   cursor: pointer;
   transition: opacity 0.12s;
 }
-.btnConfirmDel:hover { opacity: 0.85; }
+.btnConfirmDel:hover    { opacity: 0.85; }
 .btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Desktop/mobile table toggle ────────────────────────────── */
+/* ── Desktop/mobile table toggle ─────────────────────────────── */
 .tableDesktop { display: block; }
-.cardList { display: none; }
-
-@media (max-width: 640px) {
-  .tableDesktop { display: none; }
-  .cardList { display: flex; flex-direction: column; gap: 8px; }
-}
+.cardList     { display: none; }
 
 /* ── Sale card (mobile) ──────────────────────────────────────── */
 .card {
@@ -362,7 +342,8 @@
   background: var(--bg-3);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  height: var(--control-h); padding: 0 10px;
+  height: var(--control-h);
+  padding: 0 10px;
   color: var(--text-2);
   font-size: 13px;
   font-family: var(--font);
@@ -404,4 +385,50 @@
   font-size: 13px;
   padding: 0 5px;
   user-select: none;
+}
+
+/* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
+@media (max-width: 640px) {
+  .main {
+    margin-left: 0;
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 16px;
+    overflow-x: visible;
+  }
+
+  .filterSearch {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+
+  .filterSearchInput {
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.12s;
+  }
+  .filterSearchInput:focus { width: 100%; }
+
+  .content { padding: 16px; }
+
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+
+  .confirmBox { width: calc(100% - 32px); max-width: 360px; }
+
+  .pagination { flex-wrap: wrap; gap: 8px; padding: 12px 0 0; }
+  .paginationLeft { width: 100%; justify-content: space-between; }
+  .paginationBtns { width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px; }
+  .pageBtn { min-width: 36px; padding: 6px 0; }
 }

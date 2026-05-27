@@ -77,9 +77,9 @@
     animation: bottomSheetIn var(--motion-fast) both;
   }
 
-  /* fullScreen overlay: без фону і blur */
+  /* fullScreen overlay: розтягує модалку на весь екран без vh */
   .overlayFullScreen {
-    align-items: flex-start;
+    align-items: stretch;
     background: none;
     backdrop-filter: none;
     animation: none;
@@ -89,8 +89,9 @@
   .modalFullScreen {
     width: 100% !important;
     max-width: 100% !important;
-    height: 100dvh;
-    max-height: 100dvh;
+    height: auto;
+    max-height: none;
+    align-self: stretch;
     border-radius: 0;
     border: none;
     box-shadow: none;
@@ -106,5 +107,6 @@
 
   .modalFullScreen .footer {
     padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    flex-shrink: 0;
   }
 }
