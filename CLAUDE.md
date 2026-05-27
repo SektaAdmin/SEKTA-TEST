@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-23 (Mobile Adaptation Phases A–E complete: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile)
+- **Last Updated**: 2026-05-27 (Mobile Adaptation Phases A–E + G–J complete: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation)
 
 ## Commands
 
@@ -502,7 +502,10 @@ types/
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
-- **ModalShell** (`components/ui/ModalShell.tsx`) — обгортка для всіх модалок (overlay, header з title + close, body, footer). Всі 9 модалок (`SaleModal`, `ClientModal`, `ClassModal`, `HallModal`, `TicketModal`, `SeriesModal`, `TrainerModal`, `TrainingTypeModal` + `ModalShell` для `ClassDetailModal`) мають уніфіковану оболонку. Props: `title`, `onClose`, `footer`, `children`, `width` (дефолт 420), `modalClassName`, `bodyClassName`.
+- **ModalShell** (`components/ui/ModalShell.tsx`) — обгортка для всіх модалок (overlay, header з title + close, body, footer). Всі 9 модалок (`SaleModal`, `ClientModal`, `ClassModal`, `HallModal`, `TicketModal`, `SeriesModal`, `TrainerModal`, `TrainingTypeModal` + `ModalShell` для `ClassDetailModal`) мають уніфіковану оболонку. Props: `title`, `onClose`, `footer`, `children`, `width` (дефолт 420), `modalClassName`, `bodyClassName`, `fullScreen` (boolean).
+  - **Mobile bottom sheet**: за замовчуванням на ≤640px модалка — bottom sheet (`border-radius` зверху, `max-height: 92dvh`, анімація `bottomSheetIn`).
+  - **`fullScreen` prop**: на мобільному модалка займає весь екран як окрема сторінка. Overlay: `background: var(--bg)`, `align-items: stretch`. Modal: `align-self: stretch`, `height: auto`, `border-radius: 0`, `border: none`. Використовується в `SaleModal`. ⚠️ Overlay має `background: var(--bg)` — без цього сторінка і BottomNav просвічують крізь прозорий overlay.
+  - **z-index**: overlay `z-index: 300` > BottomNav `z-index: 200`.
 - **ModalFooter** (`components/ui/ModalFooter.tsx`) — уніфіковані footer-кнопки для всіх модалок. Props: `onCancel`, `onSave` (optional), `saveLabel` (дефолт: "Зберегти"), `cancelLabel` (дефолт: "Скасувати"), `loading`, `saveType` ('button'|'submit'), `disabled`. Кнопки рендеряться лише якщо `onSave` передана.
 - **CSS**: CSS Modules + Tailwind співіснують. Нові компоненти — Tailwind. Старі module.css — не переписувати без потреби. Жодних HEX/rgba напряму в `*.module.css` — тільки `var()`.
 
@@ -585,6 +588,19 @@ types/
 - **Progress bar**: знизу, висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
 - **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
+
+### /sales Page (станом на 2026-05-27)
+
+**Mobile adaptation (≤640px):**
+- **Topbar**: `flex-wrap: wrap`, кнопка "+ Нова продажа" залишається в рядку з заголовком
+- **Filter bar**: `flex-wrap: wrap`. Пошук — `flex: 0 0 100%` (окремий рядок, повна ширина). Кнопка дат `SalesDateRangePicker` — `width: 100%` (повна ширина). ⚠️ `@media` блок завжди в **кінці** `sales.module.css` — інакше десктопний `width: 200px` перебиває мобільний `width: 100%`
+- **SalesDateRangePicker**: на мобільному відкривається як bottom sheet (`position: fixed; bottom: 0; left: 0; right: 0`). Пресети — горизонтальний скрол. Один місяць (правий прихований через CSS). `isMobile` визначається при відкритті через `window.innerWidth <= 640`
+- **Таблиця**: на десктопі `.tableDesktop` (звичайна таблиця), на мобільному `.cardList` (картки). Перемикання через CSS `display: none/flex` — обидва рендеряться в JSX одночасно
+- **Sale card**: клієнт + дата / назва операції / оплачено + бейдж методу / Δ депозит (тільки якщо ≠ 0) / тренер (тільки якщо є) / кнопки Змінити+Видалити
+- **SaleModal**: `fullScreen` prop → займає весь екран як окрема сторінка на мобільному
+- **Confirm dialog**: `width: calc(100% - 32px); max-width: 360px`
+
+---
 
 ### /journal Page (станом на 2026-05-23)
 
