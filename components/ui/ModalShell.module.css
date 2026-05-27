@@ -77,17 +77,18 @@
     animation: bottomSheetIn var(--motion-fast) both;
   }
 
-  /* fullScreen: виглядає як окрема сторінка */
-  .overlay:has(.modalFullScreen) {
+  /* fullScreen overlay: без фону і blur */
+  .overlayFullScreen {
     align-items: flex-start;
     background: none;
     backdrop-filter: none;
     animation: none;
   }
 
+  /* fullScreen modal: як окрема сторінка */
   .modalFullScreen {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     height: 100dvh;
     max-height: 100dvh;
     border-radius: 0;
@@ -100,6 +101,7 @@
     padding: var(--topbar-py) var(--topbar-px);
     height: var(--topbar-h);
     flex-shrink: 0;
+    box-sizing: border-box;
   }
 
   .modalFullScreen .footer {

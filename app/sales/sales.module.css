@@ -16,8 +16,9 @@
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
   .filters { flex-wrap: wrap; padding: 8px 16px; overflow-x: visible; }
-  .filterSearch { width: 100%; flex-basis: 100%; }
-  .filterSearchInput { width: 100%; transition: border-color 0.12s; }
+  .filters { gap: 8px; }
+  .filterSearch { width: 100%; flex: 0 0 100%; min-width: 0; }
+  .filterSearchInput { width: 100%; box-sizing: border-box; transition: border-color 0.12s; }
   .filterSearchInput:focus { width: 100%; }
   .content { padding: 16px; }
   .pagination { flex-wrap: wrap; gap: 8px; padding: 12px 0 0; }

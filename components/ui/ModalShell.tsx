@@ -20,14 +20,17 @@ export function ModalShell({ title, onClose, footer, children, width = 420, moda
   const modalRef = useModalFocus(onClose)
 
   return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+    <div
+      className={[styles.overlay, fullScreen ? styles.overlayFullScreen : undefined].filter(Boolean).join(' ')}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
       <div
         ref={modalRef}
         className={[styles.modal, fullScreen ? styles.modalFullScreen : undefined, modalClassName].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        style={{ width, maxWidth: '100%' }}
+        style={fullScreen ? undefined : { width, maxWidth: '100%' }}
       >
         <div className={styles.header}>
           <h2 id={titleId}>{title}</h2>
