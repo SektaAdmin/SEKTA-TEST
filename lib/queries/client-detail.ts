@@ -32,6 +32,7 @@ export type UpcomingEnrollment = {
 export type PastEnrollment = {
   id: string
   class_id: string
+  status: string
   sessions_used: number
   classes: {
     ticket_type: string
@@ -115,9 +116,9 @@ export async function listPastEnrollmentsForClient(
 
   const { data, count } = await supabase
     .from('enrollments')
-    .select('id, class_id, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))', { count: 'exact' })
+    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))', { count: 'exact' })
     .eq('client_id', clientId)
-    .eq('status', 'attended')
+    .in('status', ['attended', 'noshow', 'cancelled'])
     .order('starts_at', { referencedTable: 'classes', ascending: false })
     .range(from, to)
 

@@ -742,6 +742,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
                         const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
                         const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
+                        const Icon = enrollmentStatusIcon(e.status)
                         return (
                           <div key={e.id} className={styles.itemCard}>
                             <div className={styles.itemCardRow}>
@@ -754,12 +755,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               </span>
                               <span className={styles.itemCardTime}>{timeStr}</span>
                             </div>
-                            {e.sessions_used > 1 && (
-                              <div className={styles.itemCardRow}>
-                                <span />
+                            <div className={styles.itemCardRow}>
+                              <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                                {enrollmentStatusLabel(e.status)}
+                              </span>
+                              {e.sessions_used > 1 && (
                                 <span className={styles.itemCardMeta}>списано: {e.sessions_used} год.</span>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         )
                       })}
