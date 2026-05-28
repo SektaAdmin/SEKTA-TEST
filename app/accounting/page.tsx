@@ -17,6 +17,7 @@ type SaleRow = {
   created_at: string
   price_paid: number
   amount_given: number
+  ticket_price: number | null
   payment_method: PaymentMethod
   ticket_id: string | null
   ticket_name: string | null
@@ -91,7 +92,7 @@ export default function AccountingPage() {
     setError(null)
     const { data, error } = await supabase
       .from('sales')
-      .select('id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
+      .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
       .gte('created_at', `${from}T00:00:00`)
       .lte('created_at', `${to}T23:59:59`)
       .order('created_at', { ascending: false })
@@ -253,6 +254,7 @@ export default function AccountingPage() {
                       </th>
                       <th className={styles.thDate}>Дата</th>
                       <th>Клієнт і операція</th>
+                      <th className={styles.thPrice}>Ціна</th>
                       <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>
                       <th className={styles.thMethod}>Метод</th>
@@ -289,6 +291,12 @@ export default function AccountingPage() {
                                 <span className={styles.ticketName}>{s.ticket_name}</span>
                               )}
                             </div>
+                          </td>
+                          <td className={styles.priceCell}>
+                            {s.ticket_price != null
+                              ? formatMoney(s.ticket_price)
+                              : <span className={styles.zero}>—</span>
+                            }
                           </td>
                           <td className={styles.depositCell}>
                             {hasDeposit

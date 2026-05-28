@@ -200,9 +200,19 @@
 
 .thCheck   { width: 36px; }
 .thDate    { width: 110px; }
+.thPrice   { width: 110px; text-align: right !important; }
 .thDeposit { width: 110px; text-align: right !important; }
 .thAmt     { width: 110px; text-align: right !important; }
 .thMethod  { width: 110px; text-align: left !important; }
+
+.priceCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  white-space: nowrap;
+  vertical-align: top;
+  color: var(--text-2);
+}
 
 .checkCell {
   width: 36px;
