@@ -112,44 +112,88 @@ export default function TrainersPage() {
             <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
           </div>
         ) : (
-          <div className="data-table-wrap">
-            <table className="data-table">
-              <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th>Статус</th></tr></thead>
-              <tbody>
-                {active.map(t => (
-                  <tr key={t.id}>
-                    <td className={styles.name}>{t.name}</td>
-                    <td className={styles.handle}>{t.instagram_username ? <span>@{t.instagram_username}</span> : <span className={styles.dash}>—</span>}</td>
-                    <td className={styles.handle}>{t.telegram_username ? <span>@{t.telegram_username}</span> : <span className={styles.dash}>—</span>}</td>
-                    <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className={styles.tableDesktop}>
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th>Статус</th></tr></thead>
+                  <tbody>
+                    {active.map(t => (
+                      <tr key={t.id}>
+                        <td className={styles.name}>{t.name}</td>
+                        <td className={styles.handle}>{t.instagram_username ? <span>@{t.instagram_username}</span> : <span className={styles.dash}>—</span>}</td>
+                        <td className={styles.handle}>{t.telegram_username ? <span>@{t.telegram_username}</span> : <span className={styles.dash}>—</span>}</td>
+                        <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className={styles.cardList}>
+              {active.map(t => (
+                <div key={t.id} className={styles.settingCard}>
+                  <div className={styles.cardRow}>
+                    <span className={styles.name}>{t.name}</span>
+                    <div className={styles.cardActions}>
+                      <ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} />
+                    </div>
+                  </div>
+                  {(t.instagram_username || t.telegram_username) && (
+                    <div className={styles.cardMeta}>
+                      {t.instagram_username && <span className={styles.handle}>@{t.instagram_username}</span>}
+                      {t.telegram_username && <span className={styles.handle}>@{t.telegram_username}</span>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         <ArchiveSection label="Архів тренерів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className="data-table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th></th></tr></thead>
-                <tbody>
-                  {archived.map(t => (
-                    <tr key={t.id} className={styles.archivedRow}>
-                      <td className={styles.name}>{t.name}</td>
-                      <td className={styles.handle}>{t.instagram_username ? <span>@{t.instagram_username}</span> : <span className={styles.dash}>—</span>}</td>
-                      <td className={styles.handle}>{t.telegram_username ? <span>@{t.telegram_username}</span> : <span className={styles.dash}>—</span>}</td>
-                      <td>
-                        <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
-                          {toggling === t.id ? '...' : 'Відновити'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className={styles.tableDesktop}>
+                <div className="data-table-wrap">
+                  <table className="data-table">
+                    <thead><tr><th>Ім&apos;я</th><th>Instagram</th><th>Telegram</th><th></th></tr></thead>
+                    <tbody>
+                      {archived.map(t => (
+                        <tr key={t.id} className={styles.archivedRow}>
+                          <td className={styles.name}>{t.name}</td>
+                          <td className={styles.handle}>{t.instagram_username ? <span>@{t.instagram_username}</span> : <span className={styles.dash}>—</span>}</td>
+                          <td className={styles.handle}>{t.telegram_username ? <span>@{t.telegram_username}</span> : <span className={styles.dash}>—</span>}</td>
+                          <td>
+                            <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
+                              {toggling === t.id ? '...' : 'Відновити'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className={styles.cardList}>
+                {archived.map(t => (
+                  <div key={t.id} className={styles.settingCard} style={{ opacity: 0.65 }}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.name}>{t.name}</span>
+                      <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
+                        {toggling === t.id ? '...' : 'Відновити'}
+                      </button>
+                    </div>
+                    {(t.instagram_username || t.telegram_username) && (
+                      <div className={styles.cardMeta}>
+                        {t.instagram_username && <span className={styles.handle}>@{t.instagram_username}</span>}
+                        {t.telegram_username && <span className={styles.handle}>@{t.telegram_username}</span>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </ArchiveSection>
       </div>

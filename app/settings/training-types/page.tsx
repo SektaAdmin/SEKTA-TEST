@@ -114,44 +114,86 @@ export default function TrainingTypesPage() {
         ) : active.length === 0 ? (
           <div className={styles.empty}>{MSG.empty.trainingTypes}</div>
         ) : (
-          <div className="data-table-wrap">
-            <table className="data-table">
-              <thead><tr><th>Назва</th><th>Код</th><th>Статус</th><th></th></tr></thead>
-              <tbody>
-                {active.map(t => (
-                  <tr key={t.id}>
-                    <td className={styles.name}>{t.label}</td>
-                    <td><span className={styles.typeBadge}>{t.code}</span></td>
-                    <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
-                    <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className={styles.tableDesktop}>
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Назва</th><th>Код</th><th>Статус</th><th></th></tr></thead>
+                  <tbody>
+                    {active.map(t => (
+                      <tr key={t.id}>
+                        <td className={styles.name}>{t.label}</td>
+                        <td><span className={styles.typeBadge}>{t.code}</span></td>
+                        <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
+                        <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className={styles.cardList}>
+              {active.map(t => (
+                <div key={t.id} className={styles.settingCard}>
+                  <div className={styles.cardRow}>
+                    <span className={styles.name}>{t.label}</span>
+                    <div className={styles.cardActions}>
+                      <button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button>
+                      <ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} />
+                    </div>
+                  </div>
+                  <div className={styles.cardMeta}>
+                    <span><span className={styles.typeBadge}>{t.code}</span></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         <ArchiveSection label="Архів типів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className="data-table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Назва</th><th>Код</th><th></th><th></th></tr></thead>
-                <tbody>
-                  {archived.map(t => (
-                    <tr key={t.id} className={styles.archivedRow}>
-                      <td className={styles.name}>{t.label}</td>
-                      <td><span className={styles.typeBadge}>{t.code}</span></td>
-                      <td>
+            <>
+              <div className={styles.tableDesktop}>
+                <div className="data-table-wrap">
+                  <table className="data-table">
+                    <thead><tr><th>Назва</th><th>Код</th><th></th><th></th></tr></thead>
+                    <tbody>
+                      {archived.map(t => (
+                        <tr key={t.id} className={styles.archivedRow}>
+                          <td className={styles.name}>{t.label}</td>
+                          <td><span className={styles.typeBadge}>{t.code}</span></td>
+                          <td>
+                            <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
+                              {toggling === t.id ? '...' : 'Відновити'}
+                            </button>
+                          </td>
+                          <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className={styles.cardList}>
+                {archived.map(t => (
+                  <div key={t.id} className={styles.settingCard} style={{ opacity: 0.65 }}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.name}>{t.label}</span>
+                      <div className={styles.cardActions}>
                         <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
                           {toggling === t.id ? '...' : 'Відновити'}
                         </button>
-                      </td>
-                      <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        <button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button>
+                      </div>
+                    </div>
+                    <div className={styles.cardMeta}>
+                      <span><span className={styles.typeBadge}>{t.code}</span></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </ArchiveSection>
       </div>

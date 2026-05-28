@@ -98,48 +98,90 @@ export default function TicketsPage() {
             <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати абонемент</button>
           </div>
         ) : (
-          <div className="data-table-wrap">
-            <table className="data-table">
-              <thead><tr>
-                <th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th>Статус</th>
-              </tr></thead>
-              <tbody>
-                {active.map(t => (
-                  <tr key={t.id}>
-                    <td className={styles.name}>{t.name}</td>
-                    <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
-                    <td className={styles.mono}>{t.sessions}</td>
-                    <td className={styles.mono}>{formatMoney(t.price)}</td>
-                    <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className={styles.tableDesktop}>
+              <div className="data-table-wrap">
+                <table className="data-table">
+                  <thead><tr>
+                    <th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th>Статус</th>
+                  </tr></thead>
+                  <tbody>
+                    {active.map(t => (
+                      <tr key={t.id}>
+                        <td className={styles.name}>{t.name}</td>
+                        <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
+                        <td className={styles.mono}>{t.sessions}</td>
+                        <td className={styles.mono}>{formatMoney(t.price)}</td>
+                        <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className={styles.cardList}>
+              {active.map(t => (
+                <div key={t.id} className={styles.settingCard}>
+                  <div className={styles.cardRow}>
+                    <span className={styles.name}>{t.name}</span>
+                    <div className={styles.cardActions}>
+                      <ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} />
+                    </div>
+                  </div>
+                  <div className={styles.cardMeta}>
+                    <span><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></span>
+                    <span>{t.sessions} занять</span>
+                    <span>{formatMoney(t.price)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         <ArchiveSection label="Архів абонементів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
           {archived.length === 0 ? null : (
-            <div className="data-table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th></th></tr></thead>
-                <tbody>
-                  {archived.map(t => (
-                    <tr key={t.id} className={styles.archivedRow}>
-                      <td className={styles.name}>{t.name}</td>
-                      <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
-                      <td className={styles.mono}>{t.sessions}</td>
-                      <td className={styles.mono}>{formatMoney(t.price)}</td>
-                      <td>
-                        <button className={styles.restoreBtn} onClick={() => toggle(t.id, true)} disabled={toggling === t.id}>
-                          {toggling === t.id ? '...' : 'Відновити'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className={styles.tableDesktop}>
+                <div className="data-table-wrap">
+                  <table className="data-table">
+                    <thead><tr><th>Назва</th><th>Тип</th><th>Занять</th><th>Ціна</th><th></th></tr></thead>
+                    <tbody>
+                      {archived.map(t => (
+                        <tr key={t.id} className={styles.archivedRow}>
+                          <td className={styles.name}>{t.name}</td>
+                          <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
+                          <td className={styles.mono}>{t.sessions}</td>
+                          <td className={styles.mono}>{formatMoney(t.price)}</td>
+                          <td>
+                            <button className={styles.restoreBtn} onClick={() => toggle(t.id, true)} disabled={toggling === t.id}>
+                              {toggling === t.id ? '...' : 'Відновити'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className={styles.cardList}>
+                {archived.map(t => (
+                  <div key={t.id} className={styles.settingCard} style={{ opacity: 0.65 }}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.name}>{t.name}</span>
+                      <button className={styles.restoreBtn} onClick={() => toggle(t.id, true)} disabled={toggling === t.id}>
+                        {toggling === t.id ? '...' : 'Відновити'}
+                      </button>
+                    </div>
+                    <div className={styles.cardMeta}>
+                      <span><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></span>
+                      <span>{t.sessions} занять</span>
+                      <span>{formatMoney(t.price)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </ArchiveSection>
       </div>

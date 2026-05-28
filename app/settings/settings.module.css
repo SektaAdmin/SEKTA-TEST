@@ -12,6 +12,42 @@
   min-height: 100vh;
 }
 
+/* ── Card list (mobile) ──────────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList { display: none; }
+
+.settingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 /* ── Mobile settings tab nav ─────────────────────────────────── */
 .mobileTabNav { display: none; }
 
@@ -19,6 +55,12 @@
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .tabSection { padding: 16px; }
   .topbar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
+  .tableDesktop { display: none; }
+  .cardList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
   .mobileTabNav {
     display: flex;
