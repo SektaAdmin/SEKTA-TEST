@@ -344,7 +344,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   <div className={styles.detailsGrid}>
                     <div className={styles.detailsCol}>
                       <span className={styles.detailsDate}>
-                        {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                        {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
                       </span>
                       <span className={styles.detailsTime}>{timeRange}</span>
                     </div>
@@ -356,7 +356,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                 ) : (
                   <div className={styles.detailsColSingle}>
                     <span className={styles.detailsDate}>
-                      {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
                     </span>
                     <span className={styles.detailsTime}>{timeRange}</span>
                   </div>
