@@ -178,7 +178,7 @@
 .reconcileValue {
   font-size: 18px;
   font-weight: 600;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text);
   letter-spacing: -0.02em;
 }
@@ -197,7 +197,7 @@
   padding: 0 10px;
   color: var(--text);
   font-size: 16px;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   letter-spacing: -0.02em;
   outline: none;
@@ -210,27 +210,26 @@
 .reconcileInputSuffix {
   font-size: 14px;
   color: var(--text-3);
-  font-family: var(--mono);
 }
 
 .reconcileNeutral {
   font-size: 16px;
   color: var(--text-3);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .reconcileMatch {
   font-size: 15px;
   font-weight: 600;
   color: var(--success);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .reconcileMismatch {
   font-size: 16px;
   font-weight: 600;
   color: var(--danger);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
@@ -269,12 +268,12 @@
 .table tbody tr:hover td { background: var(--bg-2); }
 
 .dateCell { color: var(--text-2) !important; }
-.timeCell { color: var(--text-3) !important; font-family: var(--mono); }
+.timeCell { color: var(--text-3) !important; font-variant-numeric: tabular-nums; }
 .ticketCell { color: var(--text-2) !important; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 
 .amtCell {
   text-align: right;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--text) !important;
 }

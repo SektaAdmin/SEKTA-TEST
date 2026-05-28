@@ -265,7 +265,6 @@
   background: var(--bg-3);
   width: 110px;
   text-align: center;
-  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   outline: none;
   transition: border-color var(--motion-fast), background var(--motion-fast);

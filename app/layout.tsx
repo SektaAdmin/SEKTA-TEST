@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { Nunito_Sans } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { RefsProvider } from '@/contexts/RefsContext'
 import './globals.css'
+
+const nunitoSans = Nunito_Sans({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600'],
+  variable: '--font-nunito',
+})
 
 export const metadata: Metadata = {
   title: 'Sekta CRM',
@@ -18,12 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="uk" className={nunitoSans.variable}>
       <body>
         <RefsProvider>{children}</RefsProvider>
         <Toaster position="bottom-right" richColors />

@@ -132,7 +132,7 @@
 
 .itemTime {
   font-size: 13px;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text);
   font-weight: 500;
 }

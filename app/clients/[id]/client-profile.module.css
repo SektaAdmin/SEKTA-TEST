@@ -148,7 +148,6 @@
 .fieldLink {
   color: var(--accent);
   text-decoration: none;
-  font-family: var(--mono);
   font-size: 12px;
 }
 .fieldLink:hover { text-decoration: underline; }
@@ -205,13 +204,13 @@
 }
 
 /* ── Balance / session values ───────────────────────────────── */
-.balancePos  { color: var(--success); font-weight: 500; font-size: 22px; font-family: var(--mono); }
-.balanceNeg  { color: var(--danger); font-weight: 500; font-size: 22px; font-family: var(--mono); }
-.balanceZero { color: var(--text-3); font-weight: 500; font-size: 22px; font-family: var(--mono); }
+.balancePos  { color: var(--success); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
+.balanceNeg  { color: var(--danger); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
+.balanceZero { color: var(--text-3); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
 
-.sessionPos  { color: var(--success); font-weight: 600; font-size: 18px; font-family: var(--mono); }
-.sessionNeg  { color: var(--danger); font-weight: 600; font-size: 18px; font-family: var(--mono); }
-.sessionZero { color: var(--text-3); font-weight: 600; font-size: 18px; font-family: var(--mono); }
+.sessionPos  { color: var(--success); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sessionNeg  { color: var(--danger); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sessionZero { color: var(--text-3); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
 
 /* ── Table ──────────────────────────────────────────────────── */
 .tableWrap {
@@ -254,7 +253,7 @@
   color: var(--text-2);
   font-size: 12px;
   white-space: nowrap;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .depositLabel { color: var(--text-3); font-style: italic; }
@@ -446,7 +445,7 @@
 .badgeDeposit { background: var(--deposit-dim);  color: var(--deposit); }
 
 /* ── Table number cells ─────────────────────────────────────── */
-.numCell { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.numCell { font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
 
 /* ── Deposit delta & balance-after ─────────────────────────── */
 .deltaPos  { color: var(--success); font-weight: 500; }

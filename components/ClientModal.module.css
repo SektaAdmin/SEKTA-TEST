@@ -81,7 +81,7 @@
 .historyTable tr:last-child td { border-bottom: none; }
 
 .txAmount {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -89,13 +89,13 @@
 .txNeg { color: var(--danger); }
 
 .txBalance {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text-3);
   white-space: nowrap;
 }
 
 .txDate {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: var(--text-3);
   white-space: nowrap;

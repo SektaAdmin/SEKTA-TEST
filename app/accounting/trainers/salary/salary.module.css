@@ -201,14 +201,14 @@
 }
 
 .num {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--text-2);
   text-align: right;
 }
 
 .rateVal {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--text-2);
 }
@@ -219,7 +219,7 @@
 }
 
 .amount {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--accent);
   font-weight: 500;
@@ -229,7 +229,7 @@
 .periodCell { color: var(--text-3); font-size: 12px; white-space: nowrap; }
 
 .paidAmount {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--accent);
   font-weight: 500;
@@ -248,7 +248,7 @@
 }
 
 .totalAmount {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   color: var(--accent);
   font-weight: 600;

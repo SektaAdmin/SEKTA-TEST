@@ -167,7 +167,7 @@
 }
 
 .detailsTime {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
@@ -203,7 +203,7 @@
 
 .capacityCount {
   font-size: 13px;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--text);
 }
 
@@ -313,7 +313,7 @@
   background: var(--accent-dim);
   padding: 2px 8px;
   border-radius: 4px;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .balanceWarn {

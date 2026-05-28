@@ -23,8 +23,7 @@
   --danger-dim: rgba(217,53,53,0.08);
   --radius: 10px;
   --radius-sm: 6px;
-  --font: 'Geologica', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --font: var(--font-nunito, 'Nunito Sans', sans-serif);
   --control-h: 32px;
   --topbar-py: 16px;
   --topbar-px: 28px;

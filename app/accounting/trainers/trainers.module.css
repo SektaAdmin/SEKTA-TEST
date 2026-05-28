@@ -160,7 +160,7 @@
 .trainerName { font-weight: 500; }
 
 .num {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--text-2);
   text-align: right;
@@ -168,7 +168,7 @@
 }
 
 .revenue {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--accent);
   font-weight: 500;
@@ -188,7 +188,6 @@
   border: 0.5px solid var(--border);
   border-radius: 4px;
   padding: 2px 7px;
-  font-family: var(--mono);
   white-space: nowrap;
 }
 

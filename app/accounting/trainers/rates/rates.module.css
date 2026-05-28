@@ -142,7 +142,7 @@
 .global { color: var(--text-3); font-style: italic; }
 
 .rateCell {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--accent);
   font-weight: 500;
