@@ -198,12 +198,11 @@
   width: 100%;
 }
 
-.thRight   { text-align: right !important; }
 .thCheck   { width: 36px; }
 .thDate    { width: 110px; }
-.thDeposit { width: 110px; text-align: right; }
-.thAmt     { width: 110px; text-align: right; }
-.thMethod  { width: 100px; }
+.thDeposit { width: 110px; text-align: right !important; }
+.thAmt     { width: 110px; text-align: right !important; }
+.thMethod  { width: 110px; text-align: left !important; }
 
 .checkCell {
   width: 36px;
