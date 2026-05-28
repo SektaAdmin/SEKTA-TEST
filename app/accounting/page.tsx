@@ -192,6 +192,7 @@ export default function AccountingPage() {
         {/* Totals cards */}
         {!loading && !error && (
           <div className={styles.totalsBar}>
+          <div className={styles.totalsInner}>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Готівка</div>
               <div className={`${styles.summaryValue} ${totals.cash > 0 ? styles.valCash : styles.summaryZero}`}>{formatMoney(totals.cash)}</div>
@@ -212,6 +213,7 @@ export default function AccountingPage() {
               <div className={styles.summaryLabel}>Надходження</div>
               <div className={styles.summaryValue}>{formatMoney(grandTotal)}</div>
             </div>
+          </div>
           </div>
         )}
 
