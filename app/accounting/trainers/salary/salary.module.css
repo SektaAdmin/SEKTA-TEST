@@ -255,6 +255,61 @@
   font-weight: 600;
 }
 
+/* ── Desktop/mobile toggle ───────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+/* ── Salary / payment card (mobile) ─────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardDate {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+
+.cardMetaDot { color: var(--text-3); }
+
+.cardTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
 /* ── No rate hint ────────────────────────────────────────────── */
 .noRateHint {
   font-size: 14px;
@@ -392,3 +447,15 @@
 }
 .saveBtn:hover { border-color: var(--accent-border-hover); }
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbarActions { flex-wrap: wrap; }
+  .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 0 16px; height: var(--filterbar-h); gap: 8px; }
+  .trainerSelect { min-width: 0; flex-shrink: 0; }
+  .content { padding: 16px; gap: 24px; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+}

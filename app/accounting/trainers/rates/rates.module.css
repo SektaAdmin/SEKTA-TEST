@@ -168,6 +168,50 @@
 }
 .deleteBtn:hover { color: var(--danger); background: var(--danger-dim); }
 
+/* ── Desktop/mobile toggle ───────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+/* ── Rate card (mobile) ──────────────────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+.card:active { background: var(--bg-3); }
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbarActions { flex-wrap: wrap; gap: 6px; }
+  .content { padding: 16px; }
+  .tableWrap { max-width: 100%; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+}
+
 /* ── Modal ───────────────────────────────────────────────────── */
 .overlay {
   position: fixed;

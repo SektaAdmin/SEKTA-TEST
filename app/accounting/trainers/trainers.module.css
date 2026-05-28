@@ -86,7 +86,8 @@
 .paymentFilter {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .filterBtn {

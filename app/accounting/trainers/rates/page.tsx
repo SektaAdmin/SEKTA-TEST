@@ -118,34 +118,54 @@ export default function TrainerRatesPage() {
           ) : rates.length === 0 ? (
             <div className={styles.empty}>Ставки не задано. Додайте першу ставку.</div>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Тип заняття</th>
-                    <th>Тренер</th>
-                    <th>Ставка ₴/год</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rates.map(r => (
-                    <tr key={r.id} className={styles.row} onClick={() => openEdit(r)}>
-                      <td><span className={styles.typeChip}>{ticketLabel(r.ticket_type)}</span></td>
-                      <td className={r.trainer_id ? '' : styles.global}>{rateLabel(r)}</td>
-                      <td className={styles.rateCell}>{formatMoney(Number(r.rate))}</td>
-                      <td className={styles.deleteCell}>
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={e => { e.stopPropagation(); setDeleteConfirm({ open: true, rate: r }) }}
-                          aria-label="Видалити"
-                        >×</button>
-                      </td>
+            <>
+              <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Тип заняття</th>
+                      <th>Тренер</th>
+                      <th>Ставка ₴/год</th>
+                      <th></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {rates.map(r => (
+                      <tr key={r.id} className={styles.row} onClick={() => openEdit(r)}>
+                        <td><span className={styles.typeChip}>{ticketLabel(r.ticket_type)}</span></td>
+                        <td className={r.trainer_id ? '' : styles.global}>{rateLabel(r)}</td>
+                        <td className={styles.rateCell}>{formatMoney(Number(r.rate))}</td>
+                        <td className={styles.deleteCell}>
+                          <button
+                            className={styles.deleteBtn}
+                            onClick={e => { e.stopPropagation(); setDeleteConfirm({ open: true, rate: r }) }}
+                            aria-label="Видалити"
+                          >×</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className={styles.cardList}>
+                {rates.map(r => (
+                  <div key={r.id} className={styles.card} onClick={() => openEdit(r)}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.typeChip}>{ticketLabel(r.ticket_type)}</span>
+                      <span className={styles.rateCell}>{formatMoney(Number(r.rate))}/год</span>
+                    </div>
+                    <div className={styles.cardMeta}>
+                      <span className={r.trainer_id ? '' : styles.global}>{rateLabel(r)}</span>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={e => { e.stopPropagation(); setDeleteConfirm({ open: true, rate: r }) }}
+                        aria-label="Видалити"
+                      >×</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </main>

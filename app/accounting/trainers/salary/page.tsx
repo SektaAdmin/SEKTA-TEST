@@ -170,7 +170,7 @@ export default function TrainerSalaryPage() {
               <div className={styles.empty}>{MSG.empty.salaryPeriod}</div>
             ) : (
               <>
-                <div className={styles.tableWrap}>
+                <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -206,6 +206,29 @@ export default function TrainerSalaryPage() {
                     </tfoot>
                   </table>
                 </div>
+                <div className={styles.cardList}>
+                  {salaryRows.map(r => (
+                    <div key={r.ticket_type} className={styles.card}>
+                      <div className={styles.cardRow}>
+                        <span className={styles.typeChip}>{ticketTypeShortLabel(r.ticket_type)}</span>
+                        <span className={r.rate === null ? styles.noRate : styles.amount}>
+                          {r.rate === null ? '—' : formatMoney(r.amount)}
+                        </span>
+                      </div>
+                      <div className={styles.cardMeta}>
+                        <span>{r.sessions_total} год.</span>
+                        <span className={styles.cardMetaDot}>·</span>
+                        <span className={r.rate === null ? styles.noRate : styles.rateVal}>
+                          {r.rate === null ? 'ставка не задана' : `${formatMoney(Number(r.rate))}/год`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className={styles.cardTotal}>
+                    <span>Нараховано</span>
+                    <span className={styles.totalAmount}>{formatMoney(totalCalculated)}</span>
+                  </div>
+                </div>
                 {hasNoRate && (
                   <p className={styles.noRateHint}>
                     Для деяких типів занять ставка не задана.{' '}
@@ -230,7 +253,7 @@ export default function TrainerSalaryPage() {
               <div className={styles.empty}>{MSG.empty.paymentsPeriod}</div>
             ) : (
               <>
-                <div className={styles.tableWrap}>
+                <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
                   <table className={styles.table}>
                     <thead>
                       <tr>
@@ -260,6 +283,26 @@ export default function TrainerSalaryPage() {
                       </tr>
                     </tfoot>
                   </table>
+                </div>
+                <div className={styles.cardList}>
+                  {payments.map(p => (
+                    <div key={p.id} className={styles.card}>
+                      <div className={styles.cardRow}>
+                        <span className={styles.cardDate}>{formatDate(p.payment_date)}</span>
+                        <span className={styles.paidAmount}>{formatMoney(Number(p.paid_amount))}</span>
+                      </div>
+                      <div className={styles.cardMeta}>
+                        <span className={styles.periodCell}>{formatPeriod(p.period_start, p.period_end)}</span>
+                        <span className={styles.cardMetaDot}>·</span>
+                        <span className={styles.rateVal}>нарах. {formatMoney(Number(p.calculated_amount))}</span>
+                      </div>
+                      {p.notes && <div className={styles.notes}>{p.notes}</div>}
+                    </div>
+                  ))}
+                  <div className={styles.cardTotal}>
+                    <span>Виплачено всього</span>
+                    <span className={styles.paidAmount}>{formatMoney(totalPaid)}</span>
+                  </div>
                 </div>
               </>
             )}
