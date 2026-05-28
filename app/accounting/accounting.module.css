@@ -186,6 +186,38 @@
 .tableDesktop { display: block; }
 
 .thRight { text-align: right !important; }
+.thCheck { width: 36px; }
+
+.checkCell {
+  width: 36px;
+  padding-right: 0 !important;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.rowChecked td {
+  background: var(--accent-dim) !important;
+  opacity: 0.6;
+}
+
+.rowChecked {
+  cursor: pointer;
+}
+
+:global(.data-table) tbody tr:has(.checkbox) {
+  cursor: pointer;
+}
+
+.cardChecked {
+  background: var(--accent-dim) !important;
+  opacity: 0.6;
+}
 
 .dateCell {
   display: flex;

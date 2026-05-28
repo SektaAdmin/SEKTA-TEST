@@ -72,6 +72,15 @@ export default function AccountingPage() {
   const [sales,    setSales]    = useState<SaleRow[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
+  const [checked,  setChecked]  = useState<Set<string>>(new Set())
+
+  function toggleChecked(id: string) {
+    setChecked(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   useEffect(() => {
     listActiveTrainers(supabase).then(setTrainers)
@@ -220,6 +229,7 @@ export default function AccountingPage() {
                 <table className="data-table">
                   <thead>
                     <tr>
+                      <th className={styles.thCheck}></th>
                       <th>Дата</th>
                       <th>Клієнт і операція</th>
                       <th className={styles.thRight}>Сума</th>
@@ -232,8 +242,18 @@ export default function AccountingPage() {
                       const amt = revenue(s)
                       const depDelta = s.amount_given - s.price_paid
                       const hasDeposit = s.ticket_id !== null && depDelta > 0
+                      const isChecked = checked.has(s.id)
                       return (
-                        <tr key={s.id}>
+                        <tr key={s.id} className={isChecked ? styles.rowChecked : ''} onClick={() => toggleChecked(s.id)}>
+                          <td className={styles.checkCell}>
+                            <input
+                              type="checkbox"
+                              className={styles.checkbox}
+                              checked={isChecked}
+                              onChange={() => toggleChecked(s.id)}
+                              onClick={e => e.stopPropagation()}
+                            />
+                          </td>
                           <td>
                             <div className={styles.dateCell}>
                               <span className={styles.dateMain}>{date}</span>
@@ -274,8 +294,15 @@ export default function AccountingPage() {
                   const depDelta = s.amount_given - s.price_paid
                   const hasDeposit = s.ticket_id !== null && depDelta > 0
                   return (
-                    <div key={s.id} className={styles.card}>
+                    <div key={s.id} className={`${styles.card} ${checked.has(s.id) ? styles.cardChecked : ''}`} onClick={() => toggleChecked(s.id)}>
                       <div className={styles.cardRow}>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={checked.has(s.id)}
+                          onChange={() => toggleChecked(s.id)}
+                          onClick={e => e.stopPropagation()}
+                        />
                         <span className={styles.cardClient}>{clientName(s)}</span>
                         <span className={styles.cardAmt}>{amt > 0 ? formatMoney(s.amount_given) : '—'}</span>
                       </div>
