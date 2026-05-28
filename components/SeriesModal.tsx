@@ -195,6 +195,24 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
           />
         }
       >
+        <div className={styles.row}>
+          <FormField id="sm-dow" label="День тижня" required>
+            <select id="sm-dow" {...register('day_of_week')} disabled={isSubmitting}>
+              {DAY_OPTIONS.map(({ label, value }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField id="sm-time" label="Час початку" required error={errors.time_of_day}>
+            <input
+              id="sm-time"
+              type="time"
+              {...register('time_of_day', { required: VM.required.time })}
+              disabled={isSubmitting}
+            />
+          </FormField>
+        </div>
+
         <FormField id="sm-type" label="Тип заняття" required error={errors.ticket_type}>
           <select id="sm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={isSubmitting}>
             {trainingTypes.map(t => (
@@ -215,24 +233,6 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
               <option value="">— без залу —</option>
               {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
-          </FormField>
-        </div>
-
-        <div className={styles.row}>
-          <FormField id="sm-dow" label="День тижня" required>
-            <select id="sm-dow" {...register('day_of_week')} disabled={isSubmitting}>
-              {DAY_OPTIONS.map(({ label, value }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </FormField>
-          <FormField id="sm-time" label="Час початку" required error={errors.time_of_day}>
-            <input
-              id="sm-time"
-              type="time"
-              {...register('time_of_day', { required: VM.required.time })}
-              disabled={isSubmitting}
-            />
           </FormField>
         </div>
 
