@@ -230,10 +230,10 @@ export default function AccountingPage() {
                   <thead>
                     <tr>
                       <th className={styles.thCheck}></th>
-                      <th>Дата</th>
+                      <th className={styles.thDate}>Дата</th>
                       <th>Клієнт і операція</th>
-                      <th className={styles.thRight}>Сума</th>
-                      <th>Метод</th>
+                      <th className={styles.thAmt}>Сума</th>
+                      <th className={styles.thMethod}>Метод</th>
                     </tr>
                   </thead>
                   <tbody>

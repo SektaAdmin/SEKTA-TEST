@@ -185,8 +185,16 @@
 /* ── Table overrides ─────────────────────────────────────────── */
 .tableDesktop { display: block; }
 
+.tableDesktop :global(.data-table) {
+  table-layout: fixed;
+  width: 100%;
+}
+
 .thRight { text-align: right !important; }
 .thCheck { width: 36px; }
+.thDate  { width: 110px; }
+.thAmt   { width: 110px; text-align: right; }
+.thMethod { width: 100px; }
 
 .checkCell {
   width: 36px;
