@@ -639,23 +639,26 @@ types/
 
 **Назначення:** Журнал усіх минулих занять (вчора і раніше). Замінює /settings/archive і недосяжний archive tab у /schedule.
 
+**Layout:** власний `journal.module.css` (`.layout`, `.main`, `.topbar`, `.stickyHead`) — не shared з settings. `main` має `min-width: 0` (без `overflow-x: hidden` — ламає sticky). `.stickyHead` (`position: sticky; top: 0; z-index: 10`) обгортає topbar + filterBar разом.
+
 **Компоненти:**
-- **Filter bar**: HTML5 date inputs (від/до), dropdown: тренер/зал/тип/статус (Всі / Тільки скасовані)
+- **Filter bar**: `DatePicker` × 2 (від/до) + `FilterSelect` × 4 (тренер/зал/тип/статус) + кнопка × (з'являється при активних фільтрах)
+- **FilterSelect**: inline Radix `SelectPrimitive` у `page.tsx`. ⚠️ Radix Select не приймає `value=""` — пуста строка маппиться у sentinel `'__all__'` всередині компонента
 - **Table**: 20 рядків/сторінка, колонки: Дата | Час | Тип | Назва | Тренер | Зал | Записів | Статус
-- **Pagination**: «/‹/›/» кнопки + counter (Сторінка X з Y · N занять)
+- **Pagination**: «‹›» кнопки + counter (Сторінка X з Y · N занять)
 - **Click on row/card** → `ClassDetailModal` з повним редагуванням
 
 **Mobile adaptation (≤640px):**
-- **Filter bar**: `overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap` — горизонтальний скрол без вертикального drift
-- **Таблиця**: на десктопі `.tableDesktop`, на мобільному `.cardList` — CSS toggle (`display: none/flex`); обидва рендеряться одночасно
-- **Journal card**: тип заняття + дата·час в рядку; мета-рядок: тренер · зал · N записів · статус-бейдж
-- **Pagination**: `flex-wrap: wrap`, ліво=info, право=кнопки; на мобільному кожна секція 100% ширини
+- **Filter bar**: `overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap` — горизонтальний скрол
+- **Таблиця**: `.tableDesktop` / `.cardList` CSS toggle — обидва рендеряться в JSX одночасно
+- **Journal card**: тип + дата·час в рядку; мета: тренер · зал · N записів · статус-бейдж
+- **Pagination**: ліво=info, право=кнопки; на мобільному кожна секція 100% ширини
 
 **Query:** `listPastClasses(supabase, page, pageSize, filters)` — в `lib/queries/classes.ts`
 - Cutoff: `starts_at < today` (початок поточного дня, без штучного 30-денного обмеження)
 - Фільтри: `dateFrom`, `dateTo`, `hallId`, `trainerId`, `ticketType`, `isCancelled`
 - Повертає: `{ data: ClassWithJoins[], count: number, error: string | null }`
-- `ClassWithJoins` — тепер `export type` в `lib/queries/classes.ts`
+- `ClassWithJoins` — `export type` в `lib/queries/classes.ts`
 
 ---
 
