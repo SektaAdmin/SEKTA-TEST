@@ -10,7 +10,7 @@ import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
-import { getActiveCount, getWaitlistCount, isFull, isAlmost, fillPct } from '@/lib/scheduleMetrics'
+import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import styles from './schedule.module.css'
@@ -124,24 +124,11 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const waitlistCount = getWaitlistCount(cls.enrollments)
   const color = typeColor(cls.ticket_type)
   const full = isFull(cls.enrollments, cls.capacity)
-  const almost = isAlmost(cls.enrollments, cls.capacity)
 
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
 
-  const slotState = waitlistCount > 0 ? 'over' : full ? 'full' : almost ? 'almost' : 'free'
-  const progressBar = cls.capacity != null && !cls.is_cancelled ? (() => {
-    const pct = Math.min((activeCount / cls.capacity) * 100, 100)
-    return (
-      <div className={styles.cardFooter}>
-        <div
-          className={`${styles.cardProgressBar} ${styles['cardBar_' + slotState]}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    )
-  })() : null
 
   return (
     <button
@@ -183,18 +170,18 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
               return <div className={styles.cardSlotsEmpty}>Немає місць</div>
             }
             const freeText = free === 1 ? 'місце' : free >= 2 && free <= 4 ? 'місця' : 'місць'
+            const isAlmostFree = free <= 2
             return (
               <div className={styles.cardSlots}>
                 <strong className={styles.cardSlotsCount}>{activeCount}</strong>
                 <span className={styles.cardSlotsTotal}>/{cls.capacity}</span>
                 <span className={styles.cardSlotsSeparator}>·</span>
-                <span className={styles.cardSlotsFree}>{free} {freeText}</span>
+                <span className={isAlmostFree ? styles.cardSlotsFreeWarning : styles.cardSlotsFree}>{free} {freeText}</span>
               </div>
             )
           })()}
         </>
       )}
-      {progressBar}
     </button>
   )
 }
