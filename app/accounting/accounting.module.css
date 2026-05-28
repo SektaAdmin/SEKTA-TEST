@@ -208,7 +208,7 @@
   padding-right: 0 !important;
 }
 
-.iconIncome  { color: var(--accent); }
+.iconIncome  { color: var(--success); }
 .iconDeposit { color: var(--text-3); }
 .thClient  { width: 180px; }
 .thTicket  { width: 200px; }
