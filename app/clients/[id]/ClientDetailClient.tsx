@@ -326,7 +326,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </section>
 
             <section className={styles.card}>
-              <h2 className={styles.sectionTitle}>Залишок занять</h2>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.sectionTitle}>Залишок занять</h2>
+                <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
+                  Записати продаж
+                </button>
+              </div>
               {sessionBalances.length === 0 ? (
                 <div className={styles.emptySection}>
                   <span className={styles.empty2}>{MSG.empty.activeEnrollments}</span>
@@ -462,13 +467,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 </button>
               </div>
             </div>
-            {activeTab === 'sales' && (
-              <div className={styles.tabActions}>
-                <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
-                  Записати продаж
-                </button>
-              </div>
-            )}
 
             {activeTab === 'feed' && (() => {
               type FeedItem =
