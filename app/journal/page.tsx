@@ -278,4 +278,5 @@ const selectStyle: React.CSSProperties = {
   cursor: 'pointer',
   height: 'var(--control-h)',
   flexShrink: 0,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
 }
