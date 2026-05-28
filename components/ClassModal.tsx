@@ -373,6 +373,15 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           </div>
         )}
 
+        <FormField id="cm-starts" label={isSeries ? 'Перше заняття' : 'Дата і час'} required error={errors.starts_at}>
+          <input
+            id="cm-starts"
+            type="datetime-local"
+            {...register('starts_at', { required: VM.required.field })}
+            disabled={loading}
+          />
+        </FormField>
+
         <FormField id="cm-type" label="Тип заняття" required error={errors.ticket_type}>
           <select id="cm-type" {...register('ticket_type', { required: VM.required.selectTypeShort })} disabled={loading}>
             {trainingTypes.map(t => (
@@ -381,45 +390,34 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           </select>
         </FormField>
 
-        <div className={styles.row}>
-          <FormField id="cm-trainer" label="Тренер">
-            <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
-              <option value="">— без тренера —</option>
-              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-          </FormField>
-          <FormField id="cm-hall" label="Зал">
-            <select id="cm-hall" {...register('hall_id')} disabled={loading}>
-              <option value="">— без залу —</option>
-              {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-            </select>
-          </FormField>
-        </div>
+        <FormField id="cm-trainer" label="Тренер">
+          <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
+            <option value="">— без тренера —</option>
+            {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+        </FormField>
 
-        <div className={styles.row}>
-          <FormField id="cm-starts" label={isSeries ? 'Перше заняття' : 'Дата і час'} required error={errors.starts_at}>
-            <input
-              id="cm-starts"
-              type="datetime-local"
-              {...register('starts_at', { required: VM.required.field })}
-              disabled={loading}
-            />
-          </FormField>
-          <FormField id="cm-dur" label="Тривалість, хв" error={errors.duration_min}>
-            <input
-              id="cm-dur"
-              type="number"
-              min={15}
-              step={15}
-              {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
-              disabled={loading}
-            />
-          </FormField>
-        </div>
+        <FormField id="cm-hall" label="Зал">
+          <select id="cm-hall" {...register('hall_id')} disabled={loading}>
+            <option value="">— без залу —</option>
+            {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+          </select>
+        </FormField>
+
+        <FormField id="cm-dur" label="Тривалість, хв" error={errors.duration_min}>
+          <input
+            id="cm-dur"
+            type="number"
+            min={15}
+            step={15}
+            {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
+            disabled={loading}
+          />
+        </FormField>
 
         {/* Series-specific fields */}
         {isSeries && !isEdit && (
-          <div className={styles.row}>
+          <>
             <FormField id="cm-dow" label="День тижня">
               <select id="cm-dow" {...register('day_of_week')} disabled={loading}>
                 {DAY_OPTIONS.map(({ label, value }) => (
@@ -437,30 +435,29 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
                 disabled={loading}
               />
             </FormField>
-          </div>
+          </>
         )}
 
-        <div className={styles.row}>
-          <FormField id="cm-cap" label="Ліміт місць">
-            <input
-              id="cm-cap"
-              type="number"
-              min={1}
-              placeholder="Без ліміту"
-              {...register('capacity')}
-              disabled={loading}
-            />
-          </FormField>
-          <FormField id="cm-title" label="Назва (опц.)">
-            <input
-              id="cm-title"
-              type="text"
-              placeholder="Кастомна назва"
-              {...register('title')}
-              disabled={loading}
-            />
-          </FormField>
-        </div>
+        <FormField id="cm-cap" label="Ліміт місць">
+          <input
+            id="cm-cap"
+            type="number"
+            min={1}
+            placeholder="Без ліміту"
+            {...register('capacity')}
+            disabled={loading}
+          />
+        </FormField>
+
+        <FormField id="cm-title" label="Назва (опц.)">
+          <input
+            id="cm-title"
+            type="text"
+            placeholder="Кастомна назва"
+            {...register('title')}
+            disabled={loading}
+          />
+        </FormField>
 
         <FormField id="cm-notes" label="Нотатки">
           <textarea
