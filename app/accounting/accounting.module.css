@@ -170,7 +170,7 @@
 /* ── Content ─────────────────────────────────────────────────── */
 .content {
   flex: 1;
-  padding: 0 var(--topbar-px);
+  padding: 24px var(--topbar-px);
   display: flex;
   flex-direction: column;
 }
@@ -343,7 +343,7 @@
     font-size: 17px;
   }
 
-  .content { padding: 0 16px; }
+  .content { padding: 16px 16px; }
 
   .tableDesktop { display: none; }
   .cardList     { display: flex; flex-direction: column; }
