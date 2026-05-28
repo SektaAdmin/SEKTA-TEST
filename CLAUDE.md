@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (Mobile Adaptation Phases A–E + G–J complete + /schedule mobile: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation, /schedule no horizontal scroll)
+- **Last Updated**: 2026-05-28 (Mobile Adaptation Phases A–E + G–J complete + /schedule mobile: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation, /schedule no horizontal scroll, /schedule/templates full mobile adaptation)
 
 ## Commands
 
@@ -523,7 +523,7 @@ types/
 **@keyframes:** `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
 **Layout:** `--control-h: 32px`, `--topbar-py: 16px`, `--topbar-px: 28px`, `--topbar-h: 64px`, `--sidebar-w: 196px`, `--right-panel-w: 280px`, `--bottom-nav-h: 56px`, `--radius: 10px`, `--radius-sm: 6px`
 
-### /schedule/templates Page (станом на 2026-05-24)
+### /schedule/templates Page (станом на 2026-05-28)
 
 **View modes:** День / Тиждень / Список
 
@@ -544,6 +544,14 @@ types/
 
 **Topbar:** backLink ← Розклад + заголовок + [dayNav в день-вью] + [День/Тиждень/Список] + Виставити тиждень + Видалити розклад + "+ Новий шаблон"
 **FilterBar:** фільтр залів + фільтр тренерів + пошук за клієнтом
+
+**Mobile adaptation (≤640px):**
+- **Topbar**: `topbarLeft`/`topbarRight` приховані; `mobileTopNav` — компактний ← [день] → (navBtn 44×44)
+- **Авто-перемикання**: на мобільному `viewMode` примусово стає `'day'` через `useEffect(isMobile)`; `isMobile` визначається через `window.innerWidth <= 640` на mount + resize listener
+- **FAB**: `position: fixed; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); z-index: 250` — вище BottomNav (z-200)
+- **Filter bar**: horizontal scroll, `flex-wrap: nowrap`, `::before/::after` padding, висота кнопок 36px
+- **SeriesModal**: `fullScreen={isMobile}` — на мобільному відкривається на весь екран
+- **HallWeekGrid**: `min-width: 0` для dayCol/dayHeader/hallSubCol → day view fills width; `overflow-x: auto` на bodyWrapper
 
 ---
 
