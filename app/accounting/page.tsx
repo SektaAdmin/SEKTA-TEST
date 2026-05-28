@@ -180,37 +180,29 @@ export default function AccountingPage() {
           )}
         </div>
 
-        {/* Totals bar */}
+        {/* Totals cards */}
         {!loading && !error && (
           <div className={styles.totalsBar}>
-            {totals.cash > 0 && (
-              <span className={styles.totalItem}>
-                <span className={styles.totalLabel}>Готівка</span>
-                <span className={`${styles.totalValue} ${styles.valCash}`}>{formatMoney(totals.cash)}</span>
-              </span>
-            )}
-            {totals.fop > 0 && (
-              <span className={styles.totalItem}>
-                <span className={styles.totalLabel}>ФОП</span>
-                <span className={`${styles.totalValue} ${styles.valFop}`}>{formatMoney(totals.fop)}</span>
-              </span>
-            )}
-            {totals.card > 0 && (
-              <span className={styles.totalItem}>
-                <span className={styles.totalLabel}>Картка</span>
-                <span className={`${styles.totalValue} ${styles.valCard}`}>{formatMoney(totals.card)}</span>
-              </span>
-            )}
-            {totals.deposit > 0 && (
-              <span className={styles.totalItem}>
-                <span className={styles.totalLabel}>Депозит</span>
-                <span className={`${styles.totalValue} ${styles.valDeposit}`}>{formatMoney(totals.deposit)}</span>
-              </span>
-            )}
-            <span className={`${styles.totalItem} ${styles.totalItemGrand}`}>
-              <span className={styles.totalLabel}>Разом</span>
-              <span className={styles.totalValue}>{formatMoney(grandTotal)}</span>
-            </span>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Готівка</div>
+              <div className={`${styles.summaryValue} ${totals.cash > 0 ? styles.valCash : styles.summaryZero}`}>{formatMoney(totals.cash)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>ФОП</div>
+              <div className={`${styles.summaryValue} ${totals.fop > 0 ? styles.valFop : styles.summaryZero}`}>{formatMoney(totals.fop)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Картка</div>
+              <div className={`${styles.summaryValue} ${totals.card > 0 ? styles.valCard : styles.summaryZero}`}>{formatMoney(totals.card)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Депозит</div>
+              <div className={`${styles.summaryValue} ${totals.deposit > 0 ? styles.valDeposit : styles.summaryZero}`}>{formatMoney(totals.deposit)}</div>
+            </div>
+            <div className={`${styles.summaryCard} ${styles.summaryCardTotal}`}>
+              <div className={styles.summaryLabel}>Надходження</div>
+              <div className={styles.summaryValue}>{formatMoney(grandTotal)}</div>
+            </div>
           </div>
         )}
 
