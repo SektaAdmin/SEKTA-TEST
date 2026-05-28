@@ -228,13 +228,11 @@
 
 .dateMain {
   font-size: 14px;
-  line-height: 20px;
   color: var(--text);
 }
 
 .dateTime {
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
@@ -246,23 +244,19 @@
 
 .clientName {
   font-size: 14px;
-  line-height: 20px;
   font-weight: 500;
   color: var(--text);
 }
 
 .ticketName {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
 .depositHint {
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 14px;
   color: var(--text-3);
   font-style: italic;
-  margin-top: 2px;
 }
 
 .amtCell {
@@ -270,7 +264,6 @@
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   font-size: 14px;
-  line-height: 20px;
   white-space: nowrap;
   vertical-align: top;
 }
