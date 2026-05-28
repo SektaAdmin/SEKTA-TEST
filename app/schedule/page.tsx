@@ -465,6 +465,7 @@ export default function SchedulePage() {
           </div>
 
           <div className={styles.topbarRight}>
+            <div className={styles.desktopNav}>
             <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
@@ -478,6 +479,7 @@ export default function SchedulePage() {
                 <path d="M5 2l5 5-5 5"/>
               </svg>
             </button>
+            </div>
             <div className={styles.viewToggle}>
                 <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
                   День
@@ -486,10 +488,27 @@ export default function SchedulePage() {
                   Тиждень
                 </button>
               </div>
-            <button className="btn-primary" onClick={() => { setPrefill(undefined); setShowModal(true) }}>
+            <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
               </button>
           </div>
+        </div>
+
+        {/* Mobile nav strip — below filter bar, mobile only */}
+        <div className={styles.mobileNav}>
+          <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 2L4 7l5 5"/>
+            </svg>
+          </button>
+          <button className={styles.mobileNavLabel} onClick={() => setBaseDate(new Date())}>
+            {navLabel}
+          </button>
+          <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M5 2l5 5-5 5"/>
+            </svg>
+          </button>
         </div>
 
         {/* Filter bar */}

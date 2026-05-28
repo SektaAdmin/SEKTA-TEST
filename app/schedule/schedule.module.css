@@ -491,10 +491,51 @@
   min-height: 0;
 }
 
+/* ── Desktop nav group (← Сьогодні →) ──────────────────────── */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Mobile nav strip (below filter bar) ───────────────────── */
+.mobileNav {
+  display: none;
+}
+
 @media (max-width: 640px) {
-  /* Topbar */
+  /* Topbar — hide nav, view toggle, and add button */
   .topbarRight { flex-wrap: wrap; justify-content: flex-end; }
+  .desktopNav { display: none; }
+  .viewToggle { display: none; }
+  .btnAddClass { display: none; }
   .viewBtnWeek { display: none; }
+
+  /* Mobile nav strip — visible below filter bar */
+  .mobileNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--filterbar-h));
+    z-index: 7;
+  }
+  .mobileNavLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font);
+    padding: 0 8px;
+  }
 
   /* Filter bar — horizontal scroll strip, no wrapping */
   .filterBar {
