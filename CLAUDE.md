@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00)
+- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний включно з /settings; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00)
 
 ## Commands
 
@@ -181,7 +181,7 @@ trainer_payments ──► trainers
 | sort_order | integer | NO | 0 |
 | created_at | timestamptz | NO | |
 
-`code` — незмінний ідентифікатор. `label` — редагується. Керується через `/settings?tab=training-types`.
+`code` — незмінний ідентифікатор. `label` — редагується. Керується через `/settings/training-types`.
 
 **⚠️ Константи TICKET_TYPES / TICKET_TYPE_LABELS видалені з types/index.ts** — всі dropdown та дисплеї читають з DB.
 
@@ -380,7 +380,11 @@ npm run start
 | `/accounting/trainers` | Звіт по тренерах |
 | `/accounting/trainers/salary` | Нарахування зарплати + виплати |
 | `/accounting/trainers/rates` | Ставки тренерів (глобальні + індивідуальні) |
-| `/settings` | Таби: Абонементи / Тренери / Зали / Типи тренувань |
+| `/settings` | Редирект → `/settings/tickets` |
+| `/settings/tickets` | Абонементи: таблиця активних + архів |
+| `/settings/trainers` | Тренери: таблиця активних + архів |
+| `/settings/halls` | Зали: таблиця активних + архів |
+| `/settings/training-types` | Типи тренувань: таблиця активних + архів, редагування |
 
 ---
 
@@ -659,6 +663,37 @@ types/
 - Фільтри: `dateFrom`, `dateTo`, `hallId`, `trainerId`, `ticketType`, `isCancelled`
 - Повертає: `{ data: ClassWithJoins[], count: number, error: string | null }`
 - `ClassWithJoins` — `export type` в `lib/queries/classes.ts`
+
+---
+
+### /settings Pages (станом на 2026-05-28)
+
+**Маршрути:** `/settings` → redirect `/settings/tickets`. Окремі сторінки: `tickets` / `trainers` / `halls` / `training-types`.
+
+**Layout:** `settings/layout.tsx` — `Sidebar + BottomNav + <main>`. Shared `settings.module.css` для всіх чотирьох підсторінок.
+
+**Топбар:** заголовок + кнопка дії (+ Додати...). `height: var(--topbar-h)`, `position: sticky; top: 0`.
+
+**Tab навігація між розділами (мобільний):**
+- `.tabNav` — окремий рядок під topbar, `position: sticky; top: var(--topbar-h)`, `overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap`
+- На десктопі `display: none` — навігація через Sidebar
+- Використовує `<a href=...>` (не Next.js `<Link>`) — hard navigation між /settings/\* сторінками
+
+**Таблиці / картки:**
+- Активні записи + архів (через `ArchiveSection` з chevron і лічильником)
+- `.tableDesktop` / `.cardList` CSS toggle (обидва в JSX, `display: none/flex`)
+- **Карта активного запису**: назва + `ToggleBtns` (TRUE/FALSE) в рядку; мета знизу (тип/ціна/сесії або handles або місткість/опис або код)
+- **Карта архівного запису**: `opacity: 0.65` + кнопка "Відновити"
+- **training-types**: додатково кнопка "Редагувати" → `TrainingTypeModal`
+
+**`ToggleBtns`**: inline компонент — пара кнопок TRUE/FALSE для `is_active`. Стан активної кнопки через `.toggleActiveTrue` / `.toggleActiveFalse`.
+
+**Mobile adaptation (≤640px):**
+- `main`: `margin-left: 0`, `padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom))`
+- `topbar`: стандартна висота `var(--topbar-h)`, без `flex-wrap`
+- `tabNav`: sticky під topbar, горизонтальний скрол, `display: none` на десктопі
+- `tabSection`: `padding: 16px`
+- Таблиця прихована → картки видимі
 
 ---
 
