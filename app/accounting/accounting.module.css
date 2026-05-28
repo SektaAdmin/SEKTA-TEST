@@ -28,6 +28,34 @@
   flex-shrink: 0;
 }
 
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addExpenseBtn {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  height: var(--control-h);
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+}
+.addExpenseBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
 .trainerReportLink {
   display: inline-flex;
   align-items: center;
@@ -174,6 +202,7 @@
 .valFop     { color: var(--fop); }
 .valCard    { color: var(--card); }
 .valDeposit { color: var(--deposit); }
+.valNeg     { color: var(--danger); }
 
 /* ── Content ─────────────────────────────────────────────────── */
 .content {
@@ -208,8 +237,10 @@
   padding-right: 0 !important;
 }
 
-.iconIncome  { color: var(--success); }
-.iconDeposit { color: var(--text-3); }
+.iconIncome      { color: var(--success); }
+.iconDeposit     { color: var(--text-3); }
+.iconExpense     { color: var(--danger); }
+.iconOtherIncome { color: var(--success); }
 .thClient  { width: 180px; }
 .thTicket  { width: 200px; }
 .thPrice   { width: 100px; text-align: right !important; }
@@ -424,6 +455,60 @@
   font-size: 14px;
   color: var(--accent);
   font-weight: 500;
+}
+
+/* ── Studio expense rows ─────────────────────────────────────── */
+.expenseRow td {
+  background: var(--bg) !important;
+  opacity: 0.85;
+}
+.expenseRow:hover td {
+  background: var(--bg-2) !important;
+  opacity: 1;
+  cursor: default;
+}
+
+.expenseLabel {
+  color: var(--text-2) !important;
+  font-style: italic;
+}
+
+.amtExpense {
+  color: var(--danger) !important;
+  font-weight: 600;
+}
+
+.amtOtherIncome {
+  color: var(--success) !important;
+  font-weight: 600;
+}
+
+.expenseMethodRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deleteExpenseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  transition: color var(--motion-fast), background var(--motion-fast);
+  flex-shrink: 0;
+}
+.deleteExpenseBtn:hover {
+  color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.expenseCard {
+  background: var(--bg) !important;
+  border-left: 3px solid var(--danger);
 }
 
 /* ── Mobile overrides (завжди в кінці) ───────────────────────── */

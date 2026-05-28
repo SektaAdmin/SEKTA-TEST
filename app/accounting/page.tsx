@@ -2,11 +2,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
+import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
+import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
+import StudioExpenseModal from '@/components/StudioExpenseModal'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
@@ -26,6 +29,10 @@ type SaleRow = {
   clients: { first_name: string | null; last_name: string | null } | null
   trainers: { name: string } | null
 }
+
+type FeedItem =
+  | { kind: 'sale'; data: SaleRow }
+  | { kind: 'expense'; data: StudioExpense }
 
 type PaymentFilter = 'all' | 'cash' | 'fop' | 'personal_card' | 'deposit'
 
@@ -49,7 +56,7 @@ function fmtDatetime(iso: string): { date: string; time: string } {
   return { date, time }
 }
 
-function revenue(s: SaleRow): number {
+function saleRevenue(s: SaleRow): number {
   return s.ticket_id !== null ? s.price_paid : Math.max(0, s.amount_given)
 }
 
@@ -72,9 +79,11 @@ export default function AccountingPage() {
   const [trainerFilter, setTrainerFilter] = useState<string>('all')
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [sales,    setSales]    = useState<SaleRow[]>([])
+  const [expenses, setExpenses] = useState<StudioExpense[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
   const [checked,  setChecked]  = useState<Set<string>>(new Set())
+  const [expenseModal, setExpenseModal] = useState(false)
 
   function toggleChecked(id: string) {
     setChecked(prev => {
@@ -88,57 +97,97 @@ export default function AccountingPage() {
     listActiveTrainers(supabase).then(setTrainers)
   }, [])
 
-  const fetchSales = useCallback(async (from: string, to: string) => {
+  const fetchData = useCallback(async (from: string, to: string) => {
     setLoading(true)
     setError(null)
-    const { data, error } = await supabase
-      .from('sales')
-      .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
-      .gte('created_at', `${from}T00:00:00`)
-      .lte('created_at', `${to}T23:59:59`)
-      .order('created_at', { ascending: false })
-    if (error) { setError(error.message); setLoading(false); return }
-    setSales((data ?? []) as SaleRow[])
+    const [salesRes, expensesRes] = await Promise.all([
+      supabase
+        .from('sales')
+        .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
+        .gte('created_at', `${from}T00:00:00`)
+        .lte('created_at', `${to}T23:59:59`)
+        .order('created_at', { ascending: false }),
+      listStudioExpenses(supabase, from, to),
+    ])
+    if (salesRes.error) { setError(salesRes.error.message); setLoading(false); return }
+    setSales((salesRes.data ?? []) as SaleRow[])
+    setExpenses(expensesRes.data)
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchSales(dateFrom, dateTo) }, [dateFrom, dateTo, fetchSales])
+  useEffect(() => { fetchData(dateFrom, dateTo) }, [dateFrom, dateTo, fetchData])
 
   useEffect(() => {
     if (paymentFilter !== 'cash') setTrainerFilter('all')
   }, [paymentFilter])
 
-  const filtered = useMemo(() => {
-    let s = sales
-    if (paymentFilter !== 'all') s = s.filter(r => r.payment_method === paymentFilter)
-    if (paymentFilter === 'cash' && trainerFilter !== 'all') {
-      s = s.filter(r => r.trainer_id === trainerFilter)
-    }
-    return s
-  }, [sales, paymentFilter, trainerFilter])
+  async function handleDeleteExpense(id: string) {
+    await deleteStudioExpense(supabase, id)
+    setExpenses(prev => prev.filter(e => e.id !== id))
+  }
+
+  // Build unified sorted feed
+  const feed = useMemo<FeedItem[]>(() => {
+    const items: FeedItem[] = [
+      ...sales.map(s => ({ kind: 'sale' as const, data: s })),
+      ...expenses.map(e => ({ kind: 'expense' as const, data: e })),
+    ]
+    items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
+    return items
+  }, [sales, expenses])
+
+  const filtered = useMemo<FeedItem[]>(() => {
+    return feed.filter(item => {
+      const method = item.data.payment_method
+      if (paymentFilter !== 'all' && method !== paymentFilter) return false
+      if (paymentFilter === 'deposit' && item.kind === 'expense') return false
+      if (paymentFilter === 'cash' && trainerFilter !== 'all') {
+        const tid = item.kind === 'sale' ? item.data.trainer_id : item.data.trainer_id
+        if (tid !== trainerFilter) return false
+      }
+      return true
+    })
+  }, [feed, paymentFilter, trainerFilter])
 
   const totals = useMemo(() => {
-    const t = { cash: 0, fop: 0, card: 0, deposit: 0 }
-    for (const s of filtered) {
-      const amt = revenue(s)
-      if (s.payment_method === 'cash')               t.cash    += amt
-      else if (s.payment_method === 'fop')           t.fop     += amt
-      else if (s.payment_method === 'personal_card') t.card    += amt
-      else if (s.payment_method === 'deposit')       t.deposit += amt
+    const t = { cash: 0, fop: 0, card: 0, deposit: 0, expenses: 0 }
+    for (const item of filtered) {
+      if (item.kind === 'sale') {
+        const s = item.data
+        const amt = saleRevenue(s)
+        if (s.payment_method === 'cash')               t.cash    += amt
+        else if (s.payment_method === 'fop')           t.fop     += amt
+        else if (s.payment_method === 'personal_card') t.card    += amt
+        else if (s.payment_method === 'deposit')       t.deposit += amt
+      } else {
+        const e = item.data
+        if (e.direction === 'expense') {
+          t.expenses += e.amount
+          if (e.payment_method === 'cash')               t.cash    -= e.amount
+          else if (e.payment_method === 'fop')           t.fop     -= e.amount
+          else if (e.payment_method === 'personal_card') t.card    -= e.amount
+        } else {
+          // income: add to the corresponding method
+          if (e.payment_method === 'cash')               t.cash    += e.amount
+          else if (e.payment_method === 'fop')           t.fop     += e.amount
+          else if (e.payment_method === 'personal_card') t.card    += e.amount
+        }
+      }
     }
     return t
   }, [filtered])
 
   const grandTotal = totals.cash + totals.fop + totals.card
 
-  const allChecked = filtered.length > 0 && filtered.every(s => checked.has(s.id))
-  const someChecked = !allChecked && filtered.some(s => checked.has(s.id))
+  const saleIds = useMemo(() => filtered.filter(i => i.kind === 'sale').map(i => i.data.id), [filtered])
+  const allChecked = saleIds.length > 0 && saleIds.every(id => checked.has(id))
+  const someChecked = !allChecked && saleIds.some(id => checked.has(id))
 
   function toggleAll() {
     if (allChecked) {
       setChecked(new Set())
     } else {
-      setChecked(new Set(filtered.map(s => s.id)))
+      setChecked(new Set(saleIds))
     }
   }
 
@@ -159,9 +208,14 @@ export default function AccountingPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className="page-title">Звітність</h1>
-          <a href="/accounting/trainers" className={styles.trainerReportLink}>
-            Звіт по тренерах →
-          </a>
+          <div className={styles.topbarActions}>
+            <button className={styles.addExpenseBtn} onClick={() => setExpenseModal(true)}>
+              + Витрата/Дохід
+            </button>
+            <a href="/accounting/trainers" className={styles.trainerReportLink}>
+              Звіт по тренерах →
+            </a>
+          </div>
         </div>
 
         <div className={styles.filters}>
@@ -208,20 +262,26 @@ export default function AccountingPage() {
           <div className={styles.totalsInner}>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Готівка</div>
-              <div className={`${styles.summaryValue} ${totals.cash > 0 ? styles.valCash : styles.summaryZero}`}>{formatMoney(totals.cash)}</div>
+              <div className={`${styles.summaryValue} ${totals.cash > 0 ? styles.valCash : totals.cash < 0 ? styles.valNeg : styles.summaryZero}`}>{formatMoney(totals.cash)}</div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>ФОП</div>
-              <div className={`${styles.summaryValue} ${totals.fop > 0 ? styles.valFop : styles.summaryZero}`}>{formatMoney(totals.fop)}</div>
+              <div className={`${styles.summaryValue} ${totals.fop > 0 ? styles.valFop : totals.fop < 0 ? styles.valNeg : styles.summaryZero}`}>{formatMoney(totals.fop)}</div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Картка</div>
-              <div className={`${styles.summaryValue} ${totals.card > 0 ? styles.valCard : styles.summaryZero}`}>{formatMoney(totals.card)}</div>
+              <div className={`${styles.summaryValue} ${totals.card > 0 ? styles.valCard : totals.card < 0 ? styles.valNeg : styles.summaryZero}`}>{formatMoney(totals.card)}</div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Депозит</div>
               <div className={`${styles.summaryValue} ${totals.deposit > 0 ? styles.valDeposit : styles.summaryZero}`}>{formatMoney(totals.deposit)}</div>
             </div>
+            {totals.expenses > 0 && (
+              <div className={styles.summaryCard}>
+                <div className={styles.summaryLabel}>Витрати</div>
+                <div className={`${styles.summaryValue} ${styles.valNeg}`}>−{formatMoney(totals.expenses)}</div>
+              </div>
+            )}
             <div className={`${styles.summaryCard} ${styles.summaryCardTotal}`}>
               <div className={styles.summaryLabel}>Надходження</div>
               <div className={styles.summaryValue}>{formatMoney(grandTotal)}</div>
@@ -256,7 +316,7 @@ export default function AccountingPage() {
                       <th className={styles.thIcon}></th>
                       <th className={styles.thDate}>Дата</th>
                       <th className={styles.thClient}>Клієнт</th>
-                      <th className={styles.thTicket}>Абонемент</th>
+                      <th className={styles.thTicket}>Абонемент / Коментар</th>
                       <th className={styles.thPrice}>Ціна</th>
                       <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>
@@ -264,66 +324,118 @@ export default function AccountingPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map(s => {
-                      const { date, time } = fmtDatetime(s.created_at)
-                      const amt = revenue(s)
-                      const depDelta = s.amount_given - s.price_paid
-                      const hasDeposit = s.ticket_id !== null && depDelta > 0
-                      const isChecked = checked.has(s.id)
-                      return (
-                        <tr key={s.id} className={isChecked ? styles.rowChecked : ''} onClick={() => toggleChecked(s.id)}>
-                          <td className={styles.checkCell}>
-                            <input
-                              type="checkbox"
-                              className={styles.checkbox}
-                              checked={isChecked}
-                              onChange={() => toggleChecked(s.id)}
-                              onClick={e => e.stopPropagation()}
-                            />
-                          </td>
-                          <td className={styles.iconCell}>
-                            {s.payment_method === 'deposit'
-                              ? <ArrowUpRight size={16} className={styles.iconDeposit} />
-                              : <ArrowDownLeft size={16} className={styles.iconIncome} />
-                            }
-                          </td>
-                          <td>
-                            <div className={styles.dateCell}>
-                              <span className={styles.dateMain}>{date}</span>
-                              <span className={styles.dateTime}>{time}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className={styles.clientName}>{clientName(s)}</span>
-                          </td>
-                          <td className={styles.ticketCell}>
-                            {s.ticket_name
-                              ? <span className={styles.ticketName}>{s.ticket_name}</span>
-                              : <span className={styles.zero}>—</span>
-                            }
-                          </td>
-                          <td className={styles.priceCell}>
-                            {s.ticket_price != null
-                              ? formatMoney(s.ticket_price)
-                              : <span className={styles.zero}>—</span>
-                            }
-                          </td>
-                          <td className={styles.depositCell}>
-                            {hasDeposit
-                              ? <span className={styles.depositVal}>+{formatMoney(depDelta)}</span>
-                              : <span className={styles.zero}>—</span>
-                            }
-                          </td>
-                          <td className={`${styles.amtCell} ${amt > 0 ? '' : styles.zero}`}>
-                            {amt > 0 ? formatMoney(s.amount_given) : '—'}
-                          </td>
-                          <td>
-                            <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                              {paymentLabel(s.payment_method)}
-                            </span>
-                          </td>
-                        </tr>
-                      )
+                    {filtered.map(item => {
+                      if (item.kind === 'sale') {
+                        const s = item.data
+                        const { date, time } = fmtDatetime(s.created_at)
+                        const amt = saleRevenue(s)
+                        const depDelta = s.amount_given - s.price_paid
+                        const hasDeposit = s.ticket_id !== null && depDelta > 0
+                        const isChecked = checked.has(s.id)
+                        return (
+                          <tr key={`sale-${s.id}`} className={isChecked ? styles.rowChecked : ''} onClick={() => toggleChecked(s.id)}>
+                            <td className={styles.checkCell}>
+                              <input
+                                type="checkbox"
+                                className={styles.checkbox}
+                                checked={isChecked}
+                                onChange={() => toggleChecked(s.id)}
+                                onClick={e => e.stopPropagation()}
+                              />
+                            </td>
+                            <td className={styles.iconCell}>
+                              {s.payment_method === 'deposit'
+                                ? <ArrowUpRight size={16} className={styles.iconDeposit} />
+                                : <ArrowDownLeft size={16} className={styles.iconIncome} />
+                              }
+                            </td>
+                            <td>
+                              <div className={styles.dateCell}>
+                                <span className={styles.dateMain}>{date}</span>
+                                <span className={styles.dateTime}>{time}</span>
+                              </div>
+                            </td>
+                            <td><span className={styles.clientName}>{clientName(s)}</span></td>
+                            <td className={styles.ticketCell}>
+                              {s.ticket_name
+                                ? <span className={styles.ticketName}>{s.ticket_name}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.priceCell}>
+                              {s.ticket_price != null
+                                ? formatMoney(s.ticket_price)
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.depositCell}>
+                              {hasDeposit
+                                ? <span className={styles.depositVal}>+{formatMoney(depDelta)}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={`${styles.amtCell} ${amt > 0 ? '' : styles.zero}`}>
+                              {amt > 0 ? formatMoney(s.amount_given) : '—'}
+                            </td>
+                            <td>
+                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                {paymentLabel(s.payment_method)}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      } else {
+                        const e = item.data
+                        const { date, time } = fmtDatetime(e.created_at)
+                        const isExpense = e.direction === 'expense'
+                        return (
+                          <tr key={`exp-${e.id}`} className={styles.expenseRow}>
+                            <td className={styles.checkCell}></td>
+                            <td className={styles.iconCell}>
+                              {isExpense
+                                ? <ShoppingBag size={16} className={styles.iconExpense} />
+                                : <TrendingUp size={16} className={styles.iconOtherIncome} />
+                              }
+                            </td>
+                            <td>
+                              <div className={styles.dateCell}>
+                                <span className={styles.dateMain}>{date}</span>
+                                <span className={styles.dateTime}>{time}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`${styles.clientName} ${styles.expenseLabel}`}>
+                                {isExpense ? 'Витрата студії' : 'Дохід студії'}
+                              </span>
+                            </td>
+                            <td className={styles.ticketCell}>
+                              {e.description
+                                ? <span className={styles.ticketName}>{e.description}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.priceCell}><span className={styles.zero}>—</span></td>
+                            <td className={styles.depositCell}><span className={styles.zero}>—</span></td>
+                            <td className={`${styles.amtCell} ${isExpense ? styles.amtExpense : styles.amtOtherIncome}`}>
+                              {isExpense ? `−${formatMoney(e.amount)}` : formatMoney(e.amount)}
+                            </td>
+                            <td>
+                              <div className={styles.expenseMethodRow}>
+                                <span className={`${styles.badge} ${styles[paymentClass(e.payment_method as PaymentMethod)]}`}>
+                                  {paymentLabel(e.payment_method as PaymentMethod)}
+                                </span>
+                                <button
+                                  className={styles.deleteExpenseBtn}
+                                  onClick={() => handleDeleteExpense(e.id)}
+                                  title="Видалити"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      }
                     })}
                   </tbody>
                 </table>
@@ -331,53 +443,109 @@ export default function AccountingPage() {
 
               {/* Mobile cards */}
               <div className={styles.cardList}>
-                {filtered.map(s => {
-                  const { date, time } = fmtDatetime(s.created_at)
-                  const amt = revenue(s)
-                  const depDelta = s.amount_given - s.price_paid
-                  const hasDeposit = s.ticket_id !== null && depDelta > 0
-                  const isChecked = checked.has(s.id)
-                  return (
-                    <div key={s.id} className={`${styles.card} ${isChecked ? styles.cardChecked : ''}`} onClick={() => toggleChecked(s.id)}>
-                      <div className={styles.cardMain}>
-                        <input
-                          type="checkbox"
-                          className={styles.checkbox}
-                          checked={isChecked}
-                          onChange={() => toggleChecked(s.id)}
-                          onClick={e => e.stopPropagation()}
-                        />
-                        <div className={styles.cardBody}>
-                          <div className={styles.cardRow1}>
-                            <span className={styles.cardClient}>{clientName(s)}</span>
-                            <span className={`${styles.cardAmt} ${amt === 0 ? styles.zero : ''}`}>
-                              {amt > 0 ? formatMoney(s.amount_given) : '—'}
-                            </span>
-                          </div>
-                          <div className={styles.cardRow2}>
-                            <span className={styles.cardTicket}>
-                              {s.ticket_name ?? <span className={styles.zero}>Депозит</span>}
-                            </span>
-                            <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                              {paymentLabel(s.payment_method)}
-                            </span>
-                          </div>
-                          <div className={styles.cardRow3}>
-                            <span className={styles.cardDatetime}>{date} · {time}</span>
-                            {hasDeposit && (
-                              <span className={styles.depositHint}>+{formatMoney(depDelta)} депозит</span>
-                            )}
+                {filtered.map(item => {
+                  if (item.kind === 'sale') {
+                    const s = item.data
+                    const { date, time } = fmtDatetime(s.created_at)
+                    const amt = saleRevenue(s)
+                    const depDelta = s.amount_given - s.price_paid
+                    const hasDeposit = s.ticket_id !== null && depDelta > 0
+                    const isChecked = checked.has(s.id)
+                    return (
+                      <div key={`sale-${s.id}`} className={`${styles.card} ${isChecked ? styles.cardChecked : ''}`} onClick={() => toggleChecked(s.id)}>
+                        <div className={styles.cardMain}>
+                          <input
+                            type="checkbox"
+                            className={styles.checkbox}
+                            checked={isChecked}
+                            onChange={() => toggleChecked(s.id)}
+                            onClick={e => e.stopPropagation()}
+                          />
+                          <div className={styles.cardBody}>
+                            <div className={styles.cardRow1}>
+                              <span className={styles.cardClient}>{clientName(s)}</span>
+                              <span className={`${styles.cardAmt} ${amt === 0 ? styles.zero : ''}`}>
+                                {amt > 0 ? formatMoney(s.amount_given) : '—'}
+                              </span>
+                            </div>
+                            <div className={styles.cardRow2}>
+                              <span className={styles.cardTicket}>
+                                {s.ticket_name ?? <span className={styles.zero}>Депозит</span>}
+                              </span>
+                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                {paymentLabel(s.payment_method)}
+                              </span>
+                            </div>
+                            <div className={styles.cardRow3}>
+                              <span className={styles.cardDatetime}>{date} · {time}</span>
+                              {hasDeposit && (
+                                <span className={styles.depositHint}>+{formatMoney(depDelta)} депозит</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
+                    )
+                  } else {
+                    const e = item.data
+                    const { date, time } = fmtDatetime(e.created_at)
+                    const isExpense = e.direction === 'expense'
+                    return (
+                      <div key={`exp-${e.id}`} className={`${styles.card} ${styles.expenseCard}`}>
+                        <div className={styles.cardMain}>
+                          <div className={isExpense ? styles.iconExpense : styles.iconOtherIncome}>
+                            {isExpense
+                              ? <ShoppingBag size={16} />
+                              : <TrendingUp size={16} />
+                            }
+                          </div>
+                          <div className={styles.cardBody}>
+                            <div className={styles.cardRow1}>
+                              <span className={`${styles.cardClient} ${styles.expenseLabel}`}>
+                                {isExpense ? 'Витрата студії' : 'Дохід студії'}
+                              </span>
+                              <span className={`${styles.cardAmt} ${isExpense ? styles.amtExpense : styles.amtOtherIncome}`}>
+                                {isExpense ? `−${formatMoney(e.amount)}` : formatMoney(e.amount)}
+                              </span>
+                            </div>
+                            <div className={styles.cardRow2}>
+                              <span className={styles.cardTicket}>{e.description ?? '—'}</span>
+                              <span className={`${styles.badge} ${styles[paymentClass(e.payment_method as PaymentMethod)]}`}>
+                                {paymentLabel(e.payment_method as PaymentMethod)}
+                              </span>
+                            </div>
+                            <div className={styles.cardRow3}>
+                              <span className={styles.cardDatetime}>{date} · {time}</span>
+                              <button
+                                className={styles.deleteExpenseBtn}
+                                onClick={() => handleDeleteExpense(e.id)}
+                                title="Видалити"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
                 })}
               </div>
             </>
           )}
         </div>
       </main>
+
+      {expenseModal && (
+        <StudioExpenseModal
+          trainers={trainers}
+          onClose={() => setExpenseModal(false)}
+          onSaved={() => {
+            setExpenseModal(false)
+            fetchData(dateFrom, dateTo)
+          }}
+        />
+      )}
     </div>
   )
 }

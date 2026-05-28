@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний включно з /settings; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00; /accounting redesign — transaction list + checkboxes)
+- **Last Updated**: 2026-05-29 (studio_expenses — студійні витрати/доходи без клієнта; StudioExpenseModal; /accounting інтегровано)
 
 ## Commands
 
@@ -48,6 +48,7 @@ class_series ──► classes ──► enrollments ◄──── clients
 training_types (standalone reference)
 trainer_rates ──► trainers (trainer_id NULL = глобальна ставка)
 trainer_payments ──► trainers
+studio_expenses ──► trainers (trainer_id optional)
 ```
 
 ---
@@ -254,6 +255,24 @@ trainer_payments ──► trainers
 **Waitlist:** тригер `check_class_capacity` автоматично змінює `enrolled` → `waitlist` якщо зал повний.
 
 **hours_attended:** для `duration_min >= 120` клієнт може відвідати 1-у, 2-у або обидві години. `sessions_used` = `hours_attended.length` (або 1 якщо NULL).
+
+---
+
+### `studio_expenses` — Студійні витрати/доходи (без клієнта)
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| id | uuid | NO | PK |
+| amount | integer | NO | > 0, в ₴ |
+| direction | text | NO | `expense` / `income` |
+| payment_method | text | NO | `cash` / `fop` / `personal_card` (deposit недоступний) |
+| trainer_id | uuid | YES | → trainers.id SET NULL |
+| description | text | YES | Довільний коментар |
+| created_at | timestamptz | NO | now() |
+
+**Призначення:** Операції студії що не пов'язані з клієнтом — вода, канцелярія, оренда, виплати готівкою тощо. Відображаються в `/accounting` поруч із sales, враховуються в підсумкових картках.
+
+**RLS:** Увімкнено. authenticated = повний доступ.
 
 ---
 
@@ -474,6 +493,7 @@ lib/
     trainer-rates.ts          — listTrainerRates, upsertTrainerRate, deleteTrainerRate
     trainers.ts               — listTrainers, listActiveTrainers, insertTrainer, toggleTrainer, calcTrainerSalary, listTrainerPayments, insertTrainerPayment
     training-types.ts         — listTrainingTypes, listActiveTrainingTypes, listTrainingTypeLabels, insertTrainingType, updateTrainingType, toggleTrainingType
+    studio-expenses.ts        — listStudioExpenses, insertStudioExpense, deleteStudioExpense
     (series queries are in classes.ts, not a separate file)
 
 types/
@@ -665,32 +685,38 @@ types/
 
 ---
 
-### /accounting Page (станом на 2026-05-28)
+### /accounting Page (станом на 2026-05-29)
 
 **Призначення:** Список транзакцій для звірки з банківською випискою (monobank-стиль). Адмін відкриває `/accounting` і вкладку моно поруч, відмічає чекбоксами перевірені записи.
 
 **Layout:** full-width, без `max-width` — кожен піксель корисний при звірці поруч з банком.
 
 **Структура:**
-- **Topbar**: заголовок + кнопка «Звіт по тренерах →»
+- **Topbar**: заголовок + кнопка «+ Витрата/Дохід» + кнопка «Звіт по тренерах →»
 - **Filter bar** (sticky): пресети Сьогодні/Цей тиждень/Цей місяць + DatePicker від/до + таби методу оплати (Всі/Готівка/ФОП/Картка/Депозит) + dropdown тренера (з'являється тільки при фільтрі Готівка)
-- **Summary cards**: 5 карток — Готівка / ФОП / Картка / Депозит / Надходження. Нульові суми сірим
-- **Таблиця**: 7 колонок — ✓ (чекбокс) | Дата+час | Клієнт | Абонемент | Ціна | На депозит | Сума | Метод
+- **Summary cards**: Готівка / ФОП / Картка / Депозит / Витрати (якщо є) / Надходження. Нульові суми сірим. Готівка/ФОП/Картка враховують витрати студії (зменшуються)
+- **Таблиця**: уніфікований feed — sales + studio_expenses відсортовані за датою. 7 колонок — ✓ (чекбокс) | Дата+час | Клієнт | Абонемент/Коментар | Ціна | На депозит | Сума | Метод
+
+**Студійні операції (`studio_expenses`):**
+- Окрема таблиця `studio_expenses` (id, amount, direction, payment_method, trainer_id, description, created_at)
+- `direction`: `expense` (витрата, зменшує метод) / `income` (дохід, збільшує метод)
+- Депозит (`deposit`) недоступний — тільки cash/fop/personal_card
+- Рядок у таблиці: іконка ShoppingBag (витрата, червона) або TrendingUp (дохід, зелена); клієнт = «Витрата студії» / «Дохід студії»; кнопка видалення Trash2
+- Мобільна картка: ліва смуга `border-left: 3px solid var(--danger)` для витрат
+- Чекбокс тільки для sales, не для expenses
 
 **Чекбокси:**
 - Локальний стан (`Set<string>`), скидається при перезавантаженні
-- Клік на рядок або чекбокс — toggleChecked
-- Чекбокс у заголовку: `indeterminate` (деякі) / checked (всі) / unchecked; кліком виділяє/знімає всі відфільтровані
-- Відмічений рядок: `background: var(--accent-dim)`, `opacity: 0.6`
+- Клік на рядок sale або чекбокс — toggleChecked
+- Чекбокс у заголовку: `indeterminate` / checked / unchecked; тільки по sales
 
 **Логіка сум:**
-- `revenue(s)` = `price_paid` якщо є тікет, інакше `max(0, amount_given)` (депозитне поповнення)
-- Колонка «Сума» = `amount_given` (фактично передано клієнтом)
-- Колонка «Ціна» = `ticket_price` (ціна тарифу зі snapshot)
-- Колонка «На депозит» = `amount_given - price_paid` якщо > 0 (решта осіла на депозиті)
-- «Надходження» в картках = cash + fop + card (без deposit — це не реальні гроші)
+- `saleRevenue(s)` = `price_paid` якщо є тікет, інакше `max(0, amount_given)`
+- Витрати: `expenses += e.amount`; метод -= e.amount
+- Доходи студії: метод += e.amount
+- «Надходження» = cash + fop + card (після врахування витрат, без deposit)
 
-**Фільтрація:** на клієнті після fetch. При зміні фільтру методу оплати — скидається вибір тренера.
+**Фільтрація:** на клієнті після fetch. При зміні фільтру методу оплати — скидається вибір тренера. Deposit фільтр приховує expenses.
 
 **Mobile:** картки замість таблиці; filter bar горизонтальний скрол (`overflow-x: auto; overflow-y: hidden`)
 

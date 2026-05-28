@@ -1,0 +1,46 @@
+.directionRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dirBtn {
+  flex: 1;
+  height: var(--control-h);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: border-color var(--motion-fast), background var(--motion-fast), color var(--motion-fast);
+}
+.dirBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: var(--bg-3);
+}
+
+.dirBtnExpense {
+  background: var(--danger-dim) !important;
+  border-color: rgba(255, 92, 92, 0.4) !important;
+  color: var(--danger) !important;
+}
+
+.dirBtnIncome {
+  background: var(--accent-dim) !important;
+  border-color: var(--accent-border-hover) !important;
+  color: var(--accent) !important;
+}
+
+.error {
+  font-size: 14px;
+  color: var(--danger);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-dim);
+  border: 0.5px solid rgba(255, 92, 92, 0.25);
+  margin-top: 4px;
+}
