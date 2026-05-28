@@ -188,6 +188,7 @@
 .tableDesktop :global(.data-table) {
   table-layout: fixed;
   width: 100%;
+  max-width: 860px;
 }
 
 .thRight { text-align: right !important; }
