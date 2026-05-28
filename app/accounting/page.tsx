@@ -220,40 +220,31 @@ export default function AccountingPage() {
 
                   {/* Mobile cards */}
                   <div className={styles.dayCardList}>
-                    {rows.map(r => (
-                      <div key={r.date} className={styles.dayCard}>
-                        <div className={styles.dayCardRow}>
-                          <span className={styles.dayCardDate}>{r.date.split('-').reverse().join('.')}</span>
-                          <span className={styles.dayCardTotal}>{fmtTotal(r.real)}</span>
+                    {rows.map(r => {
+                      const parts: { label: string; cls: string; val: string }[] = []
+                      if (r.cash    > 0) parts.push({ label: 'Готівка', cls: styles.valCash,    val: fmt(r.cash) })
+                      if (r.fop     > 0) parts.push({ label: 'ФОП',     cls: styles.valFop,     val: fmt(r.fop) })
+                      if (r.card    > 0) parts.push({ label: 'Картка',  cls: styles.valCard,    val: fmt(r.card) })
+                      if (r.deposit > 0) parts.push({ label: 'Депозит', cls: styles.valDeposit, val: fmt(r.deposit) })
+                      return (
+                        <div key={r.date} className={styles.dayCard}>
+                          <div className={styles.dayCardRow}>
+                            <span className={styles.dayCardDate}>{r.date.split('-').reverse().join('.')}</span>
+                            <span className={styles.dayCardTotal}>{fmtTotal(r.real)}</span>
+                          </div>
+                          <div className={styles.dayCardMeta}>
+                            {parts.map((p, i) => (
+                              <span key={p.label}>
+                                {i > 0 && <span className={styles.dayCardMetaDot}>·</span>}
+                                <span className={styles.dayCardMetaLabel}>{p.label}</span>
+                                {' '}
+                                <span className={p.cls}>{p.val}</span>
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <div className={styles.dayCardMeta}>
-                          {r.cash > 0 && (
-                            <span className={styles.dayCardMetaItem}>
-                              <span className={styles.dayCardMetaLabel}>Готівка</span>
-                              <span className={styles.valCash}>{fmt(r.cash)}</span>
-                            </span>
-                          )}
-                          {r.fop > 0 && (
-                            <span className={styles.dayCardMetaItem}>
-                              <span className={styles.dayCardMetaLabel}>ФОП</span>
-                              <span className={styles.valFop}>{fmt(r.fop)}</span>
-                            </span>
-                          )}
-                          {r.card > 0 && (
-                            <span className={styles.dayCardMetaItem}>
-                              <span className={styles.dayCardMetaLabel}>Картка</span>
-                              <span className={styles.valCard}>{fmt(r.card)}</span>
-                            </span>
-                          )}
-                          {r.deposit > 0 && (
-                            <span className={styles.dayCardMetaItem}>
-                              <span className={styles.dayCardMetaLabel}>Депозит</span>
-                              <span className={styles.valDeposit}>{fmt(r.deposit)}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </>
               )}
