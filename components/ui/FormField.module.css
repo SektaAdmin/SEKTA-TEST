@@ -24,6 +24,14 @@
   width: 100%;
   font-size: 14px;
   font-family: inherit;
+  box-sizing: border-box;
+}
+
+.field input[type="time"] {
+  height: 39px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 39px;
 }
 .field input:focus,
 .field select:focus,
