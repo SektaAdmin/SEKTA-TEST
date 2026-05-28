@@ -94,12 +94,12 @@ export default function TrainersPage() {
       <div className={styles.topbar}>
         <h1 className="page-title">Тренери</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
-        <nav className={styles.mobileTabNav}>
-          {SETTINGS_TABS.map(tab => (
-            <a key={tab.href} href={tab.href} className={`${styles.mobileTabLink} ${pathname === tab.href ? styles.mobileTabLinkActive : ''}`}>{tab.label}</a>
-          ))}
-        </nav>
       </div>
+      <nav className={styles.tabNav}>
+        {SETTINGS_TABS.map(tab => (
+          <a key={tab.href} href={tab.href} className={`${styles.tabNavLink} ${pathname === tab.href ? styles.tabNavLinkActive : ''}`}>{tab.label}</a>
+        ))}
+      </nav>
 
       <div className={styles.tabSection}>
         {loading ? (

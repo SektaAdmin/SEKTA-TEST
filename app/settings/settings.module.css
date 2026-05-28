@@ -48,13 +48,33 @@
   flex-shrink: 0;
 }
 
-/* ── Mobile settings tab nav ─────────────────────────────────── */
-.mobileTabNav { display: none; }
+/* ── Settings tab nav ────────────────────────────────────────── */
+.tabNav { display: none; }
+
+.tabNavLink {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
+  background: transparent;
+  white-space: nowrap;
+  transition: color var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
+}
+.tabNavLink:hover { color: var(--text); border-color: var(--border-hover); }
+
+.tabNavLinkActive {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
 
 @media (max-width: 640px) {
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .tabSection { padding: 16px; }
-  .topbar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
+  .topbar { height: var(--topbar-h); padding: 0 16px; }
   .tableDesktop { display: none; }
   .cardList {
     display: flex;
@@ -62,34 +82,20 @@
     gap: 8px;
   }
 
-  .mobileTabNav {
+  .tabNav {
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden;
     flex-wrap: nowrap;
-    gap: 4px;
-    width: 100%;
-    padding-bottom: 4px;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 9;
   }
-
-  .mobileTabLink {
-    flex-shrink: 0;
-    padding: 6px 14px;
-    border-radius: var(--radius-sm);
-    border: 0.5px solid var(--border);
-    font-size: 14px;
-    color: var(--text-2);
-    text-decoration: none;
-    background: transparent;
-    white-space: nowrap;
-    transition: color var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
-  }
-  .mobileTabLink:hover { color: var(--text); border-color: var(--border-hover); }
-
-  .mobileTabLinkActive {
-    color: var(--accent);
-    border-color: var(--accent-border);
-    background: var(--accent-dim);
-  }
+  .tabNav::-webkit-scrollbar { display: none; }
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
