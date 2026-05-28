@@ -763,7 +763,7 @@
 
 .cardSlots {
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.3;
   color: var(--text-2);
   white-space: nowrap;
@@ -775,18 +775,18 @@
 }
 
 .cardSlotsCount {
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-2);
   letter-spacing: -0.01em;
 }
 
 .cardSlotsTotal {
-  color: var(--text-3);
+  color: var(--text-2);
   font-weight: 400;
 }
 
 .cardSlotsSeparator {
-  color: var(--text-3);
+  color: var(--text-2);
   margin: 0 3px;
 }
 
@@ -807,7 +807,7 @@
 
 .cardSlotsWaitlist {
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.3;
   color: var(--text-2);
   flex-shrink: 0;
