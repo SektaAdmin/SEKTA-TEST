@@ -512,6 +512,36 @@
   }
 }
 
+/* ── Mobile calendar bottom sheet ──────────────────────────── */
+.mobileCalOverlay {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobileCalOverlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 250;
+    align-items: flex-end;
+  }
+  .mobileCalSheet {
+    width: 100%;
+    background: var(--bg);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: bottomSheetIn var(--motion-standard) both;
+  }
+  /* Reset rightPanel styles inside the sheet */
+  .mobileCalSheet aside {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-bottom: none;
+  }
+}
+
 /* ── Desktop nav group (← Сьогодні →) ──────────────────────── */
 .desktopNav {
   display: flex;

@@ -290,6 +290,7 @@ export default function SchedulePage() {
   const [calViewMonth, setCalViewMonth] = useState<{ year: number; month: number }>(() => {
     const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
   })
+  const [showMobileCal, setShowMobileCal] = useState(false)
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
@@ -449,7 +450,7 @@ export default function SchedulePage() {
 
         {/* Topbar row 1 */}
         <div className={styles.topbar}>
-          {/* Mobile nav — full width ← Сьогодні → */}
+          {/* Mobile nav — full width ← Сьогодні → + calendar */}
           <div className={styles.mobileTopNav}>
             <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -462,6 +463,12 @@ export default function SchedulePage() {
             <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
+              </svg>
+            </button>
+            <button className={styles.navBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="1" y="2" width="12" height="11" rx="1.5"/>
+                <path d="M1 6h12M4 1v2M10 1v2"/>
               </svg>
             </button>
           </div>
@@ -723,6 +730,31 @@ export default function SchedulePage() {
             />
           )}
         </div>
+
+        {/* Mobile calendar bottom sheet */}
+        {showMobileCal && (
+          <div className={styles.mobileCalOverlay} onClick={() => setShowMobileCal(false)}>
+            <div className={styles.mobileCalSheet} onClick={e => e.stopPropagation()}>
+              <ScheduleRightPanel
+                viewYear={calViewMonth.year}
+                viewMonth={calViewMonth.month}
+                onPrevMonth={() => setCalViewMonth(m => {
+                  const newMonth = m.month === 0 ? 11 : m.month - 1
+                  const newYear = m.month === 0 ? m.year - 1 : m.year
+                  return { year: newYear, month: newMonth }
+                })}
+                onNextMonth={() => setCalViewMonth(m => {
+                  const newMonth = m.month === 11 ? 0 : m.month + 1
+                  const newYear = m.month === 11 ? m.year + 1 : m.year
+                  return { year: newYear, month: newMonth }
+                })}
+                activeDates={calActiveDates}
+                selectedDate={baseDate}
+                onDateSelect={d => { setBaseDate(d); setShowMobileCal(false) }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* FAB — mobile only, creates new class */}
         <button
