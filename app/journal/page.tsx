@@ -1,17 +1,52 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listPastClasses, type ClassWithJoins } from '@/lib/queries/classes'
 import { useRefs } from '@/contexts/RefsContext'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import DatePicker from '@/components/DatePicker'
 import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { getActiveCount } from '@/lib/scheduleMetrics'
+import { useEffect } from 'react'
 import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
+
+// ── Controlled Radix select for filters ──────────────────────────
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  return (
+    <SelectPrimitive.Root value={value} onValueChange={onChange}>
+      <SelectPrimitive.Trigger className={jStyles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className={jStyles.fsChevron} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={jStyles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item key={o.value} value={o.value} className={jStyles.fsItem}>
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
+}
 
 export default function JournalPage() {
   const { trainers, halls, trainingTypes } = useRefs()
@@ -21,14 +56,16 @@ export default function JournalPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const [dateFrom, setDateFrom] = useState<string>('')
-  const [dateTo, setDateTo] = useState<string>('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
   const [filterHall, setFilterHall] = useState('')
   const [filterType, setFilterType] = useState('')
-  const [filterCancelled, setFilterCancelled] = useState<'all' | 'cancelled'>('all')
+  const [filterCancelled, setFilterCancelled] = useState('all')
 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null)
+
+  const hasFilters = dateFrom || dateTo || filterTrainer || filterHall || filterType || filterCancelled !== 'all'
 
   const fetchData = useCallback(async (p: number) => {
     setLoading(true)
@@ -49,86 +86,71 @@ export default function JournalPage() {
     setLoading(false)
   }, [dateFrom, dateTo, filterTrainer, filterHall, filterType, filterCancelled])
 
-  useEffect(() => {
-    fetchData(page)
-  }, [fetchData, page])
+  useEffect(() => { fetchData(page) }, [fetchData, page])
 
-  function resetPage(fn: () => void) {
-    fn()
+  function resetPage(fn: () => void) { fn(); setPage(0) }
+
+  function clearFilters() {
+    setDateFrom(''); setDateTo('')
+    setFilterTrainer(''); setFilterHall(''); setFilterType('')
+    setFilterCancelled('all')
     setPage(0)
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  const trainerOptions = [
+    { value: '', label: 'Всі тренери' },
+    ...trainers.map(t => ({ value: t.id, label: t.name })),
+  ]
+  const hallOptions = [
+    { value: '', label: 'Всі зали' },
+    ...halls.map(h => ({ value: h.id, label: h.name })),
+  ]
+  const typeOptions = [
+    { value: '', label: 'Всі типи' },
+    ...trainingTypes.map(t => ({ value: t.code, label: t.label })),
+  ]
+  const cancelledOptions = [
+    { value: 'all', label: 'Всі статуси' },
+    { value: 'cancelled', label: 'Тільки скасовані' },
+  ]
+
   return (
     <>
       <div className={jStyles.stickyHead}>
-        {/* Topbar */}
         <div className={jStyles.topbar}>
           <h1 className="page-title">Журнал занять</h1>
-          {total > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>
-          )}
+          {total > 0 && <span className={jStyles.topbarCount}>{total} занять</span>}
         </div>
 
-        {/* Filter bar */}
         <div className={jStyles.filterBar}>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={e => resetPage(() => setDateFrom(e.target.value))}
-          style={selectStyle}
-          title="Від"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={e => resetPage(() => setDateTo(e.target.value))}
-          style={selectStyle}
-          title="До"
-        />
-        <select
-          value={filterTrainer}
-          onChange={e => resetPage(() => setFilterTrainer(e.target.value))}
-          style={selectStyle}
-        >
-          <option value="">Всі тренери</option>
-          {trainers.map(t => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-        <select
-          value={filterHall}
-          onChange={e => resetPage(() => setFilterHall(e.target.value))}
-          style={selectStyle}
-        >
-          <option value="">Всі зали</option>
-          {halls.map(h => (
-            <option key={h.id} value={h.id}>{h.name}</option>
-          ))}
-        </select>
-        <select
-          value={filterType}
-          onChange={e => resetPage(() => setFilterType(e.target.value))}
-          style={selectStyle}
-        >
-          <option value="">Всі типи</option>
-          {trainingTypes.map(t => (
-            <option key={t.id} value={t.code}>{t.label}</option>
-          ))}
-        </select>
-        <select
-          value={filterCancelled}
-          onChange={e => resetPage(() => setFilterCancelled(e.target.value as 'all' | 'cancelled'))}
-          style={selectStyle}
-        >
-          <option value="all">Всі статуси</option>
-          <option value="cancelled">Тільки скасовані</option>
-        </select>
+          <DatePicker value={dateFrom} onChange={v => resetPage(() => setDateFrom(v))} placeholder="Від" />
+          <DatePicker value={dateTo}   onChange={v => resetPage(() => setDateTo(v))}   placeholder="До" />
+          <FilterSelect
+            value={filterTrainer} onChange={v => resetPage(() => setFilterTrainer(v))}
+            placeholder="Тренер" options={trainerOptions}
+          />
+          <FilterSelect
+            value={filterHall} onChange={v => resetPage(() => setFilterHall(v))}
+            placeholder="Зал" options={hallOptions}
+          />
+          <FilterSelect
+            value={filterType} onChange={v => resetPage(() => setFilterType(v))}
+            placeholder="Тип" options={typeOptions}
+          />
+          <FilterSelect
+            value={filterCancelled} onChange={v => resetPage(() => setFilterCancelled(v))}
+            placeholder="Статус" options={cancelledOptions}
+          />
+          {hasFilters && (
+            <button className={jStyles.clearBtn} onClick={clearFilters} title="Скинути фільтри">
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Content */}
       <div className={jStyles.content}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
@@ -153,11 +175,7 @@ export default function JournalPage() {
                 </thead>
                 <tbody>
                   {data.map(cls => (
-                    <tr
-                      key={cls.id}
-                      onClick={() => setSelectedClassId(cls.id)}
-                      style={{ cursor: 'pointer' }}
-                    >
+                    <tr key={cls.id} onClick={() => setSelectedClassId(cls.id)} style={{ cursor: 'pointer' }}>
                       <td>{formatDate(cls.starts_at)}</td>
                       <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatTime(cls.starts_at)}</td>
                       <td>{ticketTypeShortLabel(cls.ticket_type)}</td>
@@ -168,8 +186,7 @@ export default function JournalPage() {
                       <td>
                         {cls.is_cancelled
                           ? <span className={jStyles.badgeCancelled}>Скасовано</span>
-                          : <span className={jStyles.badgeCompleted}>Проведено</span>
-                        }
+                          : <span className={jStyles.badgeCompleted}>Проведено</span>}
                       </td>
                     </tr>
                   ))}
@@ -183,11 +200,7 @@ export default function JournalPage() {
                 const typeLabel = trainingTypes.find(t => t.code === cls.ticket_type)?.label ?? cls.ticket_type
                 const enrolled = getActiveCount(cls.enrollments)
                 return (
-                  <div
-                    key={cls.id}
-                    className={jStyles.card}
-                    onClick={() => setSelectedClassId(cls.id)}
-                  >
+                  <div key={cls.id} className={jStyles.card} onClick={() => setSelectedClassId(cls.id)}>
                     <div className={jStyles.cardRow}>
                       <span className={jStyles.cardTitle}>{typeLabel}</span>
                       <span className={jStyles.cardDateTime}>
@@ -195,24 +208,15 @@ export default function JournalPage() {
                       </span>
                     </div>
                     <div className={jStyles.cardMeta}>
-                      {cls.trainers?.name && (
-                        <span>{cls.trainers.name}</span>
-                      )}
-                      {cls.trainers?.name && cls.halls?.name && (
-                        <span className={jStyles.cardMetaDot}>·</span>
-                      )}
-                      {cls.halls?.name && (
-                        <span>{cls.halls.name}</span>
-                      )}
-                      {(cls.trainers?.name || cls.halls?.name) && (
-                        <span className={jStyles.cardMetaDot}>·</span>
-                      )}
+                      {cls.trainers?.name && <span>{cls.trainers.name}</span>}
+                      {cls.trainers?.name && cls.halls?.name && <span className={jStyles.cardMetaDot}>·</span>}
+                      {cls.halls?.name && <span>{cls.halls.name}</span>}
+                      {(cls.trainers?.name || cls.halls?.name) && <span className={jStyles.cardMetaDot}>·</span>}
                       <span>{enrolled} записів</span>
                       <span className={jStyles.cardMetaDot}>·</span>
                       {cls.is_cancelled
                         ? <span className={jStyles.badgeCancelled}>Скасовано</span>
-                        : <span className={jStyles.badgeCompleted}>Проведено</span>
-                      }
+                        : <span className={jStyles.badgeCompleted}>Проведено</span>}
                     </div>
                   </div>
                 )
@@ -227,26 +231,10 @@ export default function JournalPage() {
                 </span>
               </div>
               <div className={jStyles.paginationBtns}>
-                <button
-                  disabled={page === 0 || loading}
-                  onClick={() => setPage(0)}
-                  className={jStyles.pageBtn}
-                >«</button>
-                <button
-                  disabled={page === 0 || loading}
-                  onClick={() => setPage(p => p - 1)}
-                  className={jStyles.pageBtn}
-                >‹</button>
-                <button
-                  disabled={page + 1 >= totalPages || loading}
-                  onClick={() => setPage(p => p + 1)}
-                  className={jStyles.pageBtn}
-                >›</button>
-                <button
-                  disabled={page + 1 >= totalPages || loading}
-                  onClick={() => setPage(totalPages - 1)}
-                  className={jStyles.pageBtn}
-                >»</button>
+                <button disabled={page === 0 || loading} onClick={() => setPage(0)} className={jStyles.pageBtn}>«</button>
+                <button disabled={page === 0 || loading} onClick={() => setPage(p => p - 1)} className={jStyles.pageBtn}>‹</button>
+                <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(p => p + 1)} className={jStyles.pageBtn}>›</button>
+                <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(totalPages - 1)} className={jStyles.pageBtn}>»</button>
               </div>
             </div>
           </>
@@ -257,26 +245,9 @@ export default function JournalPage() {
         <ClassDetailModal
           classId={selectedClassId}
           onClose={() => setSelectedClassId(null)}
-          onClassUpdated={() => {
-            setSelectedClassId(null)
-            fetchData(page)
-          }}
+          onClassUpdated={() => { setSelectedClassId(null); fetchData(page) }}
         />
       )}
     </>
   )
-}
-
-const selectStyle: React.CSSProperties = {
-  padding: '6px 10px',
-  borderRadius: 'var(--radius-sm)',
-  border: '0.5px solid var(--border)',
-  background: 'var(--bg)',
-  color: 'var(--text)',
-  fontSize: 14,
-  fontFamily: 'var(--font)',
-  cursor: 'pointer',
-  height: 'var(--control-h)',
-  flexShrink: 0,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
 }
