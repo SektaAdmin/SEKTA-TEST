@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (Mobile Adaptation Phases A–E + G–J complete + /schedule mobile: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation, /schedule no horizontal scroll, /schedule/templates full mobile adaptation)
+- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний: BottomNav, bottom sheets, /sales, /clients, /schedule, /schedule/templates; ClassModal завжди fullScreen; Pagination компонент; ScheduleDetailCard видалено)
 
 ## Commands
 
@@ -402,7 +402,7 @@ components/
     navigation.tsx            — SVG-компоненти іконок (SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon)
   SaleModal.tsx               — продаж/депозит
   ClientModal.tsx             — створення/редагування клієнта
-  ClassModal.tsx              — створення/редагування заняття
+  ClassModal.tsx              — створення/редагування заняття; завжди `fullScreen` (незалежно від пристрою)
   SeriesModal.tsx             — шаблон серії
   EnrollClientModal.tsx       — запис клієнта з профілю
   ClassDetailModal.tsx        — деталі заняття (модальний варіант)
@@ -412,8 +412,7 @@ components/
   TrainingTypeModal.tsx       — тип тренування
   HallWeekGrid.tsx            — сітка шаблонів (зали × дні)
   CalendarPopover.tsx         — міні-календар з підсвіткою тижня (portals, для інших сторінок)
-  ScheduleRightPanel.tsx      — права панель /schedule: міні-календар + деталі заняття (inline)
-  ScheduleDetailCard.tsx      — компактна картка деталей заняття у ScheduleRightPanel
+  ScheduleRightPanel.tsx      — права панель /schedule: міні-календар (inline, тільки навігація)
   SalesDateRangePicker.tsx    — range picker для /sales
   DatePicker.tsx              — single date picker
   DateRangePicker.tsx         — range picker (shadcn Calendar)
@@ -426,8 +425,9 @@ components/
     ModalShell.tsx            — обгортка модалок (shadcn Dialog)
     ModalFooter.tsx           — уніфіковані footer-кнопки (Скасувати/Зберегти) для всіх модалок
     FormField.tsx             — уніфікований wrapper поля форми: label + input/select/textarea + errorHint + hint. Props: id, label, required, registration, error, hint, children, className. Використовується в усіх 8 модалках.
+    Pagination.tsx            — пагінація з вибором page size (20/50/100), page range з "...", Prev/Next. Використовується в /journal і може повторно використовуватись.
     SocialHandleInput.tsx     — input для instagram/telegram
-    button.tsx, calendar.tsx, command.tsx, dialog.tsx, popover.tsx, select.tsx  — shadcn
+    button.tsx, calendar.tsx, command.tsx, dialog.tsx, popover.tsx, select.tsx, table.tsx  — shadcn
 
 contexts/
   RefsContext.tsx             — глобальний контекст довідників (tickets, trainers, halls, trainingTypes)
@@ -555,7 +555,7 @@ types/
 
 ---
 
-### /schedule Page (станом на 2026-05-24)
+### /schedule Page (станом на 2026-05-28)
 
 **Navigation limit:** Назад обмежено 30 днів. При натисканні "←" якщо нова дата < `today - 30 дн` → редірект на сьогодні. Кнопка `disabled` на межі.
 
@@ -596,6 +596,16 @@ types/
 - **Progress bar**: знизу, висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
 - **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
+
+**Mobile adaptation (≤640px):**
+- **Topbar**: десктопний topbar прихований; `mobileDateLabel` — смуга під filter bar з датою + активний фільтр (зал або тренер) через `·`
+- **Calendar**: `showMobileCal` state → bottom sheet (`mobileCalOverlay` / `mobileCalSheet`) поверх контенту
+- **View mode**: тільки day view на мобільному (примусово через `useEffect(isMobile)`); week view недоступний
+- **FAB**: `position: fixed; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); z-index: 250` — "+ Нове заняття", вище BottomNav
+- **ClassModal**: завжди `fullScreen` (незалежно від пристрою — так вирішено в компоненті)
+- **ClassDetailModal**: `fullScreen` на мобільному
+
+---
 
 ### /clients Page (станом на 2026-05-27)
 
