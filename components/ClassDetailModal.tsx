@@ -24,6 +24,7 @@ import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
 import type { Class, Client } from '@/types'
+import { ActionSelect } from '@/components/ui/ActionSelect'
 import styles from './ClassDetailModal.module.css'
 
 type ClassWithJoins = Class & {
@@ -509,13 +510,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
                                   </div>
                                 ) : (
-                                  <select
-                                    className={styles.actionSelect}
-                                    value=""
+                                  <ActionSelect
                                     disabled={isLoading}
-                                    onChange={async ev => {
-                                      const val = ev.target.value
-                                      if (!val) return
+                                    onChange={async val => {
                                       if (val === 'attended') { await handleMarkAttended(e) }
                                       else if (val === 'noshow') { await handleUpdateStatus(e.id, 'noshow') }
                                       else if (val === 'cancelled') { await handleUpdateStatus(e.id, 'cancelled') }
@@ -527,20 +524,20 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         setActionLoading(null)
                                       }
                                     }}
-                                  >
-                                    <option value="">Дія...</option>
-                                    {e.status === 'enrolled' && <>
-                                      <option value="attended">{enrollmentStatusLabel('attended')}</option>
-                                      <option value="noshow">{enrollmentStatusLabel('noshow')}</option>
-                                      <option value="cancelled">{enrollmentStatusLabel('cancelled')}</option>
-                                    </>}
-                                    {e.status === 'attended' && (
-                                      <option value="reverse">Скасувати відвідування</option>
-                                    )}
-                                    {(e.status === 'cancelled' || e.status === 'noshow') && (
-                                      <option value="reenroll">Повернути</option>
-                                    )}
-                                  </select>
+                                    options={[
+                                      ...(e.status === 'enrolled' ? [
+                                        { value: 'attended', label: enrollmentStatusLabel('attended') },
+                                        { value: 'noshow', label: enrollmentStatusLabel('noshow') },
+                                        { value: 'cancelled', label: enrollmentStatusLabel('cancelled') },
+                                      ] : []),
+                                      ...(e.status === 'attended' ? [
+                                        { value: 'reverse', label: 'Скасувати відвідування' },
+                                      ] : []),
+                                      ...((e.status === 'cancelled' || e.status === 'noshow') ? [
+                                        { value: 'reenroll', label: 'Повернути' },
+                                      ] : []),
+                                    ]}
+                                  />
                                 )}
                                 {actionError[e.id] && (
                                   <span className={styles.rowError}>{actionError[e.id]}</span>
@@ -581,13 +578,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   </a>
                                 </td>
                                 <td className={styles.actionsCell}>
-                                  <select
-                                    className={styles.actionSelect}
-                                    value=""
+                                  <ActionSelect
                                     disabled={isLoading}
-                                    onChange={async ev => {
-                                      const val = ev.target.value
-                                      if (!val) return
+                                    onChange={async val => {
                                       if (val === 'confirm') {
                                         if (cls?.capacity != null && activeCount >= cls.capacity) {
                                           setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений' }))
@@ -602,11 +595,11 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         await handleUpdateStatus(e.id, 'cancelled')
                                       }
                                     }}
-                                  >
-                                    <option value="">Дія...</option>
-                                    <option value="confirm">Підтвердити</option>
-                                    <option value="cancelled">{enrollmentStatusLabel('cancelled')}</option>
-                                  </select>
+                                    options={[
+                                      { value: 'confirm', label: 'Підтвердити' },
+                                      { value: 'cancelled', label: enrollmentStatusLabel('cancelled') },
+                                    ]}
+                                  />
                                   {actionError[e.id] && (
                                     <span className={styles.rowError}>{actionError[e.id]}</span>
                                   )}
