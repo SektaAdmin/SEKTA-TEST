@@ -498,45 +498,41 @@
   gap: 10px;
 }
 
-/* ── Mobile nav strip (below filter bar) ───────────────────── */
-.mobileNav {
+/* ── Mobile topbar nav (full-width ← Сьогодні →) ───────────── */
+.mobileTopNav {
+  display: none;
+}
+
+/* ── Mobile date label (below filter bar) ───────────────────── */
+.mobileDateLabel {
   display: none;
 }
 
 @media (max-width: 640px) {
-  /* Topbar — hide nav, view toggle, and add button */
-  .topbarRight { flex-wrap: wrap; justify-content: flex-end; }
-  .desktopNav { display: none; }
-  .viewToggle { display: none; }
-  .btnAddClass { display: none; }
-  .viewBtnWeek { display: none; }
-
-  /* Mobile nav strip — visible below filter bar */
-  .mobileNav {
+  /* Topbar — hide desktop left/right, show mobile nav */
+  .topbarLeft { display: none; }
+  .topbarRight { display: none; }
+  .mobileTopNav {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+  .mobileTopNav .todayBtn {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Mobile date label — visible below filter bar */
+  .mobileDateLabel {
+    display: block;
     padding: 8px 16px;
+    font-size: 13px;
+    color: var(--text-2);
     border-bottom: 0.5px solid var(--border);
     background: var(--bg);
     flex-shrink: 0;
-  }
-  .mobileNavLabel {
-    background: transparent;
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 6px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-2);
-    cursor: pointer;
-    font-family: var(--font);
-    transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-  }
-  .mobileNavLabel:hover {
-    border-color: var(--border-hover);
-    color: var(--text);
-    background: var(--bg-3);
   }
 
   /* Filter bar — horizontal scroll strip, no wrapping */
