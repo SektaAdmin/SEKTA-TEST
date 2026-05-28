@@ -82,6 +82,17 @@ export default function AccountingPage() {
     })
   }
 
+  const allChecked = filtered.length > 0 && filtered.every(s => checked.has(s.id))
+  const someChecked = !allChecked && filtered.some(s => checked.has(s.id))
+
+  function toggleAll() {
+    if (allChecked) {
+      setChecked(new Set())
+    } else {
+      setChecked(new Set(filtered.map(s => s.id)))
+    }
+  }
+
   useEffect(() => {
     listActiveTrainers(supabase).then(setTrainers)
   }, [])
@@ -231,7 +242,15 @@ export default function AccountingPage() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th className={styles.thCheck}></th>
+                      <th className={styles.thCheck}>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={allChecked}
+                          ref={el => { if (el) el.indeterminate = someChecked }}
+                          onChange={toggleAll}
+                        />
+                      </th>
                       <th className={styles.thDate}>Дата</th>
                       <th>Клієнт і операція</th>
                       <th className={styles.thDeposit}>На депозит</th>
