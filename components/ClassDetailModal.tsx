@@ -234,7 +234,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
   const activeCount = cls ? getActiveCount(enrollments) : 0
   const isFull = cls && cls.capacity != null && activeCount >= cls.capacity
-  const isAlmost = cls && cls.capacity != null && activeCount < cls.capacity && activeCount >= cls.capacity * 0.8
   const fillPctValue = cls && cls.capacity != null ? Math.min((activeCount / cls.capacity) * 100, 100) : 0
   const waitlist = enrollments.filter(e => e.status === 'waitlist')
   const mainEnrollments = enrollments.filter(e => e.status !== 'waitlist')
@@ -271,22 +270,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
         className={styles.modal}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="class-detail-title"
       >
         {/* Header */}
         <div className={styles.topbar}>
-          <div className={styles.topbarTitleBlock}>
-            {!loading && cls && (
-              <>
-                <span className={styles.typeLabel}>
-                  {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
-                </span>
-                <span className={styles.topbarDate}>
-                  {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </span>
-              </>
-            )}
-            {loading && <span className={styles.topbarTitle}>Завантаження...</span>}
-          </div>
           <div className={styles.topbarRight}>
             {!loading && cls && (
               <button
@@ -336,8 +323,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
               {/* Class details card */}
               <div className={styles.detailsCard}>
-                <div className={styles.detailsRow}>
-                  <div className={styles.detailsTime}>{timeRange}</div>
+                <div className={styles.detailsHeadRow}>
+                  <span id="class-detail-title" className={styles.detailsTitle}>
+                    {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
+                  </span>
                   {cls.is_cancelled && (
                     <span className={`${styles.badge} ${styles.badgeNoshow} ${styles.cancelledBadge}`}>
                       скасовано
@@ -345,11 +334,29 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   )}
                 </div>
 
-                <div className={styles.detailsMeta}>
-                  {cls.trainers && <span>{cls.trainers.name}</span>}
-                  {cls.trainers && cls.halls && <span>·</span>}
-                  {cls.halls && <span>{cls.halls.name}</span>}
-                </div>
+                <div className={styles.detailsDivider} />
+
+                {(cls.trainers || cls.halls) ? (
+                  <div className={styles.detailsGrid}>
+                    <div className={styles.detailsCol}>
+                      <span className={styles.detailsDate}>
+                        {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                      <span className={styles.detailsTime}>{timeRange}</span>
+                    </div>
+                    <div className={styles.detailsCol}>
+                      {cls.trainers && <span className={styles.detailsMeta}>{cls.trainers.name}</span>}
+                      {cls.halls && <span className={styles.detailsMeta}>{cls.halls.name}</span>}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.detailsColSingle}>
+                    <span className={styles.detailsDate}>
+                      {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    <span className={styles.detailsTime}>{timeRange}</span>
+                  </div>
+                )}
 
                 <div className={styles.detailsDivider} />
 
@@ -366,11 +373,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                       className={styles.capacityBarFill}
                       style={{
                         width: `${fillPctValue}%`,
-                        backgroundColor: isFull
-                          ? 'var(--danger)'
-                          : isAlmost
-                            ? 'var(--warning)'
-                            : 'var(--accent)',
+                        backgroundColor: isFull ? 'var(--danger)' : 'var(--success)',
                       }}
                     />
                   </div>
