@@ -352,7 +352,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
           <div className={styles.timeGutter} style={{ width: TIME_GUTTER_W }}>
             {HOURS.map(h => (
               <div key={h} className={styles.timeRow} style={{ height: HOUR_HEIGHT }}>
-                <span className={styles.timeLabel}>{String(h).padStart(2, '0')}</span>
+                <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
               </div>
             ))}
           </div>
