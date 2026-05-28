@@ -6,6 +6,7 @@
 
 .main {
   flex: 1;
+  min-width: 0;
   margin-left: 196px;
   display: flex;
   flex-direction: column;
