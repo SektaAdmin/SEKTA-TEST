@@ -253,7 +253,7 @@ export default function AccountingPage() {
                         />
                       </th>
                       <th className={styles.thDate}>Дата</th>
-                      <th>Клієнт і операція</th>
+                      <th className={styles.thClient}>Клієнт і операція</th>
                       <th className={styles.thPrice}>Ціна</th>
                       <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>

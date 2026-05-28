@@ -199,7 +199,8 @@
 }
 
 .thCheck   { width: 36px; }
-.thDate    { width: 110px; }
+.thDate    { width: 130px; }
+.thClient  { width: 260px; }
 .thPrice   { width: 110px; text-align: right !important; }
 .thDeposit { width: 110px; text-align: right !important; }
 .thAmt     { width: 110px; text-align: right !important; }
