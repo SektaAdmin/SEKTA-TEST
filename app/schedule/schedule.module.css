@@ -15,7 +15,7 @@
 
 @media (max-width: 640px) {
   .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px var(--topbar-px); gap: 8px; }
+  .topbar { height: auto; min-height: 0; overflow: visible; flex-wrap: wrap; padding: 12px var(--topbar-px); gap: 8px; }
   .topbarLeft { flex: 1 1 100%; }
   .topbarRight { flex: 1 1 100%; }
   .btnTemplates { display: none; }
@@ -516,7 +516,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
+    flex: 1;
     gap: 8px;
   }
   .mobileTopNav .todayBtn {
