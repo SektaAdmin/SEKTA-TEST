@@ -507,10 +507,96 @@
   margin-left: 6px;
 }
 
+/* ── Mobile FAB ─────────────────────────────────────────────── */
+.fab {
+  display: none;
+}
+
+/* ── Mobile top nav (hidden on desktop) ─────────────────────── */
+.mobileTopNav {
+  display: none;
+}
+
+.mobileDayLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
-  .filterBar { overflow-x: auto; flex-wrap: nowrap; height: auto; padding: 8px 16px; }
-  .clientFilterWrap { width: 100%; margin-left: 0; }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .topbarLeft { flex-wrap: wrap; }
-  .topbarRight { flex-wrap: wrap; }
+  /* Layout */
+  .page { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+
+  /* Topbar — hide desktop sections, show mobile nav */
+  .topbar { height: auto; min-height: 0; overflow: visible; padding: 8px 16px; gap: 0; }
+  .topbarLeft { display: none; }
+  .topbarRight { display: none; }
+
+  /* Mobile day nav row */
+  .mobileTopNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    gap: 8px;
+  }
+
+  /* Touch targets */
+  .navBtn { width: 44px; height: 44px; }
+
+  /* Filter bar — horizontal scroll strip */
+  .filterBar {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    height: auto;
+    padding: 8px 0;
+    gap: 6px;
+  }
+  .filterBar::-webkit-scrollbar { display: none; }
+  .filterBar::before,
+  .filterBar::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 16px;
+  }
+  .filterGroup { flex-wrap: nowrap; }
+  .filterDivider { flex-shrink: 0; }
+  .clientFilterWrap { width: auto; margin-left: 0; flex-shrink: 0; min-width: 180px; }
+
+  /* Filter button touch targets */
+  .filterBtn { height: 36px; padding: 0 12px; font-size: 13px; }
+  .filterBtnActive { height: 36px; padding: 0 12px; font-size: 13px; }
+
+  /* Grid */
+  .gridCard { margin: 8px; overflow: hidden; }
+
+  /* FAB — mobile only */
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 16px);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    cursor: pointer;
+    z-index: 250;
+    transition: opacity var(--motion-fast), box-shadow var(--motion-fast);
+  }
+  .fab:active { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 }

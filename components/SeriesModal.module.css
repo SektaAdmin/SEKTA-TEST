@@ -136,4 +136,18 @@
 }
 .btnRemoveConfirm:hover { background: var(--danger-border); }
 
+@media (max-width: 640px) {
+  /* Always show remove button on touch devices */
+  .btnRemove { opacity: 1; }
+
+  /* Bigger checkbox touch target */
+  .hoursLabel {
+    min-height: 44px;
+    padding: 4px 0;
+  }
+  .hoursLabel input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+}
 

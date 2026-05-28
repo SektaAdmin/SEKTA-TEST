@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -41,10 +41,23 @@ export default function TemplatesPage() {
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()
 
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 640)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'list'>('week')
   // activeDow: index into DAYS_ORDER (0=Пн…6=Нд)
   const [activeDowIndex, setActiveDowIndex] = useState(0)
   const activeDow = DAYS_ORDER[activeDowIndex]
+
+  // On mobile: force day view
+  useEffect(() => {
+    if (isMobile && viewMode === 'week') setViewMode('day')
+  }, [isMobile, viewMode])
 
   const [filterTrainer, setFilterTrainer] = useState('')
   const [filterHall, setFilterHall] = useState('')
@@ -176,6 +189,7 @@ export default function TemplatesPage() {
     <BottomNav />
     <div className={styles.page}>
       <div className={styles.topbar}>
+        {/* ── Desktop topbar ── */}
         <div className={styles.topbarLeft}>
           <Link href="/schedule" className={styles.backLink}>← Розклад</Link>
           <h1 className="page-title">Шаблони тижня</h1>
@@ -274,6 +288,21 @@ export default function TemplatesPage() {
             onClick={() => setShowCreateModal(true)}
           >
             + Новий шаблон
+          </button>
+        </div>
+
+        {/* ── Mobile topbar ── */}
+        <div className={styles.mobileTopNav}>
+          <button className={styles.navBtn} onClick={goPrevDay} aria-label="Попередній день">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 2L4 7l5 5"/>
+            </svg>
+          </button>
+          <span className={styles.mobileDayLabel}>{DOW_LABELS_FULL[activeDow]}</span>
+          <button className={styles.navBtn} onClick={goNextDay} aria-label="Наступний день">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M5 2l5 5-5 5"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -441,6 +470,13 @@ export default function TemplatesPage() {
         </div>
       </div>
 
+      {/* Mobile FAB */}
+      <button
+        className={styles.fab}
+        onClick={() => setShowCreateModal(true)}
+        aria-label="Новий шаблон"
+      >+</button>
+
       {(showCreateModal || editingSeries) && (
         <SeriesModal
           existing={editingSeries}
@@ -450,6 +486,7 @@ export default function TemplatesPage() {
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
+          fullScreen={isMobile}
         />
       )}
     </div>
