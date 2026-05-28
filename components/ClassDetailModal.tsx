@@ -245,13 +245,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
   function buildCopyText() {
     if (!cls) return ''
-    const lines = [
-      cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type),
-      formatSaleDatetime(cls.starts_at),
-      timeRange,
-    ]
-    if (cls.halls?.name) lines.push(cls.halls.name)
+    const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+    const titleLine = cls.halls?.name ? `${label} (${cls.halls.name})` : label
+    const dateLine = new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const dateTimeLine = `${dateLine}, ${timeRange}`
+    const hours = cls.duration_min / 60
+    const durationLine = hours === 1 ? '1 година' : hours % 1 === 0 ? `${hours} годин` : `${cls.duration_min} хв`
+    const lines = [titleLine]
     if (cls.trainers?.name) lines.push(cls.trainers.name)
+    lines.push(dateTimeLine, durationLine)
     return lines.join('\n')
   }
 
