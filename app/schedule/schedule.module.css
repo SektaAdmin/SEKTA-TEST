@@ -491,6 +491,34 @@
   min-height: 0;
 }
 
+/* ── FAB (mobile only) ──────────────────────────────────────── */
+.fab {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 28px;
+    font-weight: 300;
+    border: none;
+    cursor: pointer;
+    z-index: 150;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    line-height: 1;
+  }
+}
+
 /* ── Desktop nav group (← Сьогодні →) ──────────────────────── */
 .desktopNav {
   display: flex;
@@ -512,6 +540,8 @@
   /* Topbar — hide desktop left/right, show mobile nav */
   .topbarLeft { display: none; }
   .topbarRight { display: none; }
+  /* filterBar: not sticky on mobile — grid scrolls inside bodyGridWrapper, not the page */
+  .filterBar { position: static; }
   .mobileTopNav {
     display: flex;
     align-items: center;

@@ -144,7 +144,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       onClick={e => { e.stopPropagation(); onClick() }}
     >
       {isCompact ? (
-        <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTypeCancelled : ''}`}>
+        <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
           {label} {formatTime(cls.starts_at)}
         </span>
       ) : (
@@ -723,6 +723,15 @@ export default function SchedulePage() {
             />
           )}
         </div>
+
+        {/* FAB — mobile only, creates new class */}
+        <button
+          className={styles.fab}
+          onClick={() => { setPrefill(undefined); setShowModal(true) }}
+          aria-label="Нове заняття"
+        >
+          +
+        </button>
       </main>
 
       {editClassId && (

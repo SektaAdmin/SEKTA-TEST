@@ -117,7 +117,6 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
     --control-h: 44px;
     --topbar-py: 12px;
     --topbar-px: 16px;
-    --safe-top: env(safe-area-inset-top, 0px);
   }
   /* Prevent iOS zoom on input focus — !important overrides CSS Modules specificity */
   input, select, textarea { font-size: 16px !important; }
