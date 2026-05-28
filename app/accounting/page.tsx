@@ -82,17 +82,6 @@ export default function AccountingPage() {
     })
   }
 
-  const allChecked = filtered.length > 0 && filtered.every(s => checked.has(s.id))
-  const someChecked = !allChecked && filtered.some(s => checked.has(s.id))
-
-  function toggleAll() {
-    if (allChecked) {
-      setChecked(new Set())
-    } else {
-      setChecked(new Set(filtered.map(s => s.id)))
-    }
-  }
-
   useEffect(() => {
     listActiveTrainers(supabase).then(setTrainers)
   }, [])
@@ -139,6 +128,17 @@ export default function AccountingPage() {
   }, [filtered])
 
   const grandTotal = totals.cash + totals.fop + totals.card
+
+  const allChecked = filtered.length > 0 && filtered.every(s => checked.has(s.id))
+  const someChecked = !allChecked && filtered.some(s => checked.has(s.id))
+
+  function toggleAll() {
+    if (allChecked) {
+      setChecked(new Set())
+    } else {
+      setChecked(new Set(filtered.map(s => s.id)))
+    }
+  }
 
   function setPreset(from: string, to: string) { setDateFrom(from); setDateTo(to) }
 
