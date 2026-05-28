@@ -605,7 +605,7 @@
   /* Filter bar — horizontal scroll strip, no wrapping */
   .filterBar {
     overflow-x: auto;
-    overflow-y: visible;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-wrap: nowrap;
