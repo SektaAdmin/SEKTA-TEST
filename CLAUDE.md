@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний: BottomNav, bottom sheets, /sales, /clients, /schedule, /schedule/templates; ClassModal завжди fullScreen; Pagination компонент; ScheduleDetailCard видалено)
+- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний; filterBar overflow-y:hidden; SeriesModal порядок полів; FormField time input нормалізація висоти)
 
 ## Commands
 
@@ -506,6 +506,7 @@ types/
   - **Mobile bottom sheet**: за замовчуванням на ≤640px модалка — bottom sheet (`border-radius` зверху, `max-height: 92dvh`, анімація `bottomSheetIn`).
   - **`fullScreen` prop**: на мобільному модалка займає весь екран як окрема сторінка. Overlay: `background: var(--bg)`, `align-items: stretch`. Modal: `align-self: stretch`, `height: auto`, `border-radius: 0`, `border: none`. Використовується в `SaleModal` (завжди), `SeriesModal` (при `isMobile`), `ClassDetailModal` (при `isMobile`), `ClassModal` (завжди). ⚠️ Overlay має `background: var(--bg)` — без цього сторінка і BottomNav просвічують крізь прозорий overlay.
   - **z-index**: overlay `z-index: 300` > BottomNav `z-index: 200`.
+- **FormField** (`components/ui/FormField.tsx`) — уніфікований wrapper поля: label + control + errorHint + hint. ⚠️ `input[type="time"]` має власний браузерний padding і рендериться вищим за інші поля — нормалізовано в `FormField.module.css` через `height: 39px; padding-top: 0; padding-bottom: 0`.
 - **ModalFooter** (`components/ui/ModalFooter.tsx`) — уніфіковані footer-кнопки для всіх модалок. Props: `onCancel`, `onSave` (optional), `saveLabel` (дефолт: "Зберегти"), `cancelLabel` (дефолт: "Скасувати"), `loading`, `saveType` ('button'|'submit'), `disabled`. Кнопки рендеряться лише якщо `onSave` передана.
 - **CSS**: CSS Modules + Tailwind співіснують. Нові компоненти — Tailwind. Старі module.css — не переписувати без потреби. Жодних HEX/rgba напряму в `*.module.css` — тільки `var()`.
 
@@ -545,11 +546,13 @@ types/
 **Topbar:** backLink ← Розклад + заголовок + [dayNav в день-вью] + [День/Тиждень/Список] + Виставити тиждень + Видалити розклад + "+ Новий шаблон"
 **FilterBar:** фільтр залів + фільтр тренерів + пошук за клієнтом
 
+**SeriesModal — порядок полів:** День тижня + Час початку → Тип заняття → Тренер + Зал → Тривалість + Ліміт → Назва → Нотатки → Постійники
+
 **Mobile adaptation (≤640px):**
-- **Topbar**: `topbarLeft`/`topbarRight` приховані; `mobileTopNav` — компактний ← [день] → (navBtn 44×44)
+- **Topbar**: `topbarLeft`/`topbarRight` приховані; `mobileTopNav` — компактний ← [день] → (navBtn 44×44); padding `12px var(--topbar-px)`, gap `8px`, flex-wrap wrap
 - **Авто-перемикання**: на мобільному `viewMode` примусово стає `'day'` через `useEffect(isMobile)`; `isMobile` визначається через `window.innerWidth <= 640` на mount + resize listener
 - **FAB**: `position: fixed; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); z-index: 250` — вище BottomNav (z-200)
-- **Filter bar**: horizontal scroll, `flex-wrap: nowrap`, `::before/::after` padding, висота кнопок 36px
+- **Filter bar**: `position: static` (не sticky), `overflow-x: auto; overflow-y: hidden` (hidden запобігає вертикальному скролу при touch-свайпі), `flex-wrap: nowrap`, `::before/::after` padding 16px, висота кнопок 36px
 - **SeriesModal**: `fullScreen={isMobile}` — на мобільному відкривається на весь екран
 - **HallWeekGrid**: `min-width: 0` для dayCol/dayHeader/hallSubCol → day view fills width; `overflow-x: auto` на bodyWrapper
 
@@ -602,6 +605,7 @@ types/
 - **Calendar**: `showMobileCal` state → bottom sheet (`mobileCalOverlay` / `mobileCalSheet`) поверх контенту
 - **View mode**: тільки day view на мобільному (примусово через `useEffect(isMobile)`); week view недоступний
 - **FAB**: `position: fixed; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); z-index: 250` — "+ Нове заняття", вище BottomNav
+- **Filter bar**: `overflow-x: auto; overflow-y: hidden` — `hidden` запобігає вертикальному скролу при touch-свайпі
 - **ClassModal**: завжди `fullScreen` (незалежно від пристрою — так вирішено в компоненті)
 - **ClassDetailModal**: `fullScreen` на мобільному
 
