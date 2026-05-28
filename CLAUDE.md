@@ -635,15 +635,21 @@ types/
 
 ---
 
-### /journal Page (станом на 2026-05-23)
+### /journal Page (станом на 2026-05-28)
 
 **Назначення:** Журнал усіх минулих занять (вчора і раніше). Замінює /settings/archive і недосяжний archive tab у /schedule.
 
 **Компоненти:**
 - **Filter bar**: HTML5 date inputs (від/до), dropdown: тренер/зал/тип/статус (Всі / Тільки скасовані)
 - **Table**: 20 рядків/сторінка, колонки: Дата | Час | Тип | Назва | Тренер | Зал | Записів | Статус
-- **Pagination**: Prev/Next + counter (Сторінка X з Y)
-- **Click on row** → `ClassDetailModal` з повним редагуванням
+- **Pagination**: «/‹/›/» кнопки + counter (Сторінка X з Y · N занять)
+- **Click on row/card** → `ClassDetailModal` з повним редагуванням
+
+**Mobile adaptation (≤640px):**
+- **Filter bar**: `overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap` — горизонтальний скрол без вертикального drift
+- **Таблиця**: на десктопі `.tableDesktop`, на мобільному `.cardList` — CSS toggle (`display: none/flex`); обидва рендеряться одночасно
+- **Journal card**: тип заняття + дата·час в рядку; мета-рядок: тренер · зал · N записів · статус-бейдж
+- **Pagination**: `flex-wrap: wrap`, ліво=info, право=кнопки; на мобільному кожна секція 100% ширини
 
 **Query:** `listPastClasses(supabase, page, pageSize, filters)` — в `lib/queries/classes.ts`
 - Cutoff: `starts_at < today` (початок поточного дня, без штучного 30-денного обмеження)

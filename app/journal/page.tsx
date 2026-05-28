@@ -135,7 +135,8 @@ export default function JournalPage() {
           <div className={jStyles.empty}>{MSG.empty.journalEmpty}</div>
         ) : (
           <>
-            <div className="data-table-wrap">
+            {/* Desktop table */}
+            <div className={`data-table-wrap ${jStyles.tableDesktop}`}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -175,38 +176,77 @@ export default function JournalPage() {
               </table>
             </div>
 
+            {/* Mobile card list */}
+            <div className={jStyles.cardList}>
+              {data.map(cls => {
+                const typeLabel = trainingTypes.find(t => t.code === cls.ticket_type)?.label ?? cls.ticket_type
+                const enrolled = getActiveCount(cls.enrollments)
+                return (
+                  <div
+                    key={cls.id}
+                    className={jStyles.card}
+                    onClick={() => setSelectedClassId(cls.id)}
+                  >
+                    <div className={jStyles.cardRow}>
+                      <span className={jStyles.cardTitle}>{typeLabel}</span>
+                      <span className={jStyles.cardDateTime}>
+                        {formatDate(cls.starts_at)} · {formatTime(cls.starts_at)}
+                      </span>
+                    </div>
+                    <div className={jStyles.cardMeta}>
+                      {cls.trainers?.name && (
+                        <span>{cls.trainers.name}</span>
+                      )}
+                      {cls.trainers?.name && cls.halls?.name && (
+                        <span className={jStyles.cardMetaDot}>·</span>
+                      )}
+                      {cls.halls?.name && (
+                        <span>{cls.halls.name}</span>
+                      )}
+                      {(cls.trainers?.name || cls.halls?.name) && (
+                        <span className={jStyles.cardMetaDot}>·</span>
+                      )}
+                      <span>{enrolled} записів</span>
+                      <span className={jStyles.cardMetaDot}>·</span>
+                      {cls.is_cancelled
+                        ? <span className={jStyles.badgeCancelled}>Скасовано</span>
+                        : <span className={jStyles.badgeCompleted}>Проведено</span>
+                      }
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Pagination */}
             <div className={jStyles.pagination}>
-              <button
-                disabled={page === 0 || loading}
-                onClick={() => setPage(0)}
-                className={styles.editBtn}
-              >
-                «
-              </button>
-              <button
-                disabled={page === 0 || loading}
-                onClick={() => setPage(p => p - 1)}
-                className={styles.editBtn}
-              >
-                ← Назад
-              </button>
-              <span className={jStyles.paginationCounter}>
-                Сторінка {page + 1} з {totalPages} (всього: {total})
-              </span>
-              <button
-                disabled={page + 1 >= totalPages || loading}
-                onClick={() => setPage(p => p + 1)}
-                className={styles.editBtn}
-              >
-                Вперед →
-              </button>
-              <button
-                disabled={page + 1 >= totalPages || loading}
-                onClick={() => setPage(totalPages - 1)}
-                className={styles.editBtn}
-              >
-                »
-              </button>
+              <div className={jStyles.paginationLeft}>
+                <span className={jStyles.paginationInfo}>
+                  Сторінка {page + 1} з {totalPages} · {total} занять
+                </span>
+              </div>
+              <div className={jStyles.paginationBtns}>
+                <button
+                  disabled={page === 0 || loading}
+                  onClick={() => setPage(0)}
+                  className={jStyles.pageBtn}
+                >«</button>
+                <button
+                  disabled={page === 0 || loading}
+                  onClick={() => setPage(p => p - 1)}
+                  className={jStyles.pageBtn}
+                >‹</button>
+                <button
+                  disabled={page + 1 >= totalPages || loading}
+                  onClick={() => setPage(p => p + 1)}
+                  className={jStyles.pageBtn}
+                >›</button>
+                <button
+                  disabled={page + 1 >= totalPages || loading}
+                  onClick={() => setPage(totalPages - 1)}
+                  className={jStyles.pageBtn}
+                >»</button>
+              </div>
             </div>
           </>
         )}
@@ -227,12 +267,14 @@ export default function JournalPage() {
 }
 
 const selectStyle: React.CSSProperties = {
-  padding: '8px 12px',
+  padding: '6px 10px',
   borderRadius: 'var(--radius-sm)',
   border: '0.5px solid var(--border)',
   background: 'var(--bg)',
   color: 'var(--text)',
-  fontSize: 16,
+  fontSize: 14,
   fontFamily: 'var(--font)',
   cursor: 'pointer',
+  height: 'var(--control-h)',
+  flexShrink: 0,
 }
