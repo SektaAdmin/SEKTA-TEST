@@ -9,7 +9,7 @@
 }
 
 .error {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -22,7 +22,7 @@
   background: none;
   border: none;
   color: var(--text-3);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -48,7 +48,7 @@
 }
 
 .historyEmpty {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   text-align: center;
   padding: 12px 0;
@@ -57,7 +57,7 @@
 .historyTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .historyTable th {
@@ -114,7 +114,7 @@
 }
 
 .historyLoading {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   text-align: center;
   padding: 12px 0;

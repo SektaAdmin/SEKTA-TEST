@@ -9,7 +9,7 @@
 }
 
 .error {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;

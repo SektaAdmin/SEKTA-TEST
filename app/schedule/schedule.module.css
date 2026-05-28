@@ -61,7 +61,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   cursor: pointer;
   font-family: var(--font);
@@ -78,7 +78,7 @@
   padding: 0 14px;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-2);
   text-decoration: none;
@@ -126,7 +126,7 @@
 }
 
 .monthTitle {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -151,7 +151,7 @@
 
 /* ── View label ─────────────────────────────────────────────── */
 .viewLabel {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   white-space: nowrap;
   padding: 0 8px;
@@ -222,7 +222,7 @@
   border-radius: var(--radius-sm);
   padding: 0 12px;
   height: var(--control-h);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-2);
   cursor: pointer;
@@ -251,7 +251,7 @@
   border: none;
   padding: 0 12px;
   height: var(--control-h);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-2);
   cursor: pointer;
@@ -303,7 +303,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
@@ -335,7 +335,7 @@
 .archiveEmpty {
   text-align: center;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 48px 0;
 }
 
@@ -358,13 +358,13 @@
   background: var(--bg-3);
 }
 
-.archiveDate { font-size: 12px; color: var(--text-2); min-width: 80px; }
-.archiveTime { font-size: 12px; color: var(--text-2); min-width: 100px; }
-.archiveType { font-size: 13px; font-weight: 500; flex: 1; }
-.archiveMeta { font-size: 12px; color: var(--text-2); white-space: nowrap; }
-.archiveMetaSep { font-size: 12px; color: var(--text-3); }
+.archiveDate { font-size: 14px; color: var(--text-2); min-width: 80px; }
+.archiveTime { font-size: 14px; color: var(--text-2); min-width: 100px; }
+.archiveType { font-size: 14px; font-weight: 500; flex: 1; }
+.archiveMeta { font-size: 14px; color: var(--text-2); white-space: nowrap; }
+.archiveMetaSep { font-size: 14px; color: var(--text-3); }
 .archiveCount {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   white-space: nowrap;
   flex-shrink: 0;
@@ -431,7 +431,7 @@
 }
 
 .dayDate {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -524,7 +524,7 @@
 
 .weekDayLabel {
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-2);
   text-align: center;
@@ -712,7 +712,7 @@
 }
 
 .cardTitle {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
   color: var(--text);

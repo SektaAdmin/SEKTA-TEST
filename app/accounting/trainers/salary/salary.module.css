@@ -50,7 +50,7 @@
   border-radius: var(--radius-sm);
   height: var(--control-h);
   padding: 0 14px;
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: none;
   transition: border-color var(--motion-fast), color var(--motion-fast);
 }
@@ -82,7 +82,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   padding: 0 10px;
   min-width: 160px;
@@ -118,7 +118,7 @@
 }
 
 .sectionTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-3);
   text-transform: uppercase;
@@ -134,7 +134,7 @@
   color: var(--accent);
   border: 0.5px solid var(--accent-border);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast);
@@ -143,7 +143,7 @@
 
 .empty {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 24px 0;
 }
 
@@ -163,7 +163,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table thead tr { background: var(--bg-3); }
@@ -191,7 +191,7 @@
 .table tbody tr:hover td { background: var(--bg-3); }
 
 .typeChip {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   background: var(--bg-3);
   border: 0.5px solid var(--border);
@@ -202,40 +202,40 @@
 
 .num {
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   text-align: right;
 }
 
 .rateVal {
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
 .noRate {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--warning);
 }
 
 .amount {
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent);
   font-weight: 500;
 }
 
 .dateCell { color: var(--text-2); white-space: nowrap; }
-.periodCell { color: var(--text-3); font-size: 12px; white-space: nowrap; }
+.periodCell { color: var(--text-3); font-size: 14px; white-space: nowrap; }
 
 .paidAmount {
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent);
   font-weight: 500;
 }
 
-.notes { color: var(--text-3); font-size: 12px; }
+.notes { color: var(--text-3); font-size: 14px; }
 
 /* ── Footer totals ───────────────────────────────────────────── */
 .totalRow td {
@@ -256,7 +256,7 @@
 
 /* ── No rate hint ────────────────────────────────────────────── */
 .noRateHint {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--warning);
 }
 
@@ -320,7 +320,7 @@
 }
 
 .modalHint {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   padding: 10px 12px;
   background: var(--bg-3);
@@ -329,7 +329,7 @@
 }
 
 .label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   margin-bottom: -6px;
 }
@@ -341,7 +341,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   padding: 0 10px;
   box-sizing: border-box;
@@ -350,7 +350,7 @@
 .input:focus { outline: none; border-color: var(--accent-border-hover); }
 
 .errorMsg {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   margin-top: -4px;
 }
@@ -370,7 +370,7 @@
   border: 0.5px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast);
@@ -384,7 +384,7 @@
   border: 0.5px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast);

@@ -18,7 +18,7 @@
 
 .loadingState {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 60px 0;
   text-align: center;
 }
@@ -46,7 +46,7 @@
   border: none;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   padding: 0;
   transition: color 0.12s;
@@ -65,7 +65,7 @@
   padding: 7px 14px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: border-color 0.12s, color 0.12s;
 }
@@ -78,7 +78,7 @@
   padding: 7px 14px;
   color: var(--danger);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: background 0.12s;
 }
@@ -92,7 +92,7 @@
   padding: 7px 14px;
   color: var(--accent);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: opacity 0.12s;
 }
@@ -120,7 +120,7 @@
   border: 0.5px solid rgba(224,160,64,0.35);
   border-radius: var(--radius);
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   line-height: 1.5;
 }
@@ -159,7 +159,7 @@
 }
 
 .infoValue {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .sectionTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
 }
@@ -197,7 +197,7 @@
   border: none;
   border-radius: var(--radius-sm);
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.12s;
@@ -223,13 +223,13 @@
 }
 
 .clientName {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
 }
 
 .balanceOk {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
   background: var(--accent-dim);
   padding: 2px 8px;
@@ -238,7 +238,7 @@
 }
 
 .balanceWarn {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 2px 8px;
@@ -246,7 +246,7 @@
 }
 
 .enrollError {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -266,7 +266,7 @@
   padding: 7px 14px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: border-color 0.12s, color 0.12s;
 }
@@ -280,7 +280,7 @@
   color: var(--accent-text);
   font-weight: 500;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   transition: opacity 0.12s;
 }
 .btnConfirmEnroll:hover { opacity: 0.88; }
@@ -289,7 +289,7 @@
 /* ── Empty ───────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 32px 0;
   text-align: center;
 }
@@ -312,7 +312,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table thead tr { background: var(--bg-3); }
@@ -349,11 +349,11 @@
 }
 .clientLink:hover { color: var(--accent); }
 
-.balanceCell { font-variant-numeric: tabular-nums; font-size: 12px; }
+.balanceCell { font-variant-numeric: tabular-nums; font-size: 14px; }
 .balPos  { color: var(--accent); }
 .balZero { color: var(--danger); }
 
-.dateCell { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.dateCell { font-size: 14px; color: var(--text-2); font-variant-numeric: tabular-nums; }
 
 /* ── Status badges ───────────────────────────────────────────── */
 .badge {
@@ -399,7 +399,7 @@
 .btnAttend, .btnNoshow, .btnCancelEnroll, .btnReEnroll {
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   border: 0.5px solid var(--border);
@@ -411,7 +411,7 @@
 
 .btnAttend {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
 }
 .btnAttend:hover:not(:disabled) {
   background: var(--accent-dim);
@@ -451,7 +451,7 @@
 }
 
 .confirmPrompt {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   white-space: nowrap;
 }
@@ -467,7 +467,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   cursor: pointer;
   user-select: none;

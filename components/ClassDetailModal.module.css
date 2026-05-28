@@ -61,13 +61,13 @@
 }
 
 .topbarDate {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   line-height: 1.3;
 }
 
 .topbarTitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
@@ -114,7 +114,7 @@
 
 .loadingState {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 60px 0;
   text-align: center;
 }
@@ -136,7 +136,7 @@
   border: 0.5px solid rgba(224,160,64,0.35);
   border-radius: var(--radius);
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   line-height: 1.5;
 }
@@ -174,7 +174,7 @@
 }
 
 .detailsMeta {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   display: flex;
   align-items: center;
@@ -197,12 +197,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
 .capacityCount {
-  font-size: 13px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
@@ -240,7 +240,7 @@
 }
 
 .notesValue {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   line-height: 1.4;
 }
@@ -263,7 +263,7 @@
 }
 
 .enrollmentTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   margin: 0;
@@ -275,7 +275,7 @@
   border: none;
   border-radius: var(--radius-sm);
   padding: 7px 12px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.12s;
@@ -302,13 +302,13 @@
 }
 
 .clientName {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
 }
 
 .balanceOk {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
   background: var(--accent-dim);
   padding: 2px 8px;
@@ -317,7 +317,7 @@
 }
 
 .balanceWarn {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 2px 8px;
@@ -325,7 +325,7 @@
 }
 
 .enrollError {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -345,7 +345,7 @@
   padding: 7px 14px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: border-color 0.12s, color 0.12s;
 }
@@ -359,7 +359,7 @@
   color: var(--accent-text);
   font-weight: 500;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   transition: opacity 0.12s;
 }
 .btnConfirmEnroll:hover { opacity: 0.88; }
@@ -368,7 +368,7 @@
 /* ── Empty ───────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 32px 0;
   text-align: center;
 }
@@ -384,7 +384,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table thead tr { background: var(--bg-3); }
@@ -452,7 +452,7 @@
 }
 
 .waitlistTitle {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   margin: 0 0 12px;
@@ -473,7 +473,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   border: 0.5px solid var(--border);
@@ -490,7 +490,7 @@
   width: 32px;
   padding: 0;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .btnAttend:hover:not(:disabled) {
@@ -548,7 +548,7 @@
   padding: 7px 14px;
   color: var(--text-2);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: border-color 0.12s, color 0.12s;
 }
@@ -561,7 +561,7 @@
   padding: 7px 14px;
   color: var(--danger);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: background 0.12s;
 }
@@ -574,7 +574,7 @@
   padding: 7px 14px;
   color: var(--accent);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   transition: opacity 0.12s;
 }
@@ -591,7 +591,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   cursor: pointer;
   user-select: none;

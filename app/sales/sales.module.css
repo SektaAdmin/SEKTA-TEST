@@ -61,7 +61,7 @@
   height: var(--control-h);
   padding: 0 12px 0 30px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   outline: none;
   width: 200px;
@@ -76,7 +76,7 @@
   border-radius: var(--radius-sm);
   padding: 7px 12px;
   color: var(--text-3);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
@@ -88,7 +88,7 @@
 
 .empty {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 40px 0;
   text-align: center;
   display: flex;
@@ -97,18 +97,18 @@
   gap: 12px;
 }
 
-.date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; font-size: 12px !important; }
-.price { font-variant-numeric: tabular-nums; font-size: 13px !important; }
+.date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; font-size: 14px !important; }
+.price { font-variant-numeric: tabular-nums; font-size: 14px !important; }
 .trainer { color: var(--text-2) !important; }
 
-.deposit { font-variant-numeric: tabular-nums; font-size: 13px !important; white-space: nowrap; }
+.deposit { font-variant-numeric: tabular-nums; font-size: 14px !important; white-space: nowrap; }
 .depositPos { color: var(--success); font-weight: 500; }
 .depositNeg { color: var(--danger); font-weight: 500; }
 .depositZero { color: var(--text-3); }
-.depositLabel { color: var(--text-3); font-style: italic; font-size: 12px; }
-.opTopup     { color: var(--success); font-size: 12px; }
-.opDeduction { color: var(--danger); font-size: 12px; }
-.sessions    { font-variant-numeric: tabular-nums; font-size: 13px !important; }
+.depositLabel { color: var(--text-3); font-style: italic; font-size: 14px; }
+.opTopup     { color: var(--success); font-size: 14px; }
+.opDeduction { color: var(--danger); font-size: 14px; }
+.sessions    { font-variant-numeric: tabular-nums; font-size: 14px !important; }
 
 .badge {
   display: inline-flex;
@@ -170,13 +170,13 @@
 }
 
 .confirmBox p {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   margin-bottom: 20px;
 }
 
 .confirmError {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 7px 10px;
@@ -192,7 +192,7 @@
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: color 0.12s;
 }
@@ -204,7 +204,7 @@
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--white);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.12s;
@@ -235,7 +235,7 @@
 }
 
 .cardClient {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   flex: 1;
@@ -246,13 +246,13 @@
 }
 
 .cardDate {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   flex-shrink: 0;
 }
 
 .cardOperation {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -260,22 +260,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   flex-wrap: wrap;
 }
 
 .cardMetaLabel {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
 .cardMetaValue {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
 .cardTrainer {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -288,14 +288,14 @@
 
 .depositInfo {
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   display: block;
   margin-top: 4px;
 }
 
 .depositWarning {
   color: var(--warning, #f59e0b);
-  font-size: 12px;
+  font-size: 14px;
   display: block;
   margin-top: 4px;
   background: var(--warning-dim, rgba(245, 158, 11, 0.1));
@@ -318,7 +318,7 @@
 }
 
 .paginationInfo {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
 }
 
@@ -335,7 +335,7 @@
   height: var(--control-h);
   padding: 0 10px;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font);
   outline: none;
   cursor: pointer;
@@ -349,7 +349,7 @@
   border-radius: var(--radius-sm);
   padding: 5px 0;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   min-width: 32px;
   text-align: center;
@@ -371,7 +371,7 @@
 
 .pageEllipsis {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   padding: 0 5px;
   user-select: none;
 }

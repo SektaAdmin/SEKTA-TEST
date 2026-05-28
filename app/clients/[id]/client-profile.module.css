@@ -47,7 +47,7 @@
   background: none;
   border: none;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
   white-space: nowrap;
@@ -130,14 +130,14 @@
 }
 
 .field dt {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
   min-width: 72px;
   flex-shrink: 0;
 }
 
 .field dd {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   margin: 0;
   min-width: 0;
@@ -148,7 +148,7 @@
 .fieldLink {
   color: var(--accent);
   text-decoration: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 .fieldLink:hover { text-decoration: underline; }
 
@@ -191,7 +191,7 @@
 }
 
 .sessionType {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -222,7 +222,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table thead tr { background: var(--bg-3); }
@@ -251,13 +251,13 @@
 
 .dateCell {
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .depositLabel { color: var(--text-3); font-style: italic; }
-.txDesc       { color: var(--text-2); font-size: 12px; max-width: 240px; }
+.txDesc       { color: var(--text-2); font-size: 14px; max-width: 240px; }
 
 .empty2 { color: var(--text-3); }
 
@@ -269,7 +269,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, background 0.15s;
@@ -283,7 +283,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, color 0.15s;
@@ -297,7 +297,7 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--accent-text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -314,7 +314,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -334,7 +334,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, color 0.15s;
@@ -348,7 +348,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--danger);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.15s, background 0.15s;
@@ -376,20 +376,20 @@
 }
 
 .confirmBox h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--text);
   margin: 0 0 8px;
 }
 
 .confirmBox p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   margin: 0 0 16px;
 }
 
 .confirmError {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   margin: 0 0 12px;
 }
@@ -407,7 +407,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -420,7 +420,7 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -435,7 +435,7 @@
   gap: 4px;
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -445,15 +445,15 @@
 .badgeDeposit { background: var(--deposit-dim);  color: var(--deposit); }
 
 /* ── Table number cells ─────────────────────────────────────── */
-.numCell { font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+.numCell { font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
 
 /* ── Deposit delta & balance-after ─────────────────────────── */
 .deltaPos  { color: var(--success); font-weight: 500; }
 .deltaNeg  { color: var(--danger); font-weight: 500; }
 
 /* ── Operation type labels (no-ticket rows) ─────────────────── */
-.opTopup     { color: var(--success); font-size: 12px; }
-.opDeduction { color: var(--danger); font-size: 12px; }
+.opTopup     { color: var(--success); font-size: 14px; }
+.opDeduction { color: var(--danger); font-size: 14px; }
 
 /* ── Tabs ───────────────────────────────────────────────────── */
 .tabHeader {
@@ -478,7 +478,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--motion-fast), border-color var(--motion-fast);
@@ -514,7 +514,7 @@
   padding: 0;
   cursor: pointer;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -550,7 +550,7 @@
   }
 
   .itemCardMain {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text);
     min-width: 0;
@@ -560,14 +560,14 @@
   }
 
   .itemCardDate {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .itemCardSub {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text);
     min-width: 0;
     overflow: hidden;
@@ -576,14 +576,14 @@
   }
 
   .itemCardTime {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .itemCardMeta {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text);
     white-space: nowrap;
     flex-shrink: 0;
@@ -599,6 +599,6 @@
   .itemCardActions .btnRowDel {
     flex: 1;
     height: 34px;
-    font-size: 13px;
+    font-size: 14px;
   }
 }

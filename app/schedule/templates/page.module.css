@@ -47,7 +47,7 @@
 }
 
 .backLink {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   text-decoration: none;
   transition: color var(--motion-fast);
@@ -83,7 +83,7 @@
 }
 
 .dayNavLabel {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -112,7 +112,7 @@
 }
 
 .generateLabel {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   margin: 0;
 }
@@ -130,7 +130,7 @@
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   outline: none;
   transition: border-color var(--motion-fast);
@@ -138,7 +138,7 @@
 .generateInput:focus { border-color: var(--accent); }
 
 .generateUnit {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   flex: 1;
 }
@@ -158,7 +158,7 @@
   background: transparent;
   border: none;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: color var(--motion-fast), background var(--motion-fast);
@@ -172,7 +172,7 @@
   background: var(--accent-dim);
   border: none;
   color: var(--accent);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   cursor: default;
 }
@@ -187,7 +187,7 @@
   border: 0.5px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast);
@@ -202,7 +202,7 @@
   border: 0.5px solid var(--danger-border);
   border-radius: var(--radius-sm);
   color: var(--danger);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast);
@@ -211,7 +211,7 @@
 .btnDeleteSchedule:hover { background: var(--danger-dim); }
 
 .deleteWarning {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   margin: 0;
   opacity: 0.8;
@@ -224,7 +224,7 @@
   border: 0.5px solid var(--danger-border);
   border-radius: var(--radius-sm);
   color: var(--danger);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -242,7 +242,7 @@
   border: 0.5px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast);
@@ -258,7 +258,7 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--accent-text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -304,7 +304,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
@@ -342,7 +342,7 @@
   border: 0.5px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 12px;
+  font-size: 14px;
   white-space: nowrap;
   max-width: 220px;
   overflow: hidden;
@@ -397,14 +397,14 @@
 
 
 .loading {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   padding: 20px var(--topbar-px);
   display: block;
 }
 
 .empty {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   padding: 48px var(--topbar-px);
 }
@@ -418,7 +418,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table th {
@@ -461,7 +461,7 @@
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--motion-fast), color var(--motion-fast);
@@ -475,7 +475,7 @@
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);
-  font-size: 12px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: background var(--motion-fast);
@@ -484,7 +484,7 @@
 .btnDanger:hover { background: var(--danger-dim); }
 
 .deleteConfirm {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
@@ -493,7 +493,7 @@
   border: none;
   padding: 0;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: color var(--motion-fast);

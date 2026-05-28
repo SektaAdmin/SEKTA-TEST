@@ -59,7 +59,7 @@
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
   padding: 0 4px;
   box-sizing: border-box;
   -moz-appearance: textfield;
@@ -76,6 +76,6 @@
 }
 
 .timeSep {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
 }

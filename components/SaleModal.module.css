@@ -43,7 +43,7 @@
 .required { color: var(--accent); font-size: 10px; margin-left: 4px; }
 
 .error {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -73,7 +73,7 @@
 .paymentTab {
   flex: 1;
   padding: 8px;
-  font-size: 12px;
+  font-size: 14px;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-3);

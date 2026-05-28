@@ -9,7 +9,7 @@
 }
 
 .error {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -34,7 +34,7 @@
   border: none;
   border-radius: calc(var(--radius-sm) - 2px);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   transition: background var(--motion-fast), color var(--motion-fast);
@@ -49,7 +49,7 @@
 
 /* ── Edit scope picker ───────────────────────────────────────── */
 .scopePrompt {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   margin: 0 0 12px;
 }
@@ -79,12 +79,12 @@
 }
 
 .scopeTitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
   font-weight: 500;
 }
 
 .scopeDesc {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-3);
 }
