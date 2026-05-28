@@ -179,42 +179,83 @@ export default function AccountingPage() {
               {rows.length === 0 ? (
                 <div className={styles.empty}>{MSG.empty.salesPeriod}</div>
               ) : (
-                <div className={styles.tableWrap}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Дата</th>
-                        <th>Готівка</th>
-                        <th>ФОП</th>
-                        <th>Картка</th>
-                        <th>З депозиту</th>
-                        <th>Надходження</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map(r => (
-                        <tr key={r.date}>
-                          <td className={styles.dateCell}>{r.date.split('-').reverse().join('.')}</td>
-                          <td className={r.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(r.cash)}</td>
-                          <td className={r.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(r.fop)}</td>
-                          <td className={r.card    > 0 ? styles.valCard    : styles.zero}>{fmt(r.card)}</td>
-                          <td className={r.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(r.deposit)}</td>
-                          <td className={styles.rowTotal}>{fmtTotal(r.real)}</td>
+                <>
+                  {/* Desktop table */}
+                  <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Дата</th>
+                          <th>Готівка</th>
+                          <th>ФОП</th>
+                          <th>Картка</th>
+                          <th>З депозиту</th>
+                          <th>Надходження</th>
                         </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className={styles.footRow}>
-                        <td>Всього</td>
-                        <td className={totals.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(totals.cash)}</td>
-                        <td className={totals.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(totals.fop)}</td>
-                        <td className={totals.card    > 0 ? styles.valCard    : styles.zero}>{fmt(totals.card)}</td>
-                        <td className={totals.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(totals.deposit)}</td>
-                        <td className={styles.rowTotal}>{fmtTotal(totals.real)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {rows.map(r => (
+                          <tr key={r.date}>
+                            <td className={styles.dateCell}>{r.date.split('-').reverse().join('.')}</td>
+                            <td className={r.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(r.cash)}</td>
+                            <td className={r.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(r.fop)}</td>
+                            <td className={r.card    > 0 ? styles.valCard    : styles.zero}>{fmt(r.card)}</td>
+                            <td className={r.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(r.deposit)}</td>
+                            <td className={styles.rowTotal}>{fmtTotal(r.real)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className={styles.footRow}>
+                          <td>Всього</td>
+                          <td className={totals.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(totals.cash)}</td>
+                          <td className={totals.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(totals.fop)}</td>
+                          <td className={totals.card    > 0 ? styles.valCard    : styles.zero}>{fmt(totals.card)}</td>
+                          <td className={totals.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(totals.deposit)}</td>
+                          <td className={styles.rowTotal}>{fmtTotal(totals.real)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className={styles.dayCardList}>
+                    {rows.map(r => (
+                      <div key={r.date} className={styles.dayCard}>
+                        <div className={styles.dayCardRow}>
+                          <span className={styles.dayCardDate}>{r.date.split('-').reverse().join('.')}</span>
+                          <span className={styles.dayCardTotal}>{fmtTotal(r.real)}</span>
+                        </div>
+                        <div className={styles.dayCardMeta}>
+                          {r.cash > 0 && (
+                            <span className={styles.dayCardMetaItem}>
+                              <span className={styles.dayCardMetaLabel}>Готівка</span>
+                              <span className={styles.valCash}>{fmt(r.cash)}</span>
+                            </span>
+                          )}
+                          {r.fop > 0 && (
+                            <span className={styles.dayCardMetaItem}>
+                              <span className={styles.dayCardMetaLabel}>ФОП</span>
+                              <span className={styles.valFop}>{fmt(r.fop)}</span>
+                            </span>
+                          )}
+                          {r.card > 0 && (
+                            <span className={styles.dayCardMetaItem}>
+                              <span className={styles.dayCardMetaLabel}>Картка</span>
+                              <span className={styles.valCard}>{fmt(r.card)}</span>
+                            </span>
+                          )}
+                          {r.deposit > 0 && (
+                            <span className={styles.dayCardMetaItem}>
+                              <span className={styles.dayCardMetaLabel}>Депозит</span>
+                              <span className={styles.valDeposit}>{fmt(r.deposit)}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </>
           )}
