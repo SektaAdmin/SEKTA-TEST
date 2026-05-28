@@ -781,13 +781,8 @@
 }
 
 .cardSlotsFree {
-  color: var(--text-2);
+  color: var(--success);
   font-weight: 400;
-}
-
-.cardSlotsFreeWarning {
-  color: var(--warning);
-  font-weight: 500;
 }
 
 .cardSlotsEmpty {
