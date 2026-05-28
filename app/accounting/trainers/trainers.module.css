@@ -120,11 +120,7 @@
   background: var(--bg-2);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
-}
-
-@media (max-width: 640px) {
-  .tableWrap { overflow-x: auto; }
+  overflow-x: auto;
 }
 
 .table {

@@ -65,6 +65,8 @@
 @media (max-width: 640px) {
   .filters { overflow-x: auto; flex-wrap: nowrap; padding: 0 16px; }
   .content { padding: 16px; }
+  .reconcileBlock { max-width: 100%; }
+  .reconcileInput { width: 100px; }
 }
 
 .methodTabs {

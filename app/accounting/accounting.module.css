@@ -89,6 +89,7 @@
 @media (max-width: 640px) {
   .filters { overflow-x: auto; flex-wrap: nowrap; padding: 0 16px; }
   .content { padding: 16px; }
+  .card { flex: 1 1 calc(50% - 6px); min-width: 0; }
 }
 
 .presets {
