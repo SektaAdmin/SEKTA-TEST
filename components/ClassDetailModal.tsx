@@ -250,7 +250,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     const dateLine = new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     const dateTimeLine = `${dateLine}, ${timeRange}`
     const hours = cls.duration_min / 60
-    const durationLine = hours === 1 ? '1 година' : hours % 1 === 0 ? `${hours} годин` : `${cls.duration_min} хв`
+    const durationLine = hours % 1 !== 0
+      ? `${cls.duration_min} хв`
+      : hours === 1 ? '1 година' : hours === 2 ? '2 години' : `${hours} годин`
     const lines = [titleLine]
     if (cls.trainers?.name) lines.push(cls.trainers.name)
     lines.push(dateTimeLine, durationLine)
