@@ -503,82 +503,48 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                 })()}
                               </td>
                               <td className={styles.actionsCell}>
-                                <div className={styles.actions}>
-                                  {e.status === 'enrolled' && (
-                                    <>
-                                      <button
-                                        className={styles.btnAttend}
-                                        onClick={() => handleMarkAttended(e)}
-                                        disabled={isLoading}
-                                        title={enrollmentStatusLabel('attended')}
-                                      >
-                                        ✓
-                                      </button>
-                                      <button
-                                        className={styles.btnNoshow}
-                                        onClick={() => handleUpdateStatus(e.id, 'noshow')}
-                                        disabled={isLoading}
-                                        title={enrollmentStatusLabel('noshow')}
-                                      >
-                                        ✗
-                                      </button>
-                                      <button
-                                        className={styles.btnCancelEnroll}
-                                        onClick={() => handleUpdateStatus(e.id, 'cancelled')}
-                                        disabled={isLoading}
-                                        title={enrollmentStatusLabel('cancelled')}
-                                      >
-                                        —
-                                      </button>
-                                    </>
-                                  )}
-                                  {e.status === 'attended' && (
-                                    confirmReverseId === e.id ? (
-                                      <>
-                                        <button
-                                          className={styles.btnEdit}
-                                          onClick={() => handleReverseAttendance(e.id)}
-                                          disabled={isLoading}
-                                        >
-                                          Так
-                                        </button>
-                                        <button
-                                          className={styles.btnCancelAdd}
-                                          onClick={() => setConfirmReverseId(null)}
-                                          disabled={isLoading}
-                                        >
-                                          Ні
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <button
-                                        className={styles.btnCancelEnroll}
-                                        onClick={() => setConfirmReverseId(e.id)}
-                                        disabled={isLoading}
-                                        title={enrollmentStatusLabel('cancelled')}
-                                      >
-                                        —
-                                      </button>
-                                    )
-                                  )}
-                                  {(e.status === 'cancelled' || e.status === 'noshow') && (
-                                    <button
-                                      className={styles.btnReEnroll}
-                                      onClick={async () => {
+                                {confirmReverseId === e.id ? (
+                                  <div className={styles.actions}>
+                                    <button className={styles.btnEdit} onClick={() => handleReverseAttendance(e.id)} disabled={isLoading}>Так</button>
+                                    <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
+                                  </div>
+                                ) : (
+                                  <select
+                                    className={styles.actionSelect}
+                                    value=""
+                                    disabled={isLoading}
+                                    onChange={async ev => {
+                                      const val = ev.target.value
+                                      if (!val) return
+                                      if (val === 'attended') { await handleMarkAttended(e) }
+                                      else if (val === 'noshow') { await handleUpdateStatus(e.id, 'noshow') }
+                                      else if (val === 'cancelled') { await handleUpdateStatus(e.id, 'cancelled') }
+                                      else if (val === 'reverse') { setConfirmReverseId(e.id) }
+                                      else if (val === 'reenroll') {
                                         setActionLoading(e.id)
                                         await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
                                         if (cls) await fetchEnrollments(cls.ticket_type)
                                         setActionLoading(null)
-                                      }}
-                                      disabled={isLoading}
-                                    >
-                                      Вернути
-                                    </button>
-                                  )}
-                                  {actionError[e.id] && (
-                                    <span className={styles.rowError}>{actionError[e.id]}</span>
-                                  )}
-                                </div>
+                                      }
+                                    }}
+                                  >
+                                    <option value="">Дія...</option>
+                                    {e.status === 'enrolled' && <>
+                                      <option value="attended">{enrollmentStatusLabel('attended')}</option>
+                                      <option value="noshow">{enrollmentStatusLabel('noshow')}</option>
+                                      <option value="cancelled">{enrollmentStatusLabel('cancelled')}</option>
+                                    </>}
+                                    {e.status === 'attended' && (
+                                      <option value="reverse">Скасувати відвідування</option>
+                                    )}
+                                    {(e.status === 'cancelled' || e.status === 'noshow') && (
+                                      <option value="reenroll">Повернути</option>
+                                    )}
+                                  </select>
+                                )}
+                                {actionError[e.id] && (
+                                  <span className={styles.rowError}>{actionError[e.id]}</span>
+                                )}
                               </td>
                             </tr>
                           )
@@ -615,12 +581,16 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   </a>
                                 </td>
                                 <td className={styles.actionsCell}>
-                                  <div className={styles.actions}>
-                                    <button
-                                      className={styles.btnReEnroll}
-                                      onClick={async () => {
+                                  <select
+                                    className={styles.actionSelect}
+                                    value=""
+                                    disabled={isLoading}
+                                    onChange={async ev => {
+                                      const val = ev.target.value
+                                      if (!val) return
+                                      if (val === 'confirm') {
                                         if (cls?.capacity != null && activeCount >= cls.capacity) {
-                                          setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений — збільшіть кількість місць у редагуванні' }))
+                                          setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений' }))
                                           return
                                         }
                                         setActionLoading(e.id)
@@ -628,22 +598,18 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                         await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
                                         if (cls) await fetchEnrollments(cls.ticket_type)
                                         setActionLoading(null)
-                                      }}
-                                      disabled={isLoading}
-                                    >
-                                      Підтвердити
-                                    </button>
-                                    <button
-                                      className={styles.btnCancelEnroll}
-                                      onClick={() => handleUpdateStatus(e.id, 'cancelled')}
-                                      disabled={isLoading}
-                                    >
-                                      —
-                                    </button>
-                                    {actionError[e.id] && (
-                                      <span className={styles.rowError}>{actionError[e.id]}</span>
-                                    )}
-                                  </div>
+                                      } else if (val === 'cancelled') {
+                                        await handleUpdateStatus(e.id, 'cancelled')
+                                      }
+                                    }}
+                                  >
+                                    <option value="">Дія...</option>
+                                    <option value="confirm">Підтвердити</option>
+                                    <option value="cancelled">{enrollmentStatusLabel('cancelled')}</option>
+                                  </select>
+                                  {actionError[e.id] && (
+                                    <span className={styles.rowError}>{actionError[e.id]}</span>
+                                  )}
                                 </td>
                               </tr>
                             )

@@ -476,6 +476,23 @@
 }
 
 /* ── Row actions ─────────────────────────────────────────────── */
+.actionSelect {
+  height: 30px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-family: var(--font);
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--motion-fast);
+  width: 100%;
+}
+.actionSelect:focus { border-color: var(--accent); }
+.actionSelect:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .actions {
   display: flex;
   gap: 6px;
