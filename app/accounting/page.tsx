@@ -242,18 +242,22 @@ export default function AccountingPage() {
                       const hasDeposit = s.ticket_id !== null && depDelta > 0
                       return (
                         <tr key={s.id}>
-                          <td className={styles.dateCell}>
-                            <span className={styles.dateMain}>{date}</span>
-                            <span className={styles.dateTime}>{time}</span>
+                          <td>
+                            <div className={styles.dateCell}>
+                              <span className={styles.dateMain}>{date}</span>
+                              <span className={styles.dateTime}>{time}</span>
+                            </div>
                           </td>
-                          <td className={styles.clientCell}>
-                            <span className={styles.clientName}>{clientName(s)}</span>
-                            {s.ticket_name && (
-                              <span className={styles.ticketName}>{s.ticket_name}</span>
-                            )}
-                            {hasDeposit && (
-                              <span className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</span>
-                            )}
+                          <td>
+                            <div className={styles.clientCell}>
+                              <span className={styles.clientName}>{clientName(s)}</span>
+                              {s.ticket_name && (
+                                <span className={styles.ticketName}>{s.ticket_name}</span>
+                              )}
+                              {hasDeposit && (
+                                <span className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</span>
+                              )}
+                            </div>
                           </td>
                           <td className={`${styles.amtCell} ${amt > 0 ? '' : styles.zero}`}>
                             {amt > 0 ? formatMoney(s.amount_given) : '—'}
