@@ -415,6 +415,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           <input
             id="cm-dur"
             type="number"
+            inputMode="numeric"
             min={15}
             step={15}
             {...register('duration_min', { min: { value: 15, message: VM.invalid.durationMin }, valueAsNumber: true })}
@@ -436,6 +437,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
               <input
                 id="cm-weeks"
                 type="number"
+                inputMode="numeric"
                 min={1}
                 max={52}
                 {...register('weeks', { min: { value: 1, message: VM.invalid.weeksRange }, max: { value: 52, message: VM.invalid.weeksRange }, valueAsNumber: true })}
@@ -449,6 +451,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           <input
             id="cm-cap"
             type="number"
+            inputMode="numeric"
             min={1}
             placeholder="Без ліміту"
             {...register('capacity')}
