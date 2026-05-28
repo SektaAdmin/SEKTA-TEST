@@ -127,7 +127,6 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const full = isFull(cls.enrollments, cls.capacity)
   const almost = isAlmost(cls.enrollments, cls.capacity)
 
-  const timeLabel = `${formatTime(cls.starts_at)}–${formatEndTime(cls.starts_at, cls.duration_min)}`
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
@@ -167,7 +166,6 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
           <div className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
             {label}
           </div>
-          <div className={styles.cardTime}>{timeLabel}</div>
           {cls.trainers?.name && (
             <div className={styles.cardTrainerRow}>
               <UserRound className={styles.cardTrainerIcon} />
