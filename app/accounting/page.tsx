@@ -5,67 +5,53 @@ import { listActiveTrainers } from '@/lib/queries/trainers'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
-import { formatMoney } from '@/lib/formatters'
+import { formatMoney, formatDate } from '@/lib/formatters'
+import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod, Trainer } from '@/types'
 import styles from './accounting.module.css'
 
-
 type SaleRow = {
+  id: string
   created_at: string
   price_paid: number
   amount_given: number
   payment_method: PaymentMethod
   ticket_id: string | null
+  ticket_name: string | null
   trainer_id: string | null
+  clients: { first_name: string | null; last_name: string | null } | null
+  trainers: { name: string } | null
 }
-
-type Totals = { cash: number; fop: number; card: number; deposit: number }
-type DayRow = Totals & { date: string; real: number }
 
 type PaymentFilter = 'all' | 'cash' | 'fop' | 'personal_card' | 'deposit'
 
-function toDateKey(iso: string): string {
-  return isoToYMD(iso)
+const PAYMENT_FILTERS: { value: PaymentFilter; label: string }[] = [
+  { value: 'all',           label: 'Всі' },
+  { value: 'cash',          label: 'Готівка' },
+  { value: 'fop',           label: 'ФОП' },
+  { value: 'personal_card', label: 'Картка' },
+  { value: 'deposit',       label: 'Депозит' },
+]
+
+function clientName(s: SaleRow): string {
+  if (!s.clients) return '—'
+  return [s.clients.first_name, s.clients.last_name].filter(Boolean).join(' ') || '—'
+}
+
+function fmtDatetime(iso: string): { date: string; time: string } {
+  const d = new Date(iso)
+  const date = formatDate(d)
+  const time = [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')].join(':')
+  return { date, time }
 }
 
 function revenue(s: SaleRow): number {
   return s.ticket_id !== null ? s.price_paid : Math.max(0, s.amount_given)
 }
 
-function aggregate(sales: SaleRow[]): { rows: DayRow[]; totals: Totals & { real: number } } {
-  const map = new Map<string, Totals>()
-  for (const s of sales) {
-    const key = toDateKey(s.created_at)
-    const d = map.get(key) ?? { cash: 0, fop: 0, card: 0, deposit: 0 }
-    const amt = revenue(s)
-    if (amt === 0) { map.set(key, d); continue }
-    if (s.payment_method === 'cash')               d.cash    += amt
-    else if (s.payment_method === 'fop')           d.fop     += amt
-    else if (s.payment_method === 'personal_card') d.card    += amt
-    else if (s.payment_method === 'deposit')       d.deposit += amt
-    map.set(key, d)
-  }
-  const rows: DayRow[] = Array.from(map.entries())
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([date, d]) => ({ date, ...d, real: d.cash + d.fop + d.card }))
-  const totals = rows.reduce(
-    (acc, r) => ({ cash: acc.cash + r.cash, fop: acc.fop + r.fop, card: acc.card + r.card, deposit: acc.deposit + r.deposit, real: acc.real + r.real }),
-    { cash: 0, fop: 0, card: 0, deposit: 0, real: 0 }
-  )
-  return { rows, totals }
-}
-
-function fmt(n: number): string {
-  return n === 0 ? '—' : formatMoney(n)
-}
-
-function fmtTotal(n: number): string {
-  return formatMoney(n)
-}
-
-function getToday(): string { return toYMD(new Date()) }
+function getToday(): string    { return toYMD(new Date()) }
 function getMonthStart(): string {
   const d = new Date()
   return toYMD(new Date(d.getFullYear(), d.getMonth(), 1))
@@ -77,23 +63,15 @@ function getWeekStart(): string {
   return toYMD(d)
 }
 
-const PAYMENT_FILTER_LABELS: { value: PaymentFilter; label: string }[] = [
-  { value: 'all',          label: 'Всі' },
-  { value: 'cash',         label: 'Готівка' },
-  { value: 'fop',          label: 'ФОП' },
-  { value: 'personal_card',label: 'Картка' },
-  { value: 'deposit',      label: 'Депозит' },
-]
-
 export default function AccountingPage() {
   const [dateFrom, setDateFrom] = useState(getMonthStart)
   const [dateTo,   setDateTo]   = useState(getToday)
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all')
   const [trainerFilter, setTrainerFilter] = useState<string>('all')
   const [trainers, setTrainers] = useState<Trainer[]>([])
-  const [sales, setSales]     = useState<SaleRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState<string | null>(null)
+  const [sales,    setSales]    = useState<SaleRow[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState<string | null>(null)
 
   useEffect(() => {
     listActiveTrainers(supabase).then(setTrainers)
@@ -104,9 +82,10 @@ export default function AccountingPage() {
     setError(null)
     const { data, error } = await supabase
       .from('sales')
-      .select('created_at, price_paid, amount_given, payment_method, ticket_id, trainer_id')
+      .select('id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
       .gte('created_at', `${from}T00:00:00`)
       .lte('created_at', `${to}T23:59:59`)
+      .order('created_at', { ascending: false })
     if (error) { setError(error.message); setLoading(false); return }
     setSales((data ?? []) as SaleRow[])
     setLoading(false)
@@ -114,12 +93,11 @@ export default function AccountingPage() {
 
   useEffect(() => { fetchSales(dateFrom, dateTo) }, [dateFrom, dateTo, fetchSales])
 
-  // Reset trainer filter when switching away from cash
   useEffect(() => {
     if (paymentFilter !== 'cash') setTrainerFilter('all')
   }, [paymentFilter])
 
-  const filteredSales = useMemo(() => {
+  const filtered = useMemo(() => {
     let s = sales
     if (paymentFilter !== 'all') s = s.filter(r => r.payment_method === paymentFilter)
     if (paymentFilter === 'cash' && trainerFilter !== 'all') {
@@ -128,15 +106,25 @@ export default function AccountingPage() {
     return s
   }, [sales, paymentFilter, trainerFilter])
 
-  const { rows, totals } = useMemo(() => aggregate(filteredSales), [filteredSales])
+  const totals = useMemo(() => {
+    const t = { cash: 0, fop: 0, card: 0, deposit: 0 }
+    for (const s of filtered) {
+      const amt = revenue(s)
+      if (s.payment_method === 'cash')               t.cash    += amt
+      else if (s.payment_method === 'fop')           t.fop     += amt
+      else if (s.payment_method === 'personal_card') t.card    += amt
+      else if (s.payment_method === 'deposit')       t.deposit += amt
+    }
+    return t
+  }, [filtered])
 
-  function setPreset(from: string, to: string) {
-    setDateFrom(from); setDateTo(to)
-  }
+  const grandTotal = totals.cash + totals.fop + totals.card
 
-  const todayStr  = getToday()
-  const weekStr   = getWeekStart()
-  const monthStr  = getMonthStart()
+  function setPreset(from: string, to: string) { setDateFrom(from); setDateTo(to) }
+
+  const todayStr = getToday()
+  const weekStr  = getWeekStart()
+  const monthStr = getMonthStart()
   const activePreset =
     dateFrom === todayStr  && dateTo === todayStr  ? 'today'  :
     dateFrom === weekStr   && dateTo === todayStr  ? 'week'   :
@@ -149,11 +137,9 @@ export default function AccountingPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className="page-title">Звітність</h1>
-          <div className={styles.topbarLinks}>
-            <a href="/accounting/trainers" className={styles.trainerReportLink}>
-              Звіт по тренерах →
-            </a>
-          </div>
+          <a href="/accounting/trainers" className={styles.trainerReportLink}>
+            Звіт по тренерах →
+          </a>
         </div>
 
         <div className={styles.filters}>
@@ -172,14 +158,12 @@ export default function AccountingPage() {
             <DatePicker value={dateTo} onChange={setDateTo} />
           </div>
           <div className={styles.paymentTabs}>
-            {PAYMENT_FILTER_LABELS.map(({ value, label }) => (
+            {PAYMENT_FILTERS.map(({ value, label }) => (
               <button
                 key={value}
-                className={`${styles.paymentTab} ${paymentFilter === value ? styles.paymentTabActive : ''}`}
+                className={`${styles.preset} ${paymentFilter === value ? styles.presetActive : ''}`}
                 onClick={() => setPaymentFilter(value)}
-              >
-                {label}
-              </button>
+              >{label}</button>
             ))}
           </div>
           {paymentFilter === 'cash' && trainers.length > 0 && (
@@ -196,108 +180,126 @@ export default function AccountingPage() {
           )}
         </div>
 
+        {/* Totals bar */}
+        {!loading && !error && (
+          <div className={styles.totalsBar}>
+            {totals.cash > 0 && (
+              <span className={styles.totalItem}>
+                <span className={styles.totalLabel}>Готівка</span>
+                <span className={`${styles.totalValue} ${styles.valCash}`}>{formatMoney(totals.cash)}</span>
+              </span>
+            )}
+            {totals.fop > 0 && (
+              <span className={styles.totalItem}>
+                <span className={styles.totalLabel}>ФОП</span>
+                <span className={`${styles.totalValue} ${styles.valFop}`}>{formatMoney(totals.fop)}</span>
+              </span>
+            )}
+            {totals.card > 0 && (
+              <span className={styles.totalItem}>
+                <span className={styles.totalLabel}>Картка</span>
+                <span className={`${styles.totalValue} ${styles.valCard}`}>{formatMoney(totals.card)}</span>
+              </span>
+            )}
+            {totals.deposit > 0 && (
+              <span className={styles.totalItem}>
+                <span className={styles.totalLabel}>Депозит</span>
+                <span className={`${styles.totalValue} ${styles.valDeposit}`}>{formatMoney(totals.deposit)}</span>
+              </span>
+            )}
+            <span className={`${styles.totalItem} ${styles.totalItemGrand}`}>
+              <span className={styles.totalLabel}>Разом</span>
+              <span className={styles.totalValue}>{formatMoney(grandTotal)}</span>
+            </span>
+          </div>
+        )}
+
         <div className={styles.content}>
           {loading ? (
-            <div className={styles.empty}>Завантаження...</div>
+            <div className="loading-dots"><span /><span /><span /></div>
           ) : error ? (
             <div className={styles.empty}>Помилка: {error}</div>
+          ) : filtered.length === 0 ? (
+            <div className={styles.empty}>{MSG.empty.salesPeriod}</div>
           ) : (
             <>
-              <div className={styles.summary}>
-                <div className={styles.card}>
-                  <div className={styles.cardLabel}>Готівка</div>
-                  <div className={`${styles.cardValue} ${totals.cash > 0 ? styles.valCash : styles.zero}`}>{fmtTotal(totals.cash)}</div>
-                </div>
-                <div className={styles.card}>
-                  <div className={styles.cardLabel}>ФОП</div>
-                  <div className={`${styles.cardValue} ${totals.fop > 0 ? styles.valFop : styles.zero}`}>{fmtTotal(totals.fop)}</div>
-                </div>
-                <div className={styles.card}>
-                  <div className={styles.cardLabel}>Картка</div>
-                  <div className={`${styles.cardValue} ${totals.card > 0 ? styles.valCard : styles.zero}`}>{fmtTotal(totals.card)}</div>
-                </div>
-                <div className={styles.card}>
-                  <div className={styles.cardLabel}>З депозиту</div>
-                  <div className={`${styles.cardValue} ${totals.deposit > 0 ? styles.valDeposit : styles.zero}`}>{fmtTotal(totals.deposit)}</div>
-                </div>
-                <div className={`${styles.card} ${styles.cardTotal}`}>
-                  <div className={styles.cardLabel}>Надходження</div>
-                  <div className={styles.cardValue}>{fmtTotal(totals.real)}</div>
-                </div>
-              </div>
-
-              {rows.length === 0 ? (
-                <div className={styles.empty}>{MSG.empty.salesPeriod}</div>
-              ) : (
-                <>
-                  {/* Desktop table */}
-                  <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Дата</th>
-                          <th>Готівка</th>
-                          <th>ФОП</th>
-                          <th>Картка</th>
-                          <th>З депозиту</th>
-                          <th>Надходження</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map(r => (
-                          <tr key={r.date}>
-                            <td className={styles.dateCell}>{r.date.split('-').reverse().join('.')}</td>
-                            <td className={r.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(r.cash)}</td>
-                            <td className={r.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(r.fop)}</td>
-                            <td className={r.card    > 0 ? styles.valCard    : styles.zero}>{fmt(r.card)}</td>
-                            <td className={r.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(r.deposit)}</td>
-                            <td className={styles.rowTotal}>{fmtTotal(r.real)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className={styles.footRow}>
-                          <td>Всього</td>
-                          <td className={totals.cash    > 0 ? styles.valCash    : styles.zero}>{fmt(totals.cash)}</td>
-                          <td className={totals.fop     > 0 ? styles.valFop     : styles.zero}>{fmt(totals.fop)}</td>
-                          <td className={totals.card    > 0 ? styles.valCard    : styles.zero}>{fmt(totals.card)}</td>
-                          <td className={totals.deposit > 0 ? styles.valDeposit : styles.zero}>{fmt(totals.deposit)}</td>
-                          <td className={styles.rowTotal}>{fmtTotal(totals.real)}</td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                  {/* Mobile cards */}
-                  <div className={styles.dayCardList}>
-                    {rows.map(r => {
-                      const parts: { label: string; cls: string; val: string }[] = []
-                      if (r.cash    > 0) parts.push({ label: 'Готівка', cls: styles.valCash,    val: fmt(r.cash) })
-                      if (r.fop     > 0) parts.push({ label: 'ФОП',     cls: styles.valFop,     val: fmt(r.fop) })
-                      if (r.card    > 0) parts.push({ label: 'Картка',  cls: styles.valCard,    val: fmt(r.card) })
-                      if (r.deposit > 0) parts.push({ label: 'Депозит', cls: styles.valDeposit, val: fmt(r.deposit) })
+              {/* Desktop table */}
+              <div className={`data-table-wrap ${styles.tableDesktop}`}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Дата</th>
+                      <th>Клієнт і операція</th>
+                      <th className={styles.thRight}>Сума</th>
+                      <th>Метод</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(s => {
+                      const { date, time } = fmtDatetime(s.created_at)
+                      const amt = revenue(s)
+                      const depDelta = s.amount_given - s.price_paid
+                      const hasDeposit = s.ticket_id !== null && depDelta > 0
                       return (
-                        <div key={r.date} className={styles.dayCard}>
-                          <div className={styles.dayCardRow}>
-                            <span className={styles.dayCardDate}>{r.date.split('-').reverse().join('.')}</span>
-                            <span className={styles.dayCardTotal}>{fmtTotal(r.real)}</span>
-                          </div>
-                          <div className={styles.dayCardMeta}>
-                            {parts.map((p, i) => (
-                              <span key={p.label}>
-                                {i > 0 && <span className={styles.dayCardMetaDot}>·</span>}
-                                <span className={styles.dayCardMetaLabel}>{p.label}</span>
-                                {' '}
-                                <span className={p.cls}>{p.val}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                        <tr key={s.id}>
+                          <td className={styles.dateCell}>
+                            <span className={styles.dateMain}>{date}</span>
+                            <span className={styles.dateTime}>{time}</span>
+                          </td>
+                          <td className={styles.clientCell}>
+                            <span className={styles.clientName}>{clientName(s)}</span>
+                            {s.ticket_name && (
+                              <span className={styles.ticketName}>{s.ticket_name}</span>
+                            )}
+                            {hasDeposit && (
+                              <span className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</span>
+                            )}
+                          </td>
+                          <td className={`${styles.amtCell} ${amt > 0 ? '' : styles.zero}`}>
+                            {amt > 0 ? formatMoney(s.amount_given) : '—'}
+                          </td>
+                          <td>
+                            <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                              {paymentLabel(s.payment_method)}
+                            </span>
+                          </td>
+                        </tr>
                       )
                     })}
-                  </div>
-                </>
-              )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className={styles.cardList}>
+                {filtered.map(s => {
+                  const { date, time } = fmtDatetime(s.created_at)
+                  const amt = revenue(s)
+                  const depDelta = s.amount_given - s.price_paid
+                  const hasDeposit = s.ticket_id !== null && depDelta > 0
+                  return (
+                    <div key={s.id} className={styles.card}>
+                      <div className={styles.cardRow}>
+                        <span className={styles.cardClient}>{clientName(s)}</span>
+                        <span className={styles.cardAmt}>{amt > 0 ? formatMoney(s.amount_given) : '—'}</span>
+                      </div>
+                      <div className={styles.cardMeta}>
+                        <span>{date} · {time}</span>
+                        <span className={styles.cardMetaDot}>·</span>
+                        <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                          {paymentLabel(s.payment_method)}
+                        </span>
+                      </div>
+                      {s.ticket_name && (
+                        <div className={styles.cardTicket}>{s.ticket_name}</div>
+                      )}
+                      {hasDeposit && (
+                        <div className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </>
           )}
         </div>
