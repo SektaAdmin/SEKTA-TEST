@@ -9,7 +9,6 @@ import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-import styles from '../settings/settings.module.css'
 import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
@@ -64,7 +63,7 @@ export default function JournalPage() {
   return (
     <>
       {/* Topbar */}
-      <div className={styles.topbar}>
+      <div className={jStyles.topbar}>
         <h1 className="page-title">Журнал занять</h1>
         {total > 0 && (
           <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>

@@ -1,3 +1,33 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topbar-h);
+  padding: 0 var(--topbar-px);
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
 .filterBar {
   display: flex;
   gap: 10px;
@@ -151,17 +181,35 @@
 
 /* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
 @media (max-width: 640px) {
+  .main {
+    margin-left: 0;
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    height: auto;
+    padding: 10px 16px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
   .filterBar {
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
     padding: 10px 16px;
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .content { padding: 16px; }
+  .content {
+    padding: 16px;
+    min-width: 0;
+    overflow-x: hidden;
+  }
 
-  .tableDesktop { display: none; }
+  .tableDesktop { display: none !important; }
   .cardList { display: flex; flex-direction: column; gap: 8px; }
 
   .pagination {
