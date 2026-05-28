@@ -520,9 +520,6 @@
     border-bottom: 0.5px solid var(--border);
     background: var(--bg);
     flex-shrink: 0;
-    position: sticky;
-    top: calc(var(--topbar-h) + var(--filterbar-h));
-    z-index: 7;
   }
   .mobileNavLabel {
     flex: 1;

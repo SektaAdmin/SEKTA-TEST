@@ -494,23 +494,6 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {/* Mobile nav strip — below filter bar, mobile only */}
-        <div className={styles.mobileNav}>
-          <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 2L4 7l5 5"/>
-            </svg>
-          </button>
-          <button className={styles.mobileNavLabel} onClick={() => setBaseDate(new Date())}>
-            {navLabel}
-          </button>
-          <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M5 2l5 5-5 5"/>
-            </svg>
-          </button>
-        </div>
-
         {/* Filter bar */}
         <div className={styles.filterBar}>
             <div className={styles.filterGroup}>
@@ -551,6 +534,23 @@ export default function SchedulePage() {
                 ))}
             </div>
           </div>
+
+        {/* Mobile nav strip — below filter bar, mobile only */}
+        <div className={styles.mobileNav}>
+          <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 2L4 7l5 5"/>
+            </svg>
+          </button>
+          <button className={styles.mobileNavLabel} onClick={() => setBaseDate(new Date())}>
+            {navLabel}
+          </button>
+          <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M5 2l5 5-5 5"/>
+            </svg>
+          </button>
+        </div>
 
         {/* Content row — grid area + right panel */}
         <div className={styles.contentRow}>
