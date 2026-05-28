@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний включно з /settings; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00)
+- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний включно з /settings; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00; /accounting redesign — transaction list + checkboxes)
 
 ## Commands
 
@@ -375,8 +375,7 @@ npm run start
 | `/schedule/templates` | Шаблони тижня: HallWeekGrid, постійники, виставити тиждень |
 | `/journal` | Журнал занять: всі минулі заняття (вчора і раніше), фільтри по датах/тренеру/залу/типу/статусу, пагінація 20/стор, клік → ClassDetailModal |
 | `/halls`, `/trainers`, `/tickets`, `/training-types` | Standalone-сторінки довідників (редиректи або окремі views) |
-| `/accounting` | Облік надходжень по методах оплати |
-| `/accounting/reconciliation` | Звірка: FOP + картка, фільтр по датах |
+| `/accounting` | Звітність: список транзакцій (як monobank) — фільтр методу/тренера, картки підсумків, чекбокси для звірки |
 | `/accounting/trainers` | Звіт по тренерах |
 | `/accounting/trainers/salary` | Нарахування зарплати + виплати |
 | `/accounting/trainers/rates` | Ставки тренерів (глобальні + індивідуальні) |
@@ -470,7 +469,7 @@ lib/
     clients.ts                — listClients, searchClientsByName, searchClientsByPhone, searchClientIdsByName, getClient, insertClient, updateClient
     enrollments.ts            — listClassesForDate, listEnrolledCountsForDate, listClientEnrolledClassIds, listEnrollmentsForClass, listSessionBalancesForClients, getClientSessionBalance, markAttendance, reverseAttendance, updateEnrollmentStatus, checkClientConflict, enrollClient
     halls.ts                  — listHalls, listActiveHalls, insertHall, toggleHall
-    sales.ts                  — listSales, listAllSalesForFeed, listSalesForAccounting, listSalesForTrainers, listSalesForReconciliation, createSale, updateSale, deleteSale
+    sales.ts                  — listSales, listAllSalesForFeed, listSalesForAccounting, listSalesForTrainers, createSale, updateSale, deleteSale
     tickets.ts                — listTickets, getTicketById, insertTicket, toggleTicket
     trainer-rates.ts          — listTrainerRates, upsertTrainerRate, deleteTrainerRate
     trainers.ts               — listTrainers, listActiveTrainers, insertTrainer, toggleTrainer, calcTrainerSalary, listTrainerPayments, insertTrainerPayment
@@ -503,7 +502,7 @@ types/
 - **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
 - **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок. Також надає `refetchTickets/refetchTrainers/refetchHalls/refetchTrainingTypes` для примусового оновлення після мутацій у налаштуваннях.
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
-- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка, замінює `.btnNew` скрізь), `.loading-dots` (3-крапковий спінер, замінює `.loading` скрізь), `.data-table-wrap` + `.data-table` (стандартна таблиця з bg-2/border/radius). Використовувати як звичайний рядок: `className="btn-primary"`, `className="loading-dots"`, `className="data-table-wrap"` / `className="data-table"`. Нестандартні таблиці (accounting, reconciliation, salary, rates) — залишаються в module.css через унікальні overrides.
+- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка, замінює `.btnNew` скрізь), `.loading-dots` (3-крапковий спінер, замінює `.loading` скрізь), `.data-table-wrap` + `.data-table` (стандартна таблиця з bg-2/border/radius). Використовувати як звичайний рядок: `className="btn-primary"`, `className="loading-dots"`, `className="data-table-wrap"` / `className="data-table"`. Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
@@ -663,6 +662,37 @@ types/
 - Фільтри: `dateFrom`, `dateTo`, `hallId`, `trainerId`, `ticketType`, `isCancelled`
 - Повертає: `{ data: ClassWithJoins[], count: number, error: string | null }`
 - `ClassWithJoins` — `export type` в `lib/queries/classes.ts`
+
+---
+
+### /accounting Page (станом на 2026-05-28)
+
+**Призначення:** Список транзакцій для звірки з банківською випискою (monobank-стиль). Адмін відкриває `/accounting` і вкладку моно поруч, відмічає чекбоксами перевірені записи.
+
+**Layout:** full-width, без `max-width` — кожен піксель корисний при звірці поруч з банком.
+
+**Структура:**
+- **Topbar**: заголовок + кнопка «Звіт по тренерах →»
+- **Filter bar** (sticky): пресети Сьогодні/Цей тиждень/Цей місяць + DatePicker від/до + таби методу оплати (Всі/Готівка/ФОП/Картка/Депозит) + dropdown тренера (з'являється тільки при фільтрі Готівка)
+- **Summary cards**: 5 карток — Готівка / ФОП / Картка / Депозит / Надходження. Нульові суми сірим
+- **Таблиця**: 7 колонок — ✓ (чекбокс) | Дата+час | Клієнт | Абонемент | Ціна | На депозит | Сума | Метод
+
+**Чекбокси:**
+- Локальний стан (`Set<string>`), скидається при перезавантаженні
+- Клік на рядок або чекбокс — toggleChecked
+- Чекбокс у заголовку: `indeterminate` (деякі) / checked (всі) / unchecked; кліком виділяє/знімає всі відфільтровані
+- Відмічений рядок: `background: var(--accent-dim)`, `opacity: 0.6`
+
+**Логіка сум:**
+- `revenue(s)` = `price_paid` якщо є тікет, інакше `max(0, amount_given)` (депозитне поповнення)
+- Колонка «Сума» = `amount_given` (фактично передано клієнтом)
+- Колонка «Ціна» = `ticket_price` (ціна тарифу зі snapshot)
+- Колонка «На депозит» = `amount_given - price_paid` якщо > 0 (решта осіла на депозиті)
+- «Надходження» в картках = cash + fop + card (без deposit — це не реальні гроші)
+
+**Фільтрація:** на клієнті після fetch. При зміні фільтру методу оплати — скидається вибір тренера.
+
+**Mobile:** картки замість таблиці; filter bar горизонтальний скрол (`overflow-x: auto; overflow-y: hidden`)
 
 ---
 
