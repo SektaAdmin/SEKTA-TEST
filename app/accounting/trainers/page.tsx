@@ -109,7 +109,7 @@ export default function TrainerReportsPage() {
       <main className={styles.main}>
         <div className={styles.topbar}>
           <h1 className="page-title">Звіти по тренерах</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className={styles.topbarLinks}>
             <a href="/accounting/trainers/salary" className={styles.backLink}>Нарахування</a>
             <a href="/accounting/trainers/rates" className={styles.backLink}>Ставки</a>
             <a href="/accounting" className={styles.backLink}>← Звітність</a>
@@ -137,47 +137,76 @@ export default function TrainerReportsPage() {
           ) : summaries.length === 0 ? (
             <div className={styles.empty}>{MSG.empty.trainerSales}</div>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Тренер</th>
-                    <th>Продажі</th>
-                    <th>Годин</th>
-                    <th>Дохід</th>
-                    <th>По типах занять</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summaries.map(s => (
-                    <tr key={s.trainer_id}>
-                      <td className={styles.trainerName}>{s.name}</td>
-                      <td className={styles.num}>{s.salesCount}</td>
-                      <td className={styles.num}>{s.totalSessions}</td>
-                      <td className={styles.revenue}>{formatMoney(s.totalRevenue)}</td>
-                      <td>
-                        <div className={styles.byType}>
-                          {Object.entries(s.byType).map(([type, data]) => (
-                            <span key={type} className={styles.typeChip}>
-                              {ticketTypeShortLabel(type)}: {data.sessions}г · {formatMoney(data.revenue)}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
+            <>
+              {/* Desktop table */}
+              <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Тренер</th>
+                      <th>Продажі</th>
+                      <th>Годин</th>
+                      <th>Дохід</th>
+                      <th>По типах занять</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className={styles.totalRow}>
-                    <td>Всього</td>
-                    <td className={styles.num}>{totals.salesCount}</td>
-                    <td className={styles.num}>{totals.totalSessions}</td>
-                    <td className={styles.revenue}>{formatMoney(totals.totalRevenue)}</td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {summaries.map(s => (
+                      <tr key={s.trainer_id}>
+                        <td className={styles.trainerName}>{s.name}</td>
+                        <td className={styles.num}>{s.salesCount}</td>
+                        <td className={styles.num}>{s.totalSessions}</td>
+                        <td className={styles.revenue}>{formatMoney(s.totalRevenue)}</td>
+                        <td>
+                          <div className={styles.byType}>
+                            {Object.entries(s.byType).map(([type, data]) => (
+                              <span key={type} className={styles.typeChip}>
+                                {ticketTypeShortLabel(type)}: {data.sessions}г · {formatMoney(data.revenue)}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className={styles.totalRow}>
+                      <td>Всього</td>
+                      <td className={styles.num}>{totals.salesCount}</td>
+                      <td className={styles.num}>{totals.totalSessions}</td>
+                      <td className={styles.revenue}>{formatMoney(totals.totalRevenue)}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className={styles.cardList}>
+                {summaries.map(s => (
+                  <div key={s.trainer_id} className={styles.card}>
+                    <div className={styles.cardRow}>
+                      <span className={styles.cardTitle}>{s.name}</span>
+                      <span className={styles.cardRevenue}>{formatMoney(s.totalRevenue)}</span>
+                    </div>
+                    <div className={styles.cardMeta}>
+                      <span>{s.salesCount} прод.</span>
+                      <span className={styles.cardMetaDot}>·</span>
+                      <span>{s.totalSessions} год.</span>
+                    </div>
+                    {Object.keys(s.byType).length > 0 && (
+                      <div className={styles.byType}>
+                        {Object.entries(s.byType).map(([type, data]) => (
+                          <span key={type} className={styles.typeChip}>
+                            {ticketTypeShortLabel(type)}: {data.sessions}г · {formatMoney(data.revenue)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </main>

@@ -236,6 +236,65 @@
   letter-spacing: -0.02em;
 }
 
+/* ── Desktop/mobile toggle ───────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+/* ── Sale card (mobile) ──────────────────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardAmt {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+
+.cardMetaDot { color: var(--text-3); }
+
+.cardTicket {
+  font-size: 13px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Table ───────────────────────────────────────────────────── */
 .tableWrap { overflow-x: auto; }
 
@@ -309,4 +368,17 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+/* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .filters { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 0 16px; height: var(--filterbar-h); gap: 8px; }
+  .methodTab, .preset { height: var(--control-h); padding: 0 12px; white-space: nowrap; flex-shrink: 0; }
+  .content { padding: 16px; }
+  .reconcileBlock { max-width: 100%; }
+  .reconcileInput { width: 100px; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
 }

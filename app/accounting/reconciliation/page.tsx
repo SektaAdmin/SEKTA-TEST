@@ -176,46 +176,76 @@ export default function ReconciliationPage() {
               {sales.length === 0 ? (
                 <div className={styles.empty}>{MSG.empty.operations}</div>
               ) : (
-                <div className={styles.tableWrap}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>Дата</th>
-                        <th>Час</th>
-                        <th>Клієнт</th>
-                        <th>Абонемент</th>
-                        <th>Метод</th>
-                        <th className={styles.thRight}>Сума</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sales.map(s => {
-                        const { date, time } = fmtDate(s.created_at)
-                        const amt = revenue(s)
-                        return (
-                          <tr key={s.id}>
-                            <td className={styles.dateCell}>{date}</td>
-                            <td className={styles.timeCell}>{time}</td>
-                            <td>{clientName(s)}</td>
-                            <td className={styles.ticketCell}>{s.ticket_name ?? '—'}</td>
-                            <td>
-                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                                {paymentLabel(s.payment_method)}
-                              </span>
-                            </td>
-                            <td className={styles.amtCell}>{amt > 0 ? fmtMoney(amt) : '—'}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                    <tfoot>
-                      <tr className={styles.footRow}>
-                        <td colSpan={5}>Всього</td>
-                        <td className={styles.amtCell}>{fmtMoney(crmTotal)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+                <>
+                  {/* Desktop table */}
+                  <div className={`${styles.tableWrap} ${styles.tableDesktop}`}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Дата</th>
+                          <th>Час</th>
+                          <th>Клієнт</th>
+                          <th>Абонемент</th>
+                          <th>Метод</th>
+                          <th className={styles.thRight}>Сума</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sales.map(s => {
+                          const { date, time } = fmtDate(s.created_at)
+                          const amt = revenue(s)
+                          return (
+                            <tr key={s.id}>
+                              <td className={styles.dateCell}>{date}</td>
+                              <td className={styles.timeCell}>{time}</td>
+                              <td>{clientName(s)}</td>
+                              <td className={styles.ticketCell}>{s.ticket_name ?? '—'}</td>
+                              <td>
+                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                  {paymentLabel(s.payment_method)}
+                                </span>
+                              </td>
+                              <td className={styles.amtCell}>{amt > 0 ? fmtMoney(amt) : '—'}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className={styles.footRow}>
+                          <td colSpan={5}>Всього</td>
+                          <td className={styles.amtCell}>{fmtMoney(crmTotal)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className={styles.cardList}>
+                    {sales.map(s => {
+                      const { date, time } = fmtDate(s.created_at)
+                      const amt = revenue(s)
+                      return (
+                        <div key={s.id} className={styles.card}>
+                          <div className={styles.cardRow}>
+                            <span className={styles.cardTitle}>{clientName(s)}</span>
+                            <span className={styles.cardAmt}>{amt > 0 ? fmtMoney(amt) : '—'}</span>
+                          </div>
+                          <div className={styles.cardMeta}>
+                            <span>{date} · {time}</span>
+                            <span className={styles.cardMetaDot}>·</span>
+                            <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                              {paymentLabel(s.payment_method)}
+                            </span>
+                            {s.ticket_name && <>
+                              <span className={styles.cardMetaDot}>·</span>
+                              <span className={styles.cardTicket}>{s.ticket_name}</span>
+                            </>}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
               )}
             </>
           )}

@@ -201,3 +201,73 @@
 .totalRow .revenue {
   font-size: 14px;
 }
+
+/* ── Topbar links ────────────────────────────────────────────── */
+.topbarLinks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Desktop/mobile toggle ───────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+/* ── Trainer card (mobile) ───────────────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardRevenue {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.cardMetaDot { color: var(--text-3); }
+
+/* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
+@media (max-width: 640px) {
+  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbarLinks { flex-wrap: wrap; gap: 6px; }
+  .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 0 16px; height: var(--filterbar-h); gap: 8px; }
+  .filterBtn { height: var(--control-h); padding: 0 12px; white-space: nowrap; flex-shrink: 0; }
+  .content { padding: 16px; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+}
