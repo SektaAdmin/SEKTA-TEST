@@ -615,7 +615,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     <button
                                       className={styles.btnReEnroll}
                                       onClick={async () => {
+                                        if (cls?.capacity != null && activeCount >= cls.capacity) {
+                                          setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений — збільшіть кількість місць у редагуванні' }))
+                                          return
+                                        }
                                         setActionLoading(e.id)
+                                        setActionError(prev => { const n = { ...prev }; delete n[e.id]; return n })
                                         await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
                                         if (cls) await fetchEnrollments(cls.ticket_type)
                                         setActionLoading(null)
