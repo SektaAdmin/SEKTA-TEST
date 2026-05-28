@@ -1,14 +1,14 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { listSalesForAccounting } from '@/lib/queries/sales'
+import { listActiveTrainers } from '@/lib/queries/trainers'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
-import type { PaymentMethod } from '@/types'
+import type { PaymentMethod, Trainer } from '@/types'
 import styles from './accounting.module.css'
 
 
@@ -18,16 +18,18 @@ type SaleRow = {
   amount_given: number
   payment_method: PaymentMethod
   ticket_id: string | null
+  trainer_id: string | null
 }
 
 type Totals = { cash: number; fop: number; card: number; deposit: number }
 type DayRow = Totals & { date: string; real: number }
 
+type PaymentFilter = 'all' | 'cash' | 'fop' | 'personal_card' | 'deposit'
+
 function toDateKey(iso: string): string {
   return isoToYMD(iso)
 }
 
-// Ticket sale: price_paid = real money. Deposit top-up (no ticket): amount_given = real money.
 function revenue(s: SaleRow): number {
   return s.ticket_id !== null ? s.price_paid : Math.max(0, s.amount_given)
 }
@@ -39,10 +41,10 @@ function aggregate(sales: SaleRow[]): { rows: DayRow[]; totals: Totals & { real:
     const d = map.get(key) ?? { cash: 0, fop: 0, card: 0, deposit: 0 }
     const amt = revenue(s)
     if (amt === 0) { map.set(key, d); continue }
-    if (s.payment_method === 'cash')          d.cash    += amt
-    else if (s.payment_method === 'fop')      d.fop     += amt
-    else if (s.payment_method === 'personal_card') d.card += amt
-    else if (s.payment_method === 'deposit')  d.deposit += amt
+    if (s.payment_method === 'cash')               d.cash    += amt
+    else if (s.payment_method === 'fop')           d.fop     += amt
+    else if (s.payment_method === 'personal_card') d.card    += amt
+    else if (s.payment_method === 'deposit')       d.deposit += amt
     map.set(key, d)
   }
   const rows: DayRow[] = Array.from(map.entries())
@@ -55,7 +57,6 @@ function aggregate(sales: SaleRow[]): { rows: DayRow[]; totals: Totals & { real:
   return { rows, totals }
 }
 
-// Сторінкове правило: 0 → «—». Решта — через єдиний formatMoney.
 function fmt(n: number): string {
   return n === 0 ? '—' : formatMoney(n)
 }
@@ -64,15 +65,11 @@ function fmtTotal(n: number): string {
   return formatMoney(n)
 }
 
-function getToday(): string {
-  return toYMD(new Date())
-}
-
+function getToday(): string { return toYMD(new Date()) }
 function getMonthStart(): string {
   const d = new Date()
   return toYMD(new Date(d.getFullYear(), d.getMonth(), 1))
 }
-
 function getWeekStart(): string {
   const d = new Date()
   const day = d.getDay()
@@ -80,33 +77,66 @@ function getWeekStart(): string {
   return toYMD(d)
 }
 
+const PAYMENT_FILTER_LABELS: { value: PaymentFilter; label: string }[] = [
+  { value: 'all',          label: 'Всі' },
+  { value: 'cash',         label: 'Готівка' },
+  { value: 'fop',          label: 'ФОП' },
+  { value: 'personal_card',label: 'Картка' },
+  { value: 'deposit',      label: 'Депозит' },
+]
+
 export default function AccountingPage() {
   const [dateFrom, setDateFrom] = useState(getMonthStart)
-  const [dateTo, setDateTo] = useState(getToday)
-  const [sales, setSales] = useState<SaleRow[]>([])
+  const [dateTo,   setDateTo]   = useState(getToday)
+  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>('all')
+  const [trainerFilter, setTrainerFilter] = useState<string>('all')
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [sales, setSales]     = useState<SaleRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error,   setError]   = useState<string | null>(null)
+
+  useEffect(() => {
+    listActiveTrainers(supabase).then(setTrainers)
+  }, [])
 
   const fetchSales = useCallback(async (from: string, to: string) => {
     setLoading(true)
     setError(null)
-    const { data, error } = await listSalesForAccounting(supabase, from, to)
-    if (error) { setError(error); setLoading(false); return }
-    setSales(data as SaleRow[])
+    const { data, error } = await supabase
+      .from('sales')
+      .select('created_at, price_paid, amount_given, payment_method, ticket_id, trainer_id')
+      .gte('created_at', `${from}T00:00:00`)
+      .lte('created_at', `${to}T23:59:59`)
+    if (error) { setError(error.message); setLoading(false); return }
+    setSales((data ?? []) as SaleRow[])
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchSales(dateFrom, dateTo) }, [dateFrom, dateTo, fetchSales])
 
-  const { rows, totals } = useMemo(() => aggregate(sales), [sales])
+  // Reset trainer filter when switching away from cash
+  useEffect(() => {
+    if (paymentFilter !== 'cash') setTrainerFilter('all')
+  }, [paymentFilter])
+
+  const filteredSales = useMemo(() => {
+    let s = sales
+    if (paymentFilter !== 'all') s = s.filter(r => r.payment_method === paymentFilter)
+    if (paymentFilter === 'cash' && trainerFilter !== 'all') {
+      s = s.filter(r => r.trainer_id === trainerFilter)
+    }
+    return s
+  }, [sales, paymentFilter, trainerFilter])
+
+  const { rows, totals } = useMemo(() => aggregate(filteredSales), [filteredSales])
 
   function setPreset(from: string, to: string) {
     setDateFrom(from); setDateTo(to)
   }
 
-  const todayStr     = getToday()
-  const weekStr      = getWeekStart()
-  const monthStr     = getMonthStart()
+  const todayStr  = getToday()
+  const weekStr   = getWeekStart()
+  const monthStr  = getMonthStart()
   const activePreset =
     dateFrom === todayStr  && dateTo === todayStr  ? 'today'  :
     dateFrom === weekStr   && dateTo === todayStr  ? 'week'   :
@@ -120,9 +150,6 @@ export default function AccountingPage() {
         <div className={styles.topbar}>
           <h1 className="page-title">Звітність</h1>
           <div className={styles.topbarLinks}>
-            <a href="/accounting/reconciliation" className={styles.reconcileLink}>
-              Звірка →
-            </a>
             <a href="/accounting/trainers" className={styles.trainerReportLink}>
               Звіт по тренерах →
             </a>
@@ -144,6 +171,29 @@ export default function AccountingPage() {
             <span className={styles.dateLabel}>До</span>
             <DatePicker value={dateTo} onChange={setDateTo} />
           </div>
+          <div className={styles.paymentTabs}>
+            {PAYMENT_FILTER_LABELS.map(({ value, label }) => (
+              <button
+                key={value}
+                className={`${styles.paymentTab} ${paymentFilter === value ? styles.paymentTabActive : ''}`}
+                onClick={() => setPaymentFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {paymentFilter === 'cash' && trainers.length > 0 && (
+            <select
+              className={styles.trainerSelect}
+              value={trainerFilter}
+              onChange={e => setTrainerFilter(e.target.value)}
+            >
+              <option value="all">Всі тренери</option>
+              {trainers.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className={styles.content}>
