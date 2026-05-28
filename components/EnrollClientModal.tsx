@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClassesForDate, listEnrolledCountsForDate, listClientEnrolledClassIds, enrollClient } from '@/lib/queries/enrollments'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { ModalShell } from '@/components/ui/ModalShell'
 import DatePicker from '@/components/DatePicker'
 import type { Client } from '@/types'
 import styles from './EnrollClientModal.module.css'
@@ -44,8 +44,6 @@ function formatTime(iso: string, durationMin: number) {
 }
 
 export default function EnrollClientModal({ client, typeLabels, onClose, onSaved }: Props) {
-  const modalRef = useModalFocus(onClose)
-
   const [date, setDate] = useState(todayLocal())
   const [classes, setClasses] = useState<ClassOption[]>([])
   const [loadingClasses, setLoadingClasses] = useState(false)
@@ -83,72 +81,63 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
   }
 
   return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        ref={modalRef}
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Записати на заняття"
-      >
-        <div className={styles.header}>
-          <h2>Записати на заняття</h2>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-        </div>
-
-        <div className={styles.body}>
-          <div className={styles.dateRange}>
-            <span className={styles.dateLabel}>Дата</span>
-            <DatePicker value={date} onChange={setDate} />
-          </div>
-
-          {loadingClasses ? (
-            <div className={styles.empty}>Завантаження...</div>
-          ) : classes.length === 0 ? (
-            <div className={styles.empty}>Занять на цю дату немає</div>
-          ) : (
-            <div className={styles.list}>
-              {classes.map(cls => {
-                const isFull = cls.capacity != null && cls.enrolledCount >= cls.capacity
-                const disabled = cls.alreadyEnrolled || isFull || enrollingId != null
-                return (
-                  <div key={cls.id} className={`${styles.item} ${cls.alreadyEnrolled ? styles.itemEnrolled : ''} ${isFull ? styles.itemFull : ''}`}>
-                    <div className={styles.itemInfo}>
-                      <span className={styles.itemTime}>{formatTime(cls.starts_at, cls.duration_min)}</span>
-                      <span className={styles.itemType}>
-                        {typeLabels[cls.ticket_type] ?? cls.ticket_type}
-                        {cls.title ? ` · ${cls.title}` : ''}
-                      </span>
-                      <span className={styles.itemMeta}>
-                        {cls.trainers?.name ?? '—'}
-                        {cls.halls ? ` · ${cls.halls.name}` : ''}
-                        {cls.capacity != null && (
-                          <span className={isFull ? styles.full : styles.seats}>
-                            {' · '}{cls.enrolledCount}/{cls.capacity}
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    <button
-                      className={styles.btnEnroll}
-                      onClick={() => handleEnroll(cls.id)}
-                      disabled={disabled}
-                    >
-                      {enrollingId === cls.id
-                        ? '...'
-                        : cls.alreadyEnrolled
-                          ? 'Записана'
-                          : isFull
-                            ? 'Немає місць'
-                            : 'Записати'}
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+    <ModalShell
+      title="Записати на заняття"
+      onClose={onClose}
+      fullScreen
+      width={480}
+      footer={null}
+    >
+      <div className={styles.dateRange}>
+        <span className={styles.dateLabel}>Дата</span>
+        <DatePicker value={date} onChange={setDate} />
       </div>
-    </div>
+
+      {loadingClasses ? (
+        <div className={styles.empty}>Завантаження...</div>
+      ) : classes.length === 0 ? (
+        <div className={styles.empty}>Занять на цю дату немає</div>
+      ) : (
+        <div className={styles.list}>
+          {classes.map(cls => {
+            const isFull = cls.capacity != null && cls.enrolledCount >= cls.capacity
+            const disabled = cls.alreadyEnrolled || isFull || enrollingId != null
+            return (
+              <div key={cls.id} className={`${styles.item} ${cls.alreadyEnrolled ? styles.itemEnrolled : ''} ${isFull ? styles.itemFull : ''}`}>
+                <div className={styles.itemInfo}>
+                  <span className={styles.itemTime}>{formatTime(cls.starts_at, cls.duration_min)}</span>
+                  <span className={styles.itemType}>
+                    {typeLabels[cls.ticket_type] ?? cls.ticket_type}
+                    {cls.title ? ` · ${cls.title}` : ''}
+                  </span>
+                  <span className={styles.itemMeta}>
+                    {cls.trainers?.name ?? '—'}
+                    {cls.halls ? ` · ${cls.halls.name}` : ''}
+                    {cls.capacity != null && (
+                      <span className={isFull ? styles.full : styles.seats}>
+                        {' · '}{cls.enrolledCount}/{cls.capacity}
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <button
+                  className={styles.btnEnroll}
+                  onClick={() => handleEnroll(cls.id)}
+                  disabled={disabled}
+                >
+                  {enrollingId === cls.id
+                    ? '...'
+                    : cls.alreadyEnrolled
+                      ? 'Записана'
+                      : isFull
+                        ? 'Немає місць'
+                        : 'Записати'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </ModalShell>
   )
 }
