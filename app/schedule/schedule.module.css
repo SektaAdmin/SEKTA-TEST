@@ -547,10 +547,17 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-wrap: nowrap;
-    padding: 0 16px;
+    padding: 0;
     gap: 6px;
   }
   .filterBar::-webkit-scrollbar { display: none; }
+  .filterBar::before,
+  .filterBar::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 16px;
+  }
   .filterGroup { flex-wrap: nowrap; }
   .filterDivider { flex-shrink: 0; }
 
