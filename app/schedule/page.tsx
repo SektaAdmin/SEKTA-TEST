@@ -543,7 +543,7 @@ export default function SchedulePage() {
             </svg>
           </button>
           <button className={styles.mobileNavLabel} onClick={() => setBaseDate(new Date())}>
-            {navLabel}
+            Сьогодні
           </button>
           <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
