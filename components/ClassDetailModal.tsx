@@ -247,7 +247,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     if (!cls) return ''
     const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
     const titleLine = cls.halls?.name ? `${label} (${cls.halls.name})` : label
-    const dateLine = new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const dateLine = new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).replace(/^./, c => c.toUpperCase())
     const dateTimeLine = `${dateLine}, ${timeRange}`
     const hours = cls.duration_min / 60
     const durationLine = hours % 1 !== 0
