@@ -253,7 +253,8 @@ export default function AccountingPage() {
                         />
                       </th>
                       <th className={styles.thDate}>Дата</th>
-                      <th className={styles.thClient}>Клієнт і операція</th>
+                      <th className={styles.thClient}>Клієнт</th>
+                      <th className={styles.thTicket}>Абонемент</th>
                       <th className={styles.thPrice}>Ціна</th>
                       <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>
@@ -285,12 +286,13 @@ export default function AccountingPage() {
                             </div>
                           </td>
                           <td>
-                            <div className={styles.clientCell}>
-                              <span className={styles.clientName}>{clientName(s)}</span>
-                              {s.ticket_name && (
-                                <span className={styles.ticketName}>{s.ticket_name}</span>
-                              )}
-                            </div>
+                            <span className={styles.clientName}>{clientName(s)}</span>
+                          </td>
+                          <td className={styles.ticketCell}>
+                            {s.ticket_name
+                              ? <span className={styles.ticketName}>{s.ticket_name}</span>
+                              : <span className={styles.zero}>—</span>
+                            }
                           </td>
                           <td className={styles.priceCell}>
                             {s.ticket_price != null

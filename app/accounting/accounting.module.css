@@ -199,12 +199,13 @@
 }
 
 .thCheck   { width: 36px; }
-.thDate    { width: 130px; }
-.thClient  { width: 260px; }
-.thPrice   { width: 110px; text-align: right !important; }
+.thDate    { width: 120px; }
+.thClient  { width: 180px; }
+.thTicket  { width: 200px; }
+.thPrice   { width: 100px; text-align: right !important; }
 .thDeposit { width: 110px; text-align: right !important; }
-.thAmt     { width: 110px; text-align: right !important; }
-.thMethod  { width: 110px; text-align: left !important; }
+.thAmt     { width: 100px; text-align: right !important; }
+.thMethod  { width: 100px; text-align: left !important; }
 
 .priceCell {
   text-align: right;
@@ -273,6 +274,12 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
+}
+
+.ticketCell {
+  font-size: 14px;
+  color: var(--text-2);
+  vertical-align: top;
 }
 
 .ticketName {
