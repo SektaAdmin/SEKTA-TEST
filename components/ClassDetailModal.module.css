@@ -416,6 +416,19 @@
 
 .thRight { text-align: right; }
 
+.rowNum {
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 18px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.thNum {
+  width: 28px;
+  padding-right: 0 !important;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

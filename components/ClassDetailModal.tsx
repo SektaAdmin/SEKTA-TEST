@@ -469,13 +469,14 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     <table className={styles.table}>
                       <thead>
                         <tr>
+                          <th className={styles.thNum}></th>
                           <th>Клієнт</th>
                           <th>Статус</th>
                           <th className={styles.thRight}>Дія</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {mainEnrollments.map(e => {
+                        {mainEnrollments.map((e, i) => {
                           const name = e.clients
                             ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                             : '—'
@@ -483,6 +484,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           const hoursLabel = formatHoursLabel(e.hours_attended, cls.starts_at)
                           return (
                             <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
+                              <td className={styles.rowNum}>{i + 1}</td>
                               <td>
                                 <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                   {name}
@@ -593,18 +595,20 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                       <table className={styles.table}>
                         <thead>
                           <tr>
+                            <th className={styles.thNum}></th>
                             <th>Клієнт</th>
                             <th className={styles.thRight}>Дія</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {waitlist.map(e => {
+                          {waitlist.map((e, i) => {
                             const name = e.clients
                               ? formatClientName(e.clients as { first_name: string | null; last_name: string | null })
                               : '—'
                             const isLoading = actionLoading === e.id
                             return (
                               <tr key={e.id}>
+                                <td className={styles.rowNum}>{i + 1}</td>
                                 <td>
                                   <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                     {name}
