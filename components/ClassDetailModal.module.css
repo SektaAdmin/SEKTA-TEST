@@ -676,7 +676,7 @@
   .tableContainer { overflow-x: hidden; }
   .table { table-layout: fixed; width: 100%; }
   .table th, .table td { overflow: hidden; }
-  .clientLink { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clientLink { display: block; overflow: visible; white-space: normal; word-break: break-word; }
   .thNum { width: 24px; }
   .actionsCell { white-space: nowrap; width: 1%; padding: 8px 8px !important; }
   .actions { gap: 4px; }
