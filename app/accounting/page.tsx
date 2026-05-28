@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate } from '@/lib/formatters'
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
@@ -252,6 +253,7 @@ export default function AccountingPage() {
                           onChange={toggleAll}
                         />
                       </th>
+                      <th className={styles.thIcon}></th>
                       <th className={styles.thDate}>Дата</th>
                       <th className={styles.thClient}>Клієнт</th>
                       <th className={styles.thTicket}>Абонемент</th>
@@ -278,6 +280,12 @@ export default function AccountingPage() {
                               onChange={() => toggleChecked(s.id)}
                               onClick={e => e.stopPropagation()}
                             />
+                          </td>
+                          <td className={styles.iconCell}>
+                            {s.payment_method === 'deposit'
+                              ? <ArrowUpRight size={16} className={styles.iconDeposit} />
+                              : <ArrowDownLeft size={16} className={styles.iconIncome} />
+                            }
                           </td>
                           <td>
                             <div className={styles.dateCell}>

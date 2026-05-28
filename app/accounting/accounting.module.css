@@ -199,7 +199,17 @@
 }
 
 .thCheck   { width: 36px; }
+.thIcon    { width: 28px; }
 .thDate    { width: 120px; }
+
+.iconCell {
+  width: 28px;
+  vertical-align: top;
+  padding-right: 0 !important;
+}
+
+.iconIncome  { color: var(--accent); }
+.iconDeposit { color: var(--text-3); }
 .thClient  { width: 180px; }
 .thTicket  { width: 200px; }
 .thPrice   { width: 100px; text-align: right !important; }
@@ -212,7 +222,6 @@
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   white-space: nowrap;
-  vertical-align: top;
   color: var(--text-2);
 }
 
@@ -251,7 +260,7 @@
   display: flex;
   flex-direction: column;
   white-space: nowrap;
-  min-width: 90px;
+  gap: 1px;
 }
 
 .dateMain {
@@ -279,7 +288,6 @@
 .ticketCell {
   font-size: 14px;
   color: var(--text-2);
-  vertical-align: top;
 }
 
 .ticketName {
@@ -292,7 +300,6 @@
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   white-space: nowrap;
-  vertical-align: top;
 }
 
 .depositVal {
@@ -306,12 +313,11 @@
   font-weight: 500;
   font-size: 14px;
   white-space: nowrap;
-  vertical-align: top;
 }
 
-/* Align all td tops so date/name rows match */
+/* Vertical alignment for all cells */
 .tableDesktop :global(.data-table) tbody td {
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .zero { color: var(--text-3) !important; }
