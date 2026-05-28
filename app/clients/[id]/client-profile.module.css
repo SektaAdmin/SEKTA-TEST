@@ -541,6 +541,15 @@
     gap: 5px;
   }
 
+  .itemCardLabel {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
   .itemCardRow {
     display: flex;
     align-items: center;

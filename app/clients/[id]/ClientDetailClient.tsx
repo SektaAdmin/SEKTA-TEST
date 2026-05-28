@@ -621,6 +621,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                           const Icon = enrollmentStatusIcon(e.status)
                           return (
                             <div key={`e-${e.id}`} className={styles.itemCard}>
+                              <span className={styles.itemCardLabel}>Тренування</span>
                               <div className={styles.itemCardRow}>
                                 <span className={styles.itemCardMain}>{typeName}</span>
                                 <span className={styles.itemCardDate}>{dateStr}</span>
@@ -655,6 +656,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
                           return (
                             <div key={`s-${s.id}`} className={styles.itemCard}>
+                              <span className={styles.itemCardLabel}>Продаж</span>
                               <div className={styles.itemCardRow}>
                                 <span className={styles.itemCardMain}>{opLabel}</span>
                                 <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
