@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-27 (Mobile Adaptation Phases A–E + G–J complete: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation)
+- **Last Updated**: 2026-05-28 (Mobile Adaptation Phases A–E + G–J complete + /schedule mobile: BottomNav, bottom sheets, table scroll, topbar flex-wrap, touch targets, HallWeekGrid mobile, /sales full mobile adaptation, /schedule no horizontal scroll)
 
 ## Commands
 
