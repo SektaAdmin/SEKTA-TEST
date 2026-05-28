@@ -555,6 +555,12 @@ export default function SchedulePage() {
         {/* Mobile date label — below filter bar, mobile only */}
         <div className={styles.mobileDateLabel}>
           {WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}, {formatDate(baseDate)}
+          {filterHall && (
+            <><span className={styles.mobileDateSep}>·</span>{activeHalls.find(h => h.id === filterHall)?.name}</>
+          )}
+          {filterTrainer && (
+            <><span className={styles.mobileDateSep}>·</span>{(trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}</>
+          )}
         </div>
 
         {/* Content row — grid area + right panel */}

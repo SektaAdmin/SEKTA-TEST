@@ -535,6 +535,10 @@
     background: var(--bg);
     flex-shrink: 0;
   }
+  .mobileDateSep {
+    margin: 0 6px;
+    color: var(--text-3);
+  }
 
   /* Filter bar — horizontal scroll strip, no wrapping */
   .filterBar {
