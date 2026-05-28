@@ -62,16 +62,17 @@ export default function JournalPage() {
 
   return (
     <>
-      {/* Topbar */}
-      <div className={jStyles.topbar}>
-        <h1 className="page-title">Журнал занять</h1>
-        {total > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>
-        )}
-      </div>
+      <div className={jStyles.stickyHead}>
+        {/* Topbar */}
+        <div className={jStyles.topbar}>
+          <h1 className="page-title">Журнал занять</h1>
+          {total > 0 && (
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{total} занять</span>
+          )}
+        </div>
 
-      {/* Filter bar */}
-      <div className={jStyles.filterBar}>
+        {/* Filter bar */}
+        <div className={jStyles.filterBar}>
         <input
           type="date"
           value={dateFrom}
@@ -124,6 +125,7 @@ export default function JournalPage() {
           <option value="all">Всі статуси</option>
           <option value="cancelled">Тільки скасовані</option>
         </select>
+        </div>
       </div>
 
       {/* Content */}

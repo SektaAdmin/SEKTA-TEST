@@ -22,6 +22,9 @@
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
+}
+
+.stickyHead {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -36,7 +39,6 @@
   padding: 10px var(--topbar-px);
   background: var(--bg);
   border-bottom: 0.5px solid var(--border);
-  flex-shrink: 0;
 }
 
 .content {
@@ -191,6 +193,7 @@
     padding: 10px 16px;
     gap: 8px;
     flex-wrap: wrap;
+    border-bottom: none;
   }
 
   .filterBar {
