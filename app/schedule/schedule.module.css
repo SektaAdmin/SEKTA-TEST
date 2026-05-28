@@ -533,8 +533,9 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
     animation: bottomSheetIn var(--motion-standard) both;
   }
-  /* Reset rightPanel styles inside the sheet */
+  /* Reset rightPanel styles inside the sheet — override display:none from ScheduleRightPanel.module.css */
   .mobileCalSheet aside {
+    display: flex !important;
     width: 100%;
     height: auto;
     border-left: none;
