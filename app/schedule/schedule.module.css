@@ -272,7 +272,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: var(--filterbar-h);
+  min-height: var(--filterbar-h);
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
@@ -543,11 +543,11 @@
   /* Filter bar — horizontal scroll strip, no wrapping */
   .filterBar {
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-wrap: nowrap;
-    padding: 0;
+    padding: 8px 0;
     gap: 6px;
   }
   .filterBar::-webkit-scrollbar { display: none; }
