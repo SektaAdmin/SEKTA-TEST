@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { ChevronDown, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -12,10 +12,10 @@ import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-import { useEffect } from 'react'
 import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
+const ALL = '__all__'
 
 // ── Controlled Radix select for filters ──────────────────────────
 interface FilterSelectProps {
@@ -25,8 +25,12 @@ interface FilterSelectProps {
   options: { value: string; label: string }[]
 }
 function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  const radixValue = value === '' ? ALL : value
   return (
-    <SelectPrimitive.Root value={value} onValueChange={onChange}>
+    <SelectPrimitive.Root
+      value={radixValue}
+      onValueChange={v => onChange(v === ALL ? '' : v)}
+    >
       <SelectPrimitive.Trigger className={jStyles.fsTrigger} aria-label={placeholder}>
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon asChild>
@@ -37,7 +41,11 @@ function FilterSelect({ value, onChange, placeholder, options }: FilterSelectPro
         <SelectPrimitive.Content className={jStyles.fsContent} position="popper" sideOffset={4}>
           <SelectPrimitive.Viewport>
             {options.map(o => (
-              <SelectPrimitive.Item key={o.value} value={o.value} className={jStyles.fsItem}>
+              <SelectPrimitive.Item
+                key={o.value === '' ? ALL : o.value}
+                value={o.value === '' ? ALL : o.value}
+                className={jStyles.fsItem}
+              >
                 <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
               </SelectPrimitive.Item>
             ))}
