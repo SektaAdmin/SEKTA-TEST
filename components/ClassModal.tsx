@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listActiveHalls } from '@/lib/queries/halls'
@@ -9,6 +9,7 @@ import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
 import { isoToDatetimeLocal } from '@/lib/formatters'
+import DateTimeInput from '@/components/DateTimeInput'
 import { VM } from '@/lib/validation-messages'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
 import styles from './ClassModal.module.css'
@@ -94,7 +95,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
   const defaultDayOfWeek = startsAt.getDay()
   const defaultTimeOfDay = existing ? isoToTimeLocal(existing.starts_at) : '10:00'
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<FormValues>({
     defaultValues: existing ? {
       ticket_type: existing.ticket_type,
       trainer_id: existing.trainer_id ?? '',
@@ -374,11 +375,17 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         )}
 
         <FormField id="cm-starts" label={isSeries ? 'Перше заняття' : 'Дата і час'} required error={errors.starts_at}>
-          <input
-            id="cm-starts"
-            type="datetime-local"
-            {...register('starts_at', { required: VM.required.field })}
-            disabled={loading}
+          <Controller
+            name="starts_at"
+            control={control}
+            rules={{ required: VM.required.field }}
+            render={({ field }) => (
+              <DateTimeInput
+                value={field.value ?? ''}
+                onChange={field.onChange}
+                disabled={loading}
+              />
+            )}
           />
         </FormField>
 
