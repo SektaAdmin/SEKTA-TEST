@@ -531,7 +531,7 @@
   .page { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
 
   /* Topbar — hide desktop sections, show mobile nav */
-  .topbar { height: auto; min-height: 0; overflow: visible; padding: 8px 16px; gap: 0; }
+  .topbar { height: auto; min-height: 0; overflow: visible; flex-wrap: wrap; padding: 12px var(--topbar-px); gap: 8px; }
   .topbarLeft { display: none; }
   .topbarRight { display: none; }
 
@@ -547,14 +547,14 @@
   /* Touch targets */
   .navBtn { width: 44px; height: 44px; }
 
-  /* Filter bar — horizontal scroll strip */
+  /* Filter bar — not sticky on mobile, horizontal scroll strip */
   .filterBar {
+    position: static;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-wrap: nowrap;
-    height: auto;
     padding: 8px 0;
     gap: 6px;
   }
@@ -568,7 +568,7 @@
   }
   .filterGroup { flex-wrap: nowrap; }
   .filterDivider { flex-shrink: 0; }
-  .clientFilterWrap { width: auto; margin-left: 0; flex-shrink: 0; min-width: 180px; }
+  .clientFilterWrap { width: auto; margin-left: 0; flex-shrink: 0; min-width: 160px; }
 
   /* Filter button touch targets */
   .filterBtn { height: 36px; padding: 0 12px; font-size: 13px; }
