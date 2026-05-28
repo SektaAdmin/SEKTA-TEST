@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний; filterBar overflow-y:hidden; SeriesModal порядок полів; FormField time input нормалізація висоти)
+- **Last Updated**: 2026-05-28 (всі сторінки адаптовані під мобільний; ActionSelect компонент; ClassDetailModal нумерація+dropdown дій; HallWeekGrid HH:00)
 
 ## Commands
 
@@ -405,12 +405,12 @@ components/
   ClassModal.tsx              — створення/редагування заняття; завжди `fullScreen` (незалежно від пристрою)
   SeriesModal.tsx             — шаблон серії
   EnrollClientModal.tsx       — запис клієнта з профілю
-  ClassDetailModal.tsx        — деталі заняття (модальний варіант)
+  ClassDetailModal.tsx        — деталі заняття (модальний варіант); таблиця записаних: нумерація (#), статус-бейдж, ActionSelect для зміни статусу; `table-layout: fixed` на мобільному (без горизонтального скролу)
   HallModal.tsx               — зал
   TicketModal.tsx             — абонемент
   TrainerModal.tsx            — тренер
   TrainingTypeModal.tsx       — тип тренування
-  HallWeekGrid.tsx            — сітка шаблонів (зали × дні)
+  HallWeekGrid.tsx            — сітка шаблонів (зали × дні); мітки часу у форматі `HH:00` (як у /schedule)
   CalendarPopover.tsx         — міні-календар з підсвіткою тижня (portals, для інших сторінок)
   ScheduleRightPanel.tsx      — права панель /schedule: міні-календар (inline, тільки навігація)
   SalesDateRangePicker.tsx    — range picker для /sales
@@ -426,6 +426,7 @@ components/
     ModalFooter.tsx           — уніфіковані footer-кнопки (Скасувати/Зберегти) для всіх модалок
     FormField.tsx             — уніфікований wrapper поля форми: label + input/select/textarea + errorHint + hint. Props: id, label, required, registration, error, hint, children, className. Використовується в усіх 8 модалках.
     Pagination.tsx            — пагінація з вибором page size (20/50/100), page range з "...", Prev/Next. Використовується в /journal і може повторно використовуватись.
+    ActionSelect.tsx          — кастомний dropdown на Radix SelectPrimitive зі стилями через CSS Modules і токенами проекту. Props: `options: {value, label}[]`, `onChange`, `placeholder`, `disabled`. Використовується в ClassDetailModal для вибору дії зі статусом запису. Не shadcn Select (той використовує Tailwind vars яких немає в проекті).
     SocialHandleInput.tsx     — input для instagram/telegram
     button.tsx, calendar.tsx, command.tsx, dialog.tsx, popover.tsx, select.tsx, table.tsx  — shadcn
 
