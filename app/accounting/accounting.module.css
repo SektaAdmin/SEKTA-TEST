@@ -331,14 +331,6 @@
   .topbarLinks {
     flex-wrap: wrap;
     gap: 6px;
-    width: 100%;
-  }
-
-  .reconcileLink,
-  .trainerReportLink {
-    flex: 1;
-    justify-content: center;
-    text-align: center;
   }
 
   .filters {

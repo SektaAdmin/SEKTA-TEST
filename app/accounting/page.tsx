@@ -156,19 +156,19 @@ export default function AccountingPage() {
               <div className={styles.summary}>
                 <div className={styles.card}>
                   <div className={styles.cardLabel}>Готівка</div>
-                  <div className={`${styles.cardValue} ${styles.valCash}`}>{fmtTotal(totals.cash)}</div>
+                  <div className={`${styles.cardValue} ${totals.cash > 0 ? styles.valCash : styles.zero}`}>{fmtTotal(totals.cash)}</div>
                 </div>
                 <div className={styles.card}>
                   <div className={styles.cardLabel}>ФОП</div>
-                  <div className={`${styles.cardValue} ${styles.valFop}`}>{fmtTotal(totals.fop)}</div>
+                  <div className={`${styles.cardValue} ${totals.fop > 0 ? styles.valFop : styles.zero}`}>{fmtTotal(totals.fop)}</div>
                 </div>
                 <div className={styles.card}>
                   <div className={styles.cardLabel}>Картка</div>
-                  <div className={`${styles.cardValue} ${styles.valCard}`}>{fmtTotal(totals.card)}</div>
+                  <div className={`${styles.cardValue} ${totals.card > 0 ? styles.valCard : styles.zero}`}>{fmtTotal(totals.card)}</div>
                 </div>
                 <div className={styles.card}>
                   <div className={styles.cardLabel}>З депозиту</div>
-                  <div className={`${styles.cardValue} ${styles.valDeposit}`}>{fmtTotal(totals.deposit)}</div>
+                  <div className={`${styles.cardValue} ${totals.deposit > 0 ? styles.valDeposit : styles.zero}`}>{fmtTotal(totals.deposit)}</div>
                 </div>
                 <div className={`${styles.card} ${styles.cardTotal}`}>
                   <div className={styles.cardLabel}>Надходження</div>
