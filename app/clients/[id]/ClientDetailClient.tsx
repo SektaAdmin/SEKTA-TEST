@@ -638,7 +638,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 </span>
                                 {bal !== undefined
                                   ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
-                                      залишок: {bal} год.
+                                      Залишок: {bal} год.
                                     </span>
                                   : null
                                 }
@@ -669,7 +669,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <div className={styles.itemCardRow}>
                                   <span />
                                   <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
-                                    {bal}
+                                    Залишок: {bal} год.
                                   </span>
                                 </div>
                               )}
