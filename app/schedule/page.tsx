@@ -264,6 +264,16 @@ export default function SchedulePage() {
 
   const ARCHIVE_CUTOFF_DAYS = 30
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
+
+  // Force day view on mobile (week view causes horizontal overflow on small screens)
+  useEffect(() => {
+    function checkMobile() {
+      if (window.innerWidth <= 640 && viewMode === 'week') setViewMode('day')
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [viewMode])
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
@@ -472,7 +482,7 @@ export default function SchedulePage() {
                 <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
                   День
                 </button>
-                <button className={`${styles.viewBtn} ${viewMode === 'week' ? styles.viewBtnActive : ''}`} onClick={handleSetWeekMode}>
+                <button className={`${styles.viewBtn} ${styles.viewBtnWeek} ${viewMode === 'week' ? styles.viewBtnActive : ''}`} onClick={handleSetWeekMode}>
                   Тиждень
                 </button>
               </div>
