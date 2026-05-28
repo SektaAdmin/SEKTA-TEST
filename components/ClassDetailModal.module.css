@@ -673,5 +673,12 @@
     flex-shrink: 1;
     min-width: 0;
   }
-  .tableContainer { overflow-x: auto; }
+  .tableContainer { overflow-x: hidden; }
+  .table { table-layout: fixed; width: 100%; }
+  .table th, .table td { overflow: hidden; text-overflow: ellipsis; }
+  .thNum { width: 24px; }
+  .actionsCell { white-space: nowrap; width: 1%; padding: 8px 8px !important; }
+  .actions { gap: 4px; }
+  .btnAttend, .btnNoshow, .btnCancelEnroll { width: 28px; height: 28px; font-size: 13px; }
+  .btnReEnroll, .btnEdit, .btnCancelAdd { height: 28px; padding: 0 7px; font-size: 12px; }
 }
