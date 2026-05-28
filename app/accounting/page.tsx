@@ -234,6 +234,7 @@ export default function AccountingPage() {
                       <th className={styles.thCheck}></th>
                       <th className={styles.thDate}>Дата</th>
                       <th>Клієнт і операція</th>
+                      <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>
                       <th className={styles.thMethod}>Метод</th>
                     </tr>
@@ -268,10 +269,13 @@ export default function AccountingPage() {
                               {s.ticket_name && (
                                 <span className={styles.ticketName}>{s.ticket_name}</span>
                               )}
-                              {hasDeposit && (
-                                <span className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</span>
-                              )}
                             </div>
+                          </td>
+                          <td className={styles.depositCell}>
+                            {hasDeposit
+                              ? <span className={styles.depositVal}>+{formatMoney(depDelta)}</span>
+                              : <span className={styles.zero}>—</span>
+                            }
                           </td>
                           <td className={`${styles.amtCell} ${amt > 0 ? '' : styles.zero}`}>
                             {amt > 0 ? formatMoney(s.amount_given) : '—'}

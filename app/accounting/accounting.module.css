@@ -198,11 +198,12 @@
   width: 100%;
 }
 
-.thRight { text-align: right !important; }
-.thCheck { width: 36px; }
-.thDate  { width: 110px; }
-.thAmt   { width: 110px; text-align: right; }
-.thMethod { width: 100px; }
+.thRight   { text-align: right !important; }
+.thCheck   { width: 36px; }
+.thDate    { width: 110px; }
+.thDeposit { width: 110px; text-align: right; }
+.thAmt     { width: 110px; text-align: right; }
+.thMethod  { width: 100px; }
 
 .checkCell {
   width: 36px;
@@ -269,10 +270,17 @@
   color: var(--text-2);
 }
 
-.depositHint {
+.depositCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
-  color: var(--text-3);
-  font-style: italic;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.depositVal {
+  color: var(--accent);
+  font-weight: 500;
 }
 
 .amtCell {
