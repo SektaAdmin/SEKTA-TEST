@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { UserRound } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { typeColor } from '@/lib/typeColor'
@@ -168,8 +167,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
           </div>
           {cls.trainers?.name && (
             <div className={styles.cardTrainerRow}>
-              <UserRound className={styles.cardTrainerIcon} />
-              <span>{cls.trainers.name}</span>
+              {cls.trainers.name}
             </div>
           )}
           {cls.capacity != null && !cls.is_cancelled && (() => {
