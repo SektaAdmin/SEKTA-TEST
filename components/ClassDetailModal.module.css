@@ -437,6 +437,7 @@
 .actionsCell {
   text-align: right;
   padding: 11px 14px !important;
+  white-space: nowrap;
 }
 
 .clientLink {
@@ -467,7 +468,7 @@
   gap: 6px;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .btnAttend, .btnNoshow, .btnCancelEnroll, .btnReEnroll, .btnEdit, .btnCancelAdd {
