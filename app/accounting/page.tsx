@@ -328,32 +328,40 @@ export default function AccountingPage() {
                   const amt = revenue(s)
                   const depDelta = s.amount_given - s.price_paid
                   const hasDeposit = s.ticket_id !== null && depDelta > 0
+                  const isChecked = checked.has(s.id)
                   return (
-                    <div key={s.id} className={`${styles.card} ${checked.has(s.id) ? styles.cardChecked : ''}`} onClick={() => toggleChecked(s.id)}>
-                      <div className={styles.cardRow}>
+                    <div key={s.id} className={`${styles.card} ${isChecked ? styles.cardChecked : ''}`} onClick={() => toggleChecked(s.id)}>
+                      <div className={styles.cardMain}>
                         <input
                           type="checkbox"
                           className={styles.checkbox}
-                          checked={checked.has(s.id)}
+                          checked={isChecked}
                           onChange={() => toggleChecked(s.id)}
                           onClick={e => e.stopPropagation()}
                         />
-                        <span className={styles.cardClient}>{clientName(s)}</span>
-                        <span className={styles.cardAmt}>{amt > 0 ? formatMoney(s.amount_given) : '—'}</span>
+                        <div className={styles.cardBody}>
+                          <div className={styles.cardRow1}>
+                            <span className={styles.cardClient}>{clientName(s)}</span>
+                            <span className={`${styles.cardAmt} ${amt === 0 ? styles.zero : ''}`}>
+                              {amt > 0 ? formatMoney(s.amount_given) : '—'}
+                            </span>
+                          </div>
+                          <div className={styles.cardRow2}>
+                            <span className={styles.cardTicket}>
+                              {s.ticket_name ?? <span className={styles.zero}>Депозит</span>}
+                            </span>
+                            <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                              {paymentLabel(s.payment_method)}
+                            </span>
+                          </div>
+                          <div className={styles.cardRow3}>
+                            <span className={styles.cardDatetime}>{date} · {time}</span>
+                            {hasDeposit && (
+                              <span className={styles.depositHint}>+{formatMoney(depDelta)} депозит</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className={styles.cardMeta}>
-                        <span>{date} · {time}</span>
-                        <span className={styles.cardMetaDot}>·</span>
-                        <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
-                          {paymentLabel(s.payment_method)}
-                        </span>
-                      </div>
-                      {s.ticket_name && (
-                        <div className={styles.cardTicket}>{s.ticket_name}</div>
-                      )}
-                      {hasDeposit && (
-                        <div className={styles.depositHint}>з них {formatMoney(depDelta)} на депозит</div>
-                      )}
                     </div>
                   )
                 })}
