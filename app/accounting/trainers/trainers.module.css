@@ -90,7 +90,8 @@
 }
 
 .filterBtn {
-  padding: 5px 12px;
+  height: var(--control-h);
+  padding: 0 12px;
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: var(--font);
@@ -98,6 +99,8 @@
   border: 0.5px solid var(--border);
   background: transparent;
   color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
 .filterBtn:hover { border-color: var(--border-hover); color: var(--text-2); }
