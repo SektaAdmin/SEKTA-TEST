@@ -1,17 +1,3 @@
-.layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg);
-}
-
-.main {
-  flex: 1;
-  margin-left: 196px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
 /* ── Card list (mobile) ──────────────────────────────────────── */
 .tableDesktop { display: block; }
 .cardList { display: none; }
@@ -72,8 +58,7 @@
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column; }
-  .topbar { position: static; height: var(--topbar-h); padding: 0 16px; }
+  .topbar { height: var(--topbar-h); padding: 0 16px; }
   .tabSection { padding: 16px; }
   .tableDesktop { display: none; }
   .cardList {
@@ -83,7 +68,6 @@
   }
 
   .tabNav {
-    position: static;
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
@@ -92,9 +76,6 @@
     padding: 8px 16px;
     border-bottom: 0.5px solid var(--border);
     background: var(--bg);
-    position: sticky;
-    top: var(--topbar-h);
-    z-index: 9;
   }
   .tabNav::-webkit-scrollbar { display: none; }
 }
@@ -108,10 +89,6 @@
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  flex-shrink: 0;
 }
 
 

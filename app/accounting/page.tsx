@@ -241,10 +241,11 @@ export default function AccountingPage() {
     dateFrom === monthStr  && dateTo === todayStr  ? 'month'  : null
 
   return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}>
+      <main className="page-main">
+        <div className="page-head">
         <div className={styles.topbar}>
           <h1 className="page-title">Звітність</h1>
           <div className={styles.topbarActions}>
@@ -293,7 +294,9 @@ export default function AccountingPage() {
             />
           )}
         </div>
+        </div>{/* /page-head */}
 
+        <div className="page-body">
         {/* Totals cards */}
         {!loading && !error && (
           <div className={styles.totalsBar}>
@@ -328,7 +331,7 @@ export default function AccountingPage() {
           </div>
         )}
 
-        <div className={`${styles.content} page-content`}>
+        <div className={styles.content}>
           {loading ? (
             <div className="loading-dots"><span /><span /><span /></div>
           ) : error ? (
@@ -572,6 +575,7 @@ export default function AccountingPage() {
             </>
           )}
         </div>
+        </div>{/* /page-body */}
       </main>
 
       {expenseModal && (

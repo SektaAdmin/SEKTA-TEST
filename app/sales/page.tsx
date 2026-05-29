@@ -84,10 +84,11 @@ export default function SalesPage() {
   }
 
   return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}>
+      <main className="page-main">
+        <div className="page-head">
         <div className={styles.topbar}>
           <h1 className="page-title">Продажи</h1>
           <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
@@ -124,8 +125,9 @@ export default function SalesPage() {
             </button>
           )}
         </div>
+        </div>{/* /page-head */}
 
-        <div className={`${styles.content} page-content`}>
+        <div className={`page-body ${styles.content}`}>
           {loading ? (
             <div className="loading-dots"><span /><span /><span /></div>
           ) : fetchError ? (
@@ -265,22 +267,12 @@ export default function SalesPage() {
               })}
             </div>
 
-            <div className={styles.paginationDesktop}>
-              <Pagination
-                page={page}
-                pageSize={pageSize}
-                total={total}
-                onPage={setPage}
-                onPageSize={handlePageSize}
-                pageSizeLabel="Продажів на сторінці"
-              />
-            </div>
             </>
           )}
         </div>
 
         {!loading && !fetchError && sales.length > 0 && (
-          <div className={styles.paginationMobile}>
+          <div className="page-foot" style={{padding: '10px 28px'}}>
             <Pagination
               page={page}
               pageSize={pageSize}

@@ -86,10 +86,11 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}>
+      <main className="page-main">
+        <div className="page-head">
         <div className={styles.topbar}>
           <h1 className="page-title">Клієнти</h1>
           <button className="btn-primary" onClick={() => setShowModal(true)}>
@@ -118,8 +119,9 @@ export default function ClientsPage() {
             )}
           </div>
         </div>
+        </div>{/* /page-head */}
 
-        <div className={`${styles.content} page-content`}>
+        <div className={`page-body ${styles.content}`}>
           {loading ? (
             <div className="loading-dots">
               <span /><span /><span />
@@ -240,24 +242,12 @@ export default function ClientsPage() {
                 ))}
               </div>
 
-              {/* Desktop pagination — inside scroll area */}
-              <div className={styles.paginationDesktop}>
-                <Pagination
-                  page={page}
-                  pageSize={pageSize}
-                  total={total}
-                  onPage={setPage}
-                  onPageSize={handlePageSize}
-                  pageSizeLabel="Клієнтів на сторінці"
-                />
-              </div>
             </>
           )}
         </div>
 
-        {/* Mobile pagination — outside scroll area, always visible */}
         {!loading && !fetchError && clients.length > 0 && (
-          <div className={styles.paginationMobile}>
+          <div className="page-foot" style={{padding: '10px 28px'}}>
             <Pagination
               page={page}
               pageSize={pageSize}

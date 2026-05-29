@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (mobile refactor: useIsMobile хук, mobileFullScreen prop, ClassDetailModal → ModalShell, min-height fixes)
+- **Last Updated**: 2026-05-29 (page layout refactor: shared page-layout/page-main/page-head/page-body/page-foot classes in globals.css; all pages except /schedule/* migrated)
 
 ## Commands
 
@@ -523,13 +523,19 @@ types/
 - **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
 - **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок. Також надає `refetchTickets/refetchTrainers/refetchHalls/refetchTrainingTypes` для примусового оновлення після мутацій у налаштуваннях.
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
-- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка), `.loading-dots` (3-крапковий спінер), `.data-table-wrap` + `.data-table` (стандартна таблиця), **`.page-content`** (scroll-контейнер сторінки на мобільному — `flex:1; overflow-y:auto; padding-bottom: BottomNav`). Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
-- **Мобільна scroll-архітектура** — єдина модель для всіх сторінок (`≤640px`):
-  - `html, body { overflow: hidden }` — глобально в `globals.css`, **ніколи не змінювати через JS** (`document.body.style.overflow` заборонено)
-  - `main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column }` — в кожному `*.module.css` в `@media (≤640px)`. `min-height: unset` обов'язковий — скидає десктопний `min-height: 100vh`, інакше він перевизначить `height: 100svh`
-  - `topbar`, `filterBar` — `position: static; flex-shrink: 0` на мобільному (sticky не потрібен)
-  - Scroll-контейнер: `<div className={`${styles.content} page-content`}>` (або `tabSection` в /settings) — клас `page-content` дає `flex:1; overflow-y:auto; padding-bottom: BottomNav`. **Не дублювати** `flex:1; overflow-y:auto; min-height:0` в мобільному `.content` — вони вже є в `.page-content`
-  - Виняток — `/schedule` і `/schedule/templates`: scroll всередині `bodyGridWrapper` (HallWeekGrid), `padding-bottom` на ньому, не на `.main`
+- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка), `.loading-dots` (3-крапковий спінер), `.data-table-wrap` + `.data-table` (стандартна таблиця). Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
+- **Shared page layout** (globals.css) — єдиний шаблон для всіх сторінок крім `/schedule/*`:
+  - `.page-layout` — flex-row обгортка (sidebar + main), замінює `styles.layout`
+  - `.page-main` — flex-column, `margin-left: var(--sidebar-w)`, `min-height: 100vh`. На ≤640px: `margin-left: 0`, `height: 100svh`
+  - `.page-head` — `flex-shrink: 0`, `position: sticky; top: 0; z-index: 10`. На ≤640px: `position: static`. Містить topbar + filterBar/tabNav
+  - `.page-body` — `flex: 1; min-height: 0; overflow-y: auto`. На ≤640px: `padding-bottom: BottomNav`. Основний scroll-контейнер
+  - `.page-foot` — `flex-shrink: 0; border-top`. На ≤640px: `padding-bottom: BottomNav + 10px`. Використовується для пагінації
+  - **Нова сторінка не потребує**: margin-left, height, overflow, padding-bottom — всі ці властивості вже в `.page-main`/`.page-body`/`.page-foot`
+  - **Виняток** — `/schedule` і `/schedule/templates`: scroll всередині `bodyGridWrapper` (HallWeekGrid), `padding-bottom` на ньому
+- **Мобільна scroll-архітектура** (після рефакторингу):
+  - `html, body { overflow: hidden }` — глобально в `globals.css`, **ніколи не змінювати через JS**
+  - Module.css сторінок: мобільна `@media` містить тільки специфіку (розміри topbar, flex-wrap, padding контенту). **Не дублювати** `margin-left: 0; height: 100svh; overflow-y: auto` — вони в `.page-main`/`.page-body`
+  - `.page-content` — застарілий клас, залишається в globals.css для зворотної сумісності (accounting/trainers/*, /schedule/[classId])
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.

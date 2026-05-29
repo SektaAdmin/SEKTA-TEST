@@ -1,17 +1,3 @@
-.layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg);
-}
-
-.main {
-  flex: 1;
-  margin-left: 196px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
 /* ── Topbar ─────────────────────────────────────────────────── */
 .topbar {
   display: flex;
@@ -21,13 +7,7 @@
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
-  background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  flex-shrink: 0;
 }
-
 
 /* ── Filter bar ─────────────────────────────────────────────── */
 .filterBar {
@@ -38,10 +18,6 @@
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
-  flex-shrink: 0;
-  position: sticky;
-  top: var(--topbar-h);
-  z-index: 8;
 }
 
 /* ── Search ─────────────────────────────────────────────────── */
@@ -107,10 +83,7 @@
 .pageSizeSelect:focus { border-color: var(--accent); }
 
 /* ── Content ─────────────────────────────────────────────────── */
-.content { flex: 1; padding: 24px 28px; overflow-y: auto; min-height: 0; }
-
-.paginationDesktop { display: block; }
-.paginationMobile { display: none; }
+.content { padding: 24px 28px; }
 
 /* ── Card list (mobile) ──────────────────────────────────────── */
 .tableDesktop { display: block; }
@@ -126,6 +99,8 @@
   background: var(--bg);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
+  min-width: 0;
+  overflow: hidden;
 }
 .clientCard:active { background: var(--bg-3); }
 .clientCard:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -141,6 +116,10 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardContacts {
@@ -159,12 +138,15 @@
 
 .cardHandle {
   color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column; }
-  .topbar { position: static; height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .filterBar { position: static; padding: 8px 16px; flex-wrap: wrap; height: auto; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .filterBar { padding: 8px 16px; flex-wrap: wrap; height: auto; }
   .searchWrap { width: 100%; }
   .searchInput { width: 100% !important; }
   .searchInput:focus { width: 100% !important; }
@@ -174,14 +156,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-  .paginationDesktop { display: none; }
-  .paginationMobile {
-    display: block;
-    flex-shrink: 0;
-    padding: 10px 16px;
-    border-top: 0.5px solid var(--border);
-    background: var(--bg);
   }
 }
 

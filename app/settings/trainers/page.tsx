@@ -91,6 +91,7 @@ export default function TrainersPage() {
 
   return (
     <>
+      <div className="page-head">
       <div className={styles.topbar}>
         <h1 className="page-title">Тренери</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>+ Додати тренера</button>
@@ -100,8 +101,9 @@ export default function TrainersPage() {
           <a key={tab.href} href={tab.href} className={`${styles.tabNavLink} ${pathname === tab.href ? styles.tabNavLinkActive : ''}`}>{tab.label}</a>
         ))}
       </nav>
+      </div>{/* /page-head */}
 
-      <div className={`${styles.tabSection} page-content`}>
+      <div className={`page-body ${styles.tabSection}`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (

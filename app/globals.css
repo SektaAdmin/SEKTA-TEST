@@ -235,3 +235,61 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 
 .data-table tbody tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover td { background: var(--bg-3); }
+
+/* ── Shared page layout ───────────────────────────────────────── */
+
+.page-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.page-main {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+.page-head {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-foot {
+  flex-shrink: 0;
+  border-top: 0.5px solid var(--border);
+  background: var(--bg);
+}
+
+@media (max-width: 640px) {
+  .page-main {
+    margin-left: 0;
+    min-height: unset;
+    height: 100svh;
+  }
+
+  .page-head {
+    position: static;
+  }
+
+  .page-body {
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+
+  .page-foot {
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px);
+  }
+}

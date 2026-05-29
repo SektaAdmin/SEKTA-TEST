@@ -96,6 +96,7 @@ export default function TrainingTypesPage() {
 
   return (
     <>
+      <div className="page-head">
       <div className={styles.topbar}>
         <h1 className="page-title">Типи тренувань</h1>
         <button className="btn-primary" onClick={() => { setEditing(null); setShowModal(true) }}>+ Додати тип</button>
@@ -105,8 +106,9 @@ export default function TrainingTypesPage() {
           <a key={tab.href} href={tab.href} className={`${styles.tabNavLink} ${pathname === tab.href ? styles.tabNavLinkActive : ''}`}>{tab.label}</a>
         ))}
       </nav>
+      </div>{/* /page-head */}
 
-      <div className={`${styles.tabSection} page-content`}>
+      <div className={`page-body ${styles.tabSection}`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (

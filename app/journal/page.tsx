@@ -126,7 +126,7 @@ export default function JournalPage() {
 
   return (
     <>
-      <div className={jStyles.stickyHead}>
+      <div className={`page-head ${jStyles.stickyHead}`}>
         <div className={jStyles.topbar}>
           <h1 className="page-title">Журнал занять</h1>
           {total > 0 && <span className={jStyles.topbarCount}>{total} занять</span>}
@@ -159,7 +159,7 @@ export default function JournalPage() {
         </div>
       </div>
 
-      <div className={`${jStyles.content} page-content`}>
+      <div className={`page-body ${jStyles.content}`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : data.length === 0 ? (
@@ -231,23 +231,25 @@ export default function JournalPage() {
               })}
             </div>
 
-            {/* Pagination */}
-            <div className={jStyles.pagination}>
-              <div className={jStyles.paginationLeft}>
-                <span className={jStyles.paginationInfo}>
-                  Сторінка {page + 1} з {totalPages} · {total} занять
-                </span>
-              </div>
-              <div className={jStyles.paginationBtns}>
-                <button disabled={page === 0 || loading} onClick={() => setPage(0)} className={jStyles.pageBtn}>«</button>
-                <button disabled={page === 0 || loading} onClick={() => setPage(p => p - 1)} className={jStyles.pageBtn}>‹</button>
-                <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(p => p + 1)} className={jStyles.pageBtn}>›</button>
-                <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(totalPages - 1)} className={jStyles.pageBtn}>»</button>
-              </div>
-            </div>
           </>
         )}
       </div>
+
+      {total > 0 && (
+        <div className={`page-foot ${jStyles.pagination}`} style={{padding: '10px 28px'}}>
+          <div className={jStyles.paginationLeft}>
+            <span className={jStyles.paginationInfo}>
+              Сторінка {page + 1} з {totalPages} · {total} занять
+            </span>
+          </div>
+          <div className={jStyles.paginationBtns}>
+            <button disabled={page === 0 || loading} onClick={() => setPage(0)} className={jStyles.pageBtn}>«</button>
+            <button disabled={page === 0 || loading} onClick={() => setPage(p => p - 1)} className={jStyles.pageBtn}>‹</button>
+            <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(p => p + 1)} className={jStyles.pageBtn}>›</button>
+            <button disabled={page + 1 >= totalPages || loading} onClick={() => setPage(totalPages - 1)} className={jStyles.pageBtn}>»</button>
+          </div>
+        </div>
+      )}
 
       {selectedClassId && (
         <ClassDetailModal

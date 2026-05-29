@@ -1,27 +1,3 @@
-.layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg);
-}
-
-.main {
-  flex: 1;
-  margin-left: 196px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-@media (max-width: 640px) {
-  .main { margin-left: 0; height: 100svh; display: flex; flex-direction: column; }
-  .topbar { position: static; }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .topbarLeft { flex-wrap: wrap; }
-  .content { padding: 16px; }
-  .btnRowEdit, .btnRowDel { height: 36px; padding: 0 14px; }
-  .backBtn { min-height: 44px; padding: 0 8px; }
-}
-
 /* ── Topbar ─────────────────────────────────────────────────── */
 .topbar {
   display: flex;
@@ -31,11 +7,6 @@
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
-  background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  flex-shrink: 0;
 }
 
 .topbarLeft {
@@ -69,6 +40,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
 }
 
 .empty {
@@ -619,4 +591,10 @@
     height: 34px;
     font-size: 14px;
   }
+
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbarLeft { flex-wrap: wrap; }
+  .content { padding: 16px; }
+  .btnRowEdit, .btnRowDel { height: 36px; padding: 0 14px; }
+  .backBtn { min-height: 44px; padding: 0 8px; }
 }

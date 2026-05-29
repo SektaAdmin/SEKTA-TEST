@@ -230,18 +230,18 @@ export default function ClientDetailClient({ id }: { id: string }) {
   }
 
   if (loading) return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}><div className={styles.empty}>Завантаження...</div></main>
+      <main className="page-main"><div className={styles.empty}>Завантаження...</div></main>
     </div>
   )
 
   if (fetchError || !client) return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}><div className={styles.empty}>{fetchError ?? 'Клієнта не знайдено'}</div></main>
+      <main className="page-main"><div className={styles.empty}>{fetchError ?? 'Клієнта не знайдено'}</div></main>
     </div>
   )
 
@@ -249,12 +249,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const balance = client.balance ?? 0
 
   return (
-    <div className={styles.layout}>
+    <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className={styles.main}>
+      <main className="page-main">
 
-        <div className={styles.topbar}>
+        <div className={`page-head ${styles.topbar}`}>
           <div className={styles.topbarLeft}>
             <button className={styles.backBtn} onClick={() => router.push('/clients')}>
               ← Клієнти
@@ -268,7 +268,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           </button>
         </div>
 
-        <div className={`${styles.content} page-content`}>
+        <div className={`page-body ${styles.content}`}>
           <div className={styles.topGrid}>
 
             <section className={styles.card}>
