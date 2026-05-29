@@ -17,8 +17,9 @@ import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel } from '@/lib/badges'
+import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import ss from '@/app/settings/settings.module.css'
-import sm from '@/app/settings/salary/salary.module.css'
 import styles from './calculations.module.css'
 
 const SALARY_TABS = [
@@ -160,14 +161,12 @@ export default function SalaryCalculationsPage() {
           <div className="loading-dots"><span /><span /><span /></div>
         ) : (
           <div className={styles.content}>
-            {/* Classes table */}
             <section className={styles.section}>
               <h2 className="section-title">Заняття</h2>
               {rows.length === 0 ? (
                 <div className={styles.empty}>Занять з нарахуваннями немає за вказаний період</div>
               ) : (
                 <>
-                  {/* Desktop */}
                   <div className={`data-table-wrap ${styles.tableDesktop}`}>
                     <table className="data-table">
                       <thead>
@@ -223,7 +222,6 @@ export default function SalaryCalculationsPage() {
                     </table>
                   </div>
 
-                  {/* Mobile */}
                   <div className={styles.cardList}>
                     {rows.map(r => {
                       const expanded = expandedClasses.has(r.class_id)
@@ -267,7 +265,6 @@ export default function SalaryCalculationsPage() {
               )}
             </section>
 
-            {/* Summary */}
             <section className={styles.section}>
               <h2 className="section-title">Підсумок</h2>
               <div className={styles.summary}>
@@ -327,13 +324,10 @@ export default function SalaryCalculationsPage() {
               </div>
             </section>
 
-            {/* Payments */}
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2 className="section-title">Виплати</h2>
-                <button className="btn-primary" onClick={openPaymentModal}>
-                  + Зафіксувати виплату
-                </button>
+                <button className="btn-primary" onClick={openPaymentModal}>+ Зафіксувати виплату</button>
               </div>
               {payments.length === 0 ? (
                 <div className={styles.empty}>Виплат за цей період немає</div>
@@ -376,7 +370,6 @@ export default function SalaryCalculationsPage() {
                   </table>
                 </div>
               )}
-              {/* Mobile payments */}
               <div className={styles.cardList}>
                 {payments.map(p => (
                   <div key={p.id} className={styles.payCard}>
@@ -399,70 +392,72 @@ export default function SalaryCalculationsPage() {
         )}
       </div>
 
-      {/* Payment modal */}
       {paymentModal && (
-        <div className={sm.overlay} onClick={() => setPaymentModal(false)}>
-          <div className={`${sm.modal} ${styles.modalNarrow}`} onClick={e => e.stopPropagation()}>
-            <div className={sm.modalHeader}>
-              <h2 className={sm.modalTitle}>Зафіксувати виплату</h2>
-              <button className={sm.closeBtn} onClick={() => setPaymentModal(false)}>×</button>
-            </div>
-            <div className={sm.modalBody}>
-              <div className={styles.modalHint}>
-                Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
-                {cashOnHand > 0 && <> · Готівка: <strong>{formatMoney(cashOnHand)}</strong></>}
-              </div>
+        <ModalShell
+          title="Зафіксувати виплату"
+          onClose={() => setPaymentModal(false)}
+          width={380}
+          footer={
+            <ModalFooter
+              onCancel={() => setPaymentModal(false)}
+              onSave={handleSavePayment}
+              loading={saving}
+            />
+          }
+        >
+          <div className={styles.modalHint}>
+            Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
+            {cashOnHand > 0 && <> · Готівка: <strong>{formatMoney(cashOnHand)}</strong></>}
+          </div>
 
-              <label className={sm.label}>Тип виплати</label>
-              <div className={styles.typeToggle}>
-                <button
-                  className={`${styles.typeBtn} ${paymentType === 'final' ? styles.typeBtnActive : ''}`}
-                  onClick={() => setPaymentType('final')}
-                >Фінальна</button>
-                <button
-                  className={`${styles.typeBtn} ${paymentType === 'advance' ? styles.typeBtnActive : ''}`}
-                  onClick={() => setPaymentType('advance')}
-                >Аванс</button>
-              </div>
-
-              <label className={sm.label}>Виплачено ₴</label>
-              <input
-                className={sm.input}
-                type="number"
-                min="0"
-                step="10"
-                value={paymentAmount}
-                onChange={e => setPaymentAmount(e.target.value)}
-                autoFocus
-              />
-
-              <label className={sm.label}>Дата виплати</label>
-              <input
-                className={sm.input}
-                type="date"
-                value={paymentDate}
-                onChange={e => setPaymentDate(e.target.value)}
-              />
-
-              <label className={sm.label}>Примітка</label>
-              <input
-                className={sm.input}
-                type="text"
-                value={paymentNotes}
-                onChange={e => setPaymentNotes(e.target.value)}
-                placeholder="необов'язково"
-              />
-
-              {paymentError && <div className={sm.errorMsg}>{paymentError}</div>}
-            </div>
-            <div className={sm.modalFooter}>
-              <button className={sm.cancelBtn} onClick={() => setPaymentModal(false)}>Скасувати</button>
-              <button className={sm.saveBtn} onClick={handleSavePayment} disabled={saving}>
-                {saving ? 'Збереження...' : 'Зберегти'}
-              </button>
+          <div>
+            <label className={styles.filterLabel}>Тип виплати</label>
+            <div className={styles.typeToggle}>
+              <button
+                className={`${styles.typeBtn} ${paymentType === 'final' ? styles.typeBtnActive : ''}`}
+                onClick={() => setPaymentType('final')}
+              >Фінальна</button>
+              <button
+                className={`${styles.typeBtn} ${paymentType === 'advance' ? styles.typeBtnActive : ''}`}
+                onClick={() => setPaymentType('advance')}
+              >Аванс</button>
             </div>
           </div>
-        </div>
+
+          <div>
+            <label className={styles.filterLabel}>Виплачено ₴</label>
+            <input
+              className={styles.modalInput}
+              type="number" min="0" step="10"
+              value={paymentAmount}
+              onChange={e => setPaymentAmount(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className={styles.filterLabel}>Дата виплати</label>
+            <input
+              className={styles.modalInput}
+              type="date"
+              value={paymentDate}
+              onChange={e => setPaymentDate(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={styles.filterLabel}>Примітка</label>
+            <input
+              className={styles.modalInput}
+              type="text"
+              value={paymentNotes}
+              onChange={e => setPaymentNotes(e.target.value)}
+              placeholder="необов'язково"
+            />
+          </div>
+
+          {paymentError && <div className={styles.errorMsg}>{paymentError}</div>}
+        </ModalShell>
       )}
     </>
   )
