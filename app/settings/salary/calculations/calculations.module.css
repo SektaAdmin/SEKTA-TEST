@@ -26,7 +26,6 @@
   outline: none;
   white-space: nowrap;
   flex-shrink: 0;
-  min-width: 140px;
   transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 .fsTrigger:hover { border-color: var(--border-hover); background: var(--bg-3); }
