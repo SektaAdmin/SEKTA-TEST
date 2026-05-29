@@ -19,6 +19,7 @@ import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
 import styles from './calculations.module.css'
 
@@ -164,7 +165,7 @@ export default function SalaryCalculationsPage() {
             <section className={styles.section}>
               <h2 className="section-title">Заняття</h2>
               {rows.length === 0 ? (
-                <div className={styles.empty}>Занять з нарахуваннями немає за вказаний період</div>
+                <div className={ss.empty}>{MSG.empty.salaryClasses}</div>
               ) : (
                 <>
                   <div className={`data-table-wrap ${styles.tableDesktop}`}>
@@ -330,7 +331,7 @@ export default function SalaryCalculationsPage() {
                 <button className="btn-primary" onClick={openPaymentModal}>+ Зафіксувати виплату</button>
               </div>
               {payments.length === 0 ? (
-                <div className={styles.empty}>Виплат за цей період немає</div>
+                <div className={ss.empty}>{MSG.empty.salaryPayments}</div>
               ) : (
                 <div className={`data-table-wrap ${styles.tableDesktop}`}>
                   <table className="data-table">
@@ -411,7 +412,7 @@ export default function SalaryCalculationsPage() {
           </div>
 
           <div>
-            <label className={styles.filterLabel}>Тип виплати</label>
+            <label className={styles.fieldLabel}>Тип виплати</label>
             <div className={styles.typeToggle}>
               <button
                 className={`${styles.typeBtn} ${paymentType === 'final' ? styles.typeBtnActive : ''}`}
@@ -425,7 +426,7 @@ export default function SalaryCalculationsPage() {
           </div>
 
           <div>
-            <label className={styles.filterLabel}>Виплачено ₴</label>
+            <label className={styles.fieldLabel}>Виплачено ₴</label>
             <input
               className={styles.modalInput}
               type="number" min="0" step="10"
@@ -436,7 +437,7 @@ export default function SalaryCalculationsPage() {
           </div>
 
           <div>
-            <label className={styles.filterLabel}>Дата виплати</label>
+            <label className={styles.fieldLabel}>Дата виплати</label>
             <input
               className={styles.modalInput}
               type="date"
@@ -446,7 +447,7 @@ export default function SalaryCalculationsPage() {
           </div>
 
           <div>
-            <label className={styles.filterLabel}>Примітка</label>
+            <label className={styles.fieldLabel}>Примітка</label>
             <input
               className={styles.modalInput}
               type="text"

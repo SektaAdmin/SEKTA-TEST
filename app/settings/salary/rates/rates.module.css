@@ -28,12 +28,6 @@
   gap: 24px;
 }
 
-.empty {
-  padding: 24px var(--topbar-px);
-  color: var(--text-3);
-  font-size: 14px;
-}
-
 .tableDesktop { display: block; }
 .cardList { display: none; }
 

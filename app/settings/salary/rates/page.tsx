@@ -18,6 +18,7 @@ import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
 import styles from './rates.module.css'
 
@@ -177,11 +178,11 @@ export default function SalaryRatesPage() {
 
       <div className="page-body">
         {loading ? (
-          <div className={styles.empty}>Завантаження...</div>
+          <div className="loading-dots"><span /><span /><span /></div>
         ) : (
           <div className={styles.content}>
             {activeRates.length === 0 ? (
-              <div className={styles.empty}>Ставок немає. Додайте першу ставку.</div>
+              <div className={ss.empty}>{MSG.empty.rates}</div>
             ) : (
               <>
                 <div className={`data-table-wrap ${styles.tableDesktop}`}>

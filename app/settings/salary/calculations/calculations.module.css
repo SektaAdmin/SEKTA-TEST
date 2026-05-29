@@ -40,7 +40,6 @@
   gap: 12px;
 }
 
-.empty { color: var(--text-3); font-size: 14px; padding: 8px 0; }
 
 .tableDesktop { display: block; }
 .cardList { display: none; }
@@ -149,6 +148,9 @@
 
 .cashItemAmt { text-align: right; color: var(--success); font-weight: 500; }
 .cashItemExpense { text-align: right; color: var(--danger); font-weight: 500; }
+
+/* Field label inside ModalShell body (not a filter label) */
+.fieldLabel { font-size: 13px; color: var(--text-2); }
 
 /* Modal input (inside ModalShell body) */
 .modalInput {
