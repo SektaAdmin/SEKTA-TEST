@@ -384,7 +384,7 @@
   .main {
     margin-left: 0;
     min-height: unset;
-    height: 100dvh;
+    height: calc(100dvh - var(--bottom-nav-h) - env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
   }
@@ -427,7 +427,6 @@
     display: block;
     flex-shrink: 0;
     padding: 10px 16px;
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px);
     border-top: 0.5px solid var(--border);
     background: var(--bg);
   }
