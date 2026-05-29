@@ -546,6 +546,8 @@
     padding: 8px var(--topbar-px);
     gap: 8px;
     width: 100%;
+    height: auto;
+    min-height: 0;
     box-sizing: border-box;
   }
 
