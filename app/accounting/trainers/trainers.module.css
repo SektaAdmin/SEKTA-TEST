@@ -79,7 +79,7 @@
 
 .paymentFilter {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   flex-wrap: nowrap;
   flex-shrink: 0;
 }
