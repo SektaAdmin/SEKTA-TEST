@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
   calcTrainerSalaryDetail,
@@ -27,6 +29,36 @@ const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
+
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  return (
+    <SelectPrimitive.Root value={value} onValueChange={onChange}>
+      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className={styles.fsChevron} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item key={o.value} value={o.value} className={styles.fsItem}>
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
+}
 
 function getMonthRange() {
   const d = new Date()
@@ -142,13 +174,12 @@ export default function SalaryCalculationsPage() {
         </nav>
         <div className={styles.filterBar}>
           {trainers.length > 0 && (
-            <select
-              className={styles.trainerSelect}
+            <FilterSelect
               value={selectedTrainerId}
-              onChange={e => setSelectedTrainerId(e.target.value)}
-            >
-              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
+              onChange={setSelectedTrainerId}
+              placeholder="Тренер"
+              options={trainers.map(t => ({ value: t.id, label: t.name }))}
+            />
           )}
           <span className={styles.filterLabel}>Від</span>
           <DatePicker value={dateFrom} onChange={setDateFrom} />
