@@ -540,8 +540,10 @@
     overflow-y: hidden;
     flex-wrap: nowrap;
     align-items: center;
-    padding: 8px 16px;
+    padding: 8px var(--topbar-px);
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .totalsBar {
