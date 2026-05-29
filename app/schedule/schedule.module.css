@@ -422,15 +422,21 @@
   margin-left: auto;
 }
 
-/* ── Sticky week header ─────────────────────────────────────── */
+/* ── Sticky header group ────────────────────────────────────── */
+.stickyHeaders {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-2);
+  border-radius: var(--radius) var(--radius) 0 0;
+  flex-shrink: 0;
+}
+
+/* ── Hall/day header row ────────────────────────────────────── */
 .weekHeader {
   display: grid;
   border-bottom: 1px solid var(--border);
   background: var(--bg-2);
-  border-radius: var(--radius) var(--radius) 0 0;
-  position: sticky;
-  top: 0;
-  z-index: 5;
   flex-shrink: 0;
   min-height: 40px;
   align-items: center;
@@ -556,7 +562,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  scrollbar-gutter: stable;
 }
 
 /* ── FAB (mobile only) ──────────────────────────────────────── */
@@ -743,9 +748,6 @@
 /* ── Week day header (week mode only) ──────────────────────── */
 .weekDayHeader {
   display: grid;
-  position: sticky;
-  top: 0;
-  z-index: 4;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }

@@ -326,6 +326,8 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
 
   return (
     <div className={styles.root}>
+      {/* ── Scrollable body (header is sticky inside so x-scroll stays in sync) ── */}
+      <div className={styles.bodyWrapper}>
       {/* ── Sticky header: gutter | day columns ── */}
       <div className={styles.weekHeader}>
         <div className={styles.gutterCorner} style={{ width: TIME_GUTTER_W, flexShrink: 0 }} />
@@ -345,8 +347,6 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
         ))}
       </div>
 
-      {/* ── Scrollable body ── */}
-      <div className={styles.bodyWrapper}>
         <div className={styles.bodyGrid}>
           {/* Time gutter */}
           <div className={styles.timeGutter} style={{ width: TIME_GUTTER_W }}>

@@ -816,7 +816,10 @@ export default function SchedulePage() {
                 slideDir === 'right' ? styles.slideOutRight : '',
               ].filter(Boolean).join(' ')}
             >
-            <div className={styles.gridScrollWrap}>
+            {/* Body grid wrapper — scrolls both axes; stickyHeaders pins inside */}
+            <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
+            {/* Sticky header group — inside scroll container so x-scroll stays in sync */}
+            <div className={styles.stickyHeaders}>
             {/* Week day names — only in week mode */}
             {viewMode === 'week' && (
               <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
@@ -861,9 +864,9 @@ export default function SchedulePage() {
                 )
               })}
             </div>
+            </div>{/* /stickyHeaders */}
 
             {/* Body grid */}
-            <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
             <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
               {/* Now line overlay — day view only */}
               {viewMode === 'day' && nowTop !== null && (
@@ -948,7 +951,6 @@ export default function SchedulePage() {
                 )
               })}
                 </div>
-              </div>
               </div>
             </div>
           </div>

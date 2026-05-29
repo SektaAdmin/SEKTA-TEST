@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* ── Sticky week header ──────────────────────────────────────── */
+/* ── Sticky week header (inside bodyWrapper so x-scroll stays in sync) ── */
 .weekHeader {
   display: flex;
   border-bottom: 1px solid var(--border);
@@ -80,7 +80,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  scrollbar-gutter: stable;
 }
 
 /* ── Body grid (time gutter + day columns) ───────────────────── */
