@@ -318,7 +318,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         onClose={onClose}
         width={480}
         footer={null}
-        fullScreen
+        mobileFullScreen
       >
         <p className={styles.scopePrompt}>Це заняття входить до серії. Що змінити?</p>
         <div className={styles.scopeBtns}>
@@ -343,7 +343,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           : isSeries ? 'Нова серія занять' : 'Нове заняття'}
         onClose={onClose}
         width={480}
-        fullScreen
+        mobileFullScreen
         footer={
           <ModalFooter
             onCancel={onClose}

@@ -417,7 +417,7 @@
   }
   .filterSearchInput:focus { width: 100%; }
 
-  .content { padding: 16px; flex: 1; overflow-y: auto; min-height: 0; }
+  .content { padding: 16px; }
 
   .tableDesktop { display: none; }
   .cardList { display: flex; flex-direction: column; gap: 8px; }

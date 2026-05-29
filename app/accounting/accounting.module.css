@@ -557,6 +557,7 @@
 @media (max-width: 640px) {
   .main {
     margin-left: 0;
+    min-height: unset;
     height: 100svh;
     display: flex;
     flex-direction: column;

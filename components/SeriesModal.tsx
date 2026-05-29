@@ -55,7 +55,7 @@ interface Props {
   trainers: Trainer[]
   halls: Hall[]
   trainingTypes: TrainingType[]
-  fullScreen?: boolean
+  mobileFullScreen?: boolean
 }
 
 function formatHoursLabel(hours: number[] | null, timeOfDay: string): string | null {
@@ -69,7 +69,7 @@ function formatHoursLabel(hours: number[] | null, timeOfDay: string): string | n
   return `${hh}:${mm}`
 }
 
-export default function SeriesModal({ existing, prefill, onClose, onSaved, trainers, halls, trainingTypes, fullScreen }: Props) {
+export default function SeriesModal({ existing, prefill, onClose, onSaved, trainers, halls, trainingTypes, mobileFullScreen }: Props) {
   const [createdSeries, setCreatedSeries] = useState<ClassSeries | null>(null)
   const activeSeries = existing ?? createdSeries
   const isEdit = !!activeSeries
@@ -183,7 +183,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
         title={isEdit ? 'Редагувати шаблон' : 'Новий шаблон'}
         onClose={handleClose}
         width={520}
-        fullScreen={fullScreen}
+        mobileFullScreen={mobileFullScreen}
         footer={
           <ModalFooter
             onCancel={handleClose}

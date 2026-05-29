@@ -12,29 +12,33 @@ interface ModalShellProps {
   width?: number
   modalClassName?: string
   bodyClassName?: string
-  fullScreen?: boolean
+  mobileFullScreen?: boolean
+  headerActions?: React.ReactNode
 }
 
-export function ModalShell({ title, onClose, footer, children, width = 420, modalClassName, bodyClassName, fullScreen }: ModalShellProps) {
+export function ModalShell({ title, onClose, footer, children, width = 420, modalClassName, bodyClassName, mobileFullScreen, headerActions }: ModalShellProps) {
   const titleId = useId()
   const modalRef = useModalFocus(onClose)
 
   return (
     <div
-      className={[styles.overlay, fullScreen ? styles.overlayFullScreen : undefined].filter(Boolean).join(' ')}
+      className={[styles.overlay, mobileFullScreen ? styles.overlayFullScreen : undefined].filter(Boolean).join(' ')}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
         ref={modalRef}
-        className={[styles.modal, fullScreen ? styles.modalFullScreen : undefined, modalClassName].filter(Boolean).join(' ')}
+        className={[styles.modal, mobileFullScreen ? styles.modalFullScreen : undefined, modalClassName].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        style={fullScreen ? undefined : { width, maxWidth: '100%' }}
+        style={mobileFullScreen ? undefined : { width, maxWidth: '100%' }}
       >
         <div className={styles.header}>
           <h2 id={titleId}>{title}</h2>
-          <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
+          <div className={styles.headerRight}>
+            {headerActions}
+            <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
+          </div>
         </div>
         <div className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>
         {footer !== null && <div className={styles.footer}>{footer}</div>}

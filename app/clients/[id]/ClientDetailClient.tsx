@@ -20,6 +20,7 @@ import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, pay
 import EnrollClientModal from '@/components/EnrollClientModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 import styles from './client-profile.module.css'
 
@@ -81,15 +82,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [feedSales, setFeedSales] = useState<FeedSale[]>([])
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth <= 640
-  )
-
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= 640)
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
+  const isMobile = useIsMobile()
 
   const fetchAllClientData = useCallback(async () => {
     const { client, sessionBalances, permanentEnrollments, upcomingEnrollments } =

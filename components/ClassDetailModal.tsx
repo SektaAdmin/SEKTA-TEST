@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
-import { useModalFocus } from '@/hooks/useModalFocus'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
@@ -49,7 +50,7 @@ interface Props {
 }
 
 export default function ClassDetailModal({ classId, onClose, onClassUpdated }: Props) {
-  const modalRef = useModalFocus(onClose)
+  const isMobile = useIsMobile()
 
   const [cls, setCls] = useState<ClassWithJoins | null>(null)
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
@@ -276,40 +277,35 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     } catch {}
   }
 
-  return (
-    <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        ref={modalRef}
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="class-detail-title"
-      >
-        {/* Header */}
-        <div className={styles.topbar}>
-          <div className={styles.topbarRight}>
-            {!loading && cls && (
-              <button
-                className={styles.btnCopy}
-                onClick={handleCopy}
-                title={copied ? 'Скопійовано!' : 'Копіювати'}
-                aria-label="Копіювати деталі заняття"
-                type="button"
-              >
-                {copied ? (
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <polyline points="2 8 6 12 14 4"/>
-                  </svg>
-                ) : (
-                  <CopyIcon />
-                )}
-              </button>
-            )}
-            <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
-          </div>
-        </div>
+  const headerActions = !loading && cls ? (
+    <button
+      className={styles.btnCopy}
+      onClick={handleCopy}
+      title={copied ? 'Скопійовано!' : 'Копіювати'}
+      aria-label="Копіювати деталі заняття"
+      type="button"
+    >
+      {copied ? (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+          <polyline points="2 8 6 12 14 4"/>
+        </svg>
+      ) : (
+        <CopyIcon />
+      )}
+    </button>
+  ) : null
 
-        <div className={styles.body}>
+  return (
+    <>
+    <ModalShell
+      title={cls ? (cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)) : 'Заняття'}
+      onClose={onClose}
+      footer={null}
+      width={760}
+      mobileFullScreen={isMobile}
+      headerActions={headerActions}
+      bodyClassName={styles.body}
+    >
           {loading && (
             <div className={styles.loadingState}>Завантаження...</div>
           )}
@@ -669,17 +665,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
               )}
             </div>
           )}
-        </div>
-      </div>
-
-      {showEditModal && cls && (
-        <ClassModal
-          existing={cls}
-          onClose={() => setShowEditModal(false)}
-          onSaved={async () => { setShowEditModal(false); await loadAll(); onClassUpdated() }}
-        />
-      )}
-    </div>
+    </ModalShell>
+    {showEditModal && cls && (
+      <ClassModal
+        existing={cls}
+        onClose={() => setShowEditModal(false)}
+        onSaved={async () => { setShowEditModal(false); await loadAll(); onClassUpdated() }}
+      />
+    )}
+    </>
   )
 }
 

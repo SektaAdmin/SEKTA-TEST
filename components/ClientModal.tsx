@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -13,6 +13,7 @@ import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
@@ -60,15 +61,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth <= 640
-  )
-
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= 640)
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
+  const isMobile = useIsMobile()
 
   async function loadHistory() {
     setHistoryLoading(true)
@@ -153,7 +146,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     <ModalShell
       title={isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
       onClose={onClose}
-      fullScreen={isMobile}
+      mobileFullScreen={isMobile}
       footer={
         <ModalFooter
           onCancel={onClose}

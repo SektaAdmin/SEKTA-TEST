@@ -84,7 +84,7 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
     <ModalShell
       title="Записати на заняття"
       onClose={onClose}
-      fullScreen
+      mobileFullScreen
       width={480}
       footer={null}
     >

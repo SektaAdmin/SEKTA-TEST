@@ -17,6 +17,7 @@ import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_F
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import styles from './schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import Link from 'next/link'
 
 const MIN_HOUR = 8
@@ -302,17 +303,13 @@ export default function SchedulePage() {
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
 
   const ARCHIVE_CUTOFF_DAYS = 30
+  const isMobile = useIsMobile()
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
 
   // Force day view on mobile (week view causes horizontal overflow on small screens)
   useEffect(() => {
-    function checkMobile() {
-      if (window.innerWidth <= 640 && viewMode === 'week') setViewMode('day')
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [viewMode])
+    if (isMobile && viewMode === 'week') setViewMode('day')
+  }, [isMobile, viewMode])
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
@@ -436,8 +433,7 @@ export default function SchedulePage() {
 
   // Navigation with slide animation
   const navigateDay = useCallback((dir: 'left' | 'right') => {
-    const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 640
-    if (!isMobileView) {
+    if (!isMobile) {
       // Desktop — no animation, just change date
       if (dir === 'left') {
         const step = viewMode === 'week' ? 7 : 1
@@ -468,7 +464,7 @@ export default function SchedulePage() {
       }
       setSlideDir(null)
     }, 180)
-  }, [viewMode])
+  }, [isMobile, viewMode])
 
   const goNext = useCallback(() => navigateDay('left'),  [navigateDay])
   const goPrev = useCallback(() => navigateDay('right'), [navigateDay])

@@ -168,7 +168,7 @@
   .searchWrap { width: 100%; }
   .searchInput { width: 100% !important; }
   .searchInput:focus { width: 100% !important; }
-  .content { padding: 12px 16px; flex: 1; overflow-y: auto; min-height: 0; }
+  .content { padding: 12px 16px; }
   .tableDesktop { display: none; }
   .cardList {
     display: flex;

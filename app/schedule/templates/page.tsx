@@ -18,6 +18,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, toYMD, getMondayOf } from '@/lib/dateUtils'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import styles from './page.module.css'
 
 // ── Filter select ─────────────────────────────────────────────────
@@ -80,13 +81,7 @@ export default function TemplatesPage() {
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()
 
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 640)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+  const isMobile = useIsMobile()
 
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'list'>('week')
   // activeDow: index into DAYS_ORDER (0=Пн…6=Нд)
@@ -508,7 +503,7 @@ export default function TemplatesPage() {
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
-          fullScreen={isMobile}
+          mobileFullScreen={isMobile}
         />
       )}
     </div>
