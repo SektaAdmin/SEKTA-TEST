@@ -360,7 +360,7 @@
   .topbar {
     height: auto;
     flex-wrap: wrap;
-    padding: 10px 16px;
+    padding: 10px var(--topbar-px);
     gap: 8px;
   }
 

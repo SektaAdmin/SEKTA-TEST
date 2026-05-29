@@ -56,7 +56,7 @@
 .filterBar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding: 10px var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   background: var(--bg);
@@ -442,7 +442,7 @@
 /* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
 @media (max-width: 640px) {
   .main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column; }
-  .topbar { position: static; height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .topbar { position: static; height: auto; flex-wrap: wrap; padding: 10px var(--topbar-px); gap: 8px; }
   .topbarActions { flex-wrap: wrap; }
   .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 8px var(--topbar-px); gap: 8px; width: 100%; box-sizing: border-box; }
   .trainerSelect { min-width: 0; flex-shrink: 0; }

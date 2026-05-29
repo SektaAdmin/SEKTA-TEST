@@ -244,7 +244,7 @@
 @media (max-width: 640px) {
   .topbar {
     height: auto;
-    padding: 10px 16px;
+    padding: 10px var(--topbar-px);
     gap: 8px;
     flex-wrap: wrap;
     border-bottom: none;

@@ -533,8 +533,10 @@
 /* ── Mobile overrides ────────────────────────────────────────── */
 @media (max-width: 640px) {
   .topbar {
-    height: var(--topbar-h);
-    padding: 0 16px;
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px var(--topbar-px);
+    gap: 8px;
   }
 
   .filters {
