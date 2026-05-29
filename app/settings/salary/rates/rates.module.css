@@ -6,17 +6,6 @@
 .dateCell { color: var(--text-2); font-size: 13px; white-space: nowrap; }
 .actionCell { text-align: right; white-space: nowrap; }
 
-.typeChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--bg-3);
-  color: var(--text-2);
-  font-size: 12px;
-  font-weight: 500;
-}
-
 /* Archive button — hover red (distinct from restoreBtn hover green) */
 .archiveBtn {
   background: transparent;

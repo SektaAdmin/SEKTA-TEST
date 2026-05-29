@@ -15,6 +15,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import type { Trainer, Hall } from '@/types'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
+import { ticketTypeShortLabel } from '@/lib/badges'
 import ss from '@/app/settings/settings.module.css'
 import styles from './rates.module.css'
 
@@ -99,7 +100,22 @@ export default function SalaryRatesPage() {
     if (!formValidFrom) { setError('Вкажіть дату початку дії'); return }
     setSaving(true)
     setError(null)
-    // addTrainerRate auto-archives existing active rate for same key
+
+    // When editing and the key changed, archive the original rate first
+    if (modal.open && modal.editRate) {
+      const orig = modal.editRate
+      const keyChanged =
+        (orig.trainer_id ?? '') !== formTrainerId ||
+        orig.ticket_type !== formTicketType ||
+        (orig.hall_id ?? '') !== formHallId
+      if (keyChanged) {
+        const today = toYMD(new Date())
+        const { error: archErr } = await archiveTrainerRate(supabase, orig.id, today)
+        if (archErr) { setSaving(false); setError(archErr); return }
+      }
+    }
+
+    // addTrainerRate auto-archives any existing active rate for the new key, then inserts
     const { error: err } = await addTrainerRate(supabase, {
       trainer_id: formTrainerId || null,
       ticket_type: formTicketType,
@@ -186,7 +202,7 @@ export default function SalaryRatesPage() {
                     <tbody>
                       {activeRates.map(r => (
                         <tr key={r.id}>
-                          <td><span className={styles.typeChip}>{r.ticket_type}</span></td>
+                          <td><span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span></td>
                           <td className={styles.grayCell}>{hallLabel(r)}</td>
                           <td className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</td>
                           <td className={styles.rateCell}>{formatMoney(r.trainer_rate)}/год</td>
@@ -212,7 +228,7 @@ export default function SalaryRatesPage() {
                   {activeRates.map(r => (
                     <div key={r.id} className={styles.card}>
                       <div className={styles.cardRow}>
-                        <span className={styles.typeChip}>{r.ticket_type}</span>
+                        <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
                         <div className={styles.cardActions}>
                           <button className={ss.editBtn} onClick={() => openEdit(r)}>Ред.</button>
                           <button className={styles.archiveBtn} onClick={() => askArchive(r)}>Архів</button>
@@ -268,7 +284,7 @@ export default function SalaryRatesPage() {
                         <tbody>
                           {archivedRates.map(r => (
                             <tr key={r.id} className={ss.archivedRow}>
-                              <td><span className={styles.typeChip}>{r.ticket_type}</span></td>
+                              <td><span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span></td>
                               <td className={styles.grayCell}>{hallLabel(r)}</td>
                               <td className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</td>
                               <td className={styles.rateCell}>{formatMoney(r.trainer_rate)}/год</td>
@@ -288,7 +304,7 @@ export default function SalaryRatesPage() {
                       {archivedRates.map(r => (
                         <div key={r.id} className={`${styles.card} ${styles.archivedCard}`}>
                           <div className={styles.cardRow}>
-                            <span className={styles.typeChip}>{r.ticket_type}</span>
+                            <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
                             <button className={ss.restoreBtn} onClick={() => handleRestore(r.id)}>Відновити</button>
                           </div>
                           <div className={styles.cardMeta}>
@@ -326,7 +342,7 @@ export default function SalaryRatesPage() {
                 Ставка буде закрита сьогоднішньою датою. Нові розрахунки ЗП після сьогодні не використовуватимуть цю ставку.
               </p>
               <div className={styles.confirmMeta}>
-                <span className={styles.typeChip}>{confirm.rate.ticket_type}</span>
+                <span className="badge badge-type">{ticketTypeShortLabel(confirm.rate.ticket_type)}</span>
                 <span className={styles.grayCell}>{trainerLabel(confirm.rate)}</span>
                 {confirm.rate.hall_id && <span className={styles.grayCell}>· {hallLabel(confirm.rate)}</span>}
               </div>
@@ -359,7 +375,6 @@ export default function SalaryRatesPage() {
                 className={styles.select}
                 value={formTicketType}
                 onChange={e => setFormTicketType(e.target.value)}
-                disabled={isEditing}
               >
                 <option value="">— Оберіть —</option>
                 {trainingTypes.map(t => (
@@ -372,7 +387,6 @@ export default function SalaryRatesPage() {
                 className={styles.select}
                 value={formTrainerId}
                 onChange={e => setFormTrainerId(e.target.value)}
-                disabled={isEditing}
               >
                 <option value="">Глобальна (для всіх)</option>
                 {trainers.map(t => (
@@ -385,7 +399,6 @@ export default function SalaryRatesPage() {
                 className={styles.select}
                 value={formHallId}
                 onChange={e => setFormHallId(e.target.value)}
-                disabled={isEditing}
               >
                 <option value="">Будь-який зал</option>
                 {halls.map(h => (
