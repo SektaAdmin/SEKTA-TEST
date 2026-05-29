@@ -325,6 +325,7 @@ export default function SchedulePage() {
   const [filterTrainer, setFilterTrainer] = useState('')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
   const [calActiveDates, setCalActiveDates] = useState<Set<string>>(new Set())
   const [calViewMonth, setCalViewMonth] = useState<{ year: number; month: number }>(() => {
     const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
@@ -432,27 +433,66 @@ export default function SchedulePage() {
   ], [visibleHalls])
 
   // Navigation
-  function goNext() {
+  const goNext = useCallback(() => {
     const step = viewMode === 'week' ? 7 : 1
     setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + step); return n })
-  }
-  function goPrev() {
+  }, [viewMode])
+
+  const goPrev = useCallback(() => {
     const step = viewMode === 'week' ? 7 : 1
     setBaseDate(d => {
       const n = new Date(d)
       n.setDate(d.getDate() - step)
-
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const cutoff = new Date(today)
       cutoff.setDate(today.getDate() - ARCHIVE_CUTOFF_DAYS)
-
-      if (n < cutoff) {
-        return new Date()
-      }
+      if (n < cutoff) return new Date()
       return n
     })
-  }
+  }, [viewMode])
+
+  // Swipe to change day (mobile)
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+
+    function onTouchStart(e: TouchEvent) {
+      swipeRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, decided: false }
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      const s = swipeRef.current
+      if (!s) return
+      const dx = e.touches[0].clientX - s.startX
+      const dy = e.touches[0].clientY - s.startY
+      if (!s.decided) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+        s.decided = true
+        if (Math.abs(dx) <= Math.abs(dy)) { swipeRef.current = null; return }
+      }
+      e.preventDefault()
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      const s = swipeRef.current
+      swipeRef.current = null
+      if (!s || !s.decided) return
+      const dx = e.changedTouches[0].clientX - s.startX
+      if (Math.abs(dx) < 50) return
+      if (dx < 0) goNext()
+      else goPrev()
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [goNext, goPrev])
 
   const isPrevDisabled = useMemo(() => {
     const today = new Date()
@@ -489,27 +529,23 @@ export default function SchedulePage() {
 
         {/* Topbar row 1 */}
         <div className={styles.topbar}>
-          {/* Mobile nav — full width ← Сьогодні → + calendar */}
+          {/* Mobile nav — date + today icon + calendar icon */}
           <div className={styles.mobileTopNav}>
-            <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 2L4 7l5 5"/>
-              </svg>
-            </button>
-            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
-              Сьогодні
-            </button>
-            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M5 2l5 5-5 5"/>
-              </svg>
-            </button>
-            <button className={styles.navBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="1" y="2" width="12" height="11" rx="1.5"/>
-                <path d="M1 6h12M4 1v2M10 1v2"/>
-              </svg>
-            </button>
+            <div className={styles.mobileDateText}>
+              <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
+              <span className={styles.mobileDateVal}>{formatDate(baseDate)}</span>
+            </div>
+            <div className={styles.mobileNavIcons}>
+              <button className={styles.todayIconBtn} onClick={() => setBaseDate(new Date())} aria-label="Сьогодні">
+                <span className={styles.todayIconNum}>{today.getDate()}</span>
+              </button>
+              <button className={styles.navIconBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1" y="2" width="12" height="11" rx="1.5"/>
+                  <path d="M1 6h12M4 1v2M10 1v2"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className={styles.topbarLeft}>
@@ -581,16 +617,6 @@ export default function SchedulePage() {
           />
         </div>
 
-        {/* Mobile date label — below filter bar, mobile only */}
-        <div className={styles.mobileDateLabel}>
-          {WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}, {formatDate(baseDate)}
-          {filterHall && (
-            <><span className={styles.mobileDateSep}>·</span>{activeHalls.find(h => h.id === filterHall)?.name}</>
-          )}
-          {filterTrainer && (
-            <><span className={styles.mobileDateSep}>·</span>{(trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}</>
-          )}
-        </div>
 
         {/* Content row — grid area + right panel */}
         <div className={styles.contentRow}>
