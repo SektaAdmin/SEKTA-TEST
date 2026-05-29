@@ -245,17 +245,34 @@ export default function ClientsPage() {
                 ))}
               </div>
 
-              <Pagination
-                page={page}
-                pageSize={pageSize}
-                total={total}
-                onPage={setPage}
-                onPageSize={handlePageSize}
-                pageSizeLabel="Клієнтів на сторінці"
-              />
+              {/* Desktop pagination — inside scroll area */}
+              <div className={styles.paginationDesktop}>
+                <Pagination
+                  page={page}
+                  pageSize={pageSize}
+                  total={total}
+                  onPage={setPage}
+                  onPageSize={handlePageSize}
+                  pageSizeLabel="Клієнтів на сторінці"
+                />
+              </div>
             </>
           )}
         </div>
+
+        {/* Mobile pagination — outside scroll area, always visible */}
+        {!loading && !fetchError && clients.length > 0 && (
+          <div className={styles.paginationMobile}>
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onPage={setPage}
+              onPageSize={handlePageSize}
+              pageSizeLabel="Клієнтів на сторінці"
+            />
+          </div>
+        )}
       </main>
 
       {showModal && (
