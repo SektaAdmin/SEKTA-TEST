@@ -131,7 +131,7 @@ export default function TrainerReportsPage() {
           </div>
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
           ) : summaries.length === 0 ? (

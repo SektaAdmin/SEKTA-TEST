@@ -112,7 +112,7 @@ export default function TrainerRatesPage() {
           </div>
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {loading ? (
             <div className={styles.empty}>Завантаження...</div>
           ) : rates.length === 0 ? (

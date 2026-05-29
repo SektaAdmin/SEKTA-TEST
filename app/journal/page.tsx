@@ -159,7 +159,7 @@ export default function JournalPage() {
         </div>
       </div>
 
-      <div className={jStyles.content}>
+      <div className={`${jStyles.content} page-content`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : data.length === 0 ? (

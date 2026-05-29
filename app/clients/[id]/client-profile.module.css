@@ -13,7 +13,8 @@
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .main { margin-left: 0; height: 100svh; display: flex; flex-direction: column; }
+  .topbar { position: static; }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
   .topbarLeft { flex-wrap: wrap; }
   .content { padding: 16px; }

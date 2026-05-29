@@ -328,7 +328,7 @@ export default function AccountingPage() {
           </div>
         )}
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {loading ? (
             <div className="loading-dots"><span /><span /><span /></div>
           ) : error ? (

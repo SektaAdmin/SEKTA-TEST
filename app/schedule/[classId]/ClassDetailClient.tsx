@@ -296,7 +296,7 @@ if (loading) {
           </div>
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {/* Callout: клієнти без балансу після auto-close */}
           {classIsPast && !cls.is_cancelled && stillEnrolled.length > 0 && (
             <div className={styles.callout}>

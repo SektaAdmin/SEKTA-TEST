@@ -119,7 +119,7 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {loading ? (
             <div className="loading-dots">
               <span /><span /><span />

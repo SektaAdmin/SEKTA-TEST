@@ -14,7 +14,7 @@
 }
 
 @media (max-width: 640px) {
-  .page { margin-left: 0; height: 100svh; overflow: hidden; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .page { margin-left: 0; height: 100svh; overflow: hidden; }
 }
 
 /* ── Topbar ──────────────────────────────────────────────── */

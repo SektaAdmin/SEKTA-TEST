@@ -360,7 +360,7 @@
   .dayHeaderText { font-size: 10px; }
 
   /* Body scrollable horizontally only when needed (week view) */
-  .bodyWrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .bodyWrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
 
   /* Smaller time gutter on narrow screens */
   .timeLabel { font-size: 9px; }

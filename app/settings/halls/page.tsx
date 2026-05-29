@@ -101,7 +101,7 @@ export default function HallsPage() {
         ))}
       </nav>
 
-      <div className={styles.tabSection}>
+      <div className={`${styles.tabSection} page-content`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (

@@ -160,7 +160,7 @@ export default function TrainerSalaryPage() {
           )}
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {/* Salary section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Розрахунок</h2>

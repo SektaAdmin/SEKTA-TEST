@@ -13,11 +13,6 @@
   min-height: 100vh;
 }
 
-@media (max-width: 640px) {
-  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .topbarActions { flex-wrap: wrap; }
-}
 
 /* ── Topbar ─────────────────────────────────────────────────── */
 .topbar {
@@ -450,8 +445,8 @@
 
 /* ── Mobile overrides (єдиний блок, завжди в кінці) ──────────── */
 @media (max-width: 640px) {
-  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .main { margin-left: 0; height: 100svh; display: flex; flex-direction: column; }
+  .topbar { position: static; height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
   .topbarActions { flex-wrap: wrap; }
   .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 0 16px; height: var(--filterbar-h); gap: 8px; }
   .trainerSelect { min-width: 0; flex-shrink: 0; }

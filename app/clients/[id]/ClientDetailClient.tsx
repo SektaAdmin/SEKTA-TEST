@@ -275,7 +275,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           </button>
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           <div className={styles.topGrid}>
 
             <section className={styles.card}>

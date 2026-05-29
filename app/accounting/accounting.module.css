@@ -557,15 +557,19 @@
 @media (max-width: 640px) {
   .main {
     margin-left: 0;
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
   }
 
   .topbar {
+    position: static;
     height: var(--topbar-h);
     padding: 0 16px;
   }
 
   .filters {
+    position: static;
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;

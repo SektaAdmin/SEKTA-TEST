@@ -36,7 +36,6 @@ export default function SalesPage() {
 
   const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo })
 
-
   const totalPages = Math.ceil(total / pageSize)
   const from = page * pageSize
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== ''
@@ -126,7 +125,7 @@ export default function SalesPage() {
           )}
         </div>
 
-        <div className={styles.content}>
+        <div className={`${styles.content} page-content`}>
           {loading ? (
             <div className="loading-dots"><span /><span /><span /></div>
           ) : fetchError ? (

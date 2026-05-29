@@ -72,9 +72,9 @@
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .main { margin-left: 0; height: 100svh; display: flex; flex-direction: column; }
+  .topbar { position: static; height: var(--topbar-h); padding: 0 16px; }
   .tabSection { padding: 16px; }
-  .topbar { height: var(--topbar-h); padding: 0 16px; }
   .tableDesktop { display: none; }
   .cardList {
     display: flex;
@@ -83,6 +83,7 @@
   }
 
   .tabNav {
+    position: static;
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;

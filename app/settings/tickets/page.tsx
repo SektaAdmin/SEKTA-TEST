@@ -87,7 +87,7 @@ export default function TicketsPage() {
         ))}
       </nav>
 
-      <div className={styles.tabSection}>
+      <div className={`${styles.tabSection} page-content`}>
         {loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
         ) : fetchError ? (

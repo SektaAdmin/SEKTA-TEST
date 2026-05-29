@@ -522,7 +522,13 @@ types/
 - **Іконки** (`components/icons/navigation.tsx`) — всі навігаційні іконки як React-компоненти. Сітку іконок розширювати, додаючи нові експорти.
 - **RefsContext** (`contexts/RefsContext.tsx`) — глобальний синглтон довідників. Модалки отримують `tickets`, `trainers`, `halls`, `trainingTypes` через `useRefs()`, а не через props зі сторінок. Також надає `refetchTickets/refetchTrainers/refetchHalls/refetchTrainingTypes` для примусового оновлення після мутацій у налаштуваннях.
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
-- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка, замінює `.btnNew` скрізь), `.loading-dots` (3-крапковий спінер, замінює `.loading` скрізь), `.data-table-wrap` + `.data-table` (стандартна таблиця з bg-2/border/radius). Використовувати як звичайний рядок: `className="btn-primary"`, `className="loading-dots"`, `className="data-table-wrap"` / `className="data-table"`. Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
+- **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка), `.loading-dots` (3-крапковий спінер), `.data-table-wrap` + `.data-table` (стандартна таблиця), **`.page-content`** (scroll-контейнер сторінки на мобільному — `flex:1; overflow-y:auto; padding-bottom: BottomNav`). Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
+- **Мобільна scroll-архітектура** — єдина модель для всіх сторінок (`≤640px`):
+  - `html, body { overflow: hidden }` — глобально в `globals.css`, **ніколи не змінювати через JS** (`document.body.style.overflow` заборонено)
+  - `main { height: 100svh; display: flex; flex-direction: column }` — в кожному `*.module.css` в `@media (≤640px)`
+  - `topbar`, `filterBar` — `position: static; flex-shrink: 0` на мобільному (sticky не потрібен)
+  - Scroll-контейнер: `<div className={`${styles.content} page-content`}>` (або `tabSection` в /settings) — клас `page-content` дає `flex:1; overflow-y:auto; padding-bottom: BottomNav`
+  - Виняток — `/schedule` і `/schedule/templates`: scroll всередині `bodyGridWrapper` (HallWeekGrid), `padding-bottom` на ньому, не на `.main`
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
@@ -634,7 +640,7 @@ types/
 - **Filter bar**: `overflow-x: auto; overflow-y: hidden` — `hidden` запобігає вертикальному скролу при touch-свайпі
 - **ClassModal**: завжди `fullScreen` (незалежно від пристрою — так вирішено в компоненті)
 - **ClassDetailModal**: `fullScreen` на мобільному
-- **Фіксований layout**: `document.body.style.overflow = 'hidden'` на mount (скидається при unmount) — блокує скролл документа при touch з BottomNav/topbar. `main` має `height: 100dvh + padding-bottom: var(--bottom-nav-h)`, скролиться тільки `bodyGridWrapper` всередині.
+- **Фіксований layout**: `main { height: 100svh }` + `body { overflow: hidden }` (глобально в globals.css). Скролиться тільки `bodyGridWrapper` всередині — `padding-bottom: BottomNav` на ньому.
 
 ---
 
@@ -665,7 +671,7 @@ types/
 
 **Назначення:** Журнал усіх минулих занять (вчора і раніше). Замінює /settings/archive і недосяжний archive tab у /schedule.
 
-**Layout:** власний `journal.module.css` (`.layout`, `.main`, `.topbar`, `.stickyHead`) — не shared з settings. `main` має `min-width: 0` (без `overflow-x: hidden` — ламає sticky). `.stickyHead` (`position: sticky; top: 0; z-index: 10`) обгортає topbar + filterBar разом.
+**Layout:** власний `journal.module.css` (`.layout`, `.main`, `.topbar`, `.stickyHead`) — не shared з settings. `main` має `min-width: 0`. `.stickyHead` обгортає topbar + filterBar (на десктопі `position: sticky; top: 0`, на мобільному `position: static; flex-shrink: 0`).
 
 **Компоненти:**
 - **Filter bar**: `DatePicker` × 2 (від/до) + `FilterSelect` × 4 (тренер/зал/тип/статус) + кнопка × (з'являється при активних фільтрах)

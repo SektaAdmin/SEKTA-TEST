@@ -384,12 +384,13 @@
   .main {
     margin-left: 0;
     min-height: unset;
-    height: calc(100svh - var(--bottom-nav-h) - env(safe-area-inset-bottom));
+    height: 100svh;
     display: flex;
     flex-direction: column;
   }
 
   .topbar {
+    position: static;
     height: auto;
     flex-wrap: wrap;
     padding: 10px 16px;
@@ -397,6 +398,7 @@
   }
 
   .filters {
+    position: static;
     flex-wrap: wrap;
     gap: 8px;
     padding: 8px 16px;
