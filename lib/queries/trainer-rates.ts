@@ -175,6 +175,17 @@ export async function archiveTrainerRate(
   return { error: error?.message ?? null }
 }
 
+export async function restoreTrainerRate(
+  supabase: SupabaseClient,
+  id: string
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('trainer_rates')
+    .update({ valid_to: null })
+    .eq('id', id)
+  return { error: error?.message ?? null }
+}
+
 // Залишаємо для зворотної сумісності зі старим кодом (rates/page.tsx)
 export async function listTrainerRates(
   supabase: SupabaseClient

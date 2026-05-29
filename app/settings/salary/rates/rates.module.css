@@ -79,6 +79,62 @@
 }
 .archiveBtn:hover { color: var(--danger); border-color: var(--danger-border); }
 
+.restoreBtn {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+}
+.restoreBtn:hover { color: var(--accent); border-color: var(--accent-border); }
+
+.dangerBtn {
+  padding: 0 20px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.dangerBtn:hover { opacity: 0.88; }
+
+.confirmDialog {
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.confirmBody {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirmText {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirmMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .archivedRow { opacity: 0.55; }
 
 /* Archive section */

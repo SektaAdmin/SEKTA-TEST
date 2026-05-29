@@ -7,6 +7,7 @@ import {
   listTrainerRatesAll,
   addTrainerRate,
   archiveTrainerRate,
+  restoreTrainerRate,
   deleteTrainerRate,
   type TrainerRate,
 } from '@/lib/queries/trainer-rates'
@@ -46,6 +47,10 @@ type ModalState =
   | { open: false }
   | { open: true }
 
+type ConfirmState =
+  | { open: false }
+  | { open: true; rate: TrainerRate }
+
 export default function SalaryRatesPage() {
   const pathname = usePathname()
   const { trainingTypes } = useRefs()
@@ -56,6 +61,7 @@ export default function SalaryRatesPage() {
   const [loading, setLoading] = useState(true)
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>({ open: false })
+  const [confirm, setConfirm] = useState<ConfirmState>({ open: false })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -116,9 +122,20 @@ export default function SalaryRatesPage() {
     fetchData()
   }
 
-  async function handleArchive(id: string) {
+  function askArchive(rate: TrainerRate) {
+    setConfirm({ open: true, rate })
+  }
+
+  async function handleArchiveConfirmed() {
+    if (!confirm.open) return
     const today = toYMD(new Date())
-    await archiveTrainerRate(supabase, id, today)
+    await archiveTrainerRate(supabase, confirm.rate.id, today)
+    setConfirm({ open: false })
+    fetchData()
+  }
+
+  async function handleRestore(id: string) {
+    await restoreTrainerRate(supabase, id)
     fetchData()
   }
 
@@ -184,7 +201,7 @@ export default function SalaryRatesPage() {
                           <td className={styles.actionCell}>
                             <button
                               className={styles.archiveBtn}
-                              onClick={() => handleArchive(r.id)}
+                              onClick={() => askArchive(r)}
                               title="Архівувати ставку"
                             >Архівувати</button>
                           </td>
@@ -200,7 +217,7 @@ export default function SalaryRatesPage() {
                     <div key={r.id} className={styles.card}>
                       <div className={styles.cardRow}>
                         <span className={styles.typeChip}>{r.ticket_type}</span>
-                        <button className={styles.archiveBtn} onClick={() => handleArchive(r.id)}>Архів</button>
+                        <button className={styles.archiveBtn} onClick={() => askArchive(r)}>Архів</button>
                       </div>
                       <div className={styles.cardMeta}>
                         <span className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</span>
@@ -237,6 +254,7 @@ export default function SalaryRatesPage() {
                       <th className={styles.numCol}>Ставка тренера</th>
                       <th className={styles.numCol}>Ставка студії</th>
                       <th>Діяла</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -250,6 +268,13 @@ export default function SalaryRatesPage() {
                         <td className={styles.dateCell}>
                           {formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}
                         </td>
+                        <td className={styles.actionCell}>
+                          <button
+                            className={styles.restoreBtn}
+                            onClick={() => handleRestore(r.id)}
+                            title="Відновити ставку"
+                          >Відновити</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -260,7 +285,7 @@ export default function SalaryRatesPage() {
                   <div key={r.id} className={`${styles.card} ${styles.archivedCard}`}>
                     <div className={styles.cardRow}>
                       <span className={styles.typeChip}>{r.ticket_type}</span>
-                      <span className={styles.grayCell}>{formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}</span>
+                      <button className={styles.restoreBtn} onClick={() => handleRestore(r.id)}>Відновити</button>
                     </div>
                     <div className={styles.cardMeta}>
                       <span>{trainerLabel(r)}</span>
@@ -271,6 +296,9 @@ export default function SalaryRatesPage() {
                       <span>Тренер: <strong>{formatMoney(r.trainer_rate)}</strong>/год</span>
                       <span>Студія: <strong>{formatMoney(r.studio_rate)}</strong>/год</span>
                     </div>
+                    <div className={styles.cardMeta}>
+                      <span>{formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -278,6 +306,32 @@ export default function SalaryRatesPage() {
           </div>
         )}
       </div>
+
+      {/* Archive confirm dialog */}
+      {confirm.open && (
+        <div className={styles.overlay} onClick={() => setConfirm({ open: false })}>
+          <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Архівувати ставку?</h2>
+              <button className={styles.closeBtn} onClick={() => setConfirm({ open: false })}>×</button>
+            </div>
+            <div className={styles.confirmBody}>
+              <p className={styles.confirmText}>
+                Ставка буде закрита сьогоднішньою датою. Нові розрахунки ЗП після сьогодні не використовуватимуть цю ставку.
+              </p>
+              <div className={styles.confirmMeta}>
+                <span className={styles.typeChip}>{confirm.rate.ticket_type}</span>
+                <span className={styles.grayCell}>{trainerLabel(confirm.rate)}</span>
+                {confirm.rate.hall_id && <span className={styles.grayCell}>· {hallLabel(confirm.rate)}</span>}
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.cancelBtn} onClick={() => setConfirm({ open: false })}>Скасувати</button>
+              <button className={styles.dangerBtn} onClick={handleArchiveConfirmed}>Архівувати</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add modal */}
       {modal.open && (
