@@ -685,8 +685,8 @@
     flex-wrap: nowrap;
   }
   .footerActions button {
-    font-size: 14px;
-    padding: 10px 12px;
+    font-size: 13px;
+    padding: 10px 8px;
     white-space: nowrap;
     flex: 1;
     min-width: 0;
