@@ -31,6 +31,10 @@ export default function ClientsPage() {
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
 
   const fetchClients = useCallback(async (
     q: string, p: number, size: number,
