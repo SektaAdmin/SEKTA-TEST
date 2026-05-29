@@ -3,12 +3,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
-  listTrainerRatesActive,
   listTrainerRatesAll,
   addTrainerRate,
   archiveTrainerRate,
   restoreTrainerRate,
-  deleteTrainerRate,
   type TrainerRate,
 } from '@/lib/queries/trainer-rates'
 import { listActiveTrainers } from '@/lib/queries/trainers'
@@ -16,7 +14,8 @@ import { listActiveHalls } from '@/lib/queries/halls'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Trainer, Hall } from '@/types'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { isoToYMD, toYMD } from '@/lib/dateUtils'
+import { toYMD } from '@/lib/dateUtils'
+import ss from '@/app/settings/settings.module.css'
 import styles from './rates.module.css'
 
 const SALARY_TABS = [
@@ -24,28 +23,9 @@ const SALARY_TABS = [
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
 
-function ArchiveSection({ label, count, open, onToggle, children }: {
-  label: string; count: number; open: boolean; onToggle: () => void; children: React.ReactNode
-}) {
-  return (
-    <div className={styles.archiveSection}>
-      <button className={styles.archiveToggle} onClick={onToggle} aria-expanded={open}>
-        <span className={`${styles.archiveChevron} ${open ? styles.archiveChevronOpen : ''}`}>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M2.5 4.5l3.5 3.5 3.5-3.5"/>
-          </svg>
-        </span>
-        {label}
-        <span className={styles.archiveCount}>{count}</span>
-      </button>
-      {open && (count === 0 ? <div className={styles.archiveEmpty}>Архів порожній</div> : children)}
-    </div>
-  )
-}
-
 type ModalState =
   | { open: false }
-  | { open: true }
+  | { open: true; editRate: TrainerRate | null }
 
 type ConfirmState =
   | { open: false }
@@ -96,7 +76,18 @@ export default function SalaryRatesPage() {
     setFormStudioRate('')
     setFormValidFrom(toYMD(new Date()))
     setError(null)
-    setModal({ open: true })
+    setModal({ open: true, editRate: null })
+  }
+
+  function openEdit(rate: TrainerRate) {
+    setFormTrainerId(rate.trainer_id ?? '')
+    setFormTicketType(rate.ticket_type)
+    setFormHallId(rate.hall_id ?? '')
+    setFormTrainerRate(String(rate.trainer_rate))
+    setFormStudioRate(String(rate.studio_rate))
+    setFormValidFrom(toYMD(new Date()))
+    setError(null)
+    setModal({ open: true, editRate: rate })
   }
 
   async function handleSave() {
@@ -108,6 +99,7 @@ export default function SalaryRatesPage() {
     if (!formValidFrom) { setError('Вкажіть дату початку дії'); return }
     setSaving(true)
     setError(null)
+    // addTrainerRate auto-archives existing active rate for same key
     const { error: err } = await addTrainerRate(supabase, {
       trainer_id: formTrainerId || null,
       ticket_type: formTicketType,
@@ -147,19 +139,21 @@ export default function SalaryRatesPage() {
     return r.hall_id ? (r.hall_name ?? '—') : 'Будь-який'
   }
 
+  const isEditing = modal.open && modal.editRate !== null
+
   return (
     <>
       <div className="page-head">
-        <div className={styles.topbar}>
+        <div className={ss.topbar}>
           <h1 className="page-title">Ставки тренерів</h1>
           <button className="btn-primary" onClick={openAdd}>+ Додати ставку</button>
         </div>
-        <nav className={styles.tabNav} aria-label="Зарплати">
+        <nav className={ss.tabNav} aria-label="Зарплати">
           {SALARY_TABS.map(t => (
             <a
               key={t.href}
               href={t.href}
-              className={`${styles.tabNavLink} ${pathname === t.href ? styles.tabNavLinkActive : ''}`}
+              className={`${ss.tabNavLink} ${pathname === t.href ? ss.tabNavLinkActive : ''}`}
             >{t.label}</a>
           ))}
         </nav>
@@ -199,6 +193,8 @@ export default function SalaryRatesPage() {
                           <td className={styles.rateCell}>{formatMoney(r.studio_rate)}/год</td>
                           <td className={styles.dateCell}>{formatDate(r.valid_from)}</td>
                           <td className={styles.actionCell}>
+                            <button className={ss.editBtn} onClick={() => openEdit(r)}>Редагувати</button>
+                            {' '}
                             <button
                               className={styles.archiveBtn}
                               onClick={() => askArchive(r)}
@@ -217,7 +213,10 @@ export default function SalaryRatesPage() {
                     <div key={r.id} className={styles.card}>
                       <div className={styles.cardRow}>
                         <span className={styles.typeChip}>{r.ticket_type}</span>
-                        <button className={styles.archiveBtn} onClick={() => askArchive(r)}>Архів</button>
+                        <div className={styles.cardActions}>
+                          <button className={ss.editBtn} onClick={() => openEdit(r)}>Ред.</button>
+                          <button className={styles.archiveBtn} onClick={() => askArchive(r)}>Архів</button>
+                        </div>
                       </div>
                       <div className={styles.cardMeta}>
                         <span className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</span>
@@ -238,71 +237,78 @@ export default function SalaryRatesPage() {
             )}
 
             {/* Archive */}
-            <ArchiveSection
-              label="Архів ставок"
-              count={archivedRates.length}
-              open={archiveOpen}
-              onToggle={() => setArchiveOpen(o => !o)}
-            >
-              <div className={`data-table-wrap ${styles.tableDesktop}`}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Тип</th>
-                      <th>Зал</th>
-                      <th>Тренер</th>
-                      <th className={styles.numCol}>Ставка тренера</th>
-                      <th className={styles.numCol}>Ставка студії</th>
-                      <th>Діяла</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {archivedRates.map(r => (
-                      <tr key={r.id} className={styles.archivedRow}>
-                        <td><span className={styles.typeChip}>{r.ticket_type}</span></td>
-                        <td className={styles.grayCell}>{hallLabel(r)}</td>
-                        <td className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</td>
-                        <td className={styles.rateCell}>{formatMoney(r.trainer_rate)}/год</td>
-                        <td className={styles.rateCell}>{formatMoney(r.studio_rate)}/год</td>
-                        <td className={styles.dateCell}>
-                          {formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}
-                        </td>
-                        <td className={styles.actionCell}>
-                          <button
-                            className={styles.restoreBtn}
-                            onClick={() => handleRestore(r.id)}
-                            title="Відновити ставку"
-                          >Відновити</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className={styles.cardList}>
-                {archivedRates.map(r => (
-                  <div key={r.id} className={`${styles.card} ${styles.archivedCard}`}>
-                    <div className={styles.cardRow}>
-                      <span className={styles.typeChip}>{r.ticket_type}</span>
-                      <button className={styles.restoreBtn} onClick={() => handleRestore(r.id)}>Відновити</button>
+            <div className={ss.archiveSection}>
+              <button className={ss.archiveToggle} onClick={() => setArchiveOpen(o => !o)} aria-expanded={archiveOpen}>
+                <span className={`${ss.archiveChevron} ${archiveOpen ? ss.archiveChevronOpen : ''}`}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M2.5 4.5l3.5 3.5 3.5-3.5"/>
+                  </svg>
+                </span>
+                Архів ставок
+                <span className={ss.archiveCount}>{archivedRates.length}</span>
+              </button>
+
+              {archiveOpen && (
+                archivedRates.length === 0
+                  ? <div className={ss.archiveEmpty}>Архів порожній</div>
+                  : <>
+                    <div className={`data-table-wrap ${styles.tableDesktop}`}>
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Тип</th>
+                            <th>Зал</th>
+                            <th>Тренер</th>
+                            <th className={styles.numCol}>Ставка тренера</th>
+                            <th className={styles.numCol}>Ставка студії</th>
+                            <th>Діяла</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {archivedRates.map(r => (
+                            <tr key={r.id} className={ss.archivedRow}>
+                              <td><span className={styles.typeChip}>{r.ticket_type}</span></td>
+                              <td className={styles.grayCell}>{hallLabel(r)}</td>
+                              <td className={r.trainer_id ? '' : styles.globalCell}>{trainerLabel(r)}</td>
+                              <td className={styles.rateCell}>{formatMoney(r.trainer_rate)}/год</td>
+                              <td className={styles.rateCell}>{formatMoney(r.studio_rate)}/год</td>
+                              <td className={styles.dateCell}>
+                                {formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}
+                              </td>
+                              <td className={styles.actionCell}>
+                                <button className={ss.restoreBtn} onClick={() => handleRestore(r.id)}>Відновити</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <div className={styles.cardMeta}>
-                      <span>{trainerLabel(r)}</span>
-                      <span className={styles.dot}>·</span>
-                      <span>{hallLabel(r)}</span>
+                    <div className={styles.cardList}>
+                      {archivedRates.map(r => (
+                        <div key={r.id} className={`${styles.card} ${styles.archivedCard}`}>
+                          <div className={styles.cardRow}>
+                            <span className={styles.typeChip}>{r.ticket_type}</span>
+                            <button className={ss.restoreBtn} onClick={() => handleRestore(r.id)}>Відновити</button>
+                          </div>
+                          <div className={styles.cardMeta}>
+                            <span>{trainerLabel(r)}</span>
+                            <span className={styles.dot}>·</span>
+                            <span>{hallLabel(r)}</span>
+                          </div>
+                          <div className={styles.cardRates}>
+                            <span>Тренер: <strong>{formatMoney(r.trainer_rate)}</strong>/год</span>
+                            <span>Студія: <strong>{formatMoney(r.studio_rate)}</strong>/год</span>
+                          </div>
+                          <div className={styles.cardMeta}>
+                            <span>{formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className={styles.cardRates}>
-                      <span>Тренер: <strong>{formatMoney(r.trainer_rate)}</strong>/год</span>
-                      <span>Студія: <strong>{formatMoney(r.studio_rate)}</strong>/год</span>
-                    </div>
-                    <div className={styles.cardMeta}>
-                      <span>{formatDate(r.valid_from)} – {r.valid_to ? formatDate(r.valid_to) : '…'}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ArchiveSection>
+                  </>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -333,17 +339,28 @@ export default function SalaryRatesPage() {
         </div>
       )}
 
-      {/* Add modal */}
+      {/* Add / Edit modal */}
       {modal.open && (
         <div className={styles.overlay} onClick={() => setModal({ open: false })}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Додати ставку</h2>
+              <h2 className={styles.modalTitle}>{isEditing ? 'Редагувати ставку' : 'Додати ставку'}</h2>
               <button className={styles.closeBtn} onClick={() => setModal({ open: false })}>×</button>
             </div>
             <div className={styles.modalBody}>
+              {isEditing && (
+                <p className={styles.confirmText}>
+                  Поточна ставка буде архівована, нова набуде чинності з обраної дати.
+                </p>
+              )}
+
               <label className={styles.label}>Тип заняття</label>
-              <select className={styles.select} value={formTicketType} onChange={e => setFormTicketType(e.target.value)}>
+              <select
+                className={styles.select}
+                value={formTicketType}
+                onChange={e => setFormTicketType(e.target.value)}
+                disabled={isEditing}
+              >
                 <option value="">— Оберіть —</option>
                 {trainingTypes.map(t => (
                   <option key={t.code} value={t.code}>{t.label} ({t.code})</option>
@@ -351,7 +368,12 @@ export default function SalaryRatesPage() {
               </select>
 
               <label className={styles.label}>Тренер</label>
-              <select className={styles.select} value={formTrainerId} onChange={e => setFormTrainerId(e.target.value)}>
+              <select
+                className={styles.select}
+                value={formTrainerId}
+                onChange={e => setFormTrainerId(e.target.value)}
+                disabled={isEditing}
+              >
                 <option value="">Глобальна (для всіх)</option>
                 {trainers.map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
@@ -359,7 +381,12 @@ export default function SalaryRatesPage() {
               </select>
 
               <label className={styles.label}>Зал (необов'язково)</label>
-              <select className={styles.select} value={formHallId} onChange={e => setFormHallId(e.target.value)}>
+              <select
+                className={styles.select}
+                value={formHallId}
+                onChange={e => setFormHallId(e.target.value)}
+                disabled={isEditing}
+              >
                 <option value="">Будь-який зал</option>
                 {halls.map(h => (
                   <option key={h.id} value={h.id}>{h.name}</option>
