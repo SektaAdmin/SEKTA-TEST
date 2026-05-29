@@ -530,6 +530,20 @@
   overflow: clip;
 }
 
+@keyframes slideOutLeft {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(-18%);  opacity: 0; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(18%);  opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .slideOutLeft  { animation: slideOutLeft  0.18s ease-in both; }
+  .slideOutRight { animation: slideOutRight 0.18s ease-in both; }
+}
+
 .gridScrollWrap {
   display: contents;
 }

@@ -326,6 +326,8 @@ export default function SchedulePage() {
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const gridCardRef = useRef<HTMLDivElement>(null)
   const [calActiveDates, setCalActiveDates] = useState<Set<string>>(new Set())
   const [calViewMonth, setCalViewMonth] = useState<{ year: number; month: number }>(() => {
     const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
@@ -432,25 +434,44 @@ export default function SchedulePage() {
     ...(visibleHalls.hasNoHall ? [null as null] : []),
   ], [visibleHalls])
 
-  // Navigation
-  const goNext = useCallback(() => {
-    const step = viewMode === 'week' ? 7 : 1
-    setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + step); return n })
+  // Navigation with slide animation
+  const navigateDay = useCallback((dir: 'left' | 'right') => {
+    const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 640
+    if (!isMobileView) {
+      // Desktop — no animation, just change date
+      if (dir === 'left') {
+        const step = viewMode === 'week' ? 7 : 1
+        setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + step); return n })
+      } else {
+        const step = viewMode === 'week' ? 7 : 1
+        setBaseDate(d => {
+          const n = new Date(d); n.setDate(d.getDate() - step)
+          const t = new Date(); t.setHours(0,0,0,0)
+          const cutoff = new Date(t); cutoff.setDate(t.getDate() - ARCHIVE_CUTOFF_DAYS)
+          return n < cutoff ? new Date() : n
+        })
+      }
+      return
+    }
+    // Mobile — slide out, swap date, slide in
+    setSlideDir(dir)
+    setTimeout(() => {
+      if (dir === 'left') {
+        setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + 1); return n })
+      } else {
+        setBaseDate(d => {
+          const n = new Date(d); n.setDate(d.getDate() - 1)
+          const t = new Date(); t.setHours(0,0,0,0)
+          const cutoff = new Date(t); cutoff.setDate(t.getDate() - ARCHIVE_CUTOFF_DAYS)
+          return n < cutoff ? new Date() : n
+        })
+      }
+      setSlideDir(null)
+    }, 180)
   }, [viewMode])
 
-  const goPrev = useCallback(() => {
-    const step = viewMode === 'week' ? 7 : 1
-    setBaseDate(d => {
-      const n = new Date(d)
-      n.setDate(d.getDate() - step)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const cutoff = new Date(today)
-      cutoff.setDate(today.getDate() - ARCHIVE_CUTOFF_DAYS)
-      if (n < cutoff) return new Date()
-      return n
-    })
-  }, [viewMode])
+  const goNext = useCallback(() => navigateDay('left'),  [navigateDay])
+  const goPrev = useCallback(() => navigateDay('right'), [navigateDay])
 
   // Swipe to change day (mobile)
   useEffect(() => {
@@ -622,7 +643,14 @@ export default function SchedulePage() {
         <div className={styles.contentRow}>
           <div className={styles.gridArea}>
             {/* Schedule grid */}
-            <div className={styles.gridCard}>
+            <div
+              ref={gridCardRef}
+              className={[
+                styles.gridCard,
+                slideDir === 'left'  ? styles.slideOutLeft  : '',
+                slideDir === 'right' ? styles.slideOutRight : '',
+              ].filter(Boolean).join(' ')}
+            >
             <div className={styles.gridScrollWrap}>
             {/* Week day names — only in week mode */}
             {viewMode === 'week' && (
