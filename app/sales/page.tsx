@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import SaleModal from '@/components/SaleModal'
+import StudioExpenseModal from '@/components/StudioExpenseModal'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
@@ -22,6 +23,7 @@ export default function SalesPage() {
 
   const [showModal, setShowModal] = useState(false)
   const [editSale, setEditSale] = useState<Sale | null>(null)
+  const [expenseModal, setExpenseModal] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -91,9 +93,14 @@ export default function SalesPage() {
         <div className="page-head">
         <div className={styles.topbar}>
           <h1 className="page-title">Продажи</h1>
-          <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
-            + Нова продажа
-          </button>
+          <div className={styles.topbarBtns}>
+            <button className={styles.expenseBtn} onClick={() => setExpenseModal(true)}>
+              + Витрата/Дохід
+            </button>
+            <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
+              + Нова продажа
+            </button>
+          </div>
         </div>
 
         <div className={styles.filters}>
@@ -308,6 +315,14 @@ export default function SalesPage() {
             notes: editSale.notes,
             created_at: editSale.created_at,
           } : undefined}
+        />
+      )}
+
+      {expenseModal && (
+        <StudioExpenseModal
+          trainers={activeTrainers}
+          onClose={() => setExpenseModal(false)}
+          onSaved={() => setExpenseModal(false)}
         />
       )}
 

@@ -9,7 +9,6 @@ import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
-import StudioExpenseModal from '@/components/StudioExpenseModal'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
 import { paymentLabel, paymentClass } from '@/lib/badges'
@@ -122,7 +121,6 @@ export default function AccountingPage() {
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
   const [checked,  setChecked]  = useState<Set<string>>(new Set())
-  const [expenseModal, setExpenseModal] = useState(false)
 
   function toggleChecked(id: string) {
     setChecked(prev => {
@@ -249,12 +247,6 @@ export default function AccountingPage() {
         <div className={styles.topbar}>
           <h1 className="page-title">Звітність</h1>
           <div className={styles.topbarActions}>
-            <button className={styles.addExpenseBtn} onClick={() => setExpenseModal(true)}>
-              + Витрата/Дохід
-            </button>
-            <a href="/accounting/trainers" className={styles.trainerReportLink}>
-              Звіт по тренерах →
-            </a>
           </div>
         </div>
 
@@ -358,6 +350,7 @@ export default function AccountingPage() {
                       <th className={styles.thDate}>Дата</th>
                       <th className={styles.thClient}>Клієнт</th>
                       <th className={styles.thTicket}>Абонемент / Коментар</th>
+                      <th className={styles.thTrainer}>Тренер</th>
                       <th className={styles.thPrice}>Ціна</th>
                       <th className={styles.thDeposit}>На депозит</th>
                       <th className={styles.thAmt}>Сума</th>
@@ -400,6 +393,12 @@ export default function AccountingPage() {
                             <td className={styles.ticketCell}>
                               {s.ticket_name
                                 ? <span className={styles.ticketName}>{s.ticket_name}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.trainerCell}>
+                              {s.trainers?.name
+                                ? <span className={styles.trainerName}>{s.trainers.name}</span>
                                 : <span className={styles.zero}>—</span>
                               }
                             </td>
@@ -452,6 +451,12 @@ export default function AccountingPage() {
                             <td className={styles.ticketCell}>
                               {e.description
                                 ? <span className={styles.ticketName}>{e.description}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.trainerCell}>
+                              {e.trainers?.name
+                                ? <span className={styles.trainerName}>{e.trainers.name}</span>
                                 : <span className={styles.zero}>—</span>
                               }
                             </td>
@@ -517,6 +522,11 @@ export default function AccountingPage() {
                                 {paymentLabel(s.payment_method)}
                               </span>
                             </div>
+                            {s.trainers?.name && (
+                              <div className={styles.cardRow2}>
+                                <span className={styles.trainerName}>{s.trainers.name}</span>
+                              </div>
+                            )}
                             <div className={styles.cardRow3}>
                               <span className={styles.cardDatetime}>{date} · {time}</span>
                               {hasDeposit && (
@@ -578,16 +588,6 @@ export default function AccountingPage() {
         </div>{/* /page-body */}
       </main>
 
-      {expenseModal && (
-        <StudioExpenseModal
-          trainers={trainers}
-          onClose={() => setExpenseModal(false)}
-          onSaved={() => {
-            setExpenseModal(false)
-            fetchData(dateFrom, dateTo)
-          }}
-        />
-      )}
     </div>
   )
 }

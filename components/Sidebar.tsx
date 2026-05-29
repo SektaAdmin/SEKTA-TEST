@@ -22,11 +22,28 @@ const settingsSubNav = [
   { href: '/settings/training-types', label: 'Типи тренувань' },
 ]
 
+const salarySubNav = [
+  { href: '/settings/salary/rates', label: 'Ставки' },
+  { href: '/settings/salary/calculations', label: 'Нарахування' },
+]
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} aria-hidden="true">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M2 3.5l3 3 3-3"/>
+      </svg>
+    </span>
+  )
+}
+
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const isInSettings = pathname.startsWith('/settings')
+  const isInSalary = pathname.startsWith('/settings/salary')
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
+  const [salaryOpen, setSalaryOpen] = useState(isInSalary)
 
   async function handleLogout() {
     const supabase = createClient()
@@ -64,11 +81,7 @@ export default function Sidebar() {
         >
           <span className={styles.icon} aria-hidden="true"><SettingsIcon /></span>
           Налаштування
-          <span className={`${styles.chevron} ${settingsOpen ? styles.chevronOpen : ''}`} aria-hidden="true">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M2 3.5l3 3 3-3"/>
-            </svg>
-          </span>
+          <Chevron open={settingsOpen} />
         </button>
 
         {settingsOpen && (
@@ -87,6 +100,36 @@ export default function Sidebar() {
                 </li>
               )
             })}
+
+            <li>
+              <button
+                type="button"
+                className={`${styles.subItem} ${styles.subItemBtn} ${isInSalary ? styles.subItemActive : ''}`}
+                onClick={() => setSalaryOpen(o => !o)}
+                aria-expanded={salaryOpen}
+              >
+                Зарплати
+                <Chevron open={salaryOpen} />
+              </button>
+              {salaryOpen && (
+                <ul className={styles.subSubNav}>
+                  {salarySubNav.map(item => {
+                    const isActive = pathname === item.href
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className={`${styles.subSubItem} ${isActive ? styles.subItemActive : ''}`}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </li>
           </ul>
         )}
       </nav>

@@ -276,14 +276,23 @@ studio_expenses ──► trainers (trainer_id optional)
 
 ---
 
-### `trainer_rates` — Ставки тренерів ₴/год
+### `trainer_rates` — Ставки тренерів
 
-**UNIQUE NULLS NOT DISTINCT (trainer_id, ticket_type).** `trainer_id IS NULL` = глобальна ставка.
-Пріоритет: індивідуальна → глобальна. RLS: Увімкнено.
+| Column | Type | Notes |
+|--------|------|-------|
+| trainer_id | uuid NULL | NULL = глобальна ставка |
+| ticket_type | text | |
+| hall_id | uuid NULL | NULL = будь-який зал |
+| trainer_rate | numeric | ₴ за людино-годину (тренер) |
+| studio_rate | numeric | ₴ за людино-годину (студія) |
+| valid_from | date | дата початку дії ставки |
+| valid_to | date NULL | NULL = поточна активна |
+
+Пріоритет: індивідуальна+зал > індивідуальна > глобальна+зал > глобальна. При зміні ставки — стара закривається (`valid_to`), нова додається. RLS: Увімкнено.
 
 ### `trainer_payments` — Виплати тренерам
 
-Поля: `trainer_id`, `period_start`, `period_end`, `calculated_amount`, `paid_amount`, `payment_date`, `notes`. RLS: Увімкнено.
+Поля: `trainer_id`, `period_start`, `period_end`, `calculated_amount`, `paid_amount`, `payment_date`, `payment_type` ('advance'/'final'), `notes`. RLS: Увімкнено.
 
 ---
 
@@ -325,7 +334,11 @@ INSERT у `sales` + `update_client_balance` в одній транзакції.
 
 ### `calc_trainer_salary(p_trainer_id, p_start, p_end)`
 `→ TABLE(ticket_type text, sessions_total int, rate numeric, amount numeric)`
-По enrolled зі status='attended'/'noshow'. Ставка: індивідуальна → глобальна → NULL (amount=0).
+Старий RPC — зведений по типах. Залишено для зворотної сумісності.
+
+### `calc_trainer_salary_v2(p_trainer_id, p_start, p_end)`
+`→ TABLE(class_id, starts_at, ticket_type, hall_name, duration_min, client_id, client_name, enrollment_status, trainer_amount, studio_amount)`
+Деталізований розрахунок — рядок на кожен enrollment (attended + noshow). Ставка береться на дату заняття. Використовується в `/settings/salary/calculations`.
 
 ### `check_class_conflicts(p_starts_at, p_duration_min, p_hall_id, p_trainer_id, p_exclude_id)`
 `→ TABLE(conflict_type text, class_id uuid, starts_at timestamptz, title text, ticket_type text)`
@@ -395,9 +408,11 @@ npm run start
 | `/journal` | Журнал занять: всі минулі заняття (вчора і раніше), фільтри по датах/тренеру/залу/типу/статусу, пагінація 20/стор, клік → ClassDetailModal |
 | `/halls`, `/trainers`, `/tickets`, `/training-types` | Standalone-сторінки довідників (редиректи або окремі views) |
 | `/accounting` | Звітність: список транзакцій (як monobank) — фільтр методу/тренера, картки підсумків, чекбокси для звірки |
-| `/accounting/trainers` | Звіт по тренерах |
-| `/accounting/trainers/salary` | Нарахування зарплати + виплати |
-| `/accounting/trainers/rates` | Ставки тренерів (глобальні + індивідуальні) |
+| `/accounting/trainers` | → redirect `/accounting` |
+| `/accounting/trainers/salary` | → redirect `/settings/salary/calculations` |
+| `/accounting/trainers/rates` | → redirect `/settings/salary/rates` |
+| `/settings/salary/rates` | Ставки тренерів: активні + архів (з valid_from/valid_to); trainer_rate + studio_rate + hall |
+| `/settings/salary/calculations` | Нарахування зп: тренер + довільний період → таблиця занять (розгортання по клієнтах), готівка на руках, виплати (advance/final) |
 | `/settings` | Редирект → `/settings/tickets` |
 | `/settings/tickets` | Абонементи: таблиця активних + архів |
 | `/settings/trainers` | Тренери: таблиця активних + архів |
@@ -715,7 +730,7 @@ types/
 **Layout:** full-width, без `max-width` — кожен піксель корисний при звірці поруч з банком.
 
 **Структура:**
-- **Topbar**: заголовок + кнопка «+ Витрата/Дохід» + кнопка «Звіт по тренерах →»
+- **Topbar**: заголовок + кнопки підсумків. Кнопка «+ Витрата/Дохід» **перенесена в `/sales`** (topbar поруч з «+ Нова продажа»)
 - **Filter bar** (sticky): пресети Сьогодні/Цей тиждень/Цей місяць + DatePicker від/до + таби методу оплати (Всі/Готівка/ФОП/Картка/Депозит) + dropdown тренера (з'являється тільки при фільтрі Готівка)
 - **Summary cards**: Готівка / ФОП / Картка / Депозит / Витрати (якщо є) / Надходження. Нульові суми сірим. Готівка/ФОП/Картка враховують витрати студії (зменшуються)
 - **Таблиця**: уніфікований feed — sales + studio_expenses відсортовані за датою. 7 колонок — ✓ (чекбокс) | Дата+час | Клієнт | Абонемент/Коментар | Ціна | На депозит | Сума | Метод

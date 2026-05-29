@@ -87,6 +87,34 @@
 .subItem:hover { background: var(--bg-3); color: var(--text); }
 .subItemActive { background: var(--accent-dim); color: var(--accent); }
 
+.subItemBtn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.subSubNav {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 2px 14px;
+}
+
+.subSubItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color var(--motion-fast), background var(--motion-fast);
+}
+.subSubItem:hover { background: var(--bg-3); color: var(--text); }
+
 .logout {
   display: flex;
   align-items: center;

@@ -7,6 +7,25 @@
   border-bottom: 1px solid var(--border);
 }
 
+.topbarBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expenseBtn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.expenseBtn:hover { background: var(--bg-3); color: var(--text); }
+
 /* ── Filters bar ─────────────────────────────────────────────── */
 .filters {
   display: flex;
