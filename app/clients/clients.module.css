@@ -145,7 +145,7 @@
 
 @media (max-width: 640px) {
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .filterBar { flex-wrap: wrap; padding: 8px var(--topbar-px); width: 100%; box-sizing: border-box; height: auto; }
+  .filterBar { flex-wrap: wrap; padding: 8px var(--topbar-px); width: 100%; box-sizing: border-box; }
   .searchWrap { width: 100%; }
   .searchInput { width: 100%; }
   .searchInput:focus { width: 100%; }

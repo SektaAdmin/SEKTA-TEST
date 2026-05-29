@@ -67,9 +67,6 @@
   flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
-  .filterBar { padding: 0 16px; flex-wrap: nowrap; overflow-x: auto; }
-}
 
 .trainerSelect {
   height: var(--control-h);
@@ -447,7 +444,7 @@
   .main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column; }
   .topbar { position: static; height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
   .topbarActions { flex-wrap: wrap; }
-  .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 8px var(--topbar-px); height: auto; min-height: 0; gap: 8px; width: 100%; box-sizing: border-box; }
+  .filterBar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 8px var(--topbar-px); gap: 8px; width: 100%; box-sizing: border-box; }
   .trainerSelect { min-width: 0; flex-shrink: 0; }
   .content { padding: 16px; gap: 24px; }
   .tableDesktop { display: none; }
