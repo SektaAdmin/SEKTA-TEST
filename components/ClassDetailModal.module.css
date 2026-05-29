@@ -18,6 +18,7 @@
 }
 
 .modal {
+  position: relative;
   background: var(--bg);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
@@ -615,6 +616,44 @@
   transition: opacity 0.12s;
 }
 .btnRestore:hover:not(:disabled) { opacity: 0.8; }
+
+/* ── Confirm dialogs ─────────────────────────────────────────── */
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  border-radius: inherit;
+}
+.confirmDialog {
+  width: 100%;
+  background: var(--bg);
+  border-top: 0.5px solid var(--border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.confirmText {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+.confirmActions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.confirmActions button {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+  white-space: nowrap;
+}
 
 /* ── Hours selection ─────────────────────────────────────────── */
 .hoursSelect {

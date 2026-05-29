@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { useModalFocus } from '@/hooks/useModalFocus'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
@@ -69,7 +69,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [cancellingClass, setCancellingClass] = useState(false)
-  const [confirmCancelClass, setConfirmCancelClass] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
   const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -180,9 +181,11 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     if (error) {
       toast.error('Не вдалося скасувати заняття')
     } else {
-      setConfirmCancelClass(false)
+      setShowCancelConfirm(false)
       if (restoredCount > 0) {
         toast.success(`Заняття скасовано. Повернено ${restoredCount} ${restoredCount === 1 ? 'заняття' : 'занять'} клієнтам`)
+      } else {
+        toast.success('Заняття скасовано')
       }
       await loadAll()
       onClassUpdated()
@@ -223,11 +226,16 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       return
     }
 
-    const { error } = await updateClassCancelled(supabase, cls.id, false)
+    const { restoredCount, error } = await restoreClass(supabase, cls.id)
     if (error) {
       toast.error('Не вдалося відновити заняття')
     } else {
-      await fetchClass()
+      setShowRestoreConfirm(false)
+      toast.success(restoredCount > 0
+        ? `Заняття відновлено. Повернено статуси ${restoredCount} клієнтам`
+        : 'Заняття відновлено'
+      )
+      await loadAll()
       onClassUpdated()
     }
     setCancellingClass(false)
@@ -620,24 +628,45 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   Редагувати
                 </button>
                 {cls.is_cancelled ? (
-                  <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                  <button className={styles.btnRestore} onClick={() => setShowRestoreConfirm(true)} disabled={cancellingClass}>
                     Відновити
                   </button>
-                ) : confirmCancelClass ? (
-                  <>
-                    <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
-                      Скасувати заняття
-                    </button>
-                    <button className={styles.btnEdit} onClick={() => setConfirmCancelClass(false)} disabled={cancellingClass}>
-                      Скасувати
-                    </button>
-                  </>
                 ) : (
-                  <button className={styles.btnCancel} onClick={() => setConfirmCancelClass(true)}>
+                  <button className={styles.btnCancel} onClick={() => setShowCancelConfirm(true)} disabled={cancellingClass}>
                     Скасувати заняття
                   </button>
                 )}
               </div>
+
+              {/* Confirm cancel */}
+              {showCancelConfirm && (
+                <div className={styles.confirmOverlay} onClick={() => setShowCancelConfirm(false)}>
+                  <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
+                    <p className={styles.confirmText}>Скасувати заняття? Сесії повернуться клієнтам, які відвідали.</p>
+                    <div className={styles.confirmActions}>
+                      <button className={styles.btnEdit} onClick={() => setShowCancelConfirm(false)} disabled={cancellingClass}>Назад</button>
+                      <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                        {cancellingClass ? 'Скасування…' : 'Скасувати заняття'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Confirm restore */}
+              {showRestoreConfirm && (
+                <div className={styles.confirmOverlay} onClick={() => setShowRestoreConfirm(false)}>
+                  <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
+                    <p className={styles.confirmText}>Відновити заняття? Статуси клієнтів повернуться як були.</p>
+                    <div className={styles.confirmActions}>
+                      <button className={styles.btnEdit} onClick={() => setShowRestoreConfirm(false)} disabled={cancellingClass}>Назад</button>
+                      <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                        {cancellingClass ? 'Відновлення…' : 'Відновити'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
