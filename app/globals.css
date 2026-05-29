@@ -114,6 +114,11 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes topSheetIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 640px) {
   :root {
     --control-h: 44px;
