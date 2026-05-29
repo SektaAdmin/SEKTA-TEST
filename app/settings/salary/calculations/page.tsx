@@ -9,6 +9,8 @@ import {
   getTrainerCashBalance,
   listTrainerPayments,
   insertTrainerPayment,
+  updateTrainerPayment,
+  deleteTrainerPayment,
   type TrainerSalaryDetailRow,
   type TrainerPayment,
   type TrainerCashBalance,
@@ -21,6 +23,8 @@ import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { Pencil, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
 import styles from './calculations.module.css'
@@ -80,6 +84,8 @@ export default function SalaryCalculationsPage() {
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set())
   const [cashExpanded, setCashExpanded] = useState(false)
   const [paymentModal, setPaymentModal] = useState(false)
+  const [editingPayment, setEditingPayment] = useState<TrainerPayment | null>(null)
+  const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null)
   const [paymentType, setPaymentType] = useState<'advance' | 'final'>('final')
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'fop' | 'personal_card'>('cash')
   const [paymentAmount, setPaymentAmount] = useState('')
@@ -128,6 +134,7 @@ export default function SalaryCalculationsPage() {
   }
 
   function openPaymentModal() {
+    setEditingPayment(null)
     setPaymentDate(toYMD(new Date()))
     setPaymentAmount(String(Math.max(0, Math.round(toPay))))
     setPaymentNotes('')
@@ -137,26 +144,56 @@ export default function SalaryCalculationsPage() {
     setPaymentModal(true)
   }
 
+  function openEditModal(p: TrainerPayment) {
+    setEditingPayment(p)
+    setPaymentDate(p.payment_date)
+    setPaymentAmount(String(p.paid_amount))
+    setPaymentNotes(p.notes ?? '')
+    setPaymentType(p.payment_type)
+    setPaymentMethod((p.payment_method ?? 'cash') as 'cash' | 'fop' | 'personal_card')
+    setPaymentError(null)
+    setPaymentModal(true)
+  }
+
   async function handleSavePayment() {
     const amount = parseFloat(paymentAmount)
     if (isNaN(amount) || amount <= 0) { setPaymentError('Введіть суму виплати'); return }
     if (!paymentDate) { setPaymentError('Оберіть дату'); return }
     setSaving(true)
     setPaymentError(null)
-    const { error } = await insertTrainerPayment(supabase, {
-      trainer_id: selectedTrainerId,
-      period_start: dateFrom,
-      period_end: dateTo,
-      calculated_amount: totalTrainer,
-      paid_amount: amount,
-      payment_date: paymentDate,
-      payment_method: paymentMethod,
-      payment_type: paymentType,
-      notes: paymentNotes || null,
-    })
-    setSaving(false)
-    if (error) { setPaymentError(error); return }
+    if (editingPayment) {
+      const { error } = await updateTrainerPayment(supabase, editingPayment.id, {
+        paid_amount: amount,
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        payment_type: paymentType,
+        notes: paymentNotes || null,
+      })
+      setSaving(false)
+      if (error) { setPaymentError(error); return }
+    } else {
+      const { error } = await insertTrainerPayment(supabase, {
+        trainer_id: selectedTrainerId,
+        period_start: dateFrom,
+        period_end: dateTo,
+        calculated_amount: totalTrainer,
+        paid_amount: amount,
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        payment_type: paymentType,
+        notes: paymentNotes || null,
+      })
+      setSaving(false)
+      if (error) { setPaymentError(error); return }
+    }
     setPaymentModal(false)
+    fetchAll()
+  }
+
+  async function handleDeletePayment(id: string) {
+    const { error } = await deleteTrainerPayment(supabase, id)
+    if (error) { toast.error('Помилка видалення'); return }
+    setDeletingPaymentId(null)
     fetchAll()
   }
 
@@ -378,6 +415,7 @@ export default function SalaryCalculationsPage() {
                         <th className={styles.numCol}>Нараховано</th>
                         <th className={styles.numCol}>Виплачено</th>
                         <th>Примітка</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -398,6 +436,16 @@ export default function SalaryCalculationsPage() {
                           <td className={styles.numCell}>{formatMoney(Number(p.calculated_amount))}</td>
                           <td className={styles.amtCell}>{formatMoney(Number(p.paid_amount))}</td>
                           <td className={styles.grayCell}>{p.notes ?? '—'}</td>
+                          <td>
+                            <div className={styles.payActions}>
+                              <button className={styles.payActionBtn} onClick={() => openEditModal(p)} title="Редагувати">
+                                <Pencil size={14} />
+                              </button>
+                              <button className={`${styles.payActionBtn} ${styles.payActionDanger}`} onClick={() => setDeletingPaymentId(p.id)} title="Видалити">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -405,6 +453,7 @@ export default function SalaryCalculationsPage() {
                       <tr className={styles.totalRow}>
                         <td colSpan={4}>Виплачено всього</td>
                         <td className={styles.totalAmt}>{formatMoney(totalPaidPeriod)}</td>
+                        <td></td>
                         <td></td>
                       </tr>
                     </tfoot>
@@ -416,7 +465,15 @@ export default function SalaryCalculationsPage() {
                   <div key={p.id} className={styles.payCard}>
                     <div className={styles.cardRow}>
                       <span>{formatDate(p.payment_date)}</span>
-                      <span className={styles.amtCell}>{formatMoney(Number(p.paid_amount))}</span>
+                      <div className={styles.payActions}>
+                        <span className={styles.amtCell}>{formatMoney(Number(p.paid_amount))}</span>
+                        <button className={styles.payActionBtn} onClick={() => openEditModal(p)} title="Редагувати">
+                          <Pencil size={14} />
+                        </button>
+                        <button className={`${styles.payActionBtn} ${styles.payActionDanger}`} onClick={() => setDeletingPaymentId(p.id)} title="Видалити">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                     <div className={styles.cardMeta}>
                       <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
@@ -438,7 +495,7 @@ export default function SalaryCalculationsPage() {
 
       {paymentModal && (
         <ModalShell
-          title="Зафіксувати виплату"
+          title={editingPayment ? 'Редагувати виплату' : 'Зафіксувати виплату'}
           onClose={() => setPaymentModal(false)}
           width={380}
           footer={
@@ -516,6 +573,26 @@ export default function SalaryCalculationsPage() {
           </div>
 
           {paymentError && <div className={styles.errorMsg}>{paymentError}</div>}
+        </ModalShell>
+      )}
+
+      {deletingPaymentId && (
+        <ModalShell
+          title="Видалити виплату?"
+          onClose={() => setDeletingPaymentId(null)}
+          width={360}
+          footer={
+            <ModalFooter
+              onCancel={() => setDeletingPaymentId(null)}
+              onSave={() => handleDeletePayment(deletingPaymentId)}
+              saveLabel="Видалити"
+              loading={false}
+            />
+          }
+        >
+          <p style={{ fontSize: 14, color: 'var(--text-2)', margin: 0 }}>
+            Виплату буде видалено. Цю дію неможливо скасувати.
+          </p>
         </ModalShell>
       )}
     </>

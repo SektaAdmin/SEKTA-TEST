@@ -366,6 +366,29 @@ export async function listTrainerPaymentsForPeriod(
   return (data ?? []) as TrainerPayment[]
 }
 
+export async function updateTrainerPayment(
+  supabase: SupabaseClient,
+  id: string,
+  payload: {
+    paid_amount: number
+    payment_date: string
+    payment_method: 'cash' | 'fop' | 'personal_card'
+    payment_type: 'advance' | 'final'
+    notes: string | null
+  }
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('trainer_payments').update(payload).eq('id', id)
+  return { error: error?.message ?? null }
+}
+
+export async function deleteTrainerPayment(
+  supabase: SupabaseClient,
+  id: string
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('trainer_payments').delete().eq('id', id)
+  return { error: error?.message ?? null }
+}
+
 export async function insertTrainerPayment(
   supabase: SupabaseClient,
   payload: {
