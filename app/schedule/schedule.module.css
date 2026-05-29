@@ -454,7 +454,7 @@
   align-items: stretch;
   justify-content: center;
   border-right: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--bg-3);
   min-height: 40px;
   overflow: hidden;
 }
