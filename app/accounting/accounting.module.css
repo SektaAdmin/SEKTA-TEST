@@ -56,12 +56,11 @@
 .filters {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 var(--topbar-px);
+  gap: 10px;
+  padding: 10px var(--topbar-px);
   border-bottom: 0.5px solid var(--border);
   flex-wrap: wrap;
   background: var(--bg);
-  min-height: var(--topbar-h);
 }
 
 .presets {
@@ -546,8 +545,6 @@
     padding: 8px var(--topbar-px);
     gap: 8px;
     width: 100%;
-    height: auto;
-    min-height: 0;
     box-sizing: border-box;
   }
 
