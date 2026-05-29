@@ -560,7 +560,7 @@ types/
 
 **Фони:** `--bg`, `--bg-2`, `--bg-3`
 **Текст:** `--text`, `--text-2`, `--text-3`
-**Бордери:** `--border`, `--border-hover`, `--border-strong`
+**Бордери:** `--border`, `--border-hover`, `--border-strong` — товщина скрізь `1px` (не `0.5px` — викликало баг рендерингу Chrome на мобільному)
 **Акцент (зелений):** `--accent`, `--accent-dim`, `--accent-text`, `--accent-border*`
 **Стани:** `--danger/dim/border*`, `--success/dim`, `--warning/dim`
 **Оплата:** `--fop/dim`, `--card/dim`, `--deposit/dim`
@@ -641,7 +641,7 @@ types/
 - **Повний режим** (висота ≥60px): título → час → тренер → місця (з progress bar)
 - **Компактний режим** (висота <60px): `title time` в одному рядку
 - **Progress bar**: знизу, висота 2.5px, стани: зелений (вільно) → жовтий (майже) → червоний (повно/черга)
-- **Бордери**: тонка обводка (0.5px) з кольором типу + ліва смуга (3px solid) 
+- **Бордери**: тонка обводка (1px) з кольором типу + ліва смуга (3px solid) 
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
 
 **Mobile adaptation (≤640px):**
