@@ -625,13 +625,16 @@ types/
 - **Now line**: full-width в day mode, per-column у колонці сьогодні в week mode
 
 **Mobile adaptation (≤640px):**
-- **Topbar**: десктопний topbar прихований; `mobileDateLabel` — смуга під filter bar з датою + активний фільтр (зал або тренер) через `·`
+- **Topbar**: десктопний topbar прихований; мобільний — одна строка: назва дня + дата зліва, іконка `[число]` (сьогодні) + іконка 📅 справа
+- **Навігація**: кнопки ← → прибрані; свайп вліво/вправо по сітці міняє день (`touchstart`/`touchmove` `passive:false` на `bodyGridWrapper`); анімація slide out 0.18s
+- **Іконка сьогодні**: квадратна кнопка з числом сьогоднішнього дня — завжди видима, клік → `setBaseDate(new Date())`
 - **Calendar**: `showMobileCal` state → bottom sheet (`mobileCalOverlay` / `mobileCalSheet`) поверх контенту
 - **View mode**: тільки day view на мобільному (примусово через `useEffect(isMobile)`); week view недоступний
 - **FAB**: `position: fixed; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); z-index: 250` — "+ Нове заняття", вище BottomNav
 - **Filter bar**: `overflow-x: auto; overflow-y: hidden` — `hidden` запобігає вертикальному скролу при touch-свайпі
 - **ClassModal**: завжди `fullScreen` (незалежно від пристрою — так вирішено в компоненті)
 - **ClassDetailModal**: `fullScreen` на мобільному
+- **Фіксований layout**: `document.body.style.overflow = 'hidden'` на mount (скидається при unmount) — блокує скролл документа при touch з BottomNav/topbar. `main` має `height: 100dvh + padding-bottom: var(--bottom-nav-h)`, скролиться тільки `bodyGridWrapper` всередині.
 
 ---
 
