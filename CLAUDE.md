@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (badge system unified: globals.css @layer utilities + badges.ts as single source of truth)
+- **Last Updated**: 2026-05-29 (badge system unified: globals.css plain classes + badges.ts as single source of truth; @layer utilities avoided — Tailwind 4 base reset overrides padding inside @layer)
 
 ## Commands
 

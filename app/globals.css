@@ -312,42 +312,40 @@ input, select, textarea { border: 1px solid var(--border); background: var(--bg-
 /* Single source of truth for all badges. Modifier classes set color + border. */
 /* Usage: className="badge badge-cash"  or  className={paymentClass(method)}   */
 
-@layer utilities {
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 9px;
-    border-radius: var(--badge-radius);
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    border: 1px solid transparent;
-  }
-
-  /* Payment methods */
-  .badge-cash    { background: var(--accent-dim);   color: var(--accent);  border-color: var(--accent-border); }
-  .badge-fop     { background: var(--fop-dim);      color: var(--fop);     border-color: var(--fop-border); }
-  .badge-card    { background: var(--card-dim);     color: var(--card);    border-color: var(--card-border); }
-  .badge-deposit { background: var(--deposit-dim);  color: var(--deposit); border-color: var(--deposit-border); }
-
-  /* Enrollment statuses */
-  .badge-enrolled  { background: var(--bg-3);        color: var(--text-2);  border-color: var(--border); }
-  .badge-attended  { background: var(--accent-dim);  color: var(--accent);  border-color: var(--accent-border); }
-  .badge-cancelled { background: var(--bg-3);        color: var(--text-3);  border-color: var(--border); }
-  .badge-noshow    { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
-  .badge-waitlist  { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
-
-  /* Class statuses (journal) */
-  .badge-completed { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
-  .badge-class-cancelled { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
-
-  /* Feed item type */
-  .badge-sale   { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
-
-  /* Neutral type tag (settings: ticket type, training type code) */
-  .badge-type   { background: var(--bg-3); color: var(--text-2); border-color: var(--border); }
-
-  /* Warning / negative state */
-  .badge-danger { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--badge-radius);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
 }
+
+/* Payment methods */
+.badge-cash    { background: var(--accent-dim);   color: var(--accent);  border-color: var(--accent-border); }
+.badge-fop     { background: var(--fop-dim);      color: var(--fop);     border-color: var(--fop-border); }
+.badge-card    { background: var(--card-dim);     color: var(--card);    border-color: var(--card-border); }
+.badge-deposit { background: var(--deposit-dim);  color: var(--deposit); border-color: var(--deposit-border); }
+
+/* Enrollment statuses */
+.badge-enrolled  { background: var(--bg-3);        color: var(--text-2);  border-color: var(--border); }
+.badge-attended  { background: var(--accent-dim);  color: var(--accent);  border-color: var(--accent-border); }
+.badge-cancelled { background: var(--bg-3);        color: var(--text-3);  border-color: var(--border); }
+.badge-noshow    { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
+.badge-waitlist  { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
+
+/* Class statuses (journal) */
+.badge-completed       { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
+.badge-class-cancelled { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
+
+/* Feed item type */
+.badge-sale { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
+
+/* Neutral type tag (settings: ticket type, training type code) */
+.badge-type { background: var(--bg-3); color: var(--text-2); border-color: var(--border); }
+
+/* Warning / negative state */
+.badge-danger { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
