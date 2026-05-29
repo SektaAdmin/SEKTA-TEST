@@ -714,6 +714,9 @@ export default function SchedulePage() {
                     <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
                   </div>
                 ))}
+                {HOURS.slice(1).map(h => (
+                  <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
+                ))}
               </div>
 
               {/* Day columns */}

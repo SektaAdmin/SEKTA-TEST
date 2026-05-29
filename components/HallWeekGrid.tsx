@@ -238,7 +238,7 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }
       }}
     >
       {HOURS.slice(1).map(h => (
-        <div key={h} className={styles.hourLine} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }} />
+        <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }} />
       ))}
       {items.map(s => {
         const { laneIndex, laneCount } = lanes.get(s.id) ?? { laneIndex: 0, laneCount: 1 }
@@ -354,6 +354,9 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
               <div key={h} className={styles.timeRow} style={{ height: HOUR_HEIGHT }}>
                 <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
               </div>
+            ))}
+            {HOURS.slice(1).map(h => (
+              <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * HOUR_HEIGHT}px` }} />
             ))}
           </div>
 

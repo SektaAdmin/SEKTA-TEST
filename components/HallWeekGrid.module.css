@@ -93,6 +93,7 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .timeRow {
@@ -101,9 +102,7 @@
   align-items: flex-start;
   justify-content: flex-end;
   padding: 3px 6px 0 0;
-  border-bottom: 1px solid var(--border);
 }
-.timeRow:last-child { border-bottom: none; }
 
 .timeLabel {
   font-size: 10px;
