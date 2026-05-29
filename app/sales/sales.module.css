@@ -383,9 +383,6 @@
 @media (max-width: 640px) {
   .main {
     margin-left: 0;
-    height: 100dvh;
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
-    box-sizing: border-box;
   }
 
   .topbar {
@@ -414,7 +411,7 @@
   }
   .filterSearchInput:focus { width: 100%; }
 
-  .content { padding: 16px 16px 16px; }
+  .content { padding: 16px 16px 72px; }
 
   .tableDesktop { display: none; }
   .cardList { display: flex; flex-direction: column; gap: 8px; }
@@ -424,9 +421,13 @@
   .paginationDesktop { display: none; }
   .paginationMobile {
     display: block;
-    flex-shrink: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
     padding: 10px 16px;
     border-top: 0.5px solid var(--border);
     background: var(--bg);
+    z-index: 10;
   }
 }
