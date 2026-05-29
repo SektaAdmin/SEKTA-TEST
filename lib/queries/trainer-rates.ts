@@ -57,6 +57,7 @@ export type TrainerPayment = {
 export type TrainerCashBalance = {
   cash_sales: { id: string; created_at: string; client_name: string; ticket_name: string | null; amount: number }[]
   expenses: { id: string; created_at: string; description: string | null; amount: number }[]
+  salary_payments: { id: string; created_at: string; payment_date: string; amount: number }[]
   total: number
 }
 
@@ -272,14 +273,14 @@ export async function calcTrainerSalaryDetail(
 }
 
 // Готівка на руках у тренера за період:
-// cash продажі де trainer_id = trainerId мінус studio_expenses де trainer_id = trainerId
+// cash-продажі − studio_expenses − виплати ЗП готівкою за цей же період
 export async function getTrainerCashBalance(
   supabase: SupabaseClient,
   trainerId: string,
   dateFrom: string,
   dateTo: string
 ): Promise<TrainerCashBalance> {
-  const [salesRes, expensesRes] = await Promise.all([
+  const [salesRes, expensesRes, paymentsRes] = await Promise.all([
     supabase
       .from('sales')
       .select('id, created_at, price_paid, ticket_name, clients(first_name, last_name)')
@@ -296,6 +297,14 @@ export async function getTrainerCashBalance(
       .gte('created_at', `${dateFrom}T00:00:00`)
       .lte('created_at', `${dateTo}T23:59:59`)
       .order('created_at'),
+    supabase
+      .from('trainer_payments')
+      .select('id, created_at, paid_amount, payment_date')
+      .eq('trainer_id', trainerId)
+      .eq('payment_method', 'cash')
+      .gte('payment_date', dateFrom)
+      .lte('payment_date', dateTo)
+      .order('payment_date'),
   ])
 
   const cashSales = ((salesRes.data ?? []) as any[]).map(s => ({
@@ -313,10 +322,23 @@ export async function getTrainerCashBalance(
     amount: Number(e.amount),
   }))
 
+  const salaryPayments = ((paymentsRes.data ?? []) as any[]).map(p => ({
+    id: p.id,
+    created_at: p.created_at,
+    payment_date: p.payment_date,
+    amount: Number(p.paid_amount),
+  }))
+
   const totalSales = cashSales.reduce((s, r) => s + r.amount, 0)
   const totalExpenses = expenses.reduce((s, r) => s + r.amount, 0)
+  const totalSalaryPaid = salaryPayments.reduce((s, r) => s + r.amount, 0)
 
-  return { cash_sales: cashSales, expenses, total: totalSales - totalExpenses }
+  return {
+    cash_sales: cashSales,
+    expenses,
+    salary_payments: salaryPayments,
+    total: totalSales - totalExpenses - totalSalaryPaid,
+  }
 }
 
 // Загальний борг студії перед тренером за весь час:

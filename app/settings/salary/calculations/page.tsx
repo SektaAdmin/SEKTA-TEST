@@ -379,6 +379,19 @@ export default function SalaryCalculationsPage() {
                         ))}
                       </>
                     )}
+                    {cashBalance.salary_payments.length > 0 && (
+                      <>
+                        <div className={styles.cashHeader}>Виплати ЗП</div>
+                        {cashBalance.salary_payments.map(p => (
+                          <div key={p.id} className={styles.cashItem}>
+                            <span className={styles.grayCell}>{formatDate(p.payment_date)}</span>
+                            <span>Виплата тренеру</span>
+                            <span></span>
+                            <span className={styles.cashItemExpense}>−{formatMoney(p.amount)}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 )}
                 <div className={styles.summaryRow}>
