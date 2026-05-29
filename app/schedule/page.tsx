@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { typeColor } from '@/lib/typeColor'
@@ -107,6 +109,43 @@ function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date, hourH
   d.setHours(clampedH, 0, 0, 0)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:00`
+}
+
+// ── Filter select ─────────────────────────────────────────────────
+const ALL = '__all__'
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  const radixValue = value === '' ? ALL : value
+  return (
+    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
+      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className={styles.fsChevron} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item
+                key={o.value === '' ? ALL : o.value}
+                value={o.value === '' ? ALL : o.value}
+                className={styles.fsItem}
+              >
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
 }
 
 // ── Card component ────────────────────────────────────────────────
@@ -520,44 +559,27 @@ export default function SchedulePage() {
 
         {/* Filter bar */}
         <div className={styles.filterBar}>
-            <div className={styles.filterGroup}>
-              <button
-                className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
-                onClick={() => setFilterHall('')}
-              >
-                Всі зали
-              </button>
-              {activeHalls.map(h => (
-                <button
-                  key={h.id}
-                  className={`${styles.filterBtn} ${filterHall === h.id ? styles.filterBtnActive : ''}`}
-                  onClick={() => setFilterHall(f => f === h.id ? '' : h.id)}
-                >
-                  {h.name}
-                </button>
-              ))}
-            </div>
-            <div className={styles.filterDivider} />
-            <div className={styles.filterGroup}>
-              <button
-                className={`${styles.filterBtn} ${filterTrainer === '' ? styles.filterBtnActive : ''}`}
-                onClick={() => setFilterTrainer('')}
-              >
-                Всі тренери
-              </button>
-              {(trainers as { id: string; name: string; is_active: boolean }[])
+          <FilterSelect
+            value={filterHall}
+            onChange={setFilterHall}
+            placeholder="Всі зали"
+            options={[
+              { value: '', label: 'Всі зали' },
+              ...activeHalls.map(h => ({ value: h.id, label: h.name })),
+            ]}
+          />
+          <FilterSelect
+            value={filterTrainer}
+            onChange={setFilterTrainer}
+            placeholder="Всі тренери"
+            options={[
+              { value: '', label: 'Всі тренери' },
+              ...(trainers as { id: string; name: string; is_active: boolean }[])
                 .filter(t => t.is_active)
-                .map(t => (
-                  <button
-                    key={t.id}
-                    className={`${styles.filterBtn} ${filterTrainer === t.id ? styles.filterBtnActive : ''}`}
-                    onClick={() => setFilterTrainer(f => f === t.id ? '' : t.id)}
-                  >
-                    {t.name}
-                  </button>
-                ))}
-            </div>
-          </div>
+                .map(t => ({ value: t.id, label: t.name })),
+            ]}
+          />
+        </div>
 
         {/* Mobile date label — below filter bar, mobile only */}
         <div className={styles.mobileDateLabel}>
