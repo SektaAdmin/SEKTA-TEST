@@ -427,7 +427,7 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  background: var(--bg-2);
+  background: var(--bg-3);
   border-radius: var(--radius) var(--radius) 0 0;
   flex-shrink: 0;
 }
@@ -436,7 +436,7 @@
 .weekHeader {
   display: grid;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--bg-3);
   flex-shrink: 0;
   min-height: 40px;
   align-items: center;
@@ -505,8 +505,6 @@
 /* Hall label row inside day header */
 .dayHallsRow {
   display: flex;
-  border-top: 1px solid var(--border);
-  background: var(--bg-3);
 }
 
 .dayHallLabel {
