@@ -47,9 +47,11 @@ export type TrainerPayment = {
   calculated_amount: number
   paid_amount: number
   payment_date: string
+  payment_method: 'cash' | 'fop' | 'personal_card'
   payment_type: 'advance' | 'final'
   notes: string | null
   created_at: string
+  trainers?: { name: string } | null
 }
 
 export type TrainerCashBalance = {
@@ -342,11 +344,25 @@ export async function listTrainerPayments(
 ): Promise<TrainerPayment[]> {
   const { data } = await supabase
     .from('trainer_payments')
-    .select('*')
+    .select('*, trainers(name)')
     .eq('trainer_id', trainerId)
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
     .order('created_at', { ascending: false })
+  return (data ?? []) as TrainerPayment[]
+}
+
+export async function listTrainerPaymentsForPeriod(
+  supabase: SupabaseClient,
+  dateFrom: string,
+  dateTo: string
+): Promise<TrainerPayment[]> {
+  const { data } = await supabase
+    .from('trainer_payments')
+    .select('*, trainers(name)')
+    .gte('payment_date', dateFrom)
+    .lte('payment_date', dateTo)
+    .order('payment_date', { ascending: false })
   return (data ?? []) as TrainerPayment[]
 }
 
@@ -359,6 +375,7 @@ export async function insertTrainerPayment(
     calculated_amount: number
     paid_amount: number
     payment_date: string
+    payment_method: 'cash' | 'fop' | 'personal_card'
     payment_type: 'advance' | 'final'
     notes: string | null
   }

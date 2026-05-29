@@ -18,7 +18,7 @@ import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
-import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
@@ -81,6 +81,7 @@ export default function SalaryCalculationsPage() {
   const [cashExpanded, setCashExpanded] = useState(false)
   const [paymentModal, setPaymentModal] = useState(false)
   const [paymentType, setPaymentType] = useState<'advance' | 'final'>('final')
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'fop' | 'personal_card'>('cash')
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDate, setPaymentDate] = useState('')
   const [paymentNotes, setPaymentNotes] = useState('')
@@ -132,6 +133,7 @@ export default function SalaryCalculationsPage() {
     setPaymentNotes('')
     setPaymentError(null)
     setPaymentType('final')
+    setPaymentMethod('cash')
     setPaymentModal(true)
   }
 
@@ -148,6 +150,7 @@ export default function SalaryCalculationsPage() {
       calculated_amount: totalTrainer,
       paid_amount: amount,
       payment_date: paymentDate,
+      payment_method: paymentMethod,
       payment_type: paymentType,
       notes: paymentNotes || null,
     })
@@ -370,6 +373,7 @@ export default function SalaryCalculationsPage() {
                       <tr>
                         <th>Дата</th>
                         <th>Тип</th>
+                        <th>Метод</th>
                         <th>Період</th>
                         <th className={styles.numCol}>Нараховано</th>
                         <th className={styles.numCol}>Виплачено</th>
@@ -383,6 +387,11 @@ export default function SalaryCalculationsPage() {
                           <td>
                             <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
                               {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={paymentClass((p.payment_method ?? 'cash') as any)}>
+                              {paymentLabel((p.payment_method ?? 'cash') as any)}
                             </span>
                           </td>
                           <td className={styles.grayCell}>{formatDate(p.period_start)} – {formatDate(p.period_end)}</td>
@@ -413,6 +422,9 @@ export default function SalaryCalculationsPage() {
                       <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
                         {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
                       </span>
+                      <span className={paymentClass((p.payment_method ?? 'cash') as any)}>
+                        {paymentLabel((p.payment_method ?? 'cash') as any)}
+                      </span>
                       <span className={styles.grayCell}>{formatDate(p.period_start)} – {formatDate(p.period_end)}</span>
                     </div>
                     {p.notes && <div className={styles.grayCell}>{p.notes}</div>}
@@ -440,6 +452,21 @@ export default function SalaryCalculationsPage() {
           <div className={styles.modalHint}>
             Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
             {cashOnHand > 0 && <> · Готівка: <strong>{formatMoney(cashOnHand)}</strong></>}
+          </div>
+
+          <div>
+            <label className={styles.fieldLabel}>Метод виплати</label>
+            <div className={styles.typeToggle}>
+              {(['cash', 'fop', 'personal_card'] as const).map(m => (
+                <button
+                  key={m}
+                  className={`${styles.typeBtn} ${paymentMethod === m ? styles.typeBtnActive : ''}`}
+                  onClick={() => setPaymentMethod(m)}
+                >
+                  {m === 'cash' ? 'Готівка' : m === 'fop' ? 'ФОП' : 'Картка'}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>

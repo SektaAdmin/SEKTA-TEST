@@ -6,11 +6,12 @@ import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
+import { listTrainerPaymentsForPeriod, type TrainerPayment } from '@/lib/queries/trainer-rates'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2, Banknote } from 'lucide-react'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
@@ -71,6 +72,7 @@ type SaleRow = {
 type FeedItem =
   | { kind: 'sale'; data: SaleRow }
   | { kind: 'expense'; data: StudioExpense }
+  | { kind: 'payment'; data: TrainerPayment }
 
 type PaymentFilter = 'all' | 'cash' | 'fop' | 'personal_card' | 'deposit'
 
@@ -118,6 +120,7 @@ export default function AccountingPage() {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [sales,    setSales]    = useState<SaleRow[]>([])
   const [expenses, setExpenses] = useState<StudioExpense[]>([])
+  const [trainerPayments, setTrainerPayments] = useState<TrainerPayment[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
   const [checked,  setChecked]  = useState<Set<string>>(new Set())
@@ -137,7 +140,7 @@ export default function AccountingPage() {
   const fetchData = useCallback(async (from: string, to: string) => {
     setLoading(true)
     setError(null)
-    const [salesRes, expensesRes] = await Promise.all([
+    const [salesRes, expensesRes, paymentsRes] = await Promise.all([
       supabase
         .from('sales')
         .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
@@ -145,10 +148,12 @@ export default function AccountingPage() {
         .lte('created_at', `${to}T23:59:59`)
         .order('created_at', { ascending: false }),
       listStudioExpenses(supabase, from, to),
+      listTrainerPaymentsForPeriod(supabase, from, to),
     ])
     if (salesRes.error) { setError(salesRes.error.message); setLoading(false); return }
     setSales((salesRes.data ?? []) as SaleRow[])
     setExpenses(expensesRes.data)
+    setTrainerPayments(paymentsRes)
     setLoading(false)
   }, [])
 
@@ -168,18 +173,24 @@ export default function AccountingPage() {
     const items: FeedItem[] = [
       ...sales.map(s => ({ kind: 'sale' as const, data: s })),
       ...expenses.map(e => ({ kind: 'expense' as const, data: e })),
+      ...trainerPayments.map(p => ({ kind: 'payment' as const, data: p })),
     ]
-    items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
+    // trainer_payments use payment_date (YYYY-MM-DD), sort by created_at when available
+    items.sort((a, b) => {
+      const aDate = a.data.created_at
+      const bDate = b.data.created_at
+      return bDate.localeCompare(aDate)
+    })
     return items
-  }, [sales, expenses])
+  }, [sales, expenses, trainerPayments])
 
   const filtered = useMemo<FeedItem[]>(() => {
     return feed.filter(item => {
       const method = item.data.payment_method
       if (paymentFilter !== 'all' && method !== paymentFilter) return false
-      if (paymentFilter === 'deposit' && item.kind === 'expense') return false
+      if (paymentFilter === 'deposit' && (item.kind === 'expense' || item.kind === 'payment')) return false
       if (paymentFilter === 'cash' && trainerFilter !== 'all') {
-        const tid = item.kind === 'sale' ? item.data.trainer_id : item.data.trainer_id
+        const tid = item.kind === 'payment' ? item.data.trainer_id : item.kind === 'sale' ? item.data.trainer_id : item.data.trainer_id
         if (tid !== trainerFilter) return false
       }
       return true
@@ -187,7 +198,7 @@ export default function AccountingPage() {
   }, [feed, paymentFilter, trainerFilter])
 
   const totals = useMemo(() => {
-    const t = { cash: 0, fop: 0, card: 0, deposit: 0, expenses: 0 }
+    const t = { cash: 0, fop: 0, card: 0, deposit: 0, expenses: 0, salaries: 0 }
     for (const item of filtered) {
       if (item.kind === 'sale') {
         const s = item.data
@@ -196,7 +207,7 @@ export default function AccountingPage() {
         else if (s.payment_method === 'fop')           t.fop     += amt
         else if (s.payment_method === 'personal_card') t.card    += amt
         else if (s.payment_method === 'deposit')       t.deposit += amt
-      } else {
+      } else if (item.kind === 'expense') {
         const e = item.data
         if (e.direction === 'expense') {
           t.expenses += e.amount
@@ -204,11 +215,17 @@ export default function AccountingPage() {
           else if (e.payment_method === 'fop')           t.fop     -= e.amount
           else if (e.payment_method === 'personal_card') t.card    -= e.amount
         } else {
-          // income: add to the corresponding method
           if (e.payment_method === 'cash')               t.cash    += e.amount
           else if (e.payment_method === 'fop')           t.fop     += e.amount
           else if (e.payment_method === 'personal_card') t.card    += e.amount
         }
+      } else {
+        const p = item.data
+        const method = p.payment_method ?? 'cash'
+        t.salaries += Number(p.paid_amount)
+        if (method === 'cash')               t.cash    -= Number(p.paid_amount)
+        else if (method === 'fop')           t.fop     -= Number(p.paid_amount)
+        else if (method === 'personal_card') t.card    -= Number(p.paid_amount)
       }
     }
     return t
@@ -313,6 +330,12 @@ export default function AccountingPage() {
               <div className={styles.summaryCard}>
                 <div className={styles.summaryLabel}>Витрати</div>
                 <div className={`${styles.summaryValue} ${styles.valNeg}`}>−{formatMoney(totals.expenses)}</div>
+              </div>
+            )}
+            {totals.salaries > 0 && (
+              <div className={styles.summaryCard}>
+                <div className={styles.summaryLabel}>Виплати ЗП</div>
+                <div className={`${styles.summaryValue} ${styles.valNeg}`}>−{formatMoney(totals.salaries)}</div>
               </div>
             )}
             <div className={`${styles.summaryCard} ${styles.summaryCardTotal}`}>
@@ -424,7 +447,7 @@ export default function AccountingPage() {
                             </td>
                           </tr>
                         )
-                      } else {
+                      } else if (item.kind === 'expense') {
                         const e = item.data
                         const { date, time } = fmtDatetime(e.created_at)
                         const isExpense = e.direction === 'expense'
@@ -478,6 +501,50 @@ export default function AccountingPage() {
                                   <Trash2 size={14} />
                                 </button>
                               </div>
+                            </td>
+                          </tr>
+                        )
+                      } else {
+                        const p = item.data
+                        const { date, time } = fmtDatetime(p.created_at)
+                        const method = (p.payment_method ?? 'cash') as PaymentMethod
+                        return (
+                          <tr key={`pay-${p.id}`} className={styles.expenseRow}>
+                            <td className={styles.checkCell}></td>
+                            <td className={styles.iconCell}>
+                              <Banknote size={16} className={styles.iconExpense} />
+                            </td>
+                            <td>
+                              <div className={styles.dateCell}>
+                                <span className={styles.dateMain}>{date}</span>
+                                <span className={styles.dateTime}>{time}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`${styles.clientName} ${styles.expenseLabel}`}>
+                                Виплата ЗП
+                              </span>
+                            </td>
+                            <td className={styles.ticketCell}>
+                              {p.trainers?.name
+                                ? <span className={styles.trainerName}>{p.trainers.name}</span>
+                                : <span className={styles.zero}>—</span>
+                              }
+                            </td>
+                            <td className={styles.trainerCell}>
+                              <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
+                                {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                              </span>
+                            </td>
+                            <td className={styles.priceCell}><span className={styles.zero}>—</span></td>
+                            <td className={styles.depositCell}><span className={styles.zero}>—</span></td>
+                            <td className={`${styles.amtCell} ${styles.amtExpense}`}>
+                              −{formatMoney(Number(p.paid_amount))}
+                            </td>
+                            <td>
+                              <span className={paymentClass(method)}>
+                                {paymentLabel(method)}
+                              </span>
                             </td>
                           </tr>
                         )
@@ -537,7 +604,7 @@ export default function AccountingPage() {
                         </div>
                       </div>
                     )
-                  } else {
+                  } else if (item.kind === 'expense') {
                     const e = item.data
                     const { date, time } = fmtDatetime(e.created_at)
                     const isExpense = e.direction === 'expense'
@@ -574,6 +641,39 @@ export default function AccountingPage() {
                               >
                                 <Trash2 size={14} />
                               </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  } else {
+                    const p = item.data
+                    const { date, time } = fmtDatetime(p.created_at)
+                    const method = (p.payment_method ?? 'cash') as PaymentMethod
+                    return (
+                      <div key={`pay-${p.id}`} className={`${styles.card} ${styles.expenseCard}`}>
+                        <div className={styles.cardMain}>
+                          <div className={styles.iconExpense}>
+                            <Banknote size={16} />
+                          </div>
+                          <div className={styles.cardBody}>
+                            <div className={styles.cardRow1}>
+                              <span className={`${styles.cardClient} ${styles.expenseLabel}`}>
+                                Виплата ЗП
+                              </span>
+                              <span className={`${styles.cardAmt} ${styles.amtExpense}`}>
+                                −{formatMoney(Number(p.paid_amount))}
+                              </span>
+                            </div>
+                            <div className={styles.cardRow2}>
+                              <span className={styles.trainerName}>{p.trainers?.name ?? '—'}</span>
+                              <span className={paymentClass(method)}>{paymentLabel(method)}</span>
+                            </div>
+                            <div className={styles.cardRow3}>
+                              <span className={styles.cardDatetime}>{date} · {time}</span>
+                              <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
+                                {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                              </span>
                             </div>
                           </div>
                         </div>
