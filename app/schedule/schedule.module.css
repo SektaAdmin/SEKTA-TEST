@@ -505,10 +505,15 @@
 /* Hall label row inside day header */
 .dayHallsRow {
   display: flex;
+  flex: 1;
+  align-items: stretch;
 }
 
 .dayHallLabel {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
   font-weight: 600;
   color: var(--text-2);
