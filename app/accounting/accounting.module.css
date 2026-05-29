@@ -67,11 +67,13 @@
 .presets {
   display: flex;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .paymentTabs {
   display: flex;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .preset {
@@ -99,6 +101,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .dateLabel {
