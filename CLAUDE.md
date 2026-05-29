@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (page layout refactor: shared page-layout/page-main/page-head/page-body/page-foot classes in globals.css; all pages except /schedule/* migrated)
+- **Last Updated**: 2026-05-29 (mobile layout fix: page-layout clamped to calc(100svh - BottomNav) — pagination no longer hidden under BottomNav)
 
 ## Commands
 
@@ -525,16 +525,18 @@ types/
 - **`lib/supabase.ts`** — єдиний синглтон `supabase`. Всі client-side компоненти імпортують `import { supabase } from '@/lib/supabase'`.
 - **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка), `.loading-dots` (3-крапковий спінер), `.data-table-wrap` + `.data-table` (стандартна таблиця). Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
 - **Shared page layout** (globals.css) — єдиний шаблон для всіх сторінок крім `/schedule/*`:
-  - `.page-layout` — flex-row обгортка (sidebar + main), замінює `styles.layout`
-  - `.page-main` — flex-column, `margin-left: var(--sidebar-w)`, `min-height: 100vh`. На ≤640px: `margin-left: 0`, `height: 100svh`
+  - `.page-layout` — flex-row обгортка (sidebar + main). На ≤640px: `height: calc(100svh - var(--bottom-nav-h) - env(safe-area-inset-bottom)); overflow: hidden` — **жорстко обрізає висоту** щоб контент ніколи не виходив під BottomNav
+  - `.page-main` — flex-column, `margin-left: var(--sidebar-w)`, `min-height: 100vh`. На ≤640px: `margin-left: 0`, `height: 100%`
   - `.page-head` — `flex-shrink: 0`, `position: sticky; top: 0; z-index: 10`. На ≤640px: `position: static`. Містить topbar + filterBar/tabNav
-  - `.page-body` — `flex: 1; min-height: 0; overflow-y: auto`. На ≤640px: `padding-bottom: BottomNav`. Основний scroll-контейнер
-  - `.page-foot` — `flex-shrink: 0; border-top`. На ≤640px: `padding-bottom: BottomNav + 10px`. Використовується для пагінації
-  - **Нова сторінка не потребує**: margin-left, height, overflow, padding-bottom — всі ці властивості вже в `.page-main`/`.page-body`/`.page-foot`
-  - **Виняток** — `/schedule` і `/schedule/templates`: scroll всередині `bodyGridWrapper` (HallWeekGrid), `padding-bottom` на ньому
-- **Мобільна scroll-архітектура** (після рефакторингу):
+  - `.page-body` — `flex: 1; min-height: 0; overflow-y: auto`. На ≤640px: `padding-bottom: 16px` (звичайний відступ, НЕ компенсація BottomNav — вона вже в `.page-layout`)
+  - `.page-foot` — `flex-shrink: 0; border-top`. На ≤640px: `padding-bottom: 8px`. Пагінація завжди видима — `page-layout` обрізає висоту вище BottomNav
+  - **Нова сторінка не потребує**: margin-left, height, overflow, padding-bottom для BottomNav — все в `.page-layout`/`.page-main`/`.page-body`/`.page-foot`
+  - **Виняток** — `/schedule` і `/schedule/templates`: не використовують `page-layout`, мають власну scroll-архітектуру всередині `bodyGridWrapper`
+- **Мобільна scroll-архітектура** (після рефакторингу 2026-05-29):
   - `html, body { overflow: hidden }` — глобально в `globals.css`, **ніколи не змінювати через JS**
-  - Module.css сторінок: мобільна `@media` містить тільки специфіку (розміри topbar, flex-wrap, padding контенту). **Не дублювати** `margin-left: 0; height: 100svh; overflow-y: auto` — вони в `.page-main`/`.page-body`
+  - **BottomNav** (`position: fixed; z-index: 200; bottom: 0`) — фіксований поза потоком. `.page-layout` обрізається на `calc(100svh - 56px - safe-area)` тому контент ніколи не потрапляє під нього фізично
+  - **НЕ додавати** `padding-bottom: calc(var(--bottom-nav-h) + ...)` на `page-body` або `page-foot` — це застарілий патерн, що призводив до перекриття пагінації. Висота обрізана на рівні `page-layout`
+  - Module.css сторінок: мобільна `@media` містить тільки специфіку (розміри topbar, flex-wrap, padding контенту). **Не дублювати** висоту/overflow — вони в `page-layout`/`page-main`/`page-body`
   - `.page-content` — застарілий клас, залишається в globals.css для зворотної сумісності (accounting/trainers/*, /schedule/[classId])
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.

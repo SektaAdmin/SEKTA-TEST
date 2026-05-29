@@ -275,21 +275,30 @@ input, select, textarea { border: 0.5px solid var(--border); background: var(--b
 }
 
 @media (max-width: 640px) {
+  /* Clamp the entire page to viewport excluding BottomNav */
+  .page-layout {
+    height: calc(100svh - var(--bottom-nav-h) - env(safe-area-inset-bottom));
+    overflow: hidden;
+    min-height: unset;
+  }
+
   .page-main {
     margin-left: 0;
     min-height: unset;
-    height: 100svh;
+    height: 100%;
   }
 
   .page-head {
     position: static;
   }
 
+  /* page-body scrolls within the clamped page-main; last item gets breathing room */
   .page-body {
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+    padding-bottom: 16px;
   }
 
+  /* page-foot sits at the natural bottom of page-main — no extra padding needed */
   .page-foot {
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px);
+    padding-bottom: 8px;
   }
 }
