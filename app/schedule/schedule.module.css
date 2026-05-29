@@ -1051,3 +1051,69 @@
   letter-spacing: -0.01em;
 }
 
+/* ── Card hover tooltip ─────────────────────────────────────────── */
+.cardTooltip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--bg-2);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  padding: 10px 0;
+  min-width: 180px;
+  max-width: 240px;
+  max-height: 320px;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+.tooltipLoading,
+.tooltipEmpty {
+  font-size: 13px;
+  color: var(--text-3);
+  padding: 4px 14px;
+}
+
+.tooltipSection {
+  padding: 0 0 6px;
+}
+.tooltipSection + .tooltipSection {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.tooltipSectionHead {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 14px 6px;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 14px;
+}
+
+.tooltipDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-3);
+}
+.tooltipDotEnrolled { background: var(--accent); }
+.tooltipDotAttended { background: var(--success); }
+.tooltipDotWaitlist { background: var(--warning); }
+
+.tooltipName {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

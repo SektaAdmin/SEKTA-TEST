@@ -1,9 +1,11 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
+import { listEnrollmentsForClass } from '@/lib/queries/enrollments'
 import { typeColor } from '@/lib/typeColor'
 import { useRealtime } from '@/lib/useRealtime'
 import Sidebar from '@/components/Sidebar'
@@ -149,6 +151,123 @@ function FilterSelect({ value, onChange, placeholder, options }: FilterSelectPro
   )
 }
 
+// ── Card hover tooltip ────────────────────────────────────────────
+type TooltipEnrollment = {
+  id: string
+  status: string
+  clients: { first_name: string | null; last_name: string | null } | null
+}
+
+interface CardTooltipProps {
+  classId: string
+  anchorRef: React.RefObject<HTMLButtonElement | null>
+  onClose: () => void
+  onMouseEnter: () => void
+}
+
+function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipProps) {
+  const [enrollments, setEnrollments] = useState<TooltipEnrollment[] | null>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0, side: 'right' as 'right' | 'left' })
+  const tooltipRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    listEnrollmentsForClass(supabase, classId).then(data => {
+      setEnrollments(data as TooltipEnrollment[])
+    })
+  }, [classId])
+
+  useEffect(() => {
+    const el = anchorRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const winW = window.innerWidth
+    const side = rect.right + 220 < winW ? 'right' : 'left'
+    setPos({
+      top: rect.top,
+      left: side === 'right' ? rect.right + 8 : rect.left - 8,
+      side,
+    })
+  }, [anchorRef])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        tooltipRef.current && !tooltipRef.current.contains(e.target as Node) &&
+        anchorRef.current && !anchorRef.current.contains(e.target as Node)
+      ) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [onClose, anchorRef])
+
+  const active = enrollments?.filter(e => e.status === 'enrolled' || e.status === 'attended') ?? []
+  const waitlist = enrollments?.filter(e => e.status === 'waitlist') ?? []
+
+  const clientName = (e: TooltipEnrollment) => {
+    const fn = e.clients?.first_name ?? ''
+    const ln = e.clients?.last_name ?? ''
+    return [fn, ln].filter(Boolean).join(' ') || '—'
+  }
+
+  const statusDot: Record<string, string> = {
+    enrolled: styles.tooltipDotEnrolled,
+    attended: styles.tooltipDotAttended,
+    waitlist: styles.tooltipDotWaitlist,
+  }
+
+  return createPortal(
+    <div
+      ref={tooltipRef}
+      className={styles.cardTooltip}
+      style={{
+        top: pos.top,
+        left: pos.side === 'right' ? pos.left : undefined,
+        right: pos.side === 'left' ? window.innerWidth - pos.left : undefined,
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onClose}
+    >
+      {enrollments === null ? (
+        <div className={styles.tooltipLoading}>Завантаження...</div>
+      ) : enrollments.length === 0 ? (
+        <div className={styles.tooltipEmpty}>Немає записів</div>
+      ) : (
+        <>
+          {active.length > 0 && (
+            <div className={styles.tooltipSection}>
+              <div className={styles.tooltipSectionHead}>
+                Записані ({active.length})
+              </div>
+              {active.map(e => (
+                <div key={e.id} className={styles.tooltipRow}>
+                  <span className={`${styles.tooltipDot} ${statusDot[e.status] ?? ''}`} />
+                  <span className={styles.tooltipName}>{clientName(e)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {waitlist.length > 0 && (
+            <div className={styles.tooltipSection}>
+              <div className={styles.tooltipSectionHead}>
+                Резерв ({waitlist.length})
+              </div>
+              {waitlist.map(e => (
+                <div key={e.id} className={styles.tooltipRow}>
+                  <span className={`${styles.tooltipDot} ${styles.tooltipDotWaitlist}`} />
+                  <span className={styles.tooltipName}>{clientName(e)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>,
+    document.body
+  )
+}
+
 // ── Card component ────────────────────────────────────────────────
 interface CardProps {
   cls: ClassWithJoins
@@ -169,9 +288,35 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
 
+  const [showTooltip, setShowTooltip] = useState(false)
+  const cardRef = useRef<HTMLButtonElement>(null)
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isMobile = useIsMobile()
+
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+  }, [])
+
+  const scheduleClose = useCallback(() => {
+    closeTimer.current = setTimeout(() => setShowTooltip(false), 120)
+  }, [])
+
+  const handleMouseEnter = useCallback(() => {
+    if (isMobile) return
+    cancelClose()
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    hoverTimer.current = setTimeout(() => setShowTooltip(true), 250)
+  }, [isMobile, cancelClose])
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    scheduleClose()
+  }, [scheduleClose])
 
   return (
     <button
+      ref={cardRef}
       data-card
       className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
       style={{
@@ -182,7 +327,17 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
         ['--card-color' as string]: color,
       }}
       onClick={e => { e.stopPropagation(); onClick() }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
+      {showTooltip && (
+        <CardTooltip
+          classId={cls.id}
+          anchorRef={cardRef}
+          onMouseEnter={cancelClose}
+          onClose={scheduleClose}
+        />
+      )}
       {isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
           {label} {formatTime(cls.starts_at)}
