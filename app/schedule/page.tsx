@@ -304,12 +304,6 @@ export default function SchedulePage() {
   const ARCHIVE_CUTOFF_DAYS = 30
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
 
-  // Lock body scroll for fixed-layout page (prevents scroll from topbar/bottomnav touch)
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
   // Force day view on mobile (week view causes horizontal overflow on small screens)
   useEffect(() => {
     function checkMobile() {

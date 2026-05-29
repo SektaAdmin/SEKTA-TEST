@@ -696,7 +696,7 @@
 
 @media (max-width: 640px) {
   /* Layout */
-  .main { margin-left: 0; height: 100dvh; overflow: hidden; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .main { margin-left: 0; height: 100svh; overflow: hidden; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
   .topbar { height: auto; min-height: 0; overflow: visible; padding: 10px 16px; }
   .btnTemplates { display: none; }
 

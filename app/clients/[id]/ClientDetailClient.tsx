@@ -81,9 +81,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [feedSales, setFeedSales] = useState<FeedSale[]>([])
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
-  const [isMobile] = useState(() =>
+  const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' && window.innerWidth <= 640
   )
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 640)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
 
   const fetchAllClientData = useCallback(async () => {
     const { client, sessionBalances, permanentEnrollments, upcomingEnrollments } =
@@ -402,45 +408,82 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 <span className={styles.empty2}>{MSG.empty.futureEnrollments}</span>
               </div>
             ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Дата і час</th>
-                      <th>Тип</th>
-                      <th>Тренер</th>
-                      <th>Зал</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...upcomingEnrollments].filter(e => e.classes).sort((a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()).map(e => {
-                      const cls = e.classes!
-                      const start = new Date(cls.starts_at)
-                      const end = new Date(start.getTime() + cls.duration_min * 60000)
-                      const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                      return (
-                        <tr key={e.id}>
-                          <td className={styles.dateCell}>
-                            {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
-                          </td>
-                          <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
-                          <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                          <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
-                          <td>
-                            <button
-                              className={styles.btnRowEdit}
-                              onClick={() => router.push(`/schedule/${e.class_id}`)}
-                            >
-                              Перейти
-                            </button>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Desktop table */}
+                <div className={`${styles.tableWrap} ${styles.upcomingTableDesktop}`}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>Дата і час</th>
+                        <th>Тип</th>
+                        <th>Тренер</th>
+                        <th>Зал</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...upcomingEnrollments].filter(e => e.classes).sort((a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()).map(e => {
+                        const cls = e.classes!
+                        const start = new Date(cls.starts_at)
+                        const end = new Date(start.getTime() + cls.duration_min * 60000)
+                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                        return (
+                          <tr key={e.id}>
+                            <td className={styles.dateCell}>
+                              {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                            </td>
+                            <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                            <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
+                            <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                            <td>
+                              <button
+                                className={styles.btnRowEdit}
+                                onClick={() => router.push(`/schedule/${e.class_id}`)}
+                              >
+                                Перейти
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile cards */}
+                <div className={`${styles.cardList} ${styles.upcomingCardList}`}>
+                  {[...upcomingEnrollments].filter(e => e.classes).sort((a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()).map(e => {
+                    const cls = e.classes!
+                    const start = new Date(cls.starts_at)
+                    const end = new Date(start.getTime() + cls.duration_min * 60000)
+                    const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                    const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    return (
+                      <div key={e.id} className={styles.itemCard}>
+                        <div className={styles.itemCardRow}>
+                          <span className={styles.itemCardMain}>
+                            {typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}
+                          </span>
+                          <span className={styles.itemCardDate}>{dateStr}</span>
+                        </div>
+                        <div className={styles.itemCardRow}>
+                          <span className={styles.itemCardSub}>
+                            {timeStr}{cls.trainers?.name ? ` · ${cls.trainers.name}` : ''}{cls.halls?.name ? ` · ${cls.halls.name}` : ''}
+                          </span>
+                        </div>
+                        <div className={styles.itemCardActions}>
+                          <button
+                            className={styles.btnRowEdit}
+                            style={{ flex: 1, height: 36 }}
+                            onClick={() => router.push(`/schedule/${e.class_id}`)}
+                          >
+                            Перейти до заняття
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
             )}
           </section>
 

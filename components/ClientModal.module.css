@@ -37,6 +37,7 @@
   border-top: 0.5px solid var(--border);
   margin-top: 4px;
   padding-top: 12px;
+  overflow-x: auto;
 }
 
 .historyTitle {

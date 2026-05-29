@@ -74,5 +74,5 @@
   .pagination { flex-wrap: wrap; gap: 8px; padding: 12px 0 0; }
   .left { width: 100%; justify-content: space-between; }
   .btns { width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px; }
-  .btn { min-width: 36px; padding: 6px 0; }
+  .btn { min-width: 44px; min-height: 44px; padding: 0; }
 }
