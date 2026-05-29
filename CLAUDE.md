@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (studio_expenses — студійні витрати/доходи без клієнта; StudioExpenseModal; /accounting інтегровано)
+- **Last Updated**: 2026-05-29 (mobile refactor: useIsMobile хук, mobileFullScreen prop, ClassDetailModal → ModalShell, min-height fixes)
 
 ## Commands
 
@@ -424,7 +424,7 @@ components/
     navigation.tsx            — SVG-компоненти іконок (SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon)
   SaleModal.tsx               — продаж/депозит
   ClientModal.tsx             — створення/редагування клієнта
-  ClassModal.tsx              — створення/редагування заняття; завжди `fullScreen` (незалежно від пристрою)
+  ClassModal.tsx              — створення/редагування заняття; завжди `mobileFullScreen` (тільки на ≤640px)
   SeriesModal.tsx             — шаблон серії
   EnrollClientModal.tsx       — запис клієнта з профілю
   ClassDetailModal.tsx        — деталі заняття (модальний варіант); таблиця записаних: нумерація (#), статус-бейдж, ActionSelect для зміни статусу; `table-layout: fixed` на мобільному (без горизонтального скролу)
@@ -456,6 +456,7 @@ contexts/
   RefsContext.tsx             — глобальний контекст довідників (tickets, trainers, halls, trainingTypes)
 
 hooks/
+  useIsMobile.ts              — `matchMedia`-based хук (SSR-safe, синхронізований з CSS); breakpoint=640px за замовчуванням. Єдине місце для isMobile detection — не дублювати `window.innerWidth` в компонентах
   useClients.ts               — список клієнтів
   useClientBalance.ts         — баланс конкретного клієнта
   useSales.ts                 — продажі
@@ -525,16 +526,16 @@ types/
 - **`globals.css` shared utilities**: `.btn-primary` (акцентна кнопка), `.loading-dots` (3-крапковий спінер), `.data-table-wrap` + `.data-table` (стандартна таблиця), **`.page-content`** (scroll-контейнер сторінки на мобільному — `flex:1; overflow-y:auto; padding-bottom: BottomNav`). Нестандартні таблиці (accounting, salary, rates) — залишаються в module.css через унікальні overrides.
 - **Мобільна scroll-архітектура** — єдина модель для всіх сторінок (`≤640px`):
   - `html, body { overflow: hidden }` — глобально в `globals.css`, **ніколи не змінювати через JS** (`document.body.style.overflow` заборонено)
-  - `main { height: 100svh; display: flex; flex-direction: column }` — в кожному `*.module.css` в `@media (≤640px)`
+  - `main { margin-left: 0; min-height: unset; height: 100svh; display: flex; flex-direction: column }` — в кожному `*.module.css` в `@media (≤640px)`. `min-height: unset` обов'язковий — скидає десктопний `min-height: 100vh`, інакше він перевизначить `height: 100svh`
   - `topbar`, `filterBar` — `position: static; flex-shrink: 0` на мобільному (sticky не потрібен)
-  - Scroll-контейнер: `<div className={`${styles.content} page-content`}>` (або `tabSection` в /settings) — клас `page-content` дає `flex:1; overflow-y:auto; padding-bottom: BottomNav`
+  - Scroll-контейнер: `<div className={`${styles.content} page-content`}>` (або `tabSection` в /settings) — клас `page-content` дає `flex:1; overflow-y:auto; padding-bottom: BottomNav`. **Не дублювати** `flex:1; overflow-y:auto; min-height:0` в мобільному `.content` — вони вже є в `.page-content`
   - Виняток — `/schedule` і `/schedule/templates`: scroll всередині `bodyGridWrapper` (HallWeekGrid), `padding-bottom` на ньому, не на `.main`
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
-- **ModalShell** (`components/ui/ModalShell.tsx`) — обгортка для всіх модалок (overlay, header з title + close, body, footer). Всі 9 модалок (`SaleModal`, `ClientModal`, `ClassModal`, `HallModal`, `TicketModal`, `SeriesModal`, `TrainerModal`, `TrainingTypeModal` + `ModalShell` для `ClassDetailModal`) мають уніфіковану оболонку. Props: `title`, `onClose`, `footer`, `children`, `width` (дефолт 420), `modalClassName`, `bodyClassName`, `fullScreen` (boolean).
+- **ModalShell** (`components/ui/ModalShell.tsx`) — обгортка для всіх модалок (overlay, header з title + close, body, footer). Всі 9 модалок (`SaleModal`, `ClientModal`, `ClassModal`, `HallModal`, `TicketModal`, `SeriesModal`, `TrainerModal`, `TrainingTypeModal`, `ClassDetailModal`) мають уніфіковану оболонку. Props: `title`, `onClose`, `footer`, `children`, `width` (дефолт 420), `modalClassName`, `bodyClassName`, `mobileFullScreen` (boolean), `headerActions` (ReactNode — додаткові кнопки в header перед Close).
   - **Mobile bottom sheet**: за замовчуванням на ≤640px модалка — bottom sheet (`border-radius` зверху, `max-height: 92dvh`, анімація `bottomSheetIn`).
-  - **`fullScreen` prop**: на мобільному модалка займає весь екран як окрема сторінка. Overlay: `background: var(--bg)`, `align-items: stretch`. Modal: `align-self: stretch`, `height: auto`, `border-radius: 0`, `border: none`. Використовується в `SaleModal` (завжди), `SeriesModal` (при `isMobile`), `ClassDetailModal` (при `isMobile`), `ClassModal` (завжди). ⚠️ Overlay має `background: var(--bg)` — без цього сторінка і BottomNav просвічують крізь прозорий overlay.
+  - **`mobileFullScreen` prop**: на мобільному (≤640px) модалка займає весь екран як окрема сторінка. Overlay: `background: var(--bg)`, `align-items: stretch`. Modal: `align-self: stretch`, `height: auto`, `border-radius: 0`, `border: none`. Використовується в `SaleModal` (завжди), `SeriesModal` (при `isMobile`), `ClassDetailModal` (при `isMobile`), `ClassModal` (завжди), `EnrollClientModal` (завжди). ⚠️ Overlay має `background: var(--bg)` — без цього сторінка і BottomNav просвічують крізь прозорий overlay.
   - **z-index**: overlay `z-index: 300` > BottomNav `z-index: 200`.
 - **FormField** (`components/ui/FormField.tsx`) — уніфікований wrapper поля: label + control + errorHint + hint. ⚠️ `input[type="time"]` має власний браузерний padding і рендериться вищим за інші поля — нормалізовано в `FormField.module.css` через `height: 39px; padding-top: 0; padding-bottom: 0`.
 - **ModalFooter** (`components/ui/ModalFooter.tsx`) — уніфіковані footer-кнопки для всіх модалок. Props: `onCancel`, `onSave` (optional), `saveLabel` (дефолт: "Зберегти"), `cancelLabel` (дефолт: "Скасувати"), `loading`, `saveType` ('button'|'submit'), `disabled`. Кнопки рендеряться лише якщо `onSave` передана.
