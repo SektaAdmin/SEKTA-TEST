@@ -5,7 +5,7 @@
   justify-content: space-between;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .topbarActions {
@@ -18,7 +18,7 @@
   display: inline-flex;
   align-items: center;
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   height: var(--control-h);
   padding: 0 14px;
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
   background: var(--bg);
 }
@@ -77,7 +77,7 @@
 
 .preset {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   height: var(--control-h);
   padding: 0 12px;
@@ -115,7 +115,7 @@
   height: var(--control-h);
   padding: 0 10px;
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -140,7 +140,7 @@
 
 .fsContent {
   background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 500;
@@ -170,7 +170,7 @@
   display: flex;
   gap: 12px;
   padding: 16px var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
   flex-wrap: wrap;
@@ -186,7 +186,7 @@
 
 .summaryCard {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 18px;
   flex: 1;
@@ -393,7 +393,7 @@
 /* ── Mobile cards ────────────────────────────────────────────── */
 .card {
   background: var(--bg-2);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   padding: 12px 16px;
   cursor: pointer;
 }

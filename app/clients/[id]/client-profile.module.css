@@ -6,7 +6,7 @@
   gap: 16px;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .topbarLeft {
@@ -68,7 +68,7 @@
 /* ── Card ───────────────────────────────────────────────────── */
 .card {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 24px;
 }
@@ -161,7 +161,7 @@
   padding: 8px 12px;
   background: var(--bg-3);
   border-radius: var(--radius-sm);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
 }
 
 .sessionType {
@@ -209,14 +209,14 @@
   color: var(--text-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .table td {
   padding: 10px 12px;
   color: var(--text);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -240,7 +240,7 @@
   height: 32px;
   padding: 0 14px;
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -254,7 +254,7 @@
   height: 28px;
   padding: 0 12px;
   background: none;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -285,7 +285,7 @@
   margin-top: 12px;
   padding: 8px;
   background: none;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -305,7 +305,7 @@
   height: 26px;
   padding: 0 10px;
   background: none;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -319,7 +319,7 @@
   height: 26px;
   padding: 0 10px;
   background: none;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--danger);
   font-size: 14px;
@@ -342,7 +342,7 @@
 
 .confirmBox {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px 28px;
   max-width: 360px;
@@ -378,7 +378,7 @@
   height: 32px;
   padding: 0 14px;
   background: none;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -435,7 +435,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   margin: -20px -24px 16px;
   padding: 0 24px;
 }
@@ -456,7 +456,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color var(--motion-fast), border-color var(--motion-fast);
-  margin-bottom: -0.5px;
+  margin-bottom: -1px;
 }
 .tab:hover { color: var(--text-2); }
 .tabActive { color: var(--text) !important; border-bottom-color: var(--accent); }
@@ -514,7 +514,7 @@
 
   .itemCard {
     background: var(--bg);
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 12px 14px;
     display: flex;

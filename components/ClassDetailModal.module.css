@@ -38,7 +38,7 @@
   align-items: flex-start;
   gap: 10px;
   background: var(--warning-dim);
-  border: 0.5px solid rgba(224,160,64,0.35);
+  border: 1px solid rgba(224,160,64,0.35);
   border-radius: var(--radius);
   padding: 12px 16px;
   font-size: 14px;
@@ -56,7 +56,7 @@
 /* ── Details Card ────────────────────────────────────────────── */
 .detailsCard {
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 20px;
   display: flex;
@@ -117,7 +117,7 @@
 }
 
 .detailsDivider {
-  height: 0.5px;
+  height: 1px;
   background: var(--border);
   width: 100%;
 }
@@ -221,7 +221,7 @@
 /* ── Add client form ─────────────────────────────────────────── */
 .addForm {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
   display: flex;
@@ -275,7 +275,7 @@
 
 .btnCancelAdd {
   background: transparent;
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--text-2);
@@ -311,7 +311,7 @@
 /* ── Table ───────────────────────────────────────────────────── */
 .tableContainer {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -332,14 +332,14 @@
   color: var(--text-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .table td {
   padding: 12px 16px;
   color: var(--text);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -397,7 +397,7 @@
 .waitlistSection {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
 }
 
 .waitlistTitle {
@@ -414,7 +414,7 @@
   font-size: 13px;
   font-family: var(--font);
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   cursor: pointer;
@@ -442,7 +442,7 @@
   font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text-3);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
@@ -504,14 +504,14 @@
   align-items: stretch;
   gap: 8px;
   padding: 16px 20px;
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
   justify-content: flex-end;
 }
 
 .btnEdit {
   background: transparent;
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--text-2);
@@ -524,7 +524,7 @@
 
 .btnCancel {
   background: transparent;
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--danger);
@@ -537,7 +537,7 @@
 
 .btnRestore {
   background: var(--accent-dim);
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
   color: var(--accent);
@@ -561,7 +561,7 @@
 .confirmDialog {
   width: 100%;
   background: var(--bg);
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -616,7 +616,7 @@
   font-size: 11px;
   color: var(--text-3);
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 1px 5px;
   vertical-align: middle;

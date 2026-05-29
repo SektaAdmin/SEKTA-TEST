@@ -6,7 +6,7 @@
   gap: 16px;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* ── Filter bar ─────────────────────────────────────────────── */
@@ -15,7 +15,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
@@ -36,7 +36,7 @@
 
 .searchInput {
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   height: var(--control-h); padding: 0 30px;
   color: var(--text);
@@ -69,7 +69,7 @@
 /* ── Page-size select ────────────────────────────────────────── */
 .pageSizeSelect {
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   height: var(--control-h); padding: 0 10px;
   color: var(--text-2);
@@ -93,7 +93,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 14px 16px;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg);
   cursor: pointer;
@@ -249,7 +249,7 @@
 
 .pageBtn {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 5px 0;
   color: var(--text-2);

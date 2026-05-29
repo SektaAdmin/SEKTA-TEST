@@ -7,7 +7,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px 14px;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg);
 }
@@ -41,7 +41,7 @@
   flex-shrink: 0;
   padding: 6px 14px;
   border-radius: var(--radius-sm);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   font-size: 14px;
   color: var(--text-2);
   text-decoration: none;
@@ -74,7 +74,7 @@
     flex-wrap: nowrap;
     gap: 6px;
     padding: 8px 16px;
-    border-bottom: 0.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
     background: var(--bg);
   }
   .tabNav::-webkit-scrollbar { display: none; }
@@ -87,7 +87,7 @@
   justify-content: space-between;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
@@ -133,7 +133,7 @@
   font-weight: 500;
   background: var(--bg-3);
   color: var(--text-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   white-space: nowrap;
 }
 
@@ -146,7 +146,7 @@
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text-3);
   transition: background 0.12s, color 0.12s, border-color 0.12s, opacity 0.12s;
@@ -180,7 +180,7 @@
 /* ── Edit button ─────────────────────────────────────────────── */
 .editBtn {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: var(--btn-sm-py) var(--btn-sm-px);
   font-size: var(--btn-sm-font);
@@ -232,7 +232,7 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--badge-radius);
   min-width: 20px;
   padding: 1px 7px;
@@ -254,7 +254,7 @@
 /* ── Restore button ──────────────────────────────────────────── */
 .restoreBtn {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: var(--btn-sm-py) var(--btn-sm-px);
   font-size: var(--btn-sm-font);

@@ -4,7 +4,7 @@
   justify-content: space-between;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
@@ -19,7 +19,7 @@
   align-items: center;
   padding: 10px var(--topbar-px);
   background: var(--bg);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* ── Filter controls ─────────────────────────────────────────── */
@@ -35,7 +35,7 @@
   height: var(--control-h);
   padding: 0 10px;
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -60,7 +60,7 @@
 
 .fsContent {
   background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 500;
@@ -93,7 +93,7 @@
   height: var(--control-h);
   flex-shrink: 0;
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-3);
   cursor: pointer;
@@ -122,7 +122,7 @@
 /* ── Journal card (mobile) ───────────────────────────────────── */
 .card {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 14px;
   display: flex;
@@ -198,7 +198,7 @@
 
 .pageBtn {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 5px 0;
   color: var(--text-2);
@@ -224,7 +224,7 @@
   border-radius: var(--badge-radius);
   background: var(--success-dim);
   color: var(--success);
-  border: 0.5px solid rgba(0, 165, 68, 0.25);
+  border: 1px solid rgba(0, 165, 68, 0.25);
   white-space: nowrap;
 }
 
@@ -236,7 +236,7 @@
   border-radius: var(--badge-radius);
   background: var(--danger-dim);
   color: var(--danger);
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   white-space: nowrap;
 }
 

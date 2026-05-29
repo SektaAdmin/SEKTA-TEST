@@ -21,7 +21,7 @@
   justify-content: space-between;
   height: var(--topbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
   position: sticky;
   top: 0;
@@ -42,7 +42,7 @@
   align-items: center;
   background: transparent;
   color: var(--text-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   height: var(--control-h);
   padding: 0 14px;
@@ -59,7 +59,7 @@
   padding: 0 14px;
   background: var(--accent-dim);
   color: var(--accent);
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: var(--font);
@@ -88,7 +88,7 @@
 /* ── Table ───────────────────────────────────────────────────── */
 .tableWrap {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow-x: auto;
   max-width: 600px;
@@ -114,14 +114,14 @@
   color: var(--text-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .table td {
   padding: 11px 16px;
   color: var(--text);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -133,7 +133,7 @@
   font-size: 14px;
   color: var(--text-2);
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 8px;
   white-space: nowrap;
@@ -170,7 +170,7 @@
 /* ── Rate card (mobile) ──────────────────────────────────────── */
 .card {
   background: var(--bg-2);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 14px;
   display: flex;
@@ -221,7 +221,7 @@
 
 .modal {
   background: var(--bg-2);
-  border: 0.5px solid var(--border-strong);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   width: 360px;
   max-width: calc(100vw - 32px);
@@ -233,7 +233,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .modalTitle {
@@ -270,7 +270,7 @@
   width: 100%;
   height: var(--control-h);
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -299,14 +299,14 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 20px;
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
 }
 
 .cancelBtn {
   height: var(--control-h);
   padding: 0 16px;
   background: transparent;
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -320,7 +320,7 @@
   height: var(--control-h);
   padding: 0 16px;
   background: var(--accent-dim);
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
   font-size: 14px;
@@ -335,7 +335,7 @@
   height: var(--control-h);
   padding: 0 16px;
   background: var(--danger-dim);
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   color: var(--danger);
   font-size: 14px;

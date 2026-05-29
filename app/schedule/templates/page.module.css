@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
   position: sticky;
   top: 0;
@@ -67,7 +67,7 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   width: 28px;
   height: 28px;
@@ -101,7 +101,7 @@
   top: calc(100% + 8px);
   right: 0;
   background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius);
   padding: 14px 16px;
   min-width: 320px;
@@ -126,7 +126,7 @@
 .generateInput {
   width: 60px;
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   color: var(--text);
@@ -147,7 +147,7 @@
 /* ── View toggle ─────────────────────────────────────────── */
 .viewToggle {
   display: flex;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -163,7 +163,7 @@
   cursor: pointer;
   transition: color var(--motion-fast), background var(--motion-fast);
 }
-.toggleBtn + .toggleBtn { border-left: 0.5px solid var(--border); }
+.toggleBtn + .toggleBtn { border-left: 1px solid var(--border); }
 .toggleBtn:hover { color: var(--text); background: var(--bg-3); }
 
 .toggleActive {
@@ -177,14 +177,14 @@
   cursor: default;
 }
 .toggleActive + .toggleBtn,
-.toggleBtn + .toggleActive { border-left: 0.5px solid var(--border); }
+.toggleBtn + .toggleActive { border-left: 1px solid var(--border); }
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btnGenerate {
   height: var(--control-h);
   padding: 0 14px;
   background: transparent;
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
   font-size: 14px;
@@ -199,7 +199,7 @@
   height: var(--control-h);
   padding: 0 14px;
   background: transparent;
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   color: var(--danger);
   font-size: 14px;
@@ -221,7 +221,7 @@
   height: var(--control-h);
   padding: 0 14px;
   background: var(--danger-dim);
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   color: var(--danger);
   font-size: 14px;
@@ -239,7 +239,7 @@
   height: var(--control-h);
   padding: 0 12px;
   background: transparent;
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: 14px;
@@ -275,7 +275,7 @@
   gap: 8px;
   height: var(--filterbar-h);
   padding: 0 var(--topbar-px);
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
   position: sticky;
@@ -291,7 +291,7 @@
   height: var(--control-h);
   padding: 0 10px;
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -316,7 +316,7 @@
 
 .fsContent {
   background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 500;
@@ -355,7 +355,7 @@
   height: 26px;
   padding: 0 6px 0 10px;
   background: var(--accent-dim);
-  border: 0.5px solid var(--accent-border);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
   font-size: 14px;
@@ -397,7 +397,7 @@
 
 .gridCard {
   margin: 12px 16px 16px;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-2);
   display: flex;
@@ -445,7 +445,7 @@
   letter-spacing: 0.05em;
   font-weight: 500;
   padding: 0 12px 10px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
@@ -454,7 +454,7 @@
 
 .row td {
   padding: 12px 12px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
 }
@@ -473,7 +473,7 @@
 
 .btnEdit {
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--text-2);
@@ -487,7 +487,7 @@
 
 .btnDanger {
   background: transparent;
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);

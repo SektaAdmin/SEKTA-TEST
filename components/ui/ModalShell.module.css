@@ -12,7 +12,7 @@
 
 .modal {
   background: var(--bg-2);
-  border: 0.5px solid var(--border-hover);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius);
   max-height: 90vh;
   display: flex;
@@ -25,7 +25,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px 16px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .header h2 {
@@ -68,7 +68,7 @@
   gap: 8px;
   justify-content: flex-end;
   padding: 14px 20px;
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
 }
 
 @media (max-width: 640px) {

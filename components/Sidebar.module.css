@@ -3,7 +3,7 @@
   min-width: var(--sidebar-w);
   height: 100vh;
   background: var(--bg-2);
-  border-right: 0.5px solid var(--border);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
@@ -18,7 +18,7 @@
   letter-spacing: 0.18em;
   color: var(--accent);
   padding: 0 18px 20px;
-  border-bottom: 0.5px solid var(--border);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 10px;
 }
 

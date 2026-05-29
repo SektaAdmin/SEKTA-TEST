@@ -18,7 +18,7 @@
 .input {
   padding: 9px 11px;
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -32,7 +32,7 @@
 .textarea {
   padding: 9px 11px;
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -52,6 +52,6 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--danger-dim);
-  border: 0.5px solid rgba(255,92,92,0.25);
+  border: 1px solid rgba(255,92,92,0.25);
 }
 

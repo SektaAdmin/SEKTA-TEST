@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   width: 30px;
   height: 30px;
@@ -33,5 +33,5 @@
 }
 
 .navBtn:active {
-  transform: translateY(0.5px);
+  transform: translateY(1px);
 }

@@ -11,7 +11,7 @@
 /* ── Постійники секція ───────────────────────────────────── */
 .divider {
   border: none;
-  border-top: 0.5px solid var(--border);
+  border-top: 1px solid var(--border);
   margin: 4px 0;
 }
 
@@ -74,7 +74,7 @@
   gap: 10px;
   padding: 10px 12px;
   background: var(--bg-3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   transition: border-color var(--motion-fast);
 }
@@ -97,7 +97,7 @@
   font-size: 11px;
   color: var(--text-3);
   background: var(--bg);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 1px 5px;
   white-space: nowrap;
@@ -106,7 +106,7 @@
 
 .btnRemove {
   background: transparent;
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);
@@ -123,7 +123,7 @@
 
 .btnRemoveConfirm {
   background: var(--danger-dim);
-  border: 0.5px solid var(--danger-border);
+  border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);
