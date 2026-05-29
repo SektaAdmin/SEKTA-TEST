@@ -569,6 +569,7 @@
 /* ── Footer Actions ──────────────────────────────────────────── */
 .footerActions {
   display: flex;
+  align-items: stretch;
   gap: 8px;
   padding: 16px 20px;
   border-top: 0.5px solid var(--border);
