@@ -88,6 +88,11 @@ export default function TemplatesPage() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'list'>('week')
   // activeDow: index into DAYS_ORDER (0=Пн…6=Нд)
   const [activeDowIndex, setActiveDowIndex] = useState(0)

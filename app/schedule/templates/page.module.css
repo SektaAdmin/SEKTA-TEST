@@ -14,7 +14,7 @@
 }
 
 @media (max-width: 640px) {
-  .page { margin-left: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .page { margin-left: 0; height: 100dvh; overflow: hidden; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
 }
 
 /* ── Topbar ──────────────────────────────────────────────── */
@@ -544,7 +544,6 @@
 
 @media (max-width: 640px) {
   /* Layout */
-  .page { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
 
   /* Topbar — hide desktop sections, show mobile nav */
   .topbar { height: auto; min-height: 0; overflow: visible; flex-wrap: wrap; padding: 12px var(--topbar-px); gap: 8px; }
