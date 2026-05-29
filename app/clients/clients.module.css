@@ -13,7 +13,7 @@
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; height: 100dvh; display: flex; flex-direction: column; }
+  .main { margin-left: 0; min-height: unset; height: 100dvh; display: flex; flex-direction: column; }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
 }
 
