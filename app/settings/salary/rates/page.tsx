@@ -17,6 +17,7 @@ import { formatMoney, formatDate } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import ss from '@/app/settings/settings.module.css'
+import sm from '@/app/settings/salary/salary.module.css'
 import styles from './rates.module.css'
 
 const SALARY_TABS = [
@@ -331,11 +332,11 @@ export default function SalaryRatesPage() {
 
       {/* Archive confirm dialog */}
       {confirm.open && (
-        <div className={styles.overlay} onClick={() => setConfirm({ open: false })}>
-          <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Архівувати ставку?</h2>
-              <button className={styles.closeBtn} onClick={() => setConfirm({ open: false })}>×</button>
+        <div className={sm.overlay} onClick={() => setConfirm({ open: false })}>
+          <div className={`${sm.modal} ${styles.confirmDialog}`} onClick={e => e.stopPropagation()}>
+            <div className={sm.modalHeader}>
+              <h2 className={sm.modalTitle}>Архівувати ставку?</h2>
+              <button className={sm.closeBtn} onClick={() => setConfirm({ open: false })}>×</button>
             </div>
             <div className={styles.confirmBody}>
               <p className={styles.confirmText}>
@@ -347,8 +348,8 @@ export default function SalaryRatesPage() {
                 {confirm.rate.hall_id && <span className={styles.grayCell}>· {hallLabel(confirm.rate)}</span>}
               </div>
             </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={() => setConfirm({ open: false })}>Скасувати</button>
+            <div className={sm.modalFooter}>
+              <button className={sm.cancelBtn} onClick={() => setConfirm({ open: false })}>Скасувати</button>
               <button className={styles.dangerBtn} onClick={handleArchiveConfirmed}>Архівувати</button>
             </div>
           </div>
@@ -357,20 +358,20 @@ export default function SalaryRatesPage() {
 
       {/* Add / Edit modal */}
       {modal.open && (
-        <div className={styles.overlay} onClick={() => setModal({ open: false })}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>{isEditing ? 'Редагувати ставку' : 'Додати ставку'}</h2>
-              <button className={styles.closeBtn} onClick={() => setModal({ open: false })}>×</button>
+        <div className={sm.overlay} onClick={() => setModal({ open: false })}>
+          <div className={`${sm.modal} ${styles.modalWide}`} onClick={e => e.stopPropagation()}>
+            <div className={sm.modalHeader}>
+              <h2 className={sm.modalTitle}>{isEditing ? 'Редагувати ставку' : 'Додати ставку'}</h2>
+              <button className={sm.closeBtn} onClick={() => setModal({ open: false })}>×</button>
             </div>
-            <div className={styles.modalBody}>
+            <div className={sm.modalBody}>
               {isEditing && (
                 <p className={styles.confirmText}>
                   Поточна ставка буде архівована, нова набуде чинності з обраної дати.
                 </p>
               )}
 
-              <label className={styles.label}>Тип заняття</label>
+              <label className={sm.label}>Тип заняття</label>
               <select
                 className={styles.select}
                 value={formTicketType}
@@ -382,7 +383,7 @@ export default function SalaryRatesPage() {
                 ))}
               </select>
 
-              <label className={styles.label}>Тренер</label>
+              <label className={sm.label}>Тренер</label>
               <select
                 className={styles.select}
                 value={formTrainerId}
@@ -394,7 +395,7 @@ export default function SalaryRatesPage() {
                 ))}
               </select>
 
-              <label className={styles.label}>Зал (необов'язково)</label>
+              <label className={sm.label}>Зал (необов'язково)</label>
               <select
                 className={styles.select}
                 value={formHallId}
@@ -408,9 +409,9 @@ export default function SalaryRatesPage() {
 
               <div className={styles.rateRow}>
                 <div className={styles.rateField}>
-                  <label className={styles.label}>Ставка тренера ₴/год</label>
+                  <label className={sm.label}>Ставка тренера ₴/год</label>
                   <input
-                    className={styles.input}
+                    className={sm.input}
                     type="number"
                     min="0"
                     step="10"
@@ -420,9 +421,9 @@ export default function SalaryRatesPage() {
                   />
                 </div>
                 <div className={styles.rateField}>
-                  <label className={styles.label}>Ставка студії ₴/год</label>
+                  <label className={sm.label}>Ставка студії ₴/год</label>
                   <input
-                    className={styles.input}
+                    className={sm.input}
                     type="number"
                     min="0"
                     step="10"
@@ -433,19 +434,19 @@ export default function SalaryRatesPage() {
                 </div>
               </div>
 
-              <label className={styles.label}>Діє з дати</label>
+              <label className={sm.label}>Діє з дати</label>
               <input
-                className={styles.input}
+                className={sm.input}
                 type="date"
                 value={formValidFrom}
                 onChange={e => setFormValidFrom(e.target.value)}
               />
 
-              {error && <div className={styles.errorMsg}>{error}</div>}
+              {error && <div className={sm.errorMsg}>{error}</div>}
             </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={() => setModal({ open: false })}>Скасувати</button>
-              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+            <div className={sm.modalFooter}>
+              <button className={sm.cancelBtn} onClick={() => setModal({ open: false })}>Скасувати</button>
+              <button className={sm.saveBtn} onClick={handleSave} disabled={saving}>
                 {saving ? 'Збереження...' : 'Зберегти'}
               </button>
             </div>

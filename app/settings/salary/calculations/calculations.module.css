@@ -1,36 +1,4 @@
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--topbar-h);
-  padding: 0 var(--topbar-px);
-  border-bottom: 1px solid var(--border);
-}
-
-.tabNav {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  padding: 10px var(--topbar-px);
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
-  flex-shrink: 0;
-}
-.tabNavLink {
-  flex-shrink: 0;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  font-size: 14px;
-  color: var(--text-2);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color var(--motion-fast), border-color var(--motion-fast);
-}
-.tabNavLink:hover { color: var(--text); }
-.tabNavLinkActive { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+/* topbar, tabNav, overlay, modal* → settings.module.css (ss) и salary.module.css (sm) */
 
 .filterBar {
   display: flex;
@@ -50,6 +18,7 @@
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
+  font-family: var(--font);
   min-width: 140px;
 }
 
@@ -69,12 +38,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-}
-
-.sectionTitle {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
 }
 
 .empty { color: var(--text-3); font-size: 14px; padding: 8px 0; }
@@ -100,26 +63,14 @@
 .expandIconOpen { transform: rotate(90deg); }
 
 .classRow { cursor: pointer; }
-.classRow:hover { background: var(--bg-2); }
-.classRowExpanded { background: var(--bg-2); }
+.classRow:hover td { background: var(--bg-2); }
+.classRowExpanded td { background: var(--bg-2); }
 
-.clientRow { background: var(--bg-3); }
-.clientRow td { padding-top: 6px !important; padding-bottom: 6px !important; }
+.clientRow td { background: var(--bg-3); padding-top: 6px !important; padding-bottom: 6px !important; }
 .clientName { font-size: 13px; color: var(--text-2); padding-left: 32px !important; }
 
 .dateMain { font-size: 14px; }
 .dateTime { font-size: 13px; color: var(--text-3); }
-
-.typeChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--bg-3);
-  color: var(--text-2);
-  font-size: 12px;
-  font-weight: 500;
-}
 
 /* Summary */
 .summary {
@@ -165,6 +116,7 @@
   border: none;
   color: var(--text);
   font-size: 14px;
+  font-family: var(--font);
   cursor: pointer;
   padding: 0;
 }
@@ -198,58 +150,25 @@
 .cashItemAmt { text-align: right; color: var(--success); font-weight: 500; }
 .cashItemExpense { text-align: right; color: var(--danger); font-weight: 500; }
 
-/* Payments */
-.addPaymentBtn {
-  padding: 0 14px;
-  height: 32px;
+/* Payment type toggle (modal-specific) */
+.typeToggle { display: flex; gap: 6px; }
+
+.typeBtn {
+  flex: 1;
+  height: 34px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--accent-border);
-  background: var(--accent-dim);
-  color: var(--accent);
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--motion-fast);
-}
-.addPaymentBtn:hover { background: var(--accent-dim); opacity: 0.85; }
-
-/* Modal */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 300;
-}
-
-.modal {
-  background: var(--bg);
-  border-radius: var(--radius);
   border: 1px solid var(--border);
-  width: 380px;
-  max-width: calc(100vw - 32px);
-  display: flex;
-  flex-direction: column;
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
 }
-
-.modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.modalTitle { font-size: 16px; font-weight: 500; }
-.closeBtn { background: none; border: none; font-size: 20px; color: var(--text-3); cursor: pointer; padding: 0 4px; }
-.closeBtn:hover { color: var(--text); }
-
-.modalBody {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.typeBtnActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 .modalHint {
@@ -260,83 +179,11 @@
   border-radius: var(--radius-sm);
 }
 
-.label { font-size: 13px; color: var(--text-2); }
-
-.input {
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  outline: none;
-  box-sizing: border-box;
-}
-.input:focus { border-color: var(--accent); }
-
-.typeToggle {
-  display: flex;
-  gap: 6px;
-}
-
-.typeBtn {
-  flex: 1;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-  color: var(--text-2);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast);
-}
-.typeBtnActive {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: var(--accent);
-}
-
-.errorMsg { color: var(--danger); font-size: 13px; }
-
-.modalFooter {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-}
-
-.cancelBtn {
-  padding: 0 16px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-}
-.cancelBtn:hover { background: var(--bg-3); }
-
-.saveBtn {
-  padding: 0 20px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+/* Modal width */
+.modalNarrow { width: 380px; }
 
 /* Mobile */
 @media (max-width: 640px) {
-  .tabNav { display: flex; }
   .tableDesktop { display: none; }
   .cardList {
     display: flex;

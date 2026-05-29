@@ -14,9 +14,11 @@ import {
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
-import { formatMoney, formatDate, formatDateShort } from '@/lib/formatters'
-import { isoToYMD, toYMD } from '@/lib/dateUtils'
-import { ticketTypeShortLabel } from '@/lib/badges'
+import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
+import { toYMD } from '@/lib/dateUtils'
+import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel } from '@/lib/badges'
+import ss from '@/app/settings/settings.module.css'
+import sm from '@/app/settings/salary/salary.module.css'
 import styles from './calculations.module.css'
 
 const SALARY_TABS = [
@@ -121,25 +123,18 @@ export default function SalaryCalculationsPage() {
     fetchAll()
   }
 
-  function formatDatetime(iso: string) {
-    const d = new Date(iso)
-    const date = formatDateShort(iso)
-    const time = [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')].join(':')
-    return `${date} ${time}`
-  }
-
   return (
     <>
       <div className="page-head">
-        <div className={styles.topbar}>
+        <div className={ss.topbar}>
           <h1 className="page-title">Нарахування тренерів</h1>
         </div>
-        <nav className={styles.tabNav} aria-label="Зарплати">
+        <nav className={ss.tabNav} aria-label="Зарплати">
           {SALARY_TABS.map(t => (
             <a
               key={t.href}
               href={t.href}
-              className={`${styles.tabNavLink} ${pathname === t.href ? styles.tabNavLinkActive : ''}`}
+              className={`${ss.tabNavLink} ${pathname === t.href ? ss.tabNavLinkActive : ''}`}
             >{t.label}</a>
           ))}
         </nav>
@@ -167,7 +162,7 @@ export default function SalaryCalculationsPage() {
           <div className={styles.content}>
             {/* Classes table */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Заняття</h2>
+              <h2 className="section-title">Заняття</h2>
               {rows.length === 0 ? (
                 <div className={styles.empty}>Занять з нарахуваннями немає за вказаний період</div>
               ) : (
@@ -188,9 +183,6 @@ export default function SalaryCalculationsPage() {
                       <tbody>
                         {rows.map(r => {
                           const expanded = expandedClasses.has(r.class_id)
-                          const d = new Date(r.starts_at)
-                          const dateStr = formatDateShort(r.starts_at)
-                          const timeStr = [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')].join(':')
                           return (
                             <>
                               <tr key={r.class_id} className={`${styles.classRow} ${expanded ? styles.classRowExpanded : ''}`} onClick={() => toggleClass(r.class_id)}>
@@ -198,10 +190,10 @@ export default function SalaryCalculationsPage() {
                                   <span className={`${styles.expandIcon} ${expanded ? styles.expandIconOpen : ''}`}>▶</span>
                                 </td>
                                 <td>
-                                  <span className={styles.dateMain}>{dateStr}</span>
-                                  <span className={styles.dateTime}> {timeStr}</span>
+                                  <span className={styles.dateMain}>{formatDateShort(r.starts_at)}</span>
+                                  <span className={styles.dateTime}> {formatTime(r.starts_at)}</span>
                                 </td>
-                                <td><span className={styles.typeChip}>{ticketTypeShortLabel(r.ticket_type)}</span></td>
+                                <td><span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span></td>
                                 <td className={styles.grayCell}>{r.hall_name ?? '—'}</td>
                                 <td className={styles.numCell}>{r.total_clients}</td>
                                 <td className={styles.amtCell}>{formatMoney(r.total_trainer)}</td>
@@ -211,8 +203,8 @@ export default function SalaryCalculationsPage() {
                                   <td></td>
                                   <td colSpan={3} className={styles.clientName}>{e.client_name}</td>
                                   <td className={styles.numCell}>
-                                    <span className={`badge ${e.status === 'attended' ? 'badge-attended' : 'badge-noshow'}`}>
-                                      {e.status === 'attended' ? 'Відвідала' : 'Не прийшла'}
+                                    <span className={enrollmentStatusClass(e.status)}>
+                                      {enrollmentStatusLabel(e.status)}
                                     </span>
                                   </td>
                                   <td className={styles.amtCell}>{formatMoney(e.trainer_amount)}</td>
@@ -235,14 +227,12 @@ export default function SalaryCalculationsPage() {
                   <div className={styles.cardList}>
                     {rows.map(r => {
                       const expanded = expandedClasses.has(r.class_id)
-                      const d = new Date(r.starts_at)
-                      const timeStr = [String(d.getHours()).padStart(2, '0'), String(d.getMinutes()).padStart(2, '0')].join(':')
                       return (
                         <div key={r.class_id} className={styles.classCard} onClick={() => toggleClass(r.class_id)}>
                           <div className={styles.cardRow}>
                             <div className={styles.cardLeft}>
-                              <span className={styles.typeChip}>{ticketTypeShortLabel(r.ticket_type)}</span>
-                              <span className={styles.cardDatetime}>{formatDateShort(r.starts_at)} {timeStr}</span>
+                              <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
+                              <span className={styles.cardDatetime}>{formatDateShort(r.starts_at)} {formatTime(r.starts_at)}</span>
                               {r.hall_name && <span className={styles.grayCell}>{r.hall_name}</span>}
                             </div>
                             <div className={styles.cardRight}>
@@ -256,8 +246,8 @@ export default function SalaryCalculationsPage() {
                                 <div key={e.client_id} className={styles.clientItem}>
                                   <span>{e.client_name}</span>
                                   <div className={styles.clientRight}>
-                                    <span className={`badge ${e.status === 'attended' ? 'badge-attended' : 'badge-noshow'}`}>
-                                      {e.status === 'attended' ? 'Відвідала' : 'Не прийшла'}
+                                    <span className={enrollmentStatusClass(e.status)}>
+                                      {enrollmentStatusLabel(e.status)}
                                     </span>
                                     <span>{formatMoney(e.trainer_amount)}</span>
                                   </div>
@@ -279,7 +269,7 @@ export default function SalaryCalculationsPage() {
 
             {/* Summary */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Підсумок</h2>
+              <h2 className="section-title">Підсумок</h2>
               <div className={styles.summary}>
                 <div className={styles.summaryRow}>
                   <span>Нараховано тренеру:</span>
@@ -299,7 +289,7 @@ export default function SalaryCalculationsPage() {
                         <div className={styles.cashHeader}>Cash продажі</div>
                         {cashBalance.cash_sales.map(s => (
                           <div key={s.id} className={styles.cashItem}>
-                            <span className={styles.grayCell}>{formatDatetime(s.created_at)}</span>
+                            <span className={styles.grayCell}>{formatDateShort(s.created_at)} {formatTime(s.created_at)}</span>
                             <span>{s.client_name}</span>
                             <span>{s.ticket_name ?? '—'}</span>
                             <span className={styles.cashItemAmt}>+{formatMoney(s.amount)}</span>
@@ -312,7 +302,7 @@ export default function SalaryCalculationsPage() {
                         <div className={styles.cashHeader}>Витрати</div>
                         {cashBalance.expenses.map(e => (
                           <div key={e.id} className={styles.cashItem}>
-                            <span className={styles.grayCell}>{formatDatetime(e.created_at)}</span>
+                            <span className={styles.grayCell}>{formatDateShort(e.created_at)} {formatTime(e.created_at)}</span>
                             <span>{e.description ?? '—'}</span>
                             <span></span>
                             <span className={styles.cashItemExpense}>−{formatMoney(e.amount)}</span>
@@ -340,8 +330,8 @@ export default function SalaryCalculationsPage() {
             {/* Payments */}
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Виплати</h2>
-                <button className={styles.addPaymentBtn} onClick={openPaymentModal}>
+                <h2 className="section-title">Виплати</h2>
+                <button className="btn-primary" onClick={openPaymentModal}>
                   + Зафіксувати виплату
                 </button>
               </div>
@@ -354,7 +344,7 @@ export default function SalaryCalculationsPage() {
                       <tr>
                         <th>Дата</th>
                         <th>Тип</th>
-                        <th>Период</th>
+                        <th>Період</th>
                         <th className={styles.numCol}>Нараховано</th>
                         <th className={styles.numCol}>Виплачено</th>
                         <th>Примітка</th>
@@ -411,19 +401,19 @@ export default function SalaryCalculationsPage() {
 
       {/* Payment modal */}
       {paymentModal && (
-        <div className={styles.overlay} onClick={() => setPaymentModal(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Зафіксувати виплату</h2>
-              <button className={styles.closeBtn} onClick={() => setPaymentModal(false)}>×</button>
+        <div className={sm.overlay} onClick={() => setPaymentModal(false)}>
+          <div className={`${sm.modal} ${styles.modalNarrow}`} onClick={e => e.stopPropagation()}>
+            <div className={sm.modalHeader}>
+              <h2 className={sm.modalTitle}>Зафіксувати виплату</h2>
+              <button className={sm.closeBtn} onClick={() => setPaymentModal(false)}>×</button>
             </div>
-            <div className={styles.modalBody}>
+            <div className={sm.modalBody}>
               <div className={styles.modalHint}>
                 Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
                 {cashOnHand > 0 && <> · Готівка: <strong>{formatMoney(cashOnHand)}</strong></>}
               </div>
 
-              <label className={styles.label}>Тип виплати</label>
+              <label className={sm.label}>Тип виплати</label>
               <div className={styles.typeToggle}>
                 <button
                   className={`${styles.typeBtn} ${paymentType === 'final' ? styles.typeBtnActive : ''}`}
@@ -435,9 +425,9 @@ export default function SalaryCalculationsPage() {
                 >Аванс</button>
               </div>
 
-              <label className={styles.label}>Виплачено ₴</label>
+              <label className={sm.label}>Виплачено ₴</label>
               <input
-                className={styles.input}
+                className={sm.input}
                 type="number"
                 min="0"
                 step="10"
@@ -446,28 +436,28 @@ export default function SalaryCalculationsPage() {
                 autoFocus
               />
 
-              <label className={styles.label}>Дата виплати</label>
+              <label className={sm.label}>Дата виплати</label>
               <input
-                className={styles.input}
+                className={sm.input}
                 type="date"
                 value={paymentDate}
                 onChange={e => setPaymentDate(e.target.value)}
               />
 
-              <label className={styles.label}>Примітка</label>
+              <label className={sm.label}>Примітка</label>
               <input
-                className={styles.input}
+                className={sm.input}
                 type="text"
                 value={paymentNotes}
                 onChange={e => setPaymentNotes(e.target.value)}
                 placeholder="необов'язково"
               />
 
-              {paymentError && <div className={styles.errorMsg}>{paymentError}</div>}
+              {paymentError && <div className={sm.errorMsg}>{paymentError}</div>}
             </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelBtn} onClick={() => setPaymentModal(false)}>Скасувати</button>
-              <button className={styles.saveBtn} onClick={handleSavePayment} disabled={saving}>
+            <div className={sm.modalFooter}>
+              <button className={sm.cancelBtn} onClick={() => setPaymentModal(false)}>Скасувати</button>
+              <button className={sm.saveBtn} onClick={handleSavePayment} disabled={saving}>
                 {saving ? 'Збереження...' : 'Зберегти'}
               </button>
             </div>
