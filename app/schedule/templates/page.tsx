@@ -1,5 +1,7 @@
 'use client'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -17,6 +19,43 @@ import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, toYMD, getMondayOf } from '@/lib/dateUtils'
 import styles from './page.module.css'
+
+// ── Filter select ─────────────────────────────────────────────────
+const ALL = '__all__'
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  const radixValue = value === '' ? ALL : value
+  return (
+    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
+      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className={styles.fsChevron} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item
+                key={o.value === '' ? ALL : o.value}
+                value={o.value === '' ? ALL : o.value}
+                className={styles.fsItem}
+              >
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
+}
 
 // dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
 const DAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]
@@ -308,41 +347,24 @@ export default function TemplatesPage() {
       </div>
 
       <div className={styles.filterBar}>
-        <div className={styles.filterGroup}>
-          <button
-            className={`${styles.filterBtn} ${filterHall === '' ? styles.filterBtnActive : ''}`}
-            onClick={() => setFilterHall('')}
-          >
-            Всі зали
-          </button>
-          {halls.filter(h => h.is_active).map(h => (
-            <button
-              key={h.id}
-              className={`${styles.filterBtn} ${filterHall === h.id ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterHall(f => f === h.id ? '' : h.id)}
-            >
-              {h.name}
-            </button>
-          ))}
-        </div>
-        <div className={styles.filterDivider} />
-        <div className={styles.filterGroup}>
-          <button
-            className={`${styles.filterBtn} ${filterTrainer === '' ? styles.filterBtnActive : ''}`}
-            onClick={() => setFilterTrainer('')}
-          >
-            Всі тренери
-          </button>
-          {trainers.filter(t => t.is_active).map(t => (
-            <button
-              key={t.id}
-              className={`${styles.filterBtn} ${filterTrainer === t.id ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterTrainer(f => f === t.id ? '' : t.id)}
-            >
-              {t.name}
-            </button>
-          ))}
-        </div>
+        <FilterSelect
+          value={filterHall}
+          onChange={setFilterHall}
+          placeholder="Всі зали"
+          options={[
+            { value: '', label: 'Всі зали' },
+            ...halls.filter(h => h.is_active).map(h => ({ value: h.id, label: h.name })),
+          ]}
+        />
+        <FilterSelect
+          value={filterTrainer}
+          onChange={setFilterTrainer}
+          placeholder="Всі тренери"
+          options={[
+            { value: '', label: 'Всі тренери' },
+            ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
+          ]}
+        />
         <div className={styles.clientFilterWrap}>
           {filterClient ? (
             <span className={styles.clientFilterChip}>

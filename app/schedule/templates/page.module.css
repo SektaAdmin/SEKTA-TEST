@@ -283,47 +283,63 @@
   z-index: 8;
 }
 
-.filterGroup {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.filterDivider {
-  width: 0.5px;
-  background: var(--border);
-  align-self: stretch;
-  margin: 0 4px;
-  flex-shrink: 0;
-}
-
-.filterBtn {
-  height: 26px;
+/* ── Filter select (Radix) ──────────────────────────────────── */
+.fsTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--control-h);
   padding: 0 10px;
-  background: transparent;
+  background: var(--bg);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--text-2);
+  color: var(--text);
   font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+  outline: none;
   white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
-.filterBtn:hover {
-  border-color: var(--border-hover);
+.fsTrigger:hover { border-color: var(--border-hover); background: var(--bg-3); }
+.fsTrigger:focus-visible { border-color: var(--accent); }
+.fsTrigger[data-state='open'] { border-color: var(--accent-border); background: var(--accent-dim); color: var(--accent); }
+.fsTrigger[data-placeholder] { color: var(--text-3); }
+
+.fsChevron {
+  width: 13px;
+  height: 13px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.fsContent {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 500;
+  min-width: var(--radix-select-trigger-width);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.fsItem {
+  display: flex;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-family: var(--font);
   color: var(--text);
-  background: var(--bg-3);
+  cursor: pointer;
+  outline: none;
+  transition: background var(--motion-fast);
+  user-select: none;
 }
-.filterBtnActive {
-  border-color: var(--accent-border);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-.filterBtnActive:hover {
-  border-color: var(--accent-border-hover);
-  background: var(--accent-dim);
-}
+.fsItem:hover,
+.fsItem[data-highlighted] { background: var(--bg-3); }
+.fsItem[data-state='checked'] { color: var(--accent); font-weight: 500; }
 
 /* ── Client filter ───────────────────────────────────────── */
 .clientFilterWrap {
@@ -566,13 +582,8 @@
     flex-shrink: 0;
     width: 16px;
   }
-  .filterGroup { flex-wrap: nowrap; }
-  .filterDivider { flex-shrink: 0; }
   .clientFilterWrap { width: auto; margin-left: 0; flex-shrink: 0; min-width: 160px; }
-
-  /* Filter button touch targets */
-  .filterBtn { height: 36px; padding: 0 12px; font-size: 13px; }
-  .filterBtnActive { height: 36px; padding: 0 12px; font-size: 13px; }
+  .fsTrigger { height: 36px; font-size: 13px; }
 
   /* Grid */
   .gridCard { margin: 8px; overflow: hidden; }
