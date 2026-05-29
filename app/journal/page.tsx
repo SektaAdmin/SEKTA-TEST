@@ -193,8 +193,8 @@ export default function JournalPage() {
                       <td>{getActiveCount(cls.enrollments)}</td>
                       <td>
                         {cls.is_cancelled
-                          ? <span className={jStyles.badgeCancelled}>Скасовано</span>
-                          : <span className={jStyles.badgeCompleted}>Проведено</span>}
+                          ? <span className="badge badge-class-cancelled">Скасовано</span>
+                          : <span className="badge badge-completed">Проведено</span>}
                       </td>
                     </tr>
                   ))}
@@ -223,8 +223,8 @@ export default function JournalPage() {
                       <span>{enrolled} записів</span>
                       <span className={jStyles.cardMetaDot}>·</span>
                       {cls.is_cancelled
-                        ? <span className={jStyles.badgeCancelled}>Скасовано</span>
-                        : <span className={jStyles.badgeCompleted}>Проведено</span>}
+                        ? <span className="badge badge-class-cancelled">Скасовано</span>
+                        : <span className="badge badge-completed">Проведено</span>}
                     </div>
                   </div>
                 )

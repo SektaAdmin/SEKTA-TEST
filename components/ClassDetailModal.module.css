@@ -180,9 +180,6 @@
   line-height: 1.4;
 }
 
-.cancelledBadge {
-  font-size: 11px;
-}
 
 /* ── Enrollment Section ──────────────────────────────────────── */
 .enrollmentSection {
@@ -361,21 +358,6 @@
   padding-right: 0 !important;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: var(--badge-radius);
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.badgeEnrolled  { background: var(--bg-3); color: var(--text-2); }
-.badgeAttended  { background: var(--accent-dim); color: var(--accent); }
-.badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
-.badgeCancelled { background: var(--bg-3); color: var(--text-3); }
-.badgeWaitlist  { background: var(--warning-dim); color: var(--warning); }
 
 .rowCancelled { opacity: 0.45; }
 

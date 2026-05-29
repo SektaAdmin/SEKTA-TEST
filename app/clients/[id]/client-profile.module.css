@@ -139,13 +139,6 @@
   color: var(--text-3);
 }
 
-.warningBadge {
-  font-size: 11px;
-  background: var(--danger-dim);
-  color: var(--danger);
-  border-radius: 4px;
-  padding: 2px 7px;
-}
 
 /* ── Session balances ───────────────────────────────────────── */
 .sessionCards {
@@ -402,21 +395,6 @@
 .btnConfirmDel:hover { opacity: 0.85; }
 .btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Payment badges ─────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.badgeCash    { background: var(--accent-dim); color: var(--accent); }
-.badgeFop     { background: var(--fop-dim);  color: var(--fop); }
-.badgeCard    { background: var(--card-dim);  color: var(--card); }
-.badgeDeposit { background: var(--deposit-dim);  color: var(--deposit); }
 
 /* ── Table number cells ─────────────────────────────────────── */
 .numCell { font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
@@ -467,11 +445,6 @@
   padding: 12px 0 4px;
 }
 
-/* ── Feed badges ────────────────────────────────────────────── */
-.badgeAttended  { background: var(--accent-dim); color: var(--accent); }
-.badgeNoshow    { background: var(--danger-dim); color: var(--danger); }
-.badgeCancelled { background: var(--bg-3); color: var(--text-3); }
-.badgeSale      { background: var(--success-dim); color: var(--success); }
 
 /* ── Session delta in feed ──────────────────────────────────── */
 .sessionsNeg { color: var(--danger); font-weight: 500; }

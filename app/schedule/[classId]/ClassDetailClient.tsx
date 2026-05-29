@@ -319,7 +319,7 @@ if (loading) {
                 {typeLabels[cls.ticket_type] ?? cls.ticket_type}
                 {cls.title ? ` · ${cls.title}` : ''}
               </span>
-              {cls.is_cancelled && <span className={styles.cancelledBadge}>скасовано</span>}
+              {cls.is_cancelled && <span className="badge badge-class-cancelled">скасовано</span>}
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Дата</span>
@@ -461,7 +461,7 @@ if (loading) {
                             {(() => {
                               const Icon = enrollmentStatusIcon(e.status)
                               return (
-                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                <span className={enrollmentStatusClass(e.status)}>
                                   {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                   {enrollmentStatusLabel(e.status)}
                                 </span>

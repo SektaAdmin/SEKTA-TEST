@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (mobile filterbar unified: stack pattern for /sales + /clients; horizontal scroll for /journal + /accounting)
+- **Last Updated**: 2026-05-29 (badge system unified: globals.css @layer utilities + badges.ts as single source of truth)
 
 ## Commands
 
@@ -475,7 +475,7 @@ lib/
   useRealtime.ts              — Supabase Realtime підписки (debounce 300ms, JWT header)
   useSupabaseList.ts          — generic хук для простих list-запитів
   scheduleMetrics.ts          — getActiveCount, isFull, isAlmost, fillPct та варіанти для series_clients
-  badges.ts                   — ЄДИНИЙ словник лейблів/класів: enrollmentStatusLabel/Class, paymentLabel/Class, ticketTypeShortLabel/TICKET_TYPE_SHORT_LABELS. Не дублювати STATUS_LABELS/PAYMENT_LABELS у компонентах
+  badges.ts                   — ЄДИНИЙ словник лейблів/класів: enrollmentStatusLabel/Class/Icon, paymentLabel/Class, ticketTypeShortLabel. Функції повертають повний className ('badge badge-cash') — використовувати напряму як className. CSS-стилі бейджів — тільки в globals.css @layer utilities
   validation-messages.ts      — VM.required/invalid — zod & RHF validation messages ("Ім'я обов'язкове", "Кількість занять > 0" та ін.). Всі модалки і хуки мігровані (включно з HallModal, ClassModal, SeriesModal, useSaleForm)
   messages.ts                 — MSG.empty — empty-state UI messages ("Клієнтів ще немає", "Транзакцій немає" та ін.)
   typeColor.ts                — хеш-кольори типів занять (group = #5b8af5, решта — хеш)
@@ -506,8 +506,8 @@ types/
 
 Осі коду, що були централізовані — нові місця беруть звідси, не оголошувати локальні копії:
 
-- **Лейбли статусів запису** (enrolled/attended/…) → `lib/badges.ts` (`enrollmentStatusLabel/Class/Icon`). Дієслова: Записалась/Відвідала/Не прийшла/Скасувала/Черга. Іконки (lucide-react): Clock/CheckCircle2/X/XCircle/Users — `enrollmentStatusIcon(status)` → `LucideIcon | null`.
-- **Лейбли + кольори методів оплати** (cash/fop/personal_card/deposit) → `lib/badges.ts` (`paymentLabel/Class`). personal_card = «Картка» скрізь.
+- **Лейбли статусів запису** (enrolled/attended/…) → `lib/badges.ts` (`enrollmentStatusLabel/Class/Icon`). `enrollmentStatusClass(status)` повертає `'badge badge-enrolled'` — використовувати як `className`. CSS — в `globals.css @layer utilities`. Дієслова: Записалась/Відвідала/Не прийшла/Скасувала/Черга. Іконки: `enrollmentStatusIcon(status)` → `LucideIcon | null`.
+- **Лейбли + кольори методів оплати** (cash/fop/personal_card/deposit) → `lib/badges.ts` (`paymentLabel/Class`). `paymentClass(method)` повертає `'badge badge-cash'` — використовувати як `className`. personal_card = «Картка» скрізь.
 - **Короткі ярлики типів тренувань** (звіти/ставки тренерів) → `lib/badges.ts` (`ticketTypeShortLabel`). Повні людські назви (dropdown, дисплеї) — `label` з БД через RefsContext / `listTrainingTypeLabels`.
 - **Дні тижня** → `lib/dateUtils.ts`. ⚠️ ДВІ конвенції: `DOW_LABELS_SHORT/FULL` (0=Нд, індексувати значенням `day_of_week` з БД) vs `WEEKDAYS_SHORT/FULL` (0=Пн, для заголовків сітки Пн→Нд). Для JS Date → MONDAY-based: `dowMondayIndex(date)`. Не плутати індексації.
 - **Місяці** → `lib/dateUtils.ts` (`MONTHS_UK_SHORT/FULL`).
@@ -788,7 +788,7 @@ types/
 7. **GIN-індекси на clients** — використовувати для fuzzy-пошуку по прізвищу і телефону.
 8. **scheduleMetrics** — не дублювати формули підрахунку capacity/waitlist в компонентах, тільки через `lib/scheduleMetrics.ts`. Для enrollments: `getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`. Для шаблонів (client count): `isClientCountFull`, `isClientCountAlmost`, `clientFillPct`.
 9. **Скасування заняття** — тільки через `cancel_class_and_restore_sessions()` RPC, не прямим UPDATE.
-10. **Бейджі уніфіковані** — лейбли і CSS-класи статусів/методів оплати тільки з `lib/badges.ts` (`enrollmentStatusLabel/Class`, `paymentLabel/Class`). Не оголошувати локальні `STATUS_LABELS`/`PAYMENT_LABELS` у компонентах. Форма бейджа: `border-radius: var(--badge-radius)`, `padding: 3px 9px`, `font-size: 11px`. Кольори — тільки `var()`-токени, без HEX/rgba. Статус «Записалась» = нейтральний (`--bg-3`/`--text-2`), синій `--fop` зарезервовано за методом оплати ФОП. shadcn `ui/badge.tsx` видалено. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга).
+10. **Бейджі уніфіковані** — єдине джерело правди: CSS в `globals.css` (`@layer utilities`, класи `.badge`, `.badge-cash`, `.badge-enrolled` тощо), логіка в `lib/badges.ts`. Функції `paymentClass(method)` і `enrollmentStatusClass(status)` повертають повний рядок `'badge badge-cash'` — використовувати напряму як `className={paymentClass(method)}`. **Не оголошувати** локальні `.badge` в `*.module.css`. **Не використовувати** патерн `${styles.badge} ${styles[...]}` — видалено. Нові варіанти: `badge-type` (нейтральний тег), `badge-danger` (попередження), `badge-class-cancelled` (скасоване заняття), `badge-completed` (проведено). Кольори — тільки `var()`-токени. Лейбли — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга). shadcn `ui/badge.tsx` видалено раніше.
 11. **Validation messages** — централізовано в `lib/validation-messages.ts` (`VM.required.*` і `VM.invalid.*`). Всі zod-схеми та RHF register() звертаються до VM, не hardcode строк. Якщо тон/мова зміниться — меняємо в одному місці.
 12. **Empty-state messages** — централізовано в `lib/messages.ts` (`MSG.empty.*`). Всі компоненти показують empty states звертаючись до MSG, не硬код. Забезпечує єдину тон і формулювання скрізь.
 13. **Уніфікація — тільки комплексно, не скальпінгом.** При будь-якій уніфікації (CSS, розміри, паттерни): (1) спочатку повний `grep -rn` по всьому проекту — знайти ВСІ місця; (2) скласти таблицю розбіжностей; (3) виправити все в одному коміті. Заборонено фіксувати файл → комітити → знаходити наступний → комітити. Також перевіряти не тільки CSS контейнера, але й JSX-структуру дочірніх елементів (flex-shrink, height, padding).

@@ -337,7 +337,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
                   </span>
                   {cls.is_cancelled && (
-                    <span className={`${styles.badge} ${styles.badgeNoshow} ${styles.cancelledBadge}`}>
+                    <span className={"badge badge-class-cancelled"}>
                       скасовано
                     </span>
                   )}
@@ -500,7 +500,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                 {(() => {
                                   const Icon = enrollmentStatusIcon(e.status)
                                   return (
-                                    <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                    <span className={enrollmentStatusClass(e.status)}>
                                       {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                       {enrollmentStatusLabel(e.status)}
                                     </span>

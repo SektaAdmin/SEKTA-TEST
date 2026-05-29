@@ -517,11 +517,6 @@
 }
 .btnClients:hover { color: var(--accent); }
 
-.waitlistBadge {
-  font-size: 11px;
-  color: var(--warning);
-  margin-left: 6px;
-}
 
 /* ── Mobile FAB ─────────────────────────────────────────────── */
 .fab {

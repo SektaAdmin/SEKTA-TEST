@@ -192,7 +192,7 @@ export default function SalesPage() {
                         ) : <span className={styles.depositZero}>—</span>}
                       </td>
                       <td>
-                        <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                        <span className={paymentClass(s.payment_method)}>
                           {paymentLabel(s.payment_method)}
                         </span>
                       </td>
@@ -241,7 +241,7 @@ export default function SalesPage() {
                           <span>·</span>
                         </>
                       )}
-                      <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                      <span className={paymentClass(s.payment_method)}>
                         {paymentLabel(s.payment_method)}
                       </span>
                     </div>

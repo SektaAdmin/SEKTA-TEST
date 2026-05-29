@@ -1,9 +1,10 @@
 // Єдиний словник лейблів та CSS-класів для бейджів.
 // Не дублювати STATUS_LABELS / PAYMENT_LABELS у компонентах — імпортувати звідси.
 //
-// CSS-класи бейджів (.badge, .badgeCash, .badgeEnrolled, ...) визначені локально
-// в кожному *.module.css. Тут лежать тільки КЛЮЧІ класів — компонент бере
-// `styles[BADGE_CLASS]`. Лейбли — текст українською (дієслова для статусів).
+// CSS-класи визначені глобально в globals.css (@layer utilities).
+// Функції повертають повний className-рядок: "badge badge-cash".
+// Використання: <span className={paymentClass(method)}>
+// Лейбли — текст українською (дієслова для статусів).
 
 import { Clock, CheckCircle2, XCircle, X, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -28,11 +29,11 @@ export const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
 }
 
 export const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
-  enrolled:  'badgeEnrolled',
-  attended:  'badgeAttended',
-  cancelled: 'badgeCancelled',
-  noshow:    'badgeNoshow',
-  waitlist:  'badgeWaitlist',
+  enrolled:  'badge badge-enrolled',
+  attended:  'badge badge-attended',
+  cancelled: 'badge badge-cancelled',
+  noshow:    'badge badge-noshow',
+  waitlist:  'badge badge-waitlist',
 }
 
 export const ENROLLMENT_STATUS_ICON: Record<EnrollmentStatus, LucideIcon> = {
@@ -65,10 +66,10 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 }
 
 export const PAYMENT_CLASS: Record<PaymentMethod, string> = {
-  cash:          'badgeCash',
-  fop:           'badgeFop',
-  personal_card: 'badgeCard',
-  deposit:       'badgeDeposit',
+  cash:          'badge badge-cash',
+  fop:           'badge badge-fop',
+  personal_card: 'badge badge-card',
+  deposit:       'badge badge-deposit',
 }
 
 export function paymentLabel(method: string): string {

@@ -125,7 +125,7 @@ export default function TrainingTypesPage() {
                     {active.map(t => (
                       <tr key={t.id}>
                         <td className={styles.name}>{t.label}</td>
-                        <td><span className={styles.typeBadge}>{t.code}</span></td>
+                        <td><span className="badge badge-type">{t.code}</span></td>
                         <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
                         <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
                       </tr>
@@ -145,7 +145,7 @@ export default function TrainingTypesPage() {
                     </div>
                   </div>
                   <div className={styles.cardMeta}>
-                    <span><span className={styles.typeBadge}>{t.code}</span></span>
+                    <span><span className="badge badge-type">{t.code}</span></span>
                   </div>
                 </div>
               ))}
@@ -164,7 +164,7 @@ export default function TrainingTypesPage() {
                       {archived.map(t => (
                         <tr key={t.id} className={styles.archivedRow}>
                           <td className={styles.name}>{t.label}</td>
-                          <td><span className={styles.typeBadge}>{t.code}</span></td>
+                          <td><span className="badge badge-type">{t.code}</span></td>
                           <td>
                             <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
                               {toggling === t.id ? '...' : 'Відновити'}
@@ -190,7 +190,7 @@ export default function TrainingTypesPage() {
                       </div>
                     </div>
                     <div className={styles.cardMeta}>
-                      <span><span className={styles.typeBadge}>{t.code}</span></span>
+                      <span><span className="badge badge-type">{t.code}</span></span>
                     </div>
                   </div>
                 ))}

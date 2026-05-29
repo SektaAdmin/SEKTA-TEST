@@ -419,7 +419,7 @@ export default function AccountingPage() {
                               {amt > 0 ? formatMoney(s.amount_given) : '—'}
                             </td>
                             <td>
-                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                              <span className={`{paymentClass(s.payment_method)}`}>
                                 {paymentLabel(s.payment_method)}
                               </span>
                             </td>
@@ -462,7 +462,7 @@ export default function AccountingPage() {
                             </td>
                             <td>
                               <div className={styles.expenseMethodRow}>
-                                <span className={`${styles.badge} ${styles[paymentClass(e.payment_method as PaymentMethod)]}`}>
+                                <span className={`{paymentClass(e.payment_method as PaymentMethod)}`}>
                                   {paymentLabel(e.payment_method as PaymentMethod)}
                                 </span>
                                 <button
@@ -513,7 +513,7 @@ export default function AccountingPage() {
                               <span className={styles.cardTicket}>
                                 {s.ticket_name ?? <span className={styles.zero}>Депозит</span>}
                               </span>
-                              <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                              <span className={`{paymentClass(s.payment_method)}`}>
                                 {paymentLabel(s.payment_method)}
                               </span>
                             </div>
@@ -551,7 +551,7 @@ export default function AccountingPage() {
                             </div>
                             <div className={styles.cardRow2}>
                               <span className={styles.cardTicket}>{e.description ?? '—'}</span>
-                              <span className={`${styles.badge} ${styles[paymentClass(e.payment_method as PaymentMethod)]}`}>
+                              <span className={`{paymentClass(e.payment_method as PaymentMethod)}`}>
                                 {paymentLabel(e.payment_method as PaymentMethod)}
                               </span>
                             </div>

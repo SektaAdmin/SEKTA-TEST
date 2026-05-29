@@ -315,7 +315,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 }>
                   {formatMoney(balance)}
                 </span>
-                {balance < 0 && <span className={styles.warningBadge}>Від&apos;ємний депозит</span>}
+                {balance < 0 && <span className="badge badge-danger">Від&apos;ємний депозит</span>}
               </div>
               {client.balance_updated_at && (
                 <div className={styles.fieldMeta}>
@@ -584,7 +584,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                     {(() => {
                                       const Icon = enrollmentStatusIcon(e.status)
                                       return (
-                                        <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                        <span className={enrollmentStatusClass(e.status)}>
                                           {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                           {enrollmentStatusLabel(e.status)}
                                         </span>
@@ -611,7 +611,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <tr key={`s-${s.id}`}>
                                   <td className={styles.dateCell}>{formatSaleDatetime(s.created_at)}</td>
                                   <td>
-                                    <span className={`${styles.badge} ${styles.badgeSale}`}>Продаж</span>
+                                    <span className={"badge badge-sale"}>Продаж</span>
                                   </td>
                                   <td>
                                     {s.ticket_name
@@ -623,7 +623,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   </td>
                                   <td>{s.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                                   <td>
-                                    <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                    <span className={paymentClass(s.payment_method)}>
                                       {paymentLabel(s.payment_method)}
                                     </span>
                                   </td>
@@ -669,7 +669,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <span className={styles.itemCardTime}>{timeStr}</span>
                               </div>
                               <div className={styles.itemCardRow}>
-                                <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                                <span className={enrollmentStatusClass(e.status)}>
                                   {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                   {enrollmentStatusLabel(e.status)}
                                 </span>
@@ -699,7 +699,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               </div>
                               <div className={styles.itemCardRow}>
                                 <span className={styles.itemCardSub}>{s.trainers?.name ?? '—'}</span>
-                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                <span className={paymentClass(s.payment_method)}>
                                   {paymentLabel(s.payment_method)}
                                 </span>
                               </div>
@@ -792,7 +792,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               <span className={styles.itemCardTime}>{timeStr}</span>
                             </div>
                             <div className={styles.itemCardRow}>
-                              <span className={`${styles.badge} ${styles[enrollmentStatusClass(e.status)]}`}>
+                              <span className={enrollmentStatusClass(e.status)}>
                                 {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                 {enrollmentStatusLabel(e.status)}
                               </span>
@@ -878,7 +878,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 }
                               </td>
                               <td>
-                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                <span className={paymentClass(s.payment_method)}>
                                   {paymentLabel(s.payment_method)}
                                 </span>
                               </td>
@@ -937,7 +937,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             <div className={styles.itemCardRow}>
                               {isCash && s.trainers?.name
                                 ? <span className={styles.itemCardSub}>{s.trainers.name}</span>
-                                : <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                : <span className={paymentClass(s.payment_method)}>
                                     {paymentLabel(s.payment_method)}
                                   </span>
                               }
@@ -952,7 +952,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             </div>
                             {isCash && s.trainers?.name && (
                               <div className={styles.itemCardRow}>
-                                <span className={`${styles.badge} ${styles[paymentClass(s.payment_method)]}`}>
+                                <span className={paymentClass(s.payment_method)}>
                                   {paymentLabel(s.payment_method)}
                                 </span>
                                 <span />

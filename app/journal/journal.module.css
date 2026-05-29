@@ -215,30 +215,6 @@
 }
 .pageBtn:disabled { opacity: 0.28; cursor: not-allowed; }
 
-/* ── Status badges ───────────────────────────────────────────── */
-.badgeCompleted {
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: var(--badge-radius);
-  background: var(--success-dim);
-  color: var(--success);
-  border: 1px solid rgba(0, 165, 68, 0.25);
-  white-space: nowrap;
-}
-
-.badgeCancelled {
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: var(--badge-radius);
-  background: var(--danger-dim);
-  color: var(--danger);
-  border: 1px solid var(--danger-border);
-  white-space: nowrap;
-}
 
 /* ── Mobile overrides ────────────────────────────────────────── */
 @media (max-width: 640px) {

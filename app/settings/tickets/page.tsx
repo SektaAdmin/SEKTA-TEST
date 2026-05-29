@@ -111,7 +111,7 @@ export default function TicketsPage() {
                     {active.map(t => (
                       <tr key={t.id}>
                         <td className={styles.name}>{t.name}</td>
-                        <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
+                        <td><span className="badge badge-type">{typeLabel(t.ticket_type)}</span></td>
                         <td className={styles.mono}>{t.sessions}</td>
                         <td className={styles.mono}>{formatMoney(t.price)}</td>
                         <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={toggle} /></td>
@@ -131,7 +131,7 @@ export default function TicketsPage() {
                     </div>
                   </div>
                   <div className={styles.cardMeta}>
-                    <span><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></span>
+                    <span><span className="badge badge-type">{typeLabel(t.ticket_type)}</span></span>
                     <span>{t.sessions} занять</span>
                     <span>{formatMoney(t.price)}</span>
                   </div>
@@ -152,7 +152,7 @@ export default function TicketsPage() {
                       {archived.map(t => (
                         <tr key={t.id} className={styles.archivedRow}>
                           <td className={styles.name}>{t.name}</td>
-                          <td><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></td>
+                          <td><span className="badge badge-type">{typeLabel(t.ticket_type)}</span></td>
                           <td className={styles.mono}>{t.sessions}</td>
                           <td className={styles.mono}>{formatMoney(t.price)}</td>
                           <td>
@@ -176,7 +176,7 @@ export default function TicketsPage() {
                       </button>
                     </div>
                     <div className={styles.cardMeta}>
-                      <span><span className={styles.typeBadge}>{typeLabel(t.ticket_type)}</span></span>
+                      <span><span className="badge badge-type">{typeLabel(t.ticket_type)}</span></span>
                       <span>{t.sessions} занять</span>
                       <span>{formatMoney(t.price)}</span>
                     </div>

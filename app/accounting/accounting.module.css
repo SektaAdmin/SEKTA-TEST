@@ -372,20 +372,6 @@
 
 .zero { color: var(--text-3) !important; }
 
-/* ── Badges ──────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--badge-radius);
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.badgeCash         { background: var(--accent-dim);   color: var(--accent); }
-.badgeFop          { background: var(--fop-dim);      color: var(--fop); }
-.badgePersonalCard { background: var(--card-dim);     color: var(--card); }
-.badgeDeposit      { background: var(--deposit-dim);  color: var(--deposit); }
 
 /* ── Desktop/mobile toggle ───────────────────────────────────── */
 .cardList { display: none; }
