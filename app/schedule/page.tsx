@@ -201,16 +201,17 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
   }, [anchorRef])
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        tooltipRef.current && !tooltipRef.current.contains(e.target as Node) &&
-        anchorRef.current && !anchorRef.current.contains(e.target as Node)
-      ) {
+    function handleMouseDown(e: MouseEvent) {
+      if (tooltipRef.current?.contains(e.target as Node)) {
+        e.stopPropagation()
+        return
+      }
+      if (!anchorRef.current?.contains(e.target as Node)) {
         onClose()
       }
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handleMouseDown, true)
+    return () => document.removeEventListener('mousedown', handleMouseDown, true)
   }, [onClose, anchorRef])
 
   const active = enrollments?.filter(e => e.status === 'enrolled' || e.status === 'attended') ?? []
