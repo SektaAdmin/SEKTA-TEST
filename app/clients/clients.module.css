@@ -14,7 +14,7 @@
 }
 
 @media (max-width: 640px) {
-  .main { margin-left: 0; height: 100dvh; overflow: hidden; }
+  .main { margin-left: 0; height: calc(100dvh - var(--bottom-nav-h) - env(safe-area-inset-bottom)); overflow: hidden; }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
 }
 
@@ -184,7 +184,6 @@
     display: block;
     flex-shrink: 0;
     padding: 10px 16px;
-    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px);
     border-top: 0.5px solid var(--border);
     background: var(--bg);
   }
