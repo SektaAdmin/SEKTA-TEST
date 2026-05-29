@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
@@ -35,6 +35,11 @@ export default function SalesPage() {
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo })
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
 
   const totalPages = Math.ceil(total / pageSize)
   const from = page * pageSize
@@ -265,6 +270,22 @@ export default function SalesPage() {
               })}
             </div>
 
+            <div className={styles.paginationDesktop}>
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                total={total}
+                onPage={setPage}
+                onPageSize={handlePageSize}
+                pageSizeLabel="Продажів на сторінці"
+              />
+            </div>
+            </>
+          )}
+        </div>
+
+        {!loading && !fetchError && sales.length > 0 && (
+          <div className={styles.paginationMobile}>
             <Pagination
               page={page}
               pageSize={pageSize}
@@ -273,9 +294,8 @@ export default function SalesPage() {
               onPageSize={handlePageSize}
               pageSizeLabel="Продажів на сторінці"
             />
-            </>
-          )}
-        </div>
+          </div>
+        )}
       </main>
 
       {showModal && (
