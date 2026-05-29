@@ -700,5 +700,7 @@
   .actionsCell { white-space: nowrap; width: 1%; padding: 8px 8px !important; }
   .actions { gap: 4px; }
   .btnAttend, .btnNoshow, .btnCancelEnroll { width: 28px; height: 28px; font-size: 13px; }
-  .btnReEnroll, .btnEdit, .btnCancelAdd { height: 28px; padding: 0 7px; font-size: 12px; }
+  .btnReEnroll, .btnCancelAdd { height: 28px; padding: 0 7px; font-size: 12px; }
+  .actions .btnEdit { height: 28px; padding: 0 7px; font-size: 12px; }
+  .footerActions .btnEdit { height: auto; padding: 10px 8px; font-size: 13px; }
 }
