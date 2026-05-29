@@ -165,9 +165,12 @@ interface CardTooltipProps {
   onMouseEnter: () => void
 }
 
+const TOOLTIP_W = 220
+const TOOLTIP_MAX_H = 320
+
 function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipProps) {
   const [enrollments, setEnrollments] = useState<TooltipEnrollment[] | null>(null)
-  const [pos, setPos] = useState({ top: 0, left: 0, side: 'right' as 'right' | 'left' })
+  const [pos, setPos] = useState<{ top: number; left?: number; right?: number; bottom?: number }>({ top: 0, left: 0 })
   const tooltipRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -181,12 +184,20 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
     if (!el) return
     const rect = el.getBoundingClientRect()
     const winW = window.innerWidth
-    const side = rect.right + 220 < winW ? 'right' : 'left'
-    setPos({
-      top: rect.top,
-      left: side === 'right' ? rect.right + 8 : rect.left - 8,
-      side,
-    })
+    const winH = window.innerHeight
+    const GAP = 8
+
+    // horizontal: prefer right, fall back to left
+    const fitsRight = rect.right + GAP + TOOLTIP_W <= winW
+    const leftVal = fitsRight ? rect.right + GAP : undefined
+    const rightVal = fitsRight ? undefined : winW - rect.left + GAP
+
+    // vertical: prefer top-aligned with card, flip up if overflows bottom
+    const fitsDown = rect.top + TOOLTIP_MAX_H <= winH - 8
+    const topVal = fitsDown ? rect.top : undefined
+    const bottomVal = fitsDown ? undefined : winH - rect.bottom
+
+    setPos({ top: topVal ?? 0, left: leftVal, right: rightVal, bottom: bottomVal })
   }, [anchorRef])
 
   useEffect(() => {
@@ -222,9 +233,10 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
       ref={tooltipRef}
       className={styles.cardTooltip}
       style={{
-        top: pos.top,
-        left: pos.side === 'right' ? pos.left : undefined,
-        right: pos.side === 'left' ? window.innerWidth - pos.left : undefined,
+        top: pos.bottom !== undefined ? 'auto' : pos.top,
+        bottom: pos.bottom !== undefined ? pos.bottom : 'auto',
+        left: pos.left,
+        right: pos.right,
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onClose}
@@ -240,8 +252,9 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
               <div className={styles.tooltipSectionHead}>
                 Записані ({active.length})
               </div>
-              {active.map(e => (
+              {active.map((e, i) => (
                 <div key={e.id} className={styles.tooltipRow}>
+                  <span className={styles.tooltipNum}>{i + 1}</span>
                   <span className={`${styles.tooltipDot} ${statusDot[e.status] ?? ''}`} />
                   <span className={styles.tooltipName}>{clientName(e)}</span>
                 </div>
@@ -253,8 +266,9 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
               <div className={styles.tooltipSectionHead}>
                 Резерв ({waitlist.length})
               </div>
-              {waitlist.map(e => (
+              {waitlist.map((e, i) => (
                 <div key={e.id} className={styles.tooltipRow}>
+                  <span className={styles.tooltipNum}>{i + 1}</span>
                   <span className={`${styles.tooltipDot} ${styles.tooltipDotWaitlist}`} />
                   <span className={styles.tooltipName}>{clientName(e)}</span>
                 </div>
@@ -357,7 +371,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
             if (waitlistCount > 0) {
               return (
                 <div className={styles.cardSlotsWaitlist}>
-                  Черга: <strong>{waitlistCount}</strong>
+                  Резерв: <strong>{waitlistCount}</strong>
                 </div>
               )
             }
