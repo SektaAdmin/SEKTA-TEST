@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
@@ -15,6 +17,43 @@ import { MSG } from '@/lib/messages'
 import { isoToYMD, toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod, Trainer } from '@/types'
 import styles from './accounting.module.css'
+
+const ALL = '__all__'
+
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  const radixValue = value === '' ? ALL : value
+  return (
+    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
+      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className={styles.fsChevron} />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item
+                key={o.value === '' ? ALL : o.value}
+                value={o.value === '' ? ALL : o.value}
+                className={styles.fsItem}
+              >
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
+}
 
 type SaleRow = {
   id: string
@@ -243,16 +282,15 @@ export default function AccountingPage() {
             ))}
           </div>
           {paymentFilter === 'cash' && trainers.length > 0 && (
-            <select
-              className={styles.trainerSelect}
-              value={trainerFilter}
-              onChange={e => setTrainerFilter(e.target.value)}
-            >
-              <option value="all">Всі тренери</option>
-              {trainers.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
+            <FilterSelect
+              value={trainerFilter === 'all' ? '' : trainerFilter}
+              onChange={v => setTrainerFilter(v === '' ? 'all' : v)}
+              placeholder="Всі тренери"
+              options={[
+                { value: '', label: 'Всі тренери' },
+                ...trainers.map(t => ({ value: t.id, label: t.name })),
+              ]}
+            />
           )}
         </div>
 
