@@ -146,10 +146,10 @@
 
 @media (max-width: 640px) {
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
-  .filterBar { padding: 8px 16px; flex-wrap: wrap; height: auto; }
+  .filterBar { flex-wrap: wrap; padding: 8px var(--topbar-px); width: 100%; box-sizing: border-box; height: auto; }
   .searchWrap { width: 100%; }
-  .searchInput { width: 100% !important; }
-  .searchInput:focus { width: 100% !important; }
+  .searchInput { width: 100%; }
+  .searchInput:focus { width: 100%; }
   .content { padding: 12px 16px; }
   .tableDesktop { display: none; }
   .cardList {

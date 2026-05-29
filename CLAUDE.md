@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: Supabase PostgreSQL
 - **Auth**: Supabase Auth + JWT
 - **Styling**: Tailwind CSS 4.3 + shadcn/ui (повністю встановлені та використовуються)
-- **Last Updated**: 2026-05-29 (mobile layout fix: page-layout clamped to calc(100svh - BottomNav) — pagination no longer hidden under BottomNav)
+- **Last Updated**: 2026-05-29 (mobile filterbar unified: stack pattern for /sales + /clients; horizontal scroll for /journal + /accounting)
 
 ## Commands
 
@@ -538,6 +538,11 @@ types/
   - **НЕ додавати** `padding-bottom: calc(var(--bottom-nav-h) + ...)` на `page-body` або `page-foot` — це застарілий патерн, що призводив до перекриття пагінації. Висота обрізана на рівні `page-layout`
   - Module.css сторінок: мобільна `@media` містить тільки специфіку (розміри topbar, flex-wrap, padding контенту). **Не дублювати** висоту/overflow — вони в `page-layout`/`page-main`/`page-body`
   - `.page-content` — застарілий клас, залишається в globals.css для зворотної сумісності (accounting/trainers/*, /schedule/[classId])
+- **Мобільний filterbar — два паттерни** (уніфіковано 2026-05-29):
+  - **Стопка** (`flex-wrap: wrap`, кожен елемент `width: 100%`) — для сторінок з ≤3 елементами форми вводу: `/sales` (пошук + datepicker + скинути), `/clients` (пошук). Елементи розміщуються один під одним.
+  - **Горизонтальний скрол** (`overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap`) — для сторінок з 4+ навігаційними фільтрами (кнопки/селекти): `/journal`, `/accounting`. `overflow-y: hidden` запобігає вертикальному скролу при touch-свайпі.
+  - Всі інтерактивні елементи filterbar: `height: var(--control-h)` (= 44px на мобільному).
+  - `/schedule` і `/schedule/templates` — власна архітектура, не змінювати.
 - **`lib/queries/`** — всі Supabase-запити винесені сюди. Компоненти і хуки імпортують функції з queries, не пишуть `.from()` безпосередньо.
 - **Мутації** (INSERT/UPDATE/RPC) залишаються всередині модалок або хуків.
 - **Toast** через `sonner` (`import { toast } from 'sonner'`). `<Toaster />` у `app/layout.tsx`.
@@ -653,21 +658,21 @@ types/
 
 ---
 
-### /clients Page (станом на 2026-05-27)
+### /clients Page (станом на 2026-05-29)
 
 **Mobile adaptation (≤640px):**
-- **Filter bar**: `flex-wrap: wrap`. `searchWrap` — `width: 100%` (повна ширина). ⚠️ `@media` блок завжди в **кінці** `clients.module.css`
+- **Filter bar**: `flex-wrap: wrap`, `width: 100%`, `box-sizing: border-box`. `searchWrap` — `width: 100%`. ⚠️ `@media` блок завжди в **кінці** `clients.module.css`
 - **Таблиця**: на десктопі `.tableDesktop` (звичайна таблиця), на мобільному `.cardList` (картки). Перемикання через CSS `display: none/flex` — обидва рендеряться в JSX одночасно
 - **Client card**: ім'я + депозит (завжди, з кольоровим бейджем) в рядку; телефон як `<a href="tel:">` + instagram/telegram — тільки заповнені поля
 - Тап на картку → перехід на `/clients/[id]`
 
 ---
 
-### /sales Page (станом на 2026-05-27)
+### /sales Page (станом на 2026-05-29)
 
 **Mobile adaptation (≤640px):**
 - **Topbar**: `flex-wrap: wrap`, кнопка "+ Нова продажа" залишається в рядку з заголовком
-- **Filter bar**: `flex-wrap: wrap`. Пошук — `flex: 0 0 100%` (окремий рядок, повна ширина). Кнопка дат `SalesDateRangePicker` — `width: 100%` (повна ширина). ⚠️ `@media` блок завжди в **кінці** `sales.module.css` — інакше десктопний `width: 200px` перебиває мобільний `width: 100%`
+- **Filter bar**: `flex-wrap: wrap`, `width: 100%`, `box-sizing: border-box` — вертикальна стопка. Пошук (`.filterSearch`) — `width: 100%`. `SalesDateRangePicker` обгорнутий у `<div className={styles.filterDateWrap}>` — `width: 100%`. Кнопка «Скинути» (`.filterClear`) — `width: 100%`, з'являється тільки при `hasFilters`. ⚠️ `@media` блок завжди в **кінці** `sales.module.css`
 - **SalesDateRangePicker**: на мобільному відкривається як bottom sheet (`position: fixed; bottom: 0; left: 0; right: 0`). Пресети — горизонтальний скрол. Один місяць (правий прихований через CSS). `isMobile` визначається при відкритті через `window.innerWidth <= 640`
 - **Таблиця**: на десктопі `.tableDesktop` (звичайна таблиця), на мобільному `.cardList` (картки). Перемикання через CSS `display: none/flex` — обидва рендеряться в JSX одночасно
 - **Sale card**: клієнт + дата / назва операції / оплачено + бейдж методу / Δ депозит (тільки якщо ≠ 0) / тренер (тільки якщо є) / кнопки Змінити+Видалити

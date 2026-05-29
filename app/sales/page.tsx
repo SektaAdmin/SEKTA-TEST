@@ -111,13 +111,15 @@ export default function SalesPage() {
             />
           </div>
 
-          <SalesDateRangePicker
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onChangeFrom={handleDateFrom}
-            onChangeTo={handleDateTo}
-            onClear={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-          />
+          <div className={styles.filterDateWrap}>
+            <SalesDateRangePicker
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onChangeFrom={handleDateFrom}
+              onChangeTo={handleDateTo}
+              onClear={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
+            />
+          </div>
 
           {hasFilters && (
             <button className={styles.filterClear} onClick={clearFilters}>
