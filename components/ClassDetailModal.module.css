@@ -680,15 +680,16 @@
   .footerActions {
     padding: 10px 16px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    gap: 6px;
+    gap: 8px;
     flex-wrap: nowrap;
   }
   .footerActions button {
-    font-size: 13px;
-    padding: 7px 10px;
+    font-size: 14px;
+    padding: 10px 12px;
     white-space: nowrap;
-    flex-shrink: 1;
+    flex: 1;
     min-width: 0;
+    text-align: center;
   }
   .tableContainer { overflow-x: hidden; }
   .table { table-layout: fixed; width: 100%; }
