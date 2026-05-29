@@ -27,7 +27,8 @@
   box-sizing: border-box;
 }
 
-.field input[type="time"] {
+.field input[type="time"],
+.field input[type="date"] {
   height: 39px;
   padding-top: 0;
   padding-bottom: 0;
