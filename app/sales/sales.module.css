@@ -82,6 +82,60 @@
 }
 .filterClear:hover { border-color: var(--danger); color: var(--danger); }
 
+/* ── Feed tabs ───────────────────────────────────────────────── */
+.feedTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px var(--topbar-px);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.feedTab {
+  height: var(--control-h);
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
+  white-space: nowrap;
+}
+.feedTab:hover { background: var(--bg-3); color: var(--text); }
+.feedTabActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+/* ── Expense rows ─────────────────────────────────────────────── */
+.expenseRow td { opacity: 0.9; }
+.expenseLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-2) !important;
+  font-size: 14px;
+}
+.expenseIcon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.expenseDesc { color: var(--text-2) !important; font-size: 14px !important; }
+.expenseTrainerInline { color: var(--text-3); }
+
+/* Mobile expense card accents */
+.cardExpense { border-left: 3px solid var(--danger) !important; }
+.cardIncome  { border-left: 3px solid var(--success) !important; }
+
 .content { padding: 24px 28px; }
 
 .empty {
@@ -405,4 +459,14 @@
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
   .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
+
+  .feedTabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 8px 16px;
+  }
+
+  .feedTab { height: 44px; }
 }

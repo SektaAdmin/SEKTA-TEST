@@ -197,6 +197,16 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
         </>
       ) : (
         <>
+          <FormField id="se-date" label="Дата" required>
+            <input
+              id="se-date"
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              autoFocus
+            />
+          </FormField>
+
           <FormField id="se-amount" label="Сума (₴)" required>
             <input
               id="se-amount"
@@ -205,7 +215,6 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
               placeholder="0"
               value={amount}
               onChange={e => setAmount(e.target.value)}
-              autoFocus
             />
           </FormField>
 
@@ -241,15 +250,6 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={2}
-            />
-          </FormField>
-
-          <FormField id="se-date" label="Дата" required>
-            <input
-              id="se-date"
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
             />
           </FormField>
         </>
