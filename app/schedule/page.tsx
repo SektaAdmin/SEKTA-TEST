@@ -1,8 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { listEnrollmentsForClass } from '@/lib/queries/enrollments'
@@ -17,6 +15,7 @@ import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
+import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -112,43 +111,6 @@ function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date, hourH
   d.setHours(clampedH, 0, 0, 0)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:00`
-}
-
-// ── Filter select ─────────────────────────────────────────────────
-const ALL = '__all__'
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  const radixValue = value === '' ? ALL : value
-  return (
-    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
-      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className={styles.fsChevron} />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item
-                key={o.value === '' ? ALL : o.value}
-                value={o.value === '' ? ALL : o.value}
-                className={styles.fsItem}
-              >
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
 }
 
 // ── Card hover tooltip ────────────────────────────────────────────

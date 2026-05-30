@@ -1,7 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
@@ -16,44 +14,8 @@ import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod } from '@/types'
+import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './accounting.module.css'
-
-const ALL = '__all__'
-
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  const radixValue = value === '' ? ALL : value
-  return (
-    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
-      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className={styles.fsChevron} />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item
-                key={o.value === '' ? ALL : o.value}
-                value={o.value === '' ? ALL : o.value}
-                className={styles.fsItem}
-              >
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
 
 type SaleRow = {
   id: string

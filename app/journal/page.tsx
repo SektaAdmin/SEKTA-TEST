@@ -1,7 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listPastClasses, type ClassWithJoins } from '@/lib/queries/classes'
@@ -12,49 +11,10 @@ import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { getActiveCount } from '@/lib/scheduleMetrics'
+import FilterSelect from '@/components/ui/FilterSelect'
 import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
-const ALL = '__all__'
-
-// ── Controlled Radix select for filters ──────────────────────────
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  const radixValue = value === '' ? ALL : value
-  return (
-    <SelectPrimitive.Root
-      value={radixValue}
-      onValueChange={v => onChange(v === ALL ? '' : v)}
-    >
-      <SelectPrimitive.Trigger className={jStyles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className={jStyles.fsChevron} />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={jStyles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item
-                key={o.value === '' ? ALL : o.value}
-                value={o.value === '' ? ALL : o.value}
-                className={jStyles.fsItem}
-              >
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
 
 export default function JournalPage() {
   const { trainers, halls, trainingTypes } = useRefs()

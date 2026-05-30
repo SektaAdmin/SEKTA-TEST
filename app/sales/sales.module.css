@@ -67,58 +67,6 @@
 .filterSearchInput:focus { border-color: var(--accent); width: 240px; }
 .filterSearchInput::placeholder { color: var(--text-3); }
 
-.fsTrigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: var(--control-h);
-  padding: 0 10px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 14px;
-  font-family: var(--font);
-  cursor: pointer;
-  outline: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-}
-.fsTrigger:hover { border-color: var(--border-hover); background: var(--bg-3); }
-.fsTrigger:focus-visible { border-color: var(--accent); }
-.fsTrigger[data-state='open'] { border-color: var(--accent-border); background: var(--accent-dim); color: var(--accent); }
-.fsTrigger[data-placeholder] { color: var(--text-3); }
-
-.fsChevron { width: 13px; height: 13px; color: var(--text-3); flex-shrink: 0; }
-
-.fsContent {
-  background: var(--bg-2);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  z-index: 500;
-  min-width: var(--radix-select-trigger-width);
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.fsItem {
-  display: flex;
-  align-items: center;
-  padding: 7px 12px;
-  font-size: 14px;
-  font-family: var(--font);
-  color: var(--text);
-  cursor: pointer;
-  outline: none;
-  transition: background var(--motion-fast);
-  user-select: none;
-}
-.fsItem:hover,
-.fsItem[data-highlighted] { background: var(--bg-3); }
-.fsItem[data-state='checked'] { color: var(--accent); font-weight: 500; }
-
 .filterClear {
   background: transparent;
   border: 1px solid var(--border);

@@ -1,8 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
   calcTrainerSalaryDetail,
@@ -28,42 +26,13 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
+import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './calculations.module.css'
 
 const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
-
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  return (
-    <SelectPrimitive.Root value={value} onValueChange={onChange}>
-      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className={styles.fsChevron} />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item key={o.value} value={o.value} className={styles.fsItem}>
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
 
 function getMonthRange() {
   const d = new Date()
@@ -228,6 +197,7 @@ export default function SalaryCalculationsPage() {
               onChange={setSelectedTrainerId}
               placeholder="Тренер"
               options={trainers.map(t => ({ value: t.id, label: t.name }))}
+              allowEmpty={false}
             />
           )}
           <span className={styles.filterLabel}>Від</span>

@@ -1,7 +1,5 @@
 'use client'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -19,44 +17,8 @@ import BottomNav from '@/components/BottomNav'
 import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, toYMD, getMondayOf } from '@/lib/dateUtils'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './page.module.css'
-
-// ── Filter select ─────────────────────────────────────────────────
-const ALL = '__all__'
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  const radixValue = value === '' ? ALL : value
-  return (
-    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
-      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className={styles.fsChevron} />
-        </SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item
-                key={o.value === '' ? ALL : o.value}
-                value={o.value === '' ? ALL : o.value}
-                className={styles.fsItem}
-              >
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
 
 // dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
 const DAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]

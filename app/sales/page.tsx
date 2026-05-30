@@ -1,8 +1,7 @@
 'use client'
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { ChevronDown, ShoppingBag, TrendingUp } from 'lucide-react'
+import { ShoppingBag, TrendingUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
@@ -19,37 +18,8 @@ import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import type { Sale } from '@/types'
 import Pagination from '@/components/ui/Pagination'
+import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './sales.module.css'
-
-const ALL = '__all__'
-interface FilterSelectProps {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: { value: string; label: string }[]
-}
-function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
-  const radixValue = value === '' ? ALL : value
-  return (
-    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
-      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
-        <SelectPrimitive.Value placeholder={placeholder} />
-        <SelectPrimitive.Icon asChild><ChevronDown className={styles.fsChevron} /></SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
-          <SelectPrimitive.Viewport>
-            {options.map(o => (
-              <SelectPrimitive.Item key={o.value === '' ? ALL : o.value} value={o.value === '' ? ALL : o.value} className={styles.fsItem}>
-                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
-              </SelectPrimitive.Item>
-            ))}
-          </SelectPrimitive.Viewport>
-        </SelectPrimitive.Content>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
 
 type FeedTab = 'all' | 'sales' | 'expenses'
 
