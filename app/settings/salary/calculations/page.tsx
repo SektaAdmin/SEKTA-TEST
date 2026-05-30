@@ -283,7 +283,7 @@ export default function SalaryCalculationsPage() {
                       <thead>
                         <tr>
                           <th style={{ width: 24 }}></th>
-                          <th style={{ width: 180 }}>Дата</th>
+                          <th>Дата</th>
                           {ticketTypes.map(t => (
                             <th key={t} className={styles.numCol}>{ticketTypeShortLabel(t)}</th>
                           ))}
