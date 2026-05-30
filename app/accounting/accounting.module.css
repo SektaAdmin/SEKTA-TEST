@@ -56,23 +56,57 @@
 .filters {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 10px var(--topbar-px);
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
   background: var(--bg);
 }
 
-.presets {
+.dateGroup {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 8px;
+  height: var(--control-h);
+  transition: border-color var(--motion-fast);
+}
+.dateGroup:focus-within {
+  border-color: var(--border-hover);
+}
+/* Strip individual borders from DatePicker triggers inside the group */
+.dateGroup :global(button[class*="trigger"]) {
+  border: none;
+  height: auto;
+  padding: 0 4px;
+  background: transparent;
+}
+
+.dateSep {
+  font-size: 14px;
+  color: var(--text-3);
   flex-shrink: 0;
 }
 
-.paymentTabs {
-  display: flex;
-  gap: 8px;
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast), background var(--motion-fast);
   flex-shrink: 0;
+}
+.resetBtn:hover {
+  color: var(--text);
+  background: var(--bg-3);
 }
 
 .preset {
@@ -94,13 +128,6 @@
   background: var(--accent-dim) !important;
   border-color: var(--accent-border-hover) !important;
   color: var(--accent) !important;
-}
-
-.dateRange {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
 }
 
 .dateLabel {
@@ -228,14 +255,14 @@
 .balanceBlock {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 20px var(--topbar-px) 16px;
+  gap: 8px;
+  padding: 28px var(--topbar-px) 24px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
 .balanceBig {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
@@ -245,7 +272,7 @@
 
 .balanceMeta {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   font-size: 14px;
   color: var(--text-3);
 }

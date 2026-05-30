@@ -11,7 +11,7 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2, Banknote } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2, Banknote, X } from 'lucide-react'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { toYMD } from '@/lib/dateUtils'
@@ -228,13 +228,16 @@ export default function AccountingPage() {
               placeholder="Рахунок"
               options={accountOptions}
             />
-            <span className={styles.dateLabel}>Від</span>
-            <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="початку" />
-            <span className={styles.dateLabel}>До</span>
-            <DatePicker value={dateTo} onChange={setDateTo} />
-            {dateFrom && (
-              <button className={styles.preset} onClick={() => setDateFrom('')}>✕ Скинути</button>
-            )}
+            <div className={styles.dateGroup}>
+              <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="від початку" />
+              <span className={styles.dateSep}>—</span>
+              <DatePicker value={dateTo} onChange={setDateTo} />
+              {dateFrom && (
+                <button className={styles.resetBtn} onClick={() => setDateFrom('')} title="Скинути">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
