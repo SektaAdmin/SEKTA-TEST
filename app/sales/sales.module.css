@@ -101,29 +101,29 @@
 .feedTabGroup {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   margin-left: auto;
 }
 
 .feedTab {
   height: var(--control-h);
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   background: transparent;
-  color: var(--text-2);
+  color: var(--text-3);
   font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
   white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
 }
-.feedTab:hover { background: var(--bg-3); color: var(--text); }
+.feedTab:hover { border-color: var(--border-hover); color: var(--text-2); }
 .feedTabActive {
   background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: var(--accent-text);
-  font-weight: 500;
+  border-color: var(--accent-border-hover);
+  color: var(--accent);
 }
 
 /* Mobile expense card accents */
