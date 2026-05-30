@@ -53,7 +53,7 @@ export async function listSales(
       payment_method, notes,
       clients(first_name, last_name),
       tickets(name),
-      trainers(name)
+      trainers!sales_trainer_id_fkey(name)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(rangeFrom, rangeFrom + pageSize - 1)
@@ -80,7 +80,7 @@ export async function listSalesForClient(
   const { data, count } = await supabase
     .from('sales')
     .select(
-      'id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers(name)',
+      'id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers!sales_trainer_id_fkey(name)',
       { count: 'exact' }
     )
     .eq('client_id', clientId)
@@ -107,7 +107,7 @@ export async function listAllSalesForFeed(
 ): Promise<FeedSale[]> {
   const { data } = await supabase
     .from('sales')
-    .select('id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers(name)')
+    .select('id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!sales_trainer_id_fkey(name)')
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
   return (data as unknown as FeedSale[]) ?? []
@@ -133,7 +133,7 @@ export async function listSalesForTrainers(
 ): Promise<{ trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]> {
   const { data } = await supabase
     .from('sales')
-    .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers(name)')
+    .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)')
     .not('trainer_id', 'is', null)
     .not('ticket_id', 'is', null)
     .gte('created_at', start)

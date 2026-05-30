@@ -65,6 +65,7 @@ type SaleRow = {
   ticket_id: string | null
   ticket_name: string | null
   trainer_id: string | null
+  cash_holder: string | null
   clients: { first_name: string | null; last_name: string | null } | null
   trainers: { name: string } | null
 }
@@ -149,7 +150,7 @@ export default function AccountingPage() {
     const [salesRes, expensesRes, paymentsRes] = await Promise.all([
       supabase
         .from('sales')
-        .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, clients(first_name, last_name), trainers(name)')
+        .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, cash_holder, clients(first_name, last_name), trainers!sales_trainer_id_fkey(name)')
         .gte('created_at', `${from}T00:00:00`)
         .lte('created_at', `${to}T23:59:59`)
         .order('created_at', { ascending: false }),
@@ -198,8 +199,11 @@ export default function AccountingPage() {
       if (paymentFilter !== 'all' && method !== paymentFilter) return false
       if (paymentFilter === 'deposit' && (item.kind === 'expense' || item.kind === 'payment')) return false
       if (paymentFilter === 'cash' && trainerFilter !== 'all') {
-        const tid = item.kind === 'payment' ? item.data.trainer_id : item.kind === 'sale' ? item.data.trainer_id : item.data.trainer_id
-        if (tid !== trainerFilter) return false
+        const holder =
+          item.kind === 'sale'    ? item.data.cash_holder :
+          item.kind === 'expense' ? item.data.cash_holder :
+          item.data.cash_holder
+        if (holder !== trainerFilter) return false
       }
       return true
     })

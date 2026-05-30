@@ -6,6 +6,7 @@ export type StudioExpense = {
   direction: 'expense' | 'income'
   payment_method: 'cash' | 'fop' | 'personal_card'
   trainer_id: string | null
+  cash_holder: string | null
   description: string | null
   created_at: string
   trainers: { name: string } | null
@@ -18,7 +19,7 @@ export async function listStudioExpenses(
 ): Promise<{ data: StudioExpense[]; error: string | null }> {
   const { data, error } = await supabase
     .from('studio_expenses')
-    .select('id, amount, direction, payment_method, trainer_id, description, created_at, trainers(name)')
+    .select('id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!studio_expenses_trainer_id_fkey(name)')
     .gte('created_at', `${dateFrom}T00:00:00`)
     .lte('created_at', `${dateTo}T23:59:59`)
     .order('created_at', { ascending: false })

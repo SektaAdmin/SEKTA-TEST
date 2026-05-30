@@ -42,6 +42,7 @@ export type TrainerSalaryDetailRow = {
 export type TrainerPayment = {
   id: string
   trainer_id: string
+  cash_holder: string | null
   period_start: string
   period_end: string
   calculated_amount: number
@@ -434,7 +435,7 @@ export async function listTrainerPayments(
 ): Promise<TrainerPayment[]> {
   const { data } = await supabase
     .from('trainer_payments')
-    .select('*, trainers(name)')
+    .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
     .eq('trainer_id', trainerId)
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
@@ -449,7 +450,7 @@ export async function listTrainerPaymentsForPeriod(
 ): Promise<TrainerPayment[]> {
   const { data } = await supabase
     .from('trainer_payments')
-    .select('*, trainers(name)')
+    .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
     .gte('payment_date', dateFrom)
     .lte('payment_date', dateTo)
     .order('payment_date', { ascending: false })
