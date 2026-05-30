@@ -7,6 +7,7 @@ export interface ListSalesParams {
   search: string
   dateFrom: string
   dateTo: string
+  trainerId: string
 }
 
 export async function searchClientIdsByName(
@@ -32,7 +33,7 @@ export async function searchClientIdsByName(
 
 export async function listSales(
   supabase: SupabaseClient,
-  { page, pageSize, search, dateFrom, dateTo }: ListSalesParams
+  { page, pageSize, search, dateFrom, dateTo, trainerId }: ListSalesParams
 ): Promise<{ data: Sale[]; count: number; error: string | null }> {
   let clientIds: string[] | null = null
 
@@ -59,8 +60,9 @@ export async function listSales(
     .range(rangeFrom, rangeFrom + pageSize - 1)
 
   if (clientIds !== null) query = query.in('client_id', clientIds)
-  if (dateFrom) query = query.gte('created_at', `${dateFrom}T00:00:00`)
-  if (dateTo)   query = query.lte('created_at', `${dateTo}T23:59:59`)
+  if (dateFrom)  query = query.gte('created_at', `${dateFrom}T00:00:00`)
+  if (dateTo)    query = query.lte('created_at', `${dateTo}T23:59:59`)
+  if (trainerId) query = query.eq('trainer_id', trainerId)
 
   const { data, count, error } = await query
   return {

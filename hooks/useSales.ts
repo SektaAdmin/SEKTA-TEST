@@ -14,21 +14,22 @@ interface UseSalesParams {
   search: string
   dateFrom: string
   dateTo: string
+  trainerId: string
 }
 
-export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesParams) {
+export function useSales({ page, pageSize, search, dateFrom, dateTo, trainerId }: UseSalesParams) {
   const [sales, setSales] = useState<Sale[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchSales = useCallback(async (
-    p: number, size: number, q: string, from: string, to: string,
+    p: number, size: number, q: string, from: string, to: string, tid: string,
     abortSignal?: AbortSignal
   ) => {
     setLoading(true)
     setFetchError(null)
-    const { data, count, error } = await listSales(supabase, { page: p, pageSize: size, search: q, dateFrom: from, dateTo: to })
+    const { data, count, error } = await listSales(supabase, { page: p, pageSize: size, search: q, dateFrom: from, dateTo: to, trainerId: tid })
     if (abortSignal?.aborted) return
     if (error) {
       setFetchError(error)
@@ -41,21 +42,21 @@ export function useSales({ page, pageSize, search, dateFrom, dateTo }: UseSalesP
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchSales(page, pageSize, search, dateFrom, dateTo, controller.signal)
+    fetchSales(page, pageSize, search, dateFrom, dateTo, trainerId, controller.signal)
     return () => controller.abort()
-  }, [page, pageSize, search, dateFrom, dateTo, fetchSales])
+  }, [page, pageSize, search, dateFrom, dateTo, trainerId, fetchSales])
 
   useEffect(() => {
     function onVisible() {
       if (document.visibilityState === 'visible') {
-        fetchSales(page, pageSize, search, dateFrom, dateTo)
+        fetchSales(page, pageSize, search, dateFrom, dateTo, trainerId)
       }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [fetchSales, page, pageSize, search, dateFrom, dateTo])
+  }, [fetchSales, page, pageSize, search, dateFrom, dateTo, trainerId])
 
-  const refetch = () => fetchSales(page, pageSize, search, dateFrom, dateTo)
+  const refetch = () => fetchSales(page, pageSize, search, dateFrom, dateTo, trainerId)
 
   useRealtime(['sales'], refetch)
 

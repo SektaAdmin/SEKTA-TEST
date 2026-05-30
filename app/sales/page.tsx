@@ -49,10 +49,11 @@ export default function SalesPage() {
   const [dateTo, setDateTo]           = useState('')
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [expenses, setExpenses]         = useState<StudioExpense[]>([])
-  const [expenseMethod, setExpenseMethod] = useState<'cash' | 'fop' | 'personal_card' | ''>('')
+  const [expenses, setExpenses]           = useState<StudioExpense[]>([])
+  const [expenseMethod, setExpenseMethod]   = useState<'cash' | 'fop' | 'personal_card' | ''>('')
+  const [trainerFilter, setTrainerFilter]   = useState<string>('')
 
-  const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo })
+  const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo, trainerId: feedTab !== 'expenses' ? trainerFilter : '' })
 
   const fetchExpenses = useCallback(async () => {
     const from = dateFrom || '2000-01-01'
@@ -65,9 +66,9 @@ export default function SalesPage() {
 
   // unified feed sorted by created_at desc
   const feed = useMemo<FeedItem[]>(() => {
-    const filteredExpenses = expenseMethod
-      ? expenses.filter(e => e.payment_method === expenseMethod)
-      : expenses
+    let filteredExpenses = expenses
+    if (expenseMethod) filteredExpenses = filteredExpenses.filter(e => e.payment_method === expenseMethod)
+    if (trainerFilter) filteredExpenses = filteredExpenses.filter(e => e.trainer_id === trainerFilter)
     if (feedTab === 'sales')    return sales.map(s => ({ kind: 'sale' as const, data: s }))
     if (feedTab === 'expenses') return filteredExpenses.map(e => ({ kind: 'expense' as const, data: e }))
     const items: FeedItem[] = [
@@ -76,10 +77,10 @@ export default function SalesPage() {
     ]
     items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
     return items
-  }, [feedTab, sales, expenses, expenseMethod])
+  }, [feedTab, sales, expenses, expenseMethod, trainerFilter])
 
   const totalPages = Math.ceil(total / pageSize)
-  const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== ''
+  const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== '' || trainerFilter !== ''
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -92,13 +93,12 @@ export default function SalesPage() {
 
   function clearFilters() {
     setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo('')
-    setExpenseMethod(''); setPage(0)
+    setExpenseMethod(''); setTrainerFilter(''); setPage(0)
   }
 
   function handleTabChange(tab: FeedTab) {
     setFeedTab(tab)
     setPage(0)
-    // clear filters irrelevant to the new tab
     if (tab === 'expenses') { setSearchInput(''); setSearch('') }
     if (tab === 'sales')    { setExpenseMethod('') }
   }
@@ -212,6 +212,19 @@ export default function SalesPage() {
                 <option value="personal_card">Картка</option>
               </select>
             )}
+
+            {/* Тренер — завжди */}
+            <select
+              className={styles.filterMethodSelect}
+              value={trainerFilter}
+              onChange={e => { setTrainerFilter(e.target.value); setPage(0) }}
+              aria-label="Тренер"
+            >
+              <option value="">Всі тренери</option>
+              {trainers.filter(t => t.is_active).map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
 
             {/* Дати — завжди */}
             <div className={styles.filterDateWrap}>
