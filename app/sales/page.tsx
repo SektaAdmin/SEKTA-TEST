@@ -239,19 +239,17 @@ export default function SalesPage() {
                         const e = item.data
                         const isExpense = e.direction === 'expense'
                         return (
-                          <tr key={`exp-${e.id}`} className={styles.expenseRow}>
+                          <tr key={`exp-${e.id}`}>
                             <td className={styles.date}>{formatSaleDatetime(e.created_at)}</td>
-                            <td className={styles.expenseLabel}>
-                              <span className={styles.expenseIcon}>
-                                {isExpense
-                                  ? <ShoppingBag size={13} />
-                                  : <TrendingUp size={13} />}
+                            <td style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-2)', fontSize: 14 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
+                                {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
                               </span>
                               {isExpense ? 'Витрата студії' : 'Дохід студії'}
                             </td>
-                            <td className={styles.expenseDesc} colSpan={5}>
+                            <td colSpan={5} style={{ color: 'var(--text-2)', fontSize: 14 }}>
                               {e.description || '—'}
-                              {e.trainers?.name && <span className={styles.expenseTrainerInline}> · {e.trainers.name}</span>}
+                              {e.trainers?.name && <span style={{ color: 'var(--text-3)' }}> · {e.trainers.name}</span>}
                             </td>
                             <td>
                               <span className={paymentClass(e.payment_method)}>
