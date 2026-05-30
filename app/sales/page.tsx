@@ -34,9 +34,11 @@ export default function SalesPage() {
   const [editSale, setEditSale]         = useState<Sale | null>(null)
   const [expenseModal, setExpenseModal] = useState(false)
   const [editExpense, setEditExpense]   = useState<StudioExpense | null>(null)
-  const [deleteId, setDeleteId]         = useState<string | null>(null)
-  const [deleting, setDeleting]       = useState(false)
-  const [deleteError, setDeleteError] = useState('')
+  const [deleteId, setDeleteId]             = useState<string | null>(null)
+  const [deleting, setDeleting]             = useState(false)
+  const [deleteError, setDeleteError]       = useState('')
+  const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null)
+  const [deletingExpense, setDeletingExpense]  = useState(false)
   const [feedTab, setFeedTab]         = useState<FeedTab>('all')
 
   const [page, setPage]               = useState(0)
@@ -104,9 +106,13 @@ export default function SalesPage() {
     refetch()
   }
 
-  async function handleDeleteExpense(id: string) {
-    await deleteStudioExpense(supabase, id)
-    setExpenses(prev => prev.filter(e => e.id !== id))
+  async function handleDeleteExpense() {
+    if (!deleteExpenseId) return
+    setDeletingExpense(true)
+    await deleteStudioExpense(supabase, deleteExpenseId)
+    setExpenses(prev => prev.filter(e => e.id !== deleteExpenseId))
+    setDeleteExpenseId(null)
+    setDeletingExpense(false)
     toast.success('Операцію видалено')
   }
 
@@ -270,7 +276,7 @@ export default function SalesPage() {
                                 <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
                                   Змінити
                                 </button>
-                                <button className={styles.btnDel} onClick={() => handleDeleteExpense(e.id)}>
+                                <button className={styles.btnDel} onClick={() => setDeleteExpenseId(e.id)}>
                                   Видалити
                                 </button>
                               </div>
@@ -369,7 +375,7 @@ export default function SalesPage() {
                           <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
                             Змінити
                           </button>
-                          <button className={styles.btnDel} onClick={() => handleDeleteExpense(e.id)}>
+                          <button className={styles.btnDel} onClick={() => setDeleteExpenseId(e.id)}>
                             Видалити
                           </button>
                         </div>
@@ -491,6 +497,21 @@ export default function SalesPage() {
               <button className={styles.btnCancel} onClick={() => { setDeleteId(null); setDeleteError('') }}>Скасувати</button>
               <button className={styles.btnConfirmDel} onClick={handleDelete} disabled={deleting}>
                 {deleting ? 'Видалення...' : 'Видалити'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteExpenseId && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmBox}>
+            <h3>Видалити операцію?</h3>
+            <p>Цю дію неможливо скасувати.</p>
+            <div className={styles.confirmBtns}>
+              <button className={styles.btnCancel} onClick={() => setDeleteExpenseId(null)}>Скасувати</button>
+              <button className={styles.btnConfirmDel} onClick={handleDeleteExpense} disabled={deletingExpense}>
+                {deletingExpense ? 'Видалення...' : 'Видалити'}
               </button>
             </div>
           </div>
