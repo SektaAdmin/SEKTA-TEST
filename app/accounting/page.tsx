@@ -232,6 +232,9 @@ export default function AccountingPage() {
             <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="початку" />
             <span className={styles.dateLabel}>До</span>
             <DatePicker value={dateTo} onChange={setDateTo} />
+            {dateFrom && (
+              <button className={styles.preset} onClick={() => setDateFrom('')}>✕ Скинути</button>
+            )}
           </div>
         </div>
 
