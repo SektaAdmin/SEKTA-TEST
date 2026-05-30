@@ -283,7 +283,7 @@ export default function SalaryCalculationsPage() {
                       <thead>
                         <tr>
                           <th style={{ width: 24 }}></th>
-                          <th>Дата</th>
+                          <th style={{ width: 180 }}>Дата</th>
                           {ticketTypes.map(t => (
                             <th key={t} className={styles.numCol}>{ticketTypeShortLabel(t)}</th>
                           ))}
@@ -350,10 +350,7 @@ export default function SalaryCalculationsPage() {
                                       </td>
                                       {ticketTypes.map(t => (
                                         <td key={t} className={styles.numCell}>
-                                          {t === r.ticket_type
-                                            ? <>{r.total_clients} чол.</>
-                                            : <span className={styles.dash}>—</span>
-                                          }
+                                          {t === r.ticket_type ? <>{r.total_clients} чол.</> : null}
                                         </td>
                                       ))}
                                       <td className={styles.amtCell}>{formatMoney(r.total_trainer)}</td>
@@ -363,12 +360,14 @@ export default function SalaryCalculationsPage() {
                                     {classExpanded && r.enrollments.map(e => (
                                       <tr key={e.client_id} className={styles.clientRow}>
                                         <td></td>
-                                        <td colSpan={ticketTypes.length + 1} className={styles.clientName}>{e.client_name}</td>
-                                        <td className={styles.numCell}>
-                                          <span className={enrollmentStatusClass(e.status)}>
+                                        <td className={styles.clientName}>
+                                          {e.client_name}
+                                          <span className={`${enrollmentStatusClass(e.status)} ${styles.clientStatusBadge}`}>
                                             {enrollmentStatusLabel(e.status)}
                                           </span>
                                         </td>
+                                        {ticketTypes.map(t => <td key={t} />)}
+                                        <td className={styles.amtCell}>{formatMoney(e.trainer_amount)}</td>
                                       </tr>
                                     ))}
                                   </>
