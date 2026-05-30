@@ -128,7 +128,7 @@ export default function SalaryCalculationsPage() {
   const totalStudio = useMemo(() => rows.reduce((s, r) => s + r.total_studio, 0), [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
-  const toPay = totalTrainer - cashBalanceTotal - totalPaidPeriod
+  const toPay = totalTrainer - cashOnHand - totalPaidPeriod
 
   function toggleClass(classId: string) {
     setExpandedClasses(prev => {
@@ -530,7 +530,8 @@ export default function SalaryCalculationsPage() {
         >
           <div className={styles.modalHint}>
             Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
-            {cashBalanceTotal > 0 && <> · Готівка на руках: <strong>{formatMoney(cashBalanceTotal)}</strong></>}
+            {cashOnHand > 0 && <> · Готівка за період: <strong>{formatMoney(cashOnHand)}</strong></>}
+            {cashBalanceTotal > 0 && cashBalanceTotal !== cashOnHand && <> · Всього на руках: <strong>{formatMoney(cashBalanceTotal)}</strong></>}
           </div>
 
           <div>

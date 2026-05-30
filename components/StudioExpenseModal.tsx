@@ -119,7 +119,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
           onChange={e => setTrainerId(e.target.value)}
         >
           <option value="">— без тренера —</option>
-          {trainers.map(t => (
+          {trainers.filter(t => t.is_active).map(t => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>
@@ -133,7 +133,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
             onChange={e => setCashHolder(e.target.value)}
           >
             <option value="">— Оберіть —</option>
-            {trainers.map(t => (
+            {trainers.filter(t => t.is_active).map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>

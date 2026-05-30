@@ -194,6 +194,7 @@ export async function enrollClient(
         p_client_id: clientId,
         p_ticket_id: ticketData.id,
         p_trainer_id: null,
+        p_cash_holder: null,
         p_price_paid: ticketData.price,
         p_amount_given: ticketData.price,
         p_payment_method: 'deposit',

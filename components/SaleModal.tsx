@@ -204,14 +204,17 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             <select
               id="sale-trainer"
               value={trainerId}
-              onChange={e => setValue('trainer_id', e.target.value)}
+              onChange={e => {
+                setValue('trainer_id', e.target.value)
+                if (!cashHolder) setValue('cash_holder', e.target.value)
+              }}
               disabled={busy}
             >
               <option value="">— Оберіть тренера —</option>
               {isEdit && trainerId && !trainers.find(t => t.id === trainerId) && (
                 <option value={trainerId}>{editSale!.trainer_name}</option>
               )}
-              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {trainers.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
             {errors.trainer_id && (
               <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
@@ -230,7 +233,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               disabled={busy}
             >
               <option value="">— Оберіть —</option>
-              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {trainers.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
         )}

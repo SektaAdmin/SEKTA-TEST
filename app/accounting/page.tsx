@@ -134,10 +134,14 @@ export default function AccountingPage() {
     })
   }
 
-  useEffect(() => {
-    listActiveTrainers(supabase).then(setTrainers)
+  const reloadCashBalances = useCallback(() => {
     listAllCashBalances(supabase).then(setCashBalances)
   }, [])
+
+  useEffect(() => {
+    listActiveTrainers(supabase).then(setTrainers)
+    reloadCashBalances()
+  }, [reloadCashBalances])
 
   const fetchData = useCallback(async (from: string, to: string) => {
     setLoading(true)
@@ -160,6 +164,7 @@ export default function AccountingPage() {
   }, [])
 
   useEffect(() => { fetchData(dateFrom, dateTo) }, [dateFrom, dateTo, fetchData])
+  useEffect(() => { reloadCashBalances() }, [reloadCashBalances])
 
   useEffect(() => {
     if (paymentFilter !== 'cash') setTrainerFilter('all')
@@ -168,6 +173,7 @@ export default function AccountingPage() {
   async function handleDeleteExpense(id: string) {
     await deleteStudioExpense(supabase, id)
     setExpenses(prev => prev.filter(e => e.id !== id))
+    reloadCashBalances()
   }
 
   // Build unified sorted feed
