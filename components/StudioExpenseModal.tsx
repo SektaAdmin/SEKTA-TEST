@@ -29,7 +29,6 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
   const [amount, setAmount]       = useState('')
   const [method, setMethod]       = useState<'cash' | 'fop' | 'personal_card'>('cash')
   const [trainerId, setTrainerId] = useState<string>('')
-  const [cashHolder, setCashHolder] = useState<string>('')
   const [fromTrainerId, setFromTrainerId] = useState<string>('')
   const [toTrainerId, setToTrainerId]     = useState<string>('')
   const [description, setDescription] = useState('')
@@ -96,7 +95,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
       direction: mode,
       payment_method: method,
       trainer_id: trainerId || null,
-      cash_holder: method === 'cash' ? (cashHolder || null) : null,
+      cash_holder: method === 'cash' ? (trainerId || null) : null,
       description: description.trim() || null,
       created_at: `${date}T12:00:00`,
     })
@@ -234,21 +233,6 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
               ))}
             </select>
           </FormField>
-
-          {method === 'cash' && (
-            <FormField id="se-cash-holder" label="Хто тримає готівку">
-              <select
-                id="se-cash-holder"
-                value={cashHolder}
-                onChange={e => setCashHolder(e.target.value)}
-              >
-                <option value="">— Оберіть —</option>
-                {activeTrainers.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </FormField>
-          )}
 
           <FormField id="se-description" label="Коментар">
             <textarea
