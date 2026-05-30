@@ -31,9 +31,13 @@ export default function CalendarPopover({
   useEffect(() => {
     if (!open || !anchorRef.current) return
     const rect = anchorRef.current.getBoundingClientRect()
+    const POPOVER_WIDTH = 256
+    const margin = 8
+    const rawLeft = rect.left + window.scrollX
+    const maxLeft = window.innerWidth - POPOVER_WIDTH - margin
     setPopoverPos({
       top: rect.bottom + window.scrollY + 6,
-      left: rect.left + window.scrollX,
+      left: Math.min(rawLeft, maxLeft),
     })
   }, [open])
 
