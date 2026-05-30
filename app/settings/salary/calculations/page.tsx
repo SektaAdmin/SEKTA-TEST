@@ -18,7 +18,7 @@ import { listActiveTrainers } from '@/lib/queries/trainers'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
-import { toYMD } from '@/lib/dateUtils'
+import { toYMD, isoToYMD, DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
@@ -41,6 +41,37 @@ function getMonthRange() {
   return { start, end }
 }
 
+type DayGroup = {
+  dateKey: string         // YYYY-MM-DD
+  dateLabel: string       // "пт 22.05.2026"
+  classes: TrainerSalaryDetailRow[]
+  totalByType: Record<string, number>  // ticket_type → total clients
+  totalTrainer: number
+}
+
+function buildDayGroups(rows: TrainerSalaryDetailRow[]): DayGroup[] {
+  const map = new Map<string, DayGroup>()
+  for (const r of rows) {
+    const dateKey = isoToYMD(r.starts_at)
+    if (!map.has(dateKey)) {
+      const d = new Date(r.starts_at)
+      const dow = DOW_LABELS_SHORT[d.getDay()]
+      map.set(dateKey, {
+        dateKey,
+        dateLabel: `${dow} ${formatDate(r.starts_at)}`,
+        classes: [],
+        totalByType: {},
+        totalTrainer: 0,
+      })
+    }
+    const group = map.get(dateKey)!
+    group.classes.push(r)
+    group.totalByType[r.ticket_type] = (group.totalByType[r.ticket_type] ?? 0) + r.total_clients
+    group.totalTrainer += r.total_trainer
+  }
+  return Array.from(map.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey))
+}
+
 export default function SalaryCalculationsPage() {
   const pathname = usePathname()
   const [trainers, setTrainers] = useState<Trainer[]>([])
@@ -52,6 +83,7 @@ export default function SalaryCalculationsPage() {
   const [cashBalanceTotal, setCashBalanceTotal] = useState<number>(0)
   const [payments, setPayments] = useState<TrainerPayment[]>([])
   const [loading, setLoading] = useState(false)
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set())
   const [cashExpanded, setCashExpanded] = useState(false)
   const [paymentModal, setPaymentModal] = useState(false)
@@ -88,16 +120,43 @@ export default function SalaryCalculationsPage() {
     setCashBalance(cash)
     setPayments(pays)
     setCashBalanceTotal(cashTotal)
+    setExpandedDays(new Set())
+    setExpandedClasses(new Set())
     setLoading(false)
   }, [selectedTrainerId, dateFrom, dateTo])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Grouped by day, sorted desc
+  const dayGroups = useMemo(() => buildDayGroups(rows), [rows])
+
+  // Dynamic ticket type columns — only types present in period data
+  const ticketTypes = useMemo(() => {
+    const seen = new Set<string>()
+    for (const r of rows) seen.add(r.ticket_type)
+    return Array.from(seen).sort()
+  }, [rows])
+
+  // Total per type for the footer
+  const totalByType = useMemo(() => {
+    const result: Record<string, number> = {}
+    for (const r of rows) result[r.ticket_type] = (result[r.ticket_type] ?? 0) + r.total_clients
+    return result
+  }, [rows])
 
   const totalTrainer = useMemo(() => rows.reduce((s, r) => s + r.total_trainer, 0), [rows])
   const totalStudio = useMemo(() => rows.reduce((s, r) => s + r.total_studio, 0), [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
   const toPay = totalTrainer - cashOnHand - totalPaidPeriod
+
+  function toggleDay(dateKey: string) {
+    setExpandedDays(prev => {
+      const next = new Set(prev)
+      next.has(dateKey) ? next.delete(dateKey) : next.add(dateKey)
+      return next
+    })
+  }
 
   function toggleClass(classId: string) {
     setExpandedClasses(prev => {
@@ -218,90 +277,166 @@ export default function SalaryCalculationsPage() {
                 <div className={ss.empty}>{MSG.empty.salaryClasses}</div>
               ) : (
                 <>
+                  {/* ── DESKTOP TABLE ── */}
                   <div className={`data-table-wrap ${styles.tableDesktop}`}>
                     <table className="data-table">
                       <thead>
                         <tr>
-                          <th></th>
+                          <th style={{ width: 24 }}></th>
                           <th>Дата</th>
-                          <th>Тип</th>
-                          <th>Зал</th>
-                          <th className={styles.numCol}>Людей</th>
+                          {ticketTypes.map(t => (
+                            <th key={t} className={styles.numCol}>{ticketTypeShortLabel(t)}</th>
+                          ))}
                           <th className={styles.numCol}>Нараховано</th>
+                        </tr>
+                        {/* Period totals */}
+                        <tr className={styles.periodTotalsRow}>
+                          <td></td>
+                          <td className={styles.grayCell} style={{ fontSize: 12 }}>Всього за період</td>
+                          {ticketTypes.map(t => (
+                            <td key={t} className={styles.numCell}>
+                              {totalByType[t] ?? 0} чол.
+                            </td>
+                          ))}
+                          <td className={styles.amtCell}>{formatMoney(totalTrainer)}</td>
                         </tr>
                       </thead>
                       <tbody>
-                        {rows.map(r => {
-                          const expanded = expandedClasses.has(r.class_id)
+                        {dayGroups.map(day => {
+                          const dayExpanded = expandedDays.has(day.dateKey)
                           return (
                             <>
-                              <tr key={r.class_id} className={`${styles.classRow} ${expanded ? styles.classRowExpanded : ''}`} onClick={() => toggleClass(r.class_id)}>
+                              {/* Day row */}
+                              <tr
+                                key={day.dateKey}
+                                className={`${styles.dayRow} ${dayExpanded ? styles.dayRowExpanded : ''}`}
+                                onClick={() => toggleDay(day.dateKey)}
+                              >
                                 <td className={styles.expandCell}>
-                                  <span className={`${styles.expandIcon} ${expanded ? styles.expandIconOpen : ''}`}>▶</span>
+                                  <span className={`${styles.expandIcon} ${dayExpanded ? styles.expandIconOpen : ''}`}>▶</span>
                                 </td>
-                                <td>
-                                  <span className={styles.dateMain}>{formatDateShort(r.starts_at)}</span>
-                                  <span className={styles.dateTime}> {formatTime(r.starts_at)}</span>
-                                </td>
-                                <td><span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span></td>
-                                <td className={styles.grayCell}>{r.hall_name ?? '—'}</td>
-                                <td className={styles.numCell}>{r.total_clients}</td>
-                                <td className={styles.amtCell}>{formatMoney(r.total_trainer)}</td>
-                              </tr>
-                              {expanded && r.enrollments.map(e => (
-                                <tr key={e.client_id} className={styles.clientRow}>
-                                  <td></td>
-                                  <td colSpan={3} className={styles.clientName}>{e.client_name}</td>
-                                  <td className={styles.numCell}>
-                                    <span className={enrollmentStatusClass(e.status)}>
-                                      {enrollmentStatusLabel(e.status)}
-                                    </span>
+                                <td className={styles.dayLabel}>{day.dateLabel}</td>
+                                {ticketTypes.map(t => (
+                                  <td key={t} className={styles.numCell}>
+                                    {day.totalByType[t] != null
+                                      ? <>{day.totalByType[t]} чол.</>
+                                      : <span className={styles.dash}>—</span>
+                                    }
                                   </td>
-                                  <td className={styles.amtCell}>{formatMoney(e.trainer_amount)}</td>
-                                </tr>
-                              ))}
+                                ))}
+                                <td className={styles.amtCell}>{formatMoney(day.totalTrainer)}</td>
+                              </tr>
+
+                              {/* Class rows */}
+                              {dayExpanded && day.classes.map(r => {
+                                const classExpanded = expandedClasses.has(r.class_id)
+                                return (
+                                  <>
+                                    <tr
+                                      key={r.class_id}
+                                      className={`${styles.classRow} ${classExpanded ? styles.classRowExpanded : ''}`}
+                                      onClick={e => { e.stopPropagation(); toggleClass(r.class_id) }}
+                                    >
+                                      <td className={styles.expandCell}>
+                                        <span className={`${styles.expandIcon} ${classExpanded ? styles.expandIconOpen : ''}`}>▶</span>
+                                      </td>
+                                      <td>
+                                        <span className={styles.classIndent}>
+                                          <span className={styles.dateTime}>{formatTime(r.starts_at)}</span>
+                                          {' '}
+                                          <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
+                                          {r.hall_name && <span className={styles.grayCell}> · {r.hall_name}</span>}
+                                        </span>
+                                      </td>
+                                      {ticketTypes.map(t => (
+                                        <td key={t} className={styles.numCell}>
+                                          {t === r.ticket_type
+                                            ? <>{r.total_clients} чол.</>
+                                            : <span className={styles.dash}>—</span>
+                                          }
+                                        </td>
+                                      ))}
+                                      <td className={styles.amtCell}>{formatMoney(r.total_trainer)}</td>
+                                    </tr>
+
+                                    {/* Client rows */}
+                                    {classExpanded && r.enrollments.map(e => (
+                                      <tr key={e.client_id} className={styles.clientRow}>
+                                        <td></td>
+                                        <td colSpan={ticketTypes.length + 1} className={styles.clientName}>{e.client_name}</td>
+                                        <td className={styles.numCell}>
+                                          <span className={enrollmentStatusClass(e.status)}>
+                                            {enrollmentStatusLabel(e.status)}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </>
+                                )
+                              })}
                             </>
                           )
                         })}
                       </tbody>
-                      <tfoot>
-                        <tr className={styles.totalRow}>
-                          <td colSpan={5}>Нараховано тренеру</td>
-                          <td className={styles.totalAmt}>{formatMoney(totalTrainer)}</td>
-                        </tr>
-                      </tfoot>
                     </table>
                   </div>
 
+                  {/* ── MOBILE CARDS ── */}
                   <div className={styles.cardList}>
-                    {rows.map(r => {
-                      const expanded = expandedClasses.has(r.class_id)
+                    {dayGroups.map(day => {
+                      const dayExpanded = expandedDays.has(day.dateKey)
                       return (
-                        <div key={r.class_id} className={styles.classCard} onClick={() => toggleClass(r.class_id)}>
-                          <div className={styles.cardRow}>
-                            <div className={styles.cardLeft}>
-                              <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
-                              <span className={styles.cardDatetime}>{formatDateShort(r.starts_at)} {formatTime(r.starts_at)}</span>
-                              {r.hall_name && <span className={styles.grayCell}>{r.hall_name}</span>}
+                        <div key={day.dateKey} className={styles.dayCard}>
+                          <div className={styles.dayCardHeader} onClick={() => toggleDay(day.dateKey)}>
+                            <div className={styles.dayCardLeft}>
+                              <span className={`${styles.expandIcon} ${dayExpanded ? styles.expandIconOpen : ''}`}>▶</span>
+                              <span className={styles.dayLabel}>{day.dateLabel}</span>
                             </div>
-                            <div className={styles.cardRight}>
-                              <span className={styles.cardAmt}>{formatMoney(r.total_trainer)}</span>
-                              <span className={styles.grayCell}>{r.total_clients} чол.</span>
+                            <div className={styles.dayCardMeta}>
+                              {ticketTypes.map(t => day.totalByType[t] != null && (
+                                <span key={t} className={styles.grayCell}>
+                                  {ticketTypeShortLabel(t)}: {day.totalByType[t]}
+                                </span>
+                              ))}
+                              <span className={styles.cardAmt}>{formatMoney(day.totalTrainer)}</span>
                             </div>
                           </div>
-                          {expanded && (
-                            <div className={styles.clientList}>
-                              {r.enrollments.map(e => (
-                                <div key={e.client_id} className={styles.clientItem}>
-                                  <span>{e.client_name}</span>
-                                  <div className={styles.clientRight}>
-                                    <span className={enrollmentStatusClass(e.status)}>
-                                      {enrollmentStatusLabel(e.status)}
-                                    </span>
-                                    <span>{formatMoney(e.trainer_amount)}</span>
+
+                          {dayExpanded && (
+                            <div className={styles.dayCardBody}>
+                              {day.classes.map(r => {
+                                const classExpanded = expandedClasses.has(r.class_id)
+                                return (
+                                  <div key={r.class_id} className={styles.classCard} onClick={() => toggleClass(r.class_id)}>
+                                    <div className={styles.cardRow}>
+                                      <div className={styles.cardLeft}>
+                                        <span className={`${styles.expandIcon} ${classExpanded ? styles.expandIconOpen : ''}`}>▶</span>
+                                        <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
+                                        <span className={styles.cardDatetime}>{formatTime(r.starts_at)}</span>
+                                        {r.hall_name && <span className={styles.grayCell}>{r.hall_name}</span>}
+                                      </div>
+                                      <div className={styles.cardRight}>
+                                        <span className={styles.cardAmt}>{formatMoney(r.total_trainer)}</span>
+                                        <span className={styles.grayCell}>{r.total_clients} чол.</span>
+                                      </div>
+                                    </div>
+                                    {classExpanded && (
+                                      <div className={styles.clientList}>
+                                        {r.enrollments.map(e => (
+                                          <div key={e.client_id} className={styles.clientItem}>
+                                            <span>{e.client_name}</span>
+                                            <div className={styles.clientRight}>
+                                              <span className={enrollmentStatusClass(e.status)}>
+                                                {enrollmentStatusLabel(e.status)}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
-                                </div>
-                              ))}
+                                )
+                              })}
                             </div>
                           )}
                         </div>
