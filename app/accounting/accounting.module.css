@@ -224,6 +224,37 @@
 .valDeposit { color: var(--deposit); }
 .valNeg     { color: var(--danger); }
 
+/* ── Balance block ───────────────────────────────────────────── */
+.balanceBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px var(--topbar-px) 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.balanceBig {
+  font-size: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.balanceMeta {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.balanceMeta span strong {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
 /* ── Content ─────────────────────────────────────────────────── */
 .content {
   padding: 24px var(--topbar-px);
