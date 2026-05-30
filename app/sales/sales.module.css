@@ -82,15 +82,12 @@
 }
 .filterClear:hover { border-color: var(--danger); color: var(--danger); }
 
-/* ── Feed tabs ───────────────────────────────────────────────── */
-.feedTabs {
+/* ── Feed tabs (inline in filterbar) ─────────────────────────── */
+.feedTabGroup {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px var(--topbar-px);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
+  gap: 2px;
+  margin-left: auto;
 }
 
 .feedTab {
@@ -442,13 +439,6 @@
 
   .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
 
-  .feedTabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 8px 16px;
-  }
-
-  .feedTab { height: 44px; }
+  .feedTabGroup { margin-left: 0; width: 100%; }
+  .feedTab { height: 44px; flex: 1; }
 }

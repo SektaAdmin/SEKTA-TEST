@@ -17,7 +17,7 @@ import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import type { Sale } from '@/types'
 import Pagination from '@/components/ui/Pagination'
-import { ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
+import { ShoppingBag, TrendingUp } from 'lucide-react'
 import styles from './sales.module.css'
 
 type FeedTab = 'all' | 'sales' | 'expenses'
@@ -176,21 +176,18 @@ export default function SalesPage() {
                 Скинути
               </button>
             )}
-          </div>
 
-          {/* Feed tabs */}
-          <div className={styles.feedTabs}>
-            {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
-              <button
-                key={tab}
-                className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
-                onClick={() => { setFeedTab(tab); setPage(0) }}
-              >
-                {tab === 'all'      ? 'Всі'
-                : tab === 'sales'   ? 'Продажі'
-                : 'Операції'}
-              </button>
-            ))}
+            <div className={styles.feedTabGroup}>
+              {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
+                <button
+                  key={tab}
+                  className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
+                  onClick={() => { setFeedTab(tab); setPage(0) }}
+                >
+                  {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -241,13 +238,15 @@ export default function SalesPage() {
                         return (
                           <tr key={`exp-${e.id}`}>
                             <td className={styles.date}>{formatSaleDatetime(e.created_at)}</td>
-                            <td style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-2)', fontSize: 14 }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
-                                {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
+                            <td style={{ color: 'var(--text-2)' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
+                                  {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
+                                </span>
+                                {isExpense ? 'Витрата студії' : 'Дохід студії'}
                               </span>
-                              {isExpense ? 'Витрата студії' : 'Дохід студії'}
                             </td>
-                            <td colSpan={5} style={{ color: 'var(--text-2)', fontSize: 14 }}>
+                            <td colSpan={5} style={{ color: 'var(--text-2)' }}>
                               {e.description || '—'}
                               {e.trainers?.name && <span style={{ color: 'var(--text-3)' }}> · {e.trainers.name}</span>}
                             </td>
@@ -259,12 +258,8 @@ export default function SalesPage() {
                             <td className={styles.trainer}>{e.trainers?.name ?? '—'}</td>
                             <td>
                               <div className={styles.actions}>
-                                <button
-                                  className={styles.btnDel}
-                                  onClick={() => handleDeleteExpense(e.id)}
-                                  title="Видалити"
-                                >
-                                  <Trash2 size={13} />
+                                <button className={styles.btnDel} onClick={() => handleDeleteExpense(e.id)}>
+                                  Видалити
                                 </button>
                               </div>
                             </td>
