@@ -42,6 +42,23 @@ export async function insertStudioExpense(
   return { success: !error, error: error?.message ?? null }
 }
 
+export async function updateStudioExpense(
+  supabase: SupabaseClient,
+  id: string,
+  params: {
+    amount: number
+    direction: 'expense' | 'income'
+    payment_method: 'cash' | 'fop' | 'personal_card'
+    trainer_id: string | null
+    cash_holder: string | null
+    description: string | null
+    created_at: string
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  const { error } = await supabase.from('studio_expenses').update(params).eq('id', id)
+  return { success: !error, error: error?.message ?? null }
+}
+
 export async function deleteStudioExpense(
   supabase: SupabaseClient,
   id: string

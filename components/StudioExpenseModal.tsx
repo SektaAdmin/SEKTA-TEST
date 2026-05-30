@@ -5,8 +5,9 @@ import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
-import { insertStudioExpense } from '@/lib/queries/studio-expenses'
-import { toYMD } from '@/lib/dateUtils'
+import { insertStudioExpense, updateStudioExpense } from '@/lib/queries/studio-expenses'
+import type { StudioExpense } from '@/lib/queries/studio-expenses'
+import { toYMD, isoToYMD } from '@/lib/dateUtils'
 import type { Trainer } from '@/types'
 import styles from './StudioExpenseModal.module.css'
 
@@ -14,6 +15,7 @@ interface Props {
   trainers: Trainer[]
   onClose: () => void
   onSaved: () => void
+  editExpense?: StudioExpense
 }
 
 const PAYMENT_METHODS = [
@@ -24,17 +26,36 @@ const PAYMENT_METHODS = [
 
 type Mode = 'expense' | 'income' | 'transfer'
 
-export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props) {
-  const [mode, setMode]           = useState<Mode>('expense')
-  const [amount, setAmount]       = useState('')
-  const [method, setMethod]       = useState<'cash' | 'fop' | 'personal_card'>('cash')
-  const [trainerId, setTrainerId] = useState<string>('')
+function detectMode(e: StudioExpense): Mode {
+  const desc = e.description ?? ''
+  if (desc.startsWith('Переказ →') || desc.startsWith('Переказ ←')) return 'transfer'
+  return e.direction
+}
+
+export default function StudioExpenseModal({ trainers, onClose, onSaved, editExpense }: Props) {
+  const isEdit = !!editExpense
+
+  const [mode, setMode] = useState<Mode>(() => isEdit ? detectMode(editExpense!) : 'expense')
+  const [amount, setAmount] = useState(() => isEdit ? String(editExpense!.amount) : '')
+  const [method, setMethod] = useState<'cash' | 'fop' | 'personal_card'>(() =>
+    isEdit ? editExpense!.payment_method : 'cash'
+  )
+  const [trainerId, setTrainerId] = useState<string>(() =>
+    isEdit ? (editExpense!.trainer_id ?? '') : ''
+  )
   const [fromTrainerId, setFromTrainerId] = useState<string>('')
-  const [toTrainerId, setToTrainerId]     = useState<string>('')
-  const [description, setDescription] = useState('')
-  const [date, setDate]           = useState(toYMD(new Date()))
-  const [saving, setSaving]       = useState(false)
-  const [error, setError]         = useState<string | null>(null)
+  const [toTrainerId, setToTrainerId] = useState<string>('')
+  const [description, setDescription] = useState(() => {
+    if (!isEdit) return ''
+    const desc = editExpense!.description ?? ''
+    // strip transfer prefix for display
+    return desc.replace(/^Переказ [→←] [^·]+( · )?/, '') ?? desc
+  })
+  const [date, setDate] = useState(() =>
+    isEdit ? isoToYMD(editExpense!.created_at) : toYMD(new Date())
+  )
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const activeTrainers = trainers.filter(t => t.is_active)
 
@@ -57,20 +78,14 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
 
       const [res1, res2] = await Promise.all([
         insertStudioExpense(supabase, {
-          amount: amt,
-          direction: 'expense',
-          payment_method: 'cash',
-          trainer_id: null,
-          cash_holder: fromTrainerId,
+          amount: amt, direction: 'expense', payment_method: 'cash',
+          trainer_id: null, cash_holder: fromTrainerId,
           description: `Переказ → ${toName}${note ? ` · ${note}` : ''}`,
           created_at: ts,
         }),
         insertStudioExpense(supabase, {
-          amount: amt,
-          direction: 'income',
-          payment_method: 'cash',
-          trainer_id: null,
-          cash_holder: toTrainerId,
+          amount: amt, direction: 'income', payment_method: 'cash',
+          trainer_id: null, cash_holder: toTrainerId,
           description: `Переказ ← ${fromName}${note ? ` · ${note}` : ''}`,
           created_at: ts,
         }),
@@ -90,7 +105,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
     setSaving(true)
     setError(null)
 
-    const { success, error: dbError } = await insertStudioExpense(supabase, {
+    const params = {
       amount: amt,
       direction: mode,
       payment_method: method,
@@ -98,159 +113,111 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved }: Props
       cash_holder: method === 'cash' ? (trainerId || null) : null,
       description: description.trim() || null,
       created_at: `${date}T12:00:00`,
-    })
+    }
 
-    if (!success) {
-      setError(dbError ?? 'Помилка збереження')
+    const result = isEdit
+      ? await updateStudioExpense(supabase, editExpense!.id, params)
+      : await insertStudioExpense(supabase, params)
+
+    if (!result.success) {
+      setError(result.error ?? 'Помилка збереження')
       setSaving(false)
       return
     }
 
-    toast.success(mode === 'expense' ? 'Витрату записано' : 'Дохід записано')
+    toast.success(isEdit ? 'Збережено' : mode === 'expense' ? 'Витрату записано' : 'Дохід записано')
     onSaved()
   }
 
   return (
     <ModalShell
-      title="Студійна операція"
+      title={isEdit ? 'Редагування операції' : 'Студійна операція'}
       onClose={onClose}
       width={420}
       footer={<ModalFooter onCancel={onClose} onSave={handleSubmit} loading={saving} />}
     >
-      {/* Mode toggle */}
-      <div className={styles.directionRow}>
-        <button
-          type="button"
-          className={`${styles.dirBtn} ${mode === 'expense' ? styles.dirBtnExpense : ''}`}
-          onClick={() => setMode('expense')}
-        >Витрата</button>
-        <button
-          type="button"
-          className={`${styles.dirBtn} ${mode === 'income' ? styles.dirBtnIncome : ''}`}
-          onClick={() => setMode('income')}
-        >Дохід</button>
-        <button
-          type="button"
-          className={`${styles.dirBtn} ${mode === 'transfer' ? styles.dirBtnTransfer : ''}`}
-          onClick={() => setMode('transfer')}
-        >Переказ</button>
-      </div>
+      {/* Mode toggle — hidden in edit mode for transfer (complex to re-edit) */}
+      {!(isEdit && mode === 'transfer') && (
+        <div className={styles.directionRow}>
+          <button type="button"
+            className={`${styles.dirBtn} ${mode === 'expense'  ? styles.dirBtnExpense  : ''}`}
+            onClick={() => setMode('expense')}>Витрата</button>
+          <button type="button"
+            className={`${styles.dirBtn} ${mode === 'income'   ? styles.dirBtnIncome   : ''}`}
+            onClick={() => setMode('income')}>Дохід</button>
+          {!isEdit && (
+            <button type="button"
+              className={`${styles.dirBtn} ${mode === 'transfer' ? styles.dirBtnTransfer : ''}`}
+              onClick={() => setMode('transfer')}>Переказ</button>
+          )}
+        </div>
+      )}
 
       {mode === 'transfer' ? (
         <>
           <FormField id="se-date" label="Дата" required>
-            <input
-              id="se-date"
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              autoFocus
-            />
+            <input id="se-date" type="date" value={date}
+              onChange={e => setDate(e.target.value)} autoFocus />
+          </FormField>
+
+          <FormField id="se-amount" label="Сума (₴)" required>
+            <input id="se-amount" type="number" min="1" placeholder="0"
+              value={amount} onChange={e => setAmount(e.target.value)} />
           </FormField>
 
           <FormField id="se-from" label="Від" required>
-            <select
-              id="se-from"
-              value={fromTrainerId}
-              onChange={e => setFromTrainerId(e.target.value)}
-            >
+            <select id="se-from" value={fromTrainerId}
+              onChange={e => setFromTrainerId(e.target.value)}>
               <option value="">— Оберіть —</option>
-              {activeTrainers.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              {activeTrainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </FormField>
 
           <FormField id="se-to" label="До" required>
-            <select
-              id="se-to"
-              value={toTrainerId}
-              onChange={e => setToTrainerId(e.target.value)}
-            >
+            <select id="se-to" value={toTrainerId}
+              onChange={e => setToTrainerId(e.target.value)}>
               <option value="">— Оберіть —</option>
-              {activeTrainers.filter(t => t.id !== fromTrainerId).map(t => (
+              {activeTrainers.filter(t => t.id !== fromTrainerId).map(t =>
                 <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              )}
             </select>
           </FormField>
 
-          <FormField id="se-amount" label="Сума (₴)" required>
-            <input
-              id="se-amount"
-              type="number"
-              min="1"
-              placeholder="0"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-            />
-          </FormField>
-
           <FormField id="se-description" label="Примітка">
-            <input
-              id="se-description"
-              type="text"
-              placeholder="травень 2026"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-            />
+            <input id="se-description" type="text" placeholder="травень 2026"
+              value={description} onChange={e => setDescription(e.target.value)} />
           </FormField>
         </>
       ) : (
         <>
           <FormField id="se-date" label="Дата" required>
-            <input
-              id="se-date"
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              autoFocus
-            />
+            <input id="se-date" type="date" value={date}
+              onChange={e => setDate(e.target.value)} autoFocus />
           </FormField>
 
           <FormField id="se-amount" label="Сума (₴)" required>
-            <input
-              id="se-amount"
-              type="number"
-              min="1"
-              placeholder="0"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-            />
+            <input id="se-amount" type="number" min="1" placeholder="0"
+              value={amount} onChange={e => setAmount(e.target.value)} />
           </FormField>
 
           <FormField id="se-method" label="Метод оплати" required>
-            <select
-              id="se-method"
-              value={method}
-              onChange={e => setMethod(e.target.value as typeof method)}
-            >
-              {PAYMENT_METHODS.map(m => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
+            <select id="se-method" value={method}
+              onChange={e => setMethod(e.target.value as typeof method)}>
+              {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
           </FormField>
 
           <FormField id="se-trainer" label="Тренер">
-            <select
-              id="se-trainer"
-              value={trainerId}
-              onChange={e => setTrainerId(e.target.value)}
-            >
+            <select id="se-trainer" value={trainerId}
+              onChange={e => setTrainerId(e.target.value)}>
               <option value="">— без тренера —</option>
-              {activeTrainers.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              {activeTrainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </FormField>
 
           <FormField id="se-description" label="Коментар">
-            <textarea
-              id="se-description"
-              placeholder="Вода, канцелярія, оренда..."
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              rows={2}
-            />
+            <textarea id="se-description" placeholder="Вода, канцелярія, оренда..."
+              value={description} onChange={e => setDescription(e.target.value)} rows={2} />
           </FormField>
         </>
       )}

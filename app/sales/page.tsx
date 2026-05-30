@@ -30,10 +30,11 @@ export default function SalesPage() {
   const { tickets, trainers } = useRefs()
   const activeTrainers = trainers.filter(t => t.is_active)
 
-  const [showModal, setShowModal]     = useState(false)
-  const [editSale, setEditSale]       = useState<Sale | null>(null)
+  const [showModal, setShowModal]       = useState(false)
+  const [editSale, setEditSale]         = useState<Sale | null>(null)
   const [expenseModal, setExpenseModal] = useState(false)
-  const [deleteId, setDeleteId]       = useState<string | null>(null)
+  const [editExpense, setEditExpense]   = useState<StudioExpense | null>(null)
+  const [deleteId, setDeleteId]         = useState<string | null>(null)
   const [deleting, setDeleting]       = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [feedTab, setFeedTab]         = useState<FeedTab>('all')
@@ -118,6 +119,7 @@ export default function SalesPage() {
 
   function handleExpenseSaved() {
     setExpenseModal(false)
+    setEditExpense(null)
     fetchExpenses()
   }
 
@@ -246,10 +248,17 @@ export default function SalesPage() {
                                 {isExpense ? 'Витрата студії' : 'Дохід студії'}
                               </span>
                             </td>
-                            <td colSpan={5} style={{ color: 'var(--text-2)' }}>
+                            <td style={{ color: 'var(--text-2)' }}>
                               {e.description || '—'}
-                              {e.trainers?.name && <span style={{ color: 'var(--text-3)' }}> · {e.trainers.name}</span>}
                             </td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td className={styles.price}>
+                              <span className={isExpense ? styles.depositNeg : styles.depositPos}>
+                                {isExpense ? '−' : '+'}{formatMoney(e.amount)}
+                              </span>
+                            </td>
+                            <td>—</td>
                             <td>
                               <span className={paymentClass(e.payment_method)}>
                                 {paymentLabel(e.payment_method)}
@@ -258,6 +267,9 @@ export default function SalesPage() {
                             <td className={styles.trainer}>{e.trainers?.name ?? '—'}</td>
                             <td>
                               <div className={styles.actions}>
+                                <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
+                                  Змінити
+                                </button>
                                 <button className={styles.btnDel} onClick={() => handleDeleteExpense(e.id)}>
                                   Видалити
                                 </button>
@@ -330,10 +342,12 @@ export default function SalesPage() {
                       <div key={`exp-${e.id}`} className={`${styles.card} ${isExpense ? styles.cardExpense : styles.cardIncome}`}>
                         <div className={styles.cardRow}>
                           <span className={styles.cardClient}>
-                            <span className={styles.expenseIcon}>
-                              {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
+                                {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
+                              </span>
+                              {isExpense ? 'Витрата студії' : 'Дохід студії'}
                             </span>
-                            {isExpense ? 'Витрата студії' : 'Дохід студії'}
                           </span>
                           <span className={styles.cardDate}>{formatSaleDatetime(e.created_at)}</span>
                         </div>
@@ -352,10 +366,10 @@ export default function SalesPage() {
                           <div className={styles.cardTrainer}>{e.trainers.name}</div>
                         )}
                         <div className={styles.cardActions}>
-                          <button
-                            className={styles.btnDel}
-                            onClick={() => handleDeleteExpense(e.id)}
-                          >
+                          <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
+                            Змінити
+                          </button>
+                          <button className={styles.btnDel} onClick={() => handleDeleteExpense(e.id)}>
                             Видалити
                           </button>
                         </div>
@@ -461,8 +475,9 @@ export default function SalesPage() {
       {expenseModal && (
         <StudioExpenseModal
           trainers={activeTrainers}
-          onClose={() => setExpenseModal(false)}
+          onClose={() => { setExpenseModal(false); setEditExpense(null) }}
           onSaved={handleExpenseSaved}
+          editExpense={editExpense ?? undefined}
         />
       )}
 
