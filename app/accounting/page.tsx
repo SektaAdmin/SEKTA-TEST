@@ -102,6 +102,7 @@ function accountToFilter(accountKey: string): { method: PaymentMethod; holder: s
 
 export default function AccountingPage() {
   const { trainers } = useRefs()
+  const [dateFrom,    setDateFrom]    = useState<string>('')
   const [dateTo,      setDateTo]      = useState(getToday)
   const [accountKey,  setAccountKey]  = useState<string>('fop')
   const [sales,       setSales]       = useState<SaleRow[]>([])
@@ -119,7 +120,7 @@ export default function AccountingPage() {
     })
   }
 
-  const fetchData = useCallback(async (to: string, key: string) => {
+  const fetchData = useCallback(async (from: string, to: string, key: string) => {
     setLoading(true)
     setError(null)
     const { method, holder } = accountToFilter(key)
@@ -130,6 +131,7 @@ export default function AccountingPage() {
       .eq('payment_method', method)
       .lte('created_at', `${to}T23:59:59`)
       .order('created_at', { ascending: false })
+    if (from) salesQuery = salesQuery.gte('created_at', `${from}T00:00:00`)
     if (holder) salesQuery = salesQuery.eq('cash_holder', holder)
 
     let expQuery = supabase
@@ -138,6 +140,7 @@ export default function AccountingPage() {
       .eq('payment_method', method)
       .lte('created_at', `${to}T23:59:59`)
       .order('created_at', { ascending: false })
+    if (from) expQuery = expQuery.gte('created_at', `${from}T00:00:00`)
     if (holder) expQuery = expQuery.eq('cash_holder', holder)
 
     let payQuery = supabase
@@ -146,6 +149,7 @@ export default function AccountingPage() {
       .eq('payment_method', method)
       .lte('payment_date', to)
       .order('payment_date', { ascending: false })
+    if (from) payQuery = payQuery.gte('payment_date', from)
     if (holder) payQuery = payQuery.eq('cash_holder', holder)
 
     const [salesRes, expRes, payRes] = await Promise.all([salesQuery, expQuery, payQuery])
@@ -157,7 +161,7 @@ export default function AccountingPage() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchData(dateTo, accountKey) }, [dateTo, accountKey, fetchData])
+  useEffect(() => { fetchData(dateFrom, dateTo, accountKey) }, [dateFrom, dateTo, accountKey, fetchData])
 
   async function handleDeleteExpense(id: string) {
     await deleteStudioExpense(supabase, id)
@@ -224,6 +228,8 @@ export default function AccountingPage() {
               placeholder="Рахунок"
               options={accountOptions}
             />
+            <span className={styles.dateLabel}>Від</span>
+            <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="початку" />
             <span className={styles.dateLabel}>До</span>
             <DatePicker value={dateTo} onChange={setDateTo} />
           </div>
