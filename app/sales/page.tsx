@@ -1,6 +1,8 @@
 'use client'
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import { ChevronDown, ShoppingBag, TrendingUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
@@ -17,8 +19,37 @@ import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import type { Sale } from '@/types'
 import Pagination from '@/components/ui/Pagination'
-import { ShoppingBag, TrendingUp } from 'lucide-react'
 import styles from './sales.module.css'
+
+const ALL = '__all__'
+interface FilterSelectProps {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+}
+function FilterSelect({ value, onChange, placeholder, options }: FilterSelectProps) {
+  const radixValue = value === '' ? ALL : value
+  return (
+    <SelectPrimitive.Root value={radixValue} onValueChange={v => onChange(v === ALL ? '' : v)}>
+      <SelectPrimitive.Trigger className={styles.fsTrigger} aria-label={placeholder}>
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild><ChevronDown className={styles.fsChevron} /></SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content className={styles.fsContent} position="popper" sideOffset={4}>
+          <SelectPrimitive.Viewport>
+            {options.map(o => (
+              <SelectPrimitive.Item key={o.value === '' ? ALL : o.value} value={o.value === '' ? ALL : o.value} className={styles.fsItem}>
+                <SelectPrimitive.ItemText>{o.label}</SelectPrimitive.ItemText>
+              </SelectPrimitive.Item>
+            ))}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  )
+}
 
 type FeedTab = 'all' | 'sales' | 'expenses'
 
@@ -200,31 +231,29 @@ export default function SalesPage() {
 
             {/* Метод оплати — тільки для Операції або Всі */}
             {feedTab !== 'sales' && (
-              <select
-                className={styles.filterMethodSelect}
+              <FilterSelect
                 value={expenseMethod}
-                onChange={e => setExpenseMethod(e.target.value as typeof expenseMethod)}
-                aria-label="Метод оплати операцій"
-              >
-                <option value="">Всі методи</option>
-                <option value="cash">Готівка</option>
-                <option value="fop">ФОП</option>
-                <option value="personal_card">Картка</option>
-              </select>
+                onChange={v => setExpenseMethod(v as typeof expenseMethod)}
+                placeholder="Метод"
+                options={[
+                  { value: '', label: 'Всі методи' },
+                  { value: 'cash', label: 'Готівка' },
+                  { value: 'fop', label: 'ФОП' },
+                  { value: 'personal_card', label: 'Картка' },
+                ]}
+              />
             )}
 
             {/* Тренер — завжди */}
-            <select
-              className={styles.filterMethodSelect}
+            <FilterSelect
               value={trainerFilter}
-              onChange={e => { setTrainerFilter(e.target.value); setPage(0) }}
-              aria-label="Тренер"
-            >
-              <option value="">Всі тренери</option>
-              {trainers.filter(t => t.is_active).map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
+              onChange={v => { setTrainerFilter(v); setPage(0) }}
+              placeholder="Тренер"
+              options={[
+                { value: '', label: 'Всі тренери' },
+                ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
+              ]}
+            />
 
             {/* Дати — завжди */}
             <div className={styles.filterDateWrap}>
