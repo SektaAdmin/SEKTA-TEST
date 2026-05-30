@@ -147,6 +147,7 @@ export async function createSale(
     p_client_id: string
     p_ticket_id: string | null
     p_trainer_id: string | null
+    p_cash_holder: string | null
     p_price_paid: number
     p_amount_given: number
     p_payment_method: string
@@ -168,6 +169,7 @@ export async function updateSale(
     p_client_id: string
     p_ticket_id: string | null
     p_trainer_id: string | null
+    p_cash_holder: string | null
     p_ticket_name: string | null
     p_ticket_price: number
     p_sessions: number

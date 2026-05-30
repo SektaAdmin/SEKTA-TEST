@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import {
   calcTrainerSalaryDetail,
   getTrainerCashBalance,
+  getTrainerCashBalanceTotal,
   listTrainerPayments,
   insertTrainerPayment,
   updateTrainerPayment,
@@ -79,6 +80,7 @@ export default function SalaryCalculationsPage() {
   const [dateTo, setDateTo] = useState(() => getMonthRange().end)
   const [rows, setRows] = useState<TrainerSalaryDetailRow[]>([])
   const [cashBalance, setCashBalance] = useState<TrainerCashBalance | null>(null)
+  const [cashBalanceTotal, setCashBalanceTotal] = useState<number>(0)
   const [payments, setPayments] = useState<TrainerPayment[]>([])
   const [loading, setLoading] = useState(false)
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set())
@@ -88,6 +90,7 @@ export default function SalaryCalculationsPage() {
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null)
   const [paymentType, setPaymentType] = useState<'advance' | 'final'>('final')
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'fop' | 'personal_card'>('cash')
+  const [paymentCashHolder, setPaymentCashHolder] = useState<string>('')
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDate, setPaymentDate] = useState('')
   const [paymentNotes, setPaymentNotes] = useState('')
@@ -106,14 +109,16 @@ export default function SalaryCalculationsPage() {
     setLoading(true)
     const startISO = `${dateFrom}T00:00:00`
     const endISO = `${dateTo}T23:59:59`
-    const [detail, cash, pays] = await Promise.all([
+    const [detail, cash, pays, cashTotal] = await Promise.all([
       calcTrainerSalaryDetail(supabase, selectedTrainerId, startISO, endISO),
       getTrainerCashBalance(supabase, selectedTrainerId, dateFrom, dateTo),
       listTrainerPayments(supabase, selectedTrainerId, dateFrom, dateTo),
+      getTrainerCashBalanceTotal(supabase, selectedTrainerId),
     ])
     setRows(detail)
     setCashBalance(cash)
     setPayments(pays)
+    setCashBalanceTotal(cashTotal)
     setLoading(false)
   }, [selectedTrainerId, dateFrom, dateTo])
 
@@ -123,7 +128,7 @@ export default function SalaryCalculationsPage() {
   const totalStudio = useMemo(() => rows.reduce((s, r) => s + r.total_studio, 0), [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
-  const toPay = totalTrainer - cashOnHand - totalPaidPeriod
+  const toPay = totalTrainer - cashBalanceTotal - totalPaidPeriod
 
   function toggleClass(classId: string) {
     setExpandedClasses(prev => {
@@ -141,6 +146,7 @@ export default function SalaryCalculationsPage() {
     setPaymentError(null)
     setPaymentType('final')
     setPaymentMethod('cash')
+    setPaymentCashHolder(selectedTrainerId)
     setPaymentModal(true)
   }
 
@@ -151,6 +157,7 @@ export default function SalaryCalculationsPage() {
     setPaymentNotes(p.notes ?? '')
     setPaymentType(p.payment_type)
     setPaymentMethod((p.payment_method ?? 'cash') as 'cash' | 'fop' | 'personal_card')
+    setPaymentCashHolder((p as any).cash_holder ?? '')
     setPaymentError(null)
     setPaymentModal(true)
   }
@@ -166,6 +173,7 @@ export default function SalaryCalculationsPage() {
         paid_amount: amount,
         payment_date: paymentDate,
         payment_method: paymentMethod,
+        cash_holder: paymentMethod === 'cash' ? (paymentCashHolder || null) : null,
         payment_type: paymentType,
         notes: paymentNotes || null,
       })
@@ -180,6 +188,7 @@ export default function SalaryCalculationsPage() {
         paid_amount: amount,
         payment_date: paymentDate,
         payment_method: paymentMethod,
+        cash_holder: paymentMethod === 'cash' ? (paymentCashHolder || null) : null,
         payment_type: paymentType,
         notes: paymentNotes || null,
       })
@@ -349,7 +358,7 @@ export default function SalaryCalculationsPage() {
                     <span className={`${styles.expandIcon} ${cashExpanded ? styles.expandIconOpen : ''}`}>▶</span>
                     Готівка на руках:
                   </button>
-                  <strong className={cashOnHand > 0 ? styles.cashAmt : ''}>{formatMoney(cashOnHand)}</strong>
+                  <strong className={cashBalanceTotal > 0 ? styles.cashAmt : ''}>{formatMoney(cashBalanceTotal)}</strong>
                 </div>
                 {cashExpanded && cashBalance && (
                   <div className={styles.cashDetail}>
@@ -521,7 +530,7 @@ export default function SalaryCalculationsPage() {
         >
           <div className={styles.modalHint}>
             Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
-            {cashOnHand > 0 && <> · Готівка: <strong>{formatMoney(cashOnHand)}</strong></>}
+            {cashBalanceTotal > 0 && <> · Готівка на руках: <strong>{formatMoney(cashBalanceTotal)}</strong></>}
           </div>
 
           <div>
@@ -538,6 +547,22 @@ export default function SalaryCalculationsPage() {
               ))}
             </div>
           </div>
+
+          {paymentMethod === 'cash' && (
+            <div>
+              <label className={styles.fieldLabel}>З чиєї готівки</label>
+              <select
+                className={styles.modalInput}
+                value={paymentCashHolder}
+                onChange={e => setPaymentCashHolder(e.target.value)}
+              >
+                <option value="">— Оберіть —</option>
+                {trainers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className={styles.fieldLabel}>Тип виплати</label>

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
-import { listTrainerPaymentsForPeriod, type TrainerPayment } from '@/lib/queries/trainer-rates'
+import { listTrainerPaymentsForPeriod, listAllCashBalances, type TrainerPayment } from '@/lib/queries/trainer-rates'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
@@ -124,6 +124,7 @@ export default function AccountingPage() {
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
   const [checked,  setChecked]  = useState<Set<string>>(new Set())
+  const [cashBalances, setCashBalances] = useState<{ trainer_id: string; trainer_name: string; balance: number }[]>([])
 
   function toggleChecked(id: string) {
     setChecked(prev => {
@@ -135,6 +136,7 @@ export default function AccountingPage() {
 
   useEffect(() => {
     listActiveTrainers(supabase).then(setTrainers)
+    listAllCashBalances(supabase).then(setCashBalances)
   }, [])
 
   const fetchData = useCallback(async (from: string, to: string) => {
@@ -343,6 +345,31 @@ export default function AccountingPage() {
               <div className={styles.summaryValue}>{formatMoney(grandTotal)}</div>
             </div>
           </div>
+          </div>
+        )}
+
+        {/* Cash balances per trainer */}
+        {cashBalances.length > 0 && (
+          <div className={styles.totalsBar}>
+            <div className={styles.totalsInner}>
+              {cashBalances.map(b => (
+                <div
+                  key={b.trainer_id}
+                  className={styles.summaryCard}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => { setPaymentFilter('cash'); setTrainerFilter(b.trainer_id) }}
+                >
+                  <div className={styles.summaryLabel}>{b.trainer_name}</div>
+                  <div className={`${styles.summaryValue} ${b.balance > 0 ? styles.valCash : b.balance < 0 ? styles.valNeg : styles.summaryZero}`}>
+                    {formatMoney(b.balance)}
+                  </div>
+                </div>
+              ))}
+              <div className={`${styles.summaryCard} ${styles.summaryCardTotal}`}>
+                <div className={styles.summaryLabel}>Разом готівка</div>
+                <div className={styles.summaryValue}>{formatMoney(cashBalances.reduce((s, b) => s + b.balance, 0))}</div>
+              </div>
+            </div>
           </div>
         )}
 

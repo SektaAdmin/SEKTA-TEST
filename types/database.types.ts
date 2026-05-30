@@ -94,6 +94,66 @@ export type Database = {
           },
         ]
       }
+      class_series: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          day_of_week: number
+          duration_min: number
+          hall_id: string | null
+          id: string
+          notes: string | null
+          ticket_type: string
+          time_of_day: string
+          title: string | null
+          trainer_id: string | null
+          type: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          day_of_week: number
+          duration_min?: number
+          hall_id?: string | null
+          id?: string
+          notes?: string | null
+          ticket_type: string
+          time_of_day: string
+          title?: string | null
+          trainer_id?: string | null
+          type?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          day_of_week?: number
+          duration_min?: number
+          hall_id?: string | null
+          id?: string
+          notes?: string | null
+          ticket_type?: string
+          time_of_day?: string
+          title?: string | null
+          trainer_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_series_hall_id_fkey"
+            columns: ["hall_id"]
+            isOneToOne: false
+            referencedRelation: "halls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_series_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           capacity: number | null
@@ -103,6 +163,7 @@ export type Database = {
           id: string
           is_cancelled: boolean
           notes: string | null
+          series_id: string | null
           starts_at: string
           ticket_type: string
           title: string | null
@@ -117,6 +178,7 @@ export type Database = {
           id?: string
           is_cancelled?: boolean
           notes?: string | null
+          series_id?: string | null
           starts_at: string
           ticket_type: string
           title?: string | null
@@ -131,6 +193,7 @@ export type Database = {
           id?: string
           is_cancelled?: boolean
           notes?: string | null
+          series_id?: string | null
           starts_at?: string
           ticket_type?: string
           title?: string | null
@@ -143,6 +206,13 @@ export type Database = {
             columns: ["hall_id"]
             isOneToOne: false
             referencedRelation: "halls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "class_series"
             referencedColumns: ["id"]
           },
           {
@@ -238,9 +308,11 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          cancelled_from_status: string | null
           class_id: string
           client_id: string
           created_at: string
+          hours_attended: number[] | null
           id: string
           notes: string | null
           sale_id: string | null
@@ -249,9 +321,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancelled_from_status?: string | null
           class_id: string
           client_id: string
           created_at?: string
+          hours_attended?: number[] | null
           id?: string
           notes?: string | null
           sale_id?: string | null
@@ -260,9 +334,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancelled_from_status?: string | null
           class_id?: string
           client_id?: string
           created_at?: string
+          hours_attended?: number[] | null
           id?: string
           notes?: string | null
           sale_id?: string | null
@@ -338,6 +414,7 @@ export type Database = {
       sales: {
         Row: {
           amount_given: number
+          cash_holder: string | null
           client_id: string
           created_at: string
           id: string
@@ -354,6 +431,7 @@ export type Database = {
         }
         Insert: {
           amount_given: number
+          cash_holder?: string | null
           client_id: string
           created_at?: string
           id?: string
@@ -370,6 +448,7 @@ export type Database = {
         }
         Update: {
           amount_given?: number
+          cash_holder?: string | null
           client_id?: string
           created_at?: string
           id?: string
@@ -385,6 +464,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_cash_holder_fkey"
+            columns: ["cash_holder"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_client_id_fkey"
             columns: ["client_id"]
@@ -415,6 +501,107 @@ export type Database = {
           },
           {
             foreignKeyName: "sales_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      series_clients: {
+        Row: {
+          client_id: string
+          created_at: string
+          hours_attended: number[] | null
+          id: string
+          series_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          hours_attended?: number[] | null
+          id?: string
+          series_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          hours_attended?: number[] | null
+          id?: string
+          series_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "v_client_balance_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_clients_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "class_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_expenses: {
+        Row: {
+          amount: number
+          cash_holder: string | null
+          created_at: string
+          description: string | null
+          direction: string
+          id: string
+          payment_method: string
+          trainer_id: string | null
+        }
+        Insert: {
+          amount: number
+          cash_holder?: string | null
+          created_at?: string
+          description?: string | null
+          direction: string
+          id?: string
+          payment_method: string
+          trainer_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cash_holder?: string | null
+          created_at?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          payment_method?: string
+          trainer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_expenses_cash_holder_fkey"
+            columns: ["cash_holder"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_expenses_trainer_id_fkey"
             columns: ["trainer_id"]
             isOneToOne: false
             referencedRelation: "trainers"
@@ -454,6 +641,117 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      trainer_payments: {
+        Row: {
+          calculated_amount: number
+          cash_holder: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          paid_amount: number
+          payment_date: string
+          payment_method: string
+          payment_type: string
+          period_end: string
+          period_start: string
+          trainer_id: string
+        }
+        Insert: {
+          calculated_amount?: number
+          cash_holder?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_date?: string
+          payment_method?: string
+          payment_type?: string
+          period_end: string
+          period_start: string
+          trainer_id: string
+        }
+        Update: {
+          calculated_amount?: number
+          cash_holder?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_date?: string
+          payment_method?: string
+          payment_type?: string
+          period_end?: string
+          period_start?: string
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_payments_cash_holder_fkey"
+            columns: ["cash_holder"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trainer_payments_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainer_rates: {
+        Row: {
+          created_at: string
+          hall_id: string | null
+          id: string
+          studio_rate: number
+          ticket_type: string
+          trainer_id: string | null
+          trainer_rate: number
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          created_at?: string
+          hall_id?: string | null
+          id?: string
+          studio_rate?: number
+          ticket_type: string
+          trainer_id?: string | null
+          trainer_rate: number
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Update: {
+          created_at?: string
+          hall_id?: string | null
+          id?: string
+          studio_rate?: number
+          ticket_type?: string
+          trainer_id?: string | null
+          trainer_rate?: number
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_rates_hall_id_fkey"
+            columns: ["hall_id"]
+            isOneToOne: false
+            referencedRelation: "halls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trainer_rates_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trainers: {
         Row: {
@@ -580,6 +878,62 @@ export type Database = {
     }
     Functions: {
       auto_close_classes: { Args: never; Returns: undefined }
+      calc_trainer_salary: {
+        Args: { p_end: string; p_start: string; p_trainer_id: string }
+        Returns: {
+          amount: number
+          rate: number
+          sessions_total: number
+          ticket_type: string
+        }[]
+      }
+      calc_trainer_salary_v2: {
+        Args: { p_end: string; p_start: string; p_trainer_id: string }
+        Returns: {
+          class_id: string
+          client_id: string
+          client_name: string
+          duration_min: number
+          enrollment_status: string
+          hall_name: string
+          starts_at: string
+          studio_amount: number
+          ticket_type: string
+          trainer_amount: number
+        }[]
+      }
+      cancel_class_and_restore_sessions: {
+        Args: { p_class_id: string }
+        Returns: {
+          error_message: string
+          restored_count: number
+          success: boolean
+        }[]
+      }
+      check_class_conflicts: {
+        Args: {
+          p_duration_min: number
+          p_exclude_id?: string
+          p_hall_id?: string
+          p_starts_at: string
+          p_trainer_id?: string
+        }
+        Returns: {
+          class_id: string
+          conflict_type: string
+          starts_at: string
+          ticket_type: string
+          title: string
+        }[]
+      }
+      check_client_conflict: {
+        Args: { p_class_id: string; p_client_id: string }
+        Returns: {
+          conflict_class_id: string
+          starts_at: string
+          ticket_type: string
+        }[]
+      }
       create_sale: {
         Args: {
           p_amount_given?: number
@@ -604,8 +958,30 @@ export type Database = {
           success: boolean
         }[]
       }
+      generate_week: {
+        Args: { p_start_date: string; p_weeks?: number }
+        Returns: {
+          classes_created: number
+          enrollments_created: number
+        }[]
+      }
       mark_attendance: {
         Args: { p_enrollment_id: string; p_sessions_used?: number }
+        Returns: {
+          error_message: string
+          success: boolean
+        }[]
+      }
+      restore_class: {
+        Args: { p_class_id: string }
+        Returns: {
+          error_message: string
+          restored_count: number
+          success: boolean
+        }[]
+      }
+      reverse_attendance: {
+        Args: { p_enrollment_id: string }
         Returns: {
           error_message: string
           success: boolean

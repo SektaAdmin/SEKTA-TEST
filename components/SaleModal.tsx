@@ -25,6 +25,7 @@ export interface EditSaleSnapshot {
   sessions: number | null
   trainer_id: string | null
   trainer_name: string | null
+  cash_holder: string | null
   price_paid: number
   amount_given: number
   payment_method: PaymentMethod
@@ -76,7 +77,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     if (editSale?.client_id) loadClientBalance(editSale.client_id)
   }, [editSale?.client_id, loadClientBalance])
 
-  const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId } = watch()
+  const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId, cash_holder: cashHolder } = watch()
 
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
   const isDeduction = !ticketId && amountGiven < 0
@@ -215,6 +216,22 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             {errors.trainer_id && (
               <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
             )}
+          </div>
+        )}
+
+        {/* Хто прийняв готівку */}
+        {!isDeduction && payment === 'cash' && (
+          <div className={styles.field}>
+            <label htmlFor="sale-cash-holder">Хто прийняв готівку</label>
+            <select
+              id="sale-cash-holder"
+              value={cashHolder}
+              onChange={e => setValue('cash_holder', e.target.value)}
+              disabled={busy}
+            >
+              <option value="">— Оберіть —</option>
+              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
           </div>
         )}
 

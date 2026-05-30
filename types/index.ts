@@ -44,6 +44,7 @@ export interface Sale {
   client_id: string
   ticket_id: string | null
   trainer_id: string | null
+  cash_holder: string | null
   ticket_name: string | null
   ticket_price: number | null
   ticket_type: string | null

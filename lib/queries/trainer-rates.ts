@@ -274,6 +274,7 @@ export async function calcTrainerSalaryDetail(
 
 // Готівка на руках у тренера за період:
 // cash-продажі − studio_expenses − виплати ЗП готівкою за цей же період
+// Готівка тренера за обраний період (для деталізації в розрахунках)
 export async function getTrainerCashBalance(
   supabase: SupabaseClient,
   trainerId: string,
@@ -284,7 +285,7 @@ export async function getTrainerCashBalance(
     supabase
       .from('sales')
       .select('id, created_at, price_paid, ticket_name, clients(first_name, last_name)')
-      .eq('trainer_id', trainerId)
+      .eq('cash_holder', trainerId)
       .eq('payment_method', 'cash')
       .gte('created_at', `${dateFrom}T00:00:00`)
       .lte('created_at', `${dateTo}T23:59:59`)
@@ -292,7 +293,7 @@ export async function getTrainerCashBalance(
     supabase
       .from('studio_expenses')
       .select('id, created_at, amount, description')
-      .eq('trainer_id', trainerId)
+      .eq('cash_holder', trainerId)
       .eq('direction', 'expense')
       .gte('created_at', `${dateFrom}T00:00:00`)
       .lte('created_at', `${dateTo}T23:59:59`)
@@ -300,7 +301,7 @@ export async function getTrainerCashBalance(
     supabase
       .from('trainer_payments')
       .select('id, created_at, paid_amount, payment_date')
-      .eq('trainer_id', trainerId)
+      .eq('cash_holder', trainerId)
       .eq('payment_method', 'cash')
       .gte('payment_date', dateFrom)
       .lte('payment_date', dateTo)
@@ -339,6 +340,73 @@ export async function getTrainerCashBalance(
     salary_payments: salaryPayments,
     total: totalSales - totalExpenses - totalSalaryPaid,
   }
+}
+
+// Загальний баланс готівки тренера за весь час (без фільтра дат)
+export async function getTrainerCashBalanceTotal(
+  supabase: SupabaseClient,
+  trainerId: string
+): Promise<number> {
+  const [salesRes, expensesRes, paymentsRes] = await Promise.all([
+    supabase
+      .from('sales')
+      .select('price_paid')
+      .eq('cash_holder', trainerId)
+      .eq('payment_method', 'cash'),
+    supabase
+      .from('studio_expenses')
+      .select('amount')
+      .eq('cash_holder', trainerId)
+      .eq('direction', 'expense'),
+    supabase
+      .from('trainer_payments')
+      .select('paid_amount')
+      .eq('cash_holder', trainerId)
+      .eq('payment_method', 'cash'),
+  ])
+
+  const totalSales = ((salesRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.price_paid), 0)
+  const totalExpenses = ((expensesRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.amount), 0)
+  const totalPaid = ((paymentsRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.paid_amount), 0)
+
+  return totalSales - totalExpenses - totalPaid
+}
+
+// Баланси готівки всіх тренерів одним запитом (для /accounting)
+export async function listAllCashBalances(
+  supabase: SupabaseClient
+): Promise<{ trainer_id: string; trainer_name: string; balance: number }[]> {
+  const [trainersRes, salesRes, expensesRes, paymentsRes] = await Promise.all([
+    supabase.from('trainers').select('id, name').eq('is_active', true).order('name'),
+    supabase.from('sales').select('cash_holder, price_paid').eq('payment_method', 'cash').not('cash_holder', 'is', null),
+    supabase.from('studio_expenses').select('cash_holder, amount').eq('direction', 'expense').not('cash_holder', 'is', null),
+    supabase.from('trainer_payments').select('cash_holder, paid_amount').eq('payment_method', 'cash').not('cash_holder', 'is', null),
+  ])
+
+  const trainers = (trainersRes.data ?? []) as { id: string; name: string }[]
+
+  const salesByHolder = new Map<string, number>()
+  for (const s of (salesRes.data ?? []) as any[]) {
+    salesByHolder.set(s.cash_holder, (salesByHolder.get(s.cash_holder) ?? 0) + Number(s.price_paid))
+  }
+
+  const expensesByHolder = new Map<string, number>()
+  for (const e of (expensesRes.data ?? []) as any[]) {
+    expensesByHolder.set(e.cash_holder, (expensesByHolder.get(e.cash_holder) ?? 0) + Number(e.amount))
+  }
+
+  const paidByHolder = new Map<string, number>()
+  for (const p of (paymentsRes.data ?? []) as any[]) {
+    paidByHolder.set(p.cash_holder, (paidByHolder.get(p.cash_holder) ?? 0) + Number(p.paid_amount))
+  }
+
+  return trainers
+    .map(t => ({
+      trainer_id: t.id,
+      trainer_name: t.name,
+      balance: (salesByHolder.get(t.id) ?? 0) - (expensesByHolder.get(t.id) ?? 0) - (paidByHolder.get(t.id) ?? 0),
+    }))
+    .filter(t => t.balance !== 0)
 }
 
 // Загальний борг студії перед тренером за весь час:
@@ -395,6 +463,7 @@ export async function updateTrainerPayment(
     paid_amount: number
     payment_date: string
     payment_method: 'cash' | 'fop' | 'personal_card'
+    cash_holder: string | null
     payment_type: 'advance' | 'final'
     notes: string | null
   }
@@ -421,6 +490,7 @@ export async function insertTrainerPayment(
     paid_amount: number
     payment_date: string
     payment_method: 'cash' | 'fop' | 'personal_card'
+    cash_holder: string | null
     payment_type: 'advance' | 'final'
     notes: string | null
   }

@@ -13,6 +13,7 @@ export const saleSchema = z.object({
   client_id: z.string().min(1, VM.required.selectClient),
   ticket_id: z.string().optional().or(z.literal('')),
   trainer_id: z.string().optional().or(z.literal('')),
+  cash_holder: z.string().optional().or(z.literal('')),
   price_paid: z.number().min(0),
   amount_given: z.number(),
   payment_method: z.enum(['cash', 'fop', 'personal_card', 'deposit']),
@@ -60,6 +61,7 @@ export function useSaleForm(editSale?: EditSaleSnapshot, preselectedClientBalanc
       client_id: editSale?.client_id ?? '',
       ticket_id: editSale?.ticket_id ?? '',
       trainer_id: editSale?.trainer_id ?? '',
+      cash_holder: editSale?.cash_holder ?? '',
       price_paid: editSale?.price_paid ?? 0,
       amount_given: editSale
         ? (editSale.ticket_id

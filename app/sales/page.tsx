@@ -309,6 +309,7 @@ export default function SalesPage() {
             sessions: editSale.sessions,
             trainer_id: editSale.trainer_id,
             trainer_name: editSale.trainers?.name ?? null,
+            cash_holder: editSale.cash_holder ?? null,
             price_paid: editSale.price_paid,
             amount_given: editSale.amount_given,
             payment_method: editSale.payment_method,

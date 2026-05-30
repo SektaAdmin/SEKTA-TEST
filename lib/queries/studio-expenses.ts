@@ -32,6 +32,7 @@ export async function insertStudioExpense(
     direction: 'expense' | 'income'
     payment_method: 'cash' | 'fop' | 'personal_card'
     trainer_id: string | null
+    cash_holder: string | null
     description: string | null
     created_at: string
   }
