@@ -67,6 +67,21 @@
 .filterSearchInput:focus { border-color: var(--accent); width: 240px; }
 .filterSearchInput::placeholder { color: var(--text-3); }
 
+.filterMethodSelect {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  height: var(--control-h);
+  padding: 0 10px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+.filterMethodSelect:focus { border-color: var(--accent); }
+
 .filterClear {
   background: transparent;
   border: 1px solid var(--border);
@@ -439,6 +454,7 @@
 
   .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
 
+  .filterMethodSelect { height: 44px; width: 100%; }
   .feedTabGroup { margin-left: 0; width: 100%; }
   .feedTab { height: 44px; flex: 1; }
 }

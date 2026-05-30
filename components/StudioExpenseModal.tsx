@@ -202,14 +202,19 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
 
           <FormField id="se-method" label="Метод оплати" required>
             <select id="se-method" value={method}
-              onChange={e => setMethod(e.target.value as typeof method)}>
+              onChange={e => {
+                const v = e.target.value as typeof method
+                setMethod(v)
+                if (v !== 'cash') setTrainerId('')
+              }}>
               {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
           </FormField>
 
           <FormField id="se-trainer" label="Тренер">
             <select id="se-trainer" value={trainerId}
-              onChange={e => setTrainerId(e.target.value)}>
+              onChange={e => setTrainerId(e.target.value)}
+              disabled={method !== 'cash'}>
               <option value="">— без тренера —</option>
               {activeTrainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>

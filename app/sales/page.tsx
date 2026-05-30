@@ -49,7 +49,8 @@ export default function SalesPage() {
   const [dateTo, setDateTo]           = useState('')
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [expenses, setExpenses]       = useState<StudioExpense[]>([])
+  const [expenses, setExpenses]         = useState<StudioExpense[]>([])
+  const [expenseMethod, setExpenseMethod] = useState<'cash' | 'fop' | 'personal_card' | ''>('')
 
   const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo })
 
@@ -64,15 +65,18 @@ export default function SalesPage() {
 
   // unified feed sorted by created_at desc
   const feed = useMemo<FeedItem[]>(() => {
+    const filteredExpenses = expenseMethod
+      ? expenses.filter(e => e.payment_method === expenseMethod)
+      : expenses
     if (feedTab === 'sales')    return sales.map(s => ({ kind: 'sale' as const, data: s }))
-    if (feedTab === 'expenses') return expenses.map(e => ({ kind: 'expense' as const, data: e }))
+    if (feedTab === 'expenses') return filteredExpenses.map(e => ({ kind: 'expense' as const, data: e }))
     const items: FeedItem[] = [
       ...sales.map(s => ({ kind: 'sale' as const, data: s })),
-      ...expenses.map(e => ({ kind: 'expense' as const, data: e })),
+      ...filteredExpenses.map(e => ({ kind: 'expense' as const, data: e })),
     ]
     items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
     return items
-  }, [feedTab, sales, expenses])
+  }, [feedTab, sales, expenses, expenseMethod])
 
   const totalPages = Math.ceil(total / pageSize)
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== ''
@@ -183,6 +187,20 @@ export default function SalesPage() {
               <button className={styles.filterClear} onClick={clearFilters}>
                 Скинути
               </button>
+            )}
+
+            {feedTab !== 'sales' && (
+              <select
+                className={styles.filterMethodSelect}
+                value={expenseMethod}
+                onChange={e => setExpenseMethod(e.target.value as typeof expenseMethod)}
+                aria-label="Метод оплати операцій"
+              >
+                <option value="">Всі методи</option>
+                <option value="cash">Готівка</option>
+                <option value="fop">ФОП</option>
+                <option value="personal_card">Картка</option>
+              </select>
             )}
 
             <div className={styles.feedTabGroup}>
