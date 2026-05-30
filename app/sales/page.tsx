@@ -79,7 +79,7 @@ export default function SalesPage() {
   }, [feedTab, sales, expenses, expenseMethod])
 
   const totalPages = Math.ceil(total / pageSize)
-  const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== ''
+  const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== ''
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -91,7 +91,16 @@ export default function SalesPage() {
   function handleDateTo(value: string)   { setDateTo(value);   setPage(0) }
 
   function clearFilters() {
-    setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo(''); setPage(0)
+    setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo('')
+    setExpenseMethod(''); setPage(0)
+  }
+
+  function handleTabChange(tab: FeedTab) {
+    setFeedTab(tab)
+    setPage(0)
+    // clear filters irrelevant to the new tab
+    if (tab === 'expenses') { setSearchInput(''); setSearch('') }
+    if (tab === 'sales')    { setExpenseMethod('') }
   }
 
   async function handleDelete() {
@@ -159,20 +168,52 @@ export default function SalesPage() {
           </div>
 
           <div className={styles.filters}>
-            <div className={styles.filterSearch}>
-              <svg className={styles.filterSearchIcon} width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
-              </svg>
-              <input
-                className={styles.filterSearchInput}
-                type="text"
-                value={searchInput}
-                onChange={e => handleSearchInput(e.target.value)}
-                placeholder="Пошук за клієнтом..."
-                aria-label="Пошук за клієнтом"
-              />
+            {/* Таби — завжди видимі */}
+            <div className={styles.feedTabGroup}>
+              {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
+                <button
+                  key={tab}
+                  className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
+                  onClick={() => handleTabChange(tab)}
+                >
+                  {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}
+                </button>
+              ))}
             </div>
 
+            {/* Пошук по клієнту — тільки для Продажі або Всі */}
+            {feedTab !== 'expenses' && (
+              <div className={styles.filterSearch}>
+                <svg className={styles.filterSearchIcon} width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+                </svg>
+                <input
+                  className={styles.filterSearchInput}
+                  type="text"
+                  value={searchInput}
+                  onChange={e => handleSearchInput(e.target.value)}
+                  placeholder="Пошук за клієнтом..."
+                  aria-label="Пошук за клієнтом"
+                />
+              </div>
+            )}
+
+            {/* Метод оплати — тільки для Операції або Всі */}
+            {feedTab !== 'sales' && (
+              <select
+                className={styles.filterMethodSelect}
+                value={expenseMethod}
+                onChange={e => setExpenseMethod(e.target.value as typeof expenseMethod)}
+                aria-label="Метод оплати операцій"
+              >
+                <option value="">Всі методи</option>
+                <option value="cash">Готівка</option>
+                <option value="fop">ФОП</option>
+                <option value="personal_card">Картка</option>
+              </select>
+            )}
+
+            {/* Дати — завжди */}
             <div className={styles.filterDateWrap}>
               <SalesDateRangePicker
                 dateFrom={dateFrom}
@@ -188,32 +229,6 @@ export default function SalesPage() {
                 Скинути
               </button>
             )}
-
-            {feedTab !== 'sales' && (
-              <select
-                className={styles.filterMethodSelect}
-                value={expenseMethod}
-                onChange={e => setExpenseMethod(e.target.value as typeof expenseMethod)}
-                aria-label="Метод оплати операцій"
-              >
-                <option value="">Всі методи</option>
-                <option value="cash">Готівка</option>
-                <option value="fop">ФОП</option>
-                <option value="personal_card">Картка</option>
-              </select>
-            )}
-
-            <div className={styles.feedTabGroup}>
-              {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
-                <button
-                  key={tab}
-                  className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
-                  onClick={() => { setFeedTab(tab); setPage(0) }}
-                >
-                  {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
