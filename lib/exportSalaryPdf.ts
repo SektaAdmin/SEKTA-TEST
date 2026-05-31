@@ -1,12 +1,11 @@
 import type { TrainerSalaryDetailRow, TrainerPayment, TrainerCashBalance } from '@/lib/queries/trainer-rates'
-import { formatDate, formatMoney, formatTime } from '@/lib/formatters'
+import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel, paymentLabel } from '@/lib/badges'
 import { DOW_LABELS_SHORT, isoToYMD } from '@/lib/dateUtils'
 
 type DayGroup = {
   dateKey: string
   dateLabel: string
-  classes: TrainerSalaryDetailRow[]
   totalByType: Record<string, number>
   totalTrainer: number
 }
@@ -21,25 +20,22 @@ function buildDayGroups(rows: TrainerSalaryDetailRow[]): DayGroup[] {
       const dd = String(d.getDate()).padStart(2, '0')
       const mm = String(d.getMonth() + 1).padStart(2, '0')
       const yyyy = d.getFullYear()
-      map.set(dateKey, {
-        dateKey,
-        dateLabel: `${dow} ${dd}.${mm}.${yyyy}`,
-        classes: [],
-        totalByType: {},
-        totalTrainer: 0,
-      })
+      map.set(dateKey, { dateKey, dateLabel: `${dow} ${dd}.${mm}.${yyyy}`, totalByType: {}, totalTrainer: 0 })
     }
     const group = map.get(dateKey)!
-    group.classes.push(r)
     group.totalByType[r.ticket_type] = (group.totalByType[r.ticket_type] ?? 0) + r.total_clients
     group.totalTrainer += r.total_trainer
   }
   return Array.from(map.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey))
 }
 
-async function loadFontAsArrayBuffer(url: string): Promise<ArrayBuffer> {
+async function loadFont(url: string): Promise<string> {
   const res = await fetch(url)
-  return res.arrayBuffer()
+  const buf = await res.arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary)
 }
 
 export async function exportSalaryPdf(opts: {
@@ -57,245 +53,232 @@ export async function exportSalaryPdf(opts: {
   const { default: jsPDF } = await import('jspdf')
   const { default: autoTable } = await import('jspdf-autotable')
 
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
-  // ── Load and register Nunito Sans (cyrillic-capable TTF from /public/fonts)
-  const [regularBuf, boldBuf] = await Promise.all([
-    loadFontAsArrayBuffer('/fonts/NunitoSans-Regular.ttf'),
-    loadFontAsArrayBuffer('/fonts/NunitoSans-SemiBold.ttf'),
+  const [regularB64, boldB64] = await Promise.all([
+    loadFont('/fonts/NunitoSans-Regular.ttf'),
+    loadFont('/fonts/NunitoSans-SemiBold.ttf'),
   ])
-
-  const toBase64 = (buf: ArrayBuffer) => {
-    const bytes = new Uint8Array(buf)
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
-    return btoa(binary)
-  }
-
-  doc.addFileToVFS('NunitoSans-Regular.ttf', toBase64(regularBuf))
+  doc.addFileToVFS('NunitoSans-Regular.ttf', regularB64)
   doc.addFont('NunitoSans-Regular.ttf', 'NunitoSans', 'normal')
-  doc.addFileToVFS('NunitoSans-SemiBold.ttf', toBase64(boldBuf))
+  doc.addFileToVFS('NunitoSans-SemiBold.ttf', boldB64)
   doc.addFont('NunitoSans-SemiBold.ttf', 'NunitoSans', 'bold')
   doc.setFont('NunitoSans', 'normal')
 
-  const pageW = doc.internal.pageSize.getWidth()
-  const margin = 14
-  let y = 14
+  // A4 landscape: 297 × 210 mm
+  const pageW = 297
+  const pageH = 210
+  const mL = 10   // left margin
+  const mR = 10   // right margin
+  const mT = 10   // top margin
 
-  // ── Header ──────────────────────────────────────────────────────
-  doc.setFontSize(16)
+  // ── Palette ──────────────────────────────────────────────────────
+  const colDayBg:   [number, number, number] = [235, 235, 235]
+  const colTotalBg: [number, number, number] = [210, 232, 210]
+  const colHead:    [number, number, number] = [55,  55,  55]
+  const colGray:    [number, number, number] = [110, 110, 110]
+  const colGreen:   [number, number, number] = [30,  130, 60]
+  const colRed:     [number, number, number] = [180, 40,  40]
+
+  // ── Column widths ─────────────────────────────────────────────────
+  const dayGroups  = buildDayGroups(opts.rows)
+  const ticketTypes = Array.from(new Set(opts.rows.map(r => r.ticket_type))).sort()
+
+  // Layout split: classes table left | cash table right
+  // Cash table width: fixed 88mm (date 28 + desc auto + amt 22 + padding)
+  const cashW   = opts.cashBalance ? 88 : 0
+  const gap     = opts.cashBalance ? 5  : 0
+  const classW  = pageW - mL - mR - cashW - gap
+
+  // Within classes table: date col auto, type cols 20mm each, amt col 26mm
+  const typeColW = 20
+  const amtColW  = 26
+  const dateColW = classW - ticketTypes.length * typeColW - amtColW
+
+  let y = mT
+
+  // ── Header row ───────────────────────────────────────────────────
   doc.setFont('NunitoSans', 'bold')
-  doc.text(`Зарплата: ${opts.trainerName}`, margin, y)
-  y += 7
+  doc.setFontSize(14)
+  doc.text(`Зарплата: ${opts.trainerName}`, mL, y)
 
-  doc.setFontSize(10)
   doc.setFont('NunitoSans', 'normal')
-  doc.setTextColor(100)
-  doc.text(`Період: ${formatDate(opts.dateFrom)} – ${formatDate(opts.dateTo)}`, margin, y)
-  doc.setTextColor(0)
-  y += 10
+  doc.setFontSize(9)
+  doc.setTextColor(...colGray)
+  doc.text(`Період: ${formatDate(opts.dateFrom)} – ${formatDate(opts.dateTo)}`, mL, y + 5)
+  doc.setTextColor(0, 0, 0)
+  y += 12
 
-  // ── Summary block ────────────────────────────────────────────────
-  const summaryData = [
-    ['Нараховано тренеру', `${opts.totalTrainer.toLocaleString('uk-UA')} ₴`],
-    ['Готівка на руках (всього)', `${opts.cashBalanceTotal.toLocaleString('uk-UA')} ₴`],
-    ['Виплачено за період', `${opts.totalPaidPeriod.toLocaleString('uk-UA')} ₴`],
-    ['До виплати', `${Math.max(0, opts.toPay).toLocaleString('uk-UA')} ₴`],
+  // ── Summary strip (horizontal) ────────────────────────────────────
+  const summaryItems = [
+    { label: 'Нараховано', value: `${opts.totalTrainer.toLocaleString('uk-UA')} ₴` },
+    { label: 'Готівка на руках', value: `${opts.cashBalanceTotal.toLocaleString('uk-UA')} ₴` },
+    { label: 'Виплачено за період', value: `${opts.totalPaidPeriod.toLocaleString('uk-UA')} ₴` },
+    { label: 'До виплати', value: `${Math.max(0, opts.toPay).toLocaleString('uk-UA')} ₴` },
   ]
 
   autoTable(doc, {
     startY: y,
-    head: [],
-    body: summaryData,
-    theme: 'plain',
-    styles: { font: 'NunitoSans', fontSize: 10, cellPadding: 2 },
+    head: [summaryItems.map(s => s.label)],
+    body: [summaryItems.map(s => s.value)],
+    theme: 'grid',
+    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, halign: 'center', cellPadding: 2 },
+    bodyStyles: { font: 'NunitoSans', fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 3 },
     columnStyles: {
-      0: { cellWidth: 90, textColor: [80, 80, 80] },
-      1: { cellWidth: 50, halign: 'right', fontStyle: 'bold' },
+      0: { cellWidth: (pageW - mL - mR) / 4 },
+      1: { cellWidth: (pageW - mL - mR) / 4 },
+      2: { cellWidth: (pageW - mL - mR) / 4 },
+      3: { cellWidth: (pageW - mL - mR) / 4 },
     },
-    margin: { left: margin, right: margin },
+    margin: { left: mL, right: mR },
   })
 
-  y = (doc as any).lastAutoTable.finalY + 8
+  y = (doc as any).lastAutoTable.finalY + 6
 
-  const dayBg: [number, number, number] = [240, 240, 240]
-  const totalBg: [number, number, number] = [220, 235, 220]
-  const clientColor: [number, number, number] = [100, 100, 100]
+  // ── Build classes table body ──────────────────────────────────────
+  const classBody: (string | { content: string; styles: object })[][] = []
 
-  // ── Classes table ─────────────────────────────────────────────────
-  if (opts.rows.length > 0) {
-    doc.setFontSize(12)
-    doc.setFont('NunitoSans', 'bold')
-    doc.text('Заняття', margin, y)
-    y += 5
-
-    const dayGroups = buildDayGroups(opts.rows)
-    const ticketTypes = Array.from(new Set(opts.rows.map(r => r.ticket_type))).sort()
-
-    // col layout: Дата / type1 | type2 | ... | Нараховано (без клієнтів)
-    const amtColIdx = ticketTypes.length + 1
-
-    const head = [
-      ['Дата / Час', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']
-    ]
-
-    const body: (string | { content: string; styles: object })[][] = []
-
-    for (const day of dayGroups) {
-      // Day header row
-      body.push([
-        { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: dayBg } },
-        ...ticketTypes.map(tt => ({
-          content: day.totalByType[tt] != null ? `${day.totalByType[tt]} чол.` : '',
-          styles: { fontStyle: 'bold' as const, fillColor: dayBg, halign: 'center' as const },
-        })),
-        {
-          content: `${day.totalTrainer.toLocaleString('uk-UA')} ₴`,
-          styles: { fontStyle: 'bold' as const, fillColor: dayBg, halign: 'right' as const },
-        },
-      ])
-
-      for (const r of day.classes) {
-        const timeLabel = `  ${formatTime(r.starts_at)}${r.hall_name ? ` · ${r.hall_name}` : ''}`
-        body.push([
-          timeLabel,
-          ...ticketTypes.map(tt => ({
-            content: tt === r.ticket_type ? `${r.total_clients} чол.` : '',
-            styles: { halign: 'center' as const, textColor: clientColor },
-          })),
-          { content: `${r.total_trainer.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: clientColor } },
-        ])
-      }
-    }
-
-    // Total row
-    const totalByType: Record<string, number> = {}
-    for (const r of opts.rows) totalByType[r.ticket_type] = (totalByType[r.ticket_type] ?? 0) + r.total_clients
-    body.push([
-      { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: totalBg } },
+  for (const day of dayGroups) {
+    classBody.push([
+      { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: colDayBg } },
       ...ticketTypes.map(tt => ({
-        content: totalByType[tt] != null ? `${totalByType[tt]} чол.` : '',
-        styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'center' as const },
+        content: day.totalByType[tt] != null ? `${day.totalByType[tt]}` : '—',
+        styles: { fontStyle: 'bold' as const, fillColor: colDayBg, halign: 'center' as const, textColor: day.totalByType[tt] ? [0,0,0] : colGray },
       })),
       {
-        content: `${opts.totalTrainer.toLocaleString('uk-UA')} ₴`,
-        styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'right' as const },
+        content: `${day.totalTrainer.toLocaleString('uk-UA')} ₴`,
+        styles: { fontStyle: 'bold' as const, fillColor: colDayBg, halign: 'right' as const },
       },
     ])
-
-    autoTable(doc, {
-      startY: y,
-      head,
-      body,
-      theme: 'striped',
-      headStyles: { fillColor: [60, 60, 60], textColor: 255, fontSize: 9, font: 'NunitoSans' },
-      styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
-      columnStyles: {
-        0: { cellWidth: 'auto' },
-        ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: 22, halign: 'center' }])),
-        [amtColIdx]: { cellWidth: 28, halign: 'right' },
-      },
-      margin: { left: margin, right: margin },
-    })
-
-    y = (doc as any).lastAutoTable.finalY + 10
   }
 
-  // ── Cash on hand detail ───────────────────────────────────────────
-  if (opts.cashBalance && (
-    opts.cashBalance.cash_sales.length > 0 ||
-    opts.cashBalance.expenses.length > 0 ||
-    opts.cashBalance.salary_payments.length > 0
-  )) {
-    if (y > 230) { doc.addPage(); y = 14 }
+  // Period total row
+  const totalByType: Record<string, number> = {}
+  for (const r of opts.rows) totalByType[r.ticket_type] = (totalByType[r.ticket_type] ?? 0) + r.total_clients
+  classBody.push([
+    { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: colTotalBg } },
+    ...ticketTypes.map(tt => ({
+      content: totalByType[tt] != null ? `${totalByType[tt]}` : '—',
+      styles: { fontStyle: 'bold' as const, fillColor: colTotalBg, halign: 'center' as const },
+    })),
+    {
+      content: `${opts.totalTrainer.toLocaleString('uk-UA')} ₴`,
+      styles: { fontStyle: 'bold' as const, fillColor: colTotalBg, halign: 'right' as const },
+    },
+  ])
 
-    doc.setFontSize(12)
-    doc.setFont('NunitoSans', 'bold')
-    doc.text('Готівка на руках', margin, y)
-    y += 5
+  // ── Render classes table (left column) ────────────────────────────
+  autoTable(doc, {
+    startY: y,
+    tableWidth: classW,
+    head: [['Дата', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']],
+    body: classBody,
+    theme: 'striped',
+    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
+    styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5 },
+    columnStyles: {
+      0: { cellWidth: dateColW },
+      ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: typeColW, halign: 'center' }])),
+      [ticketTypes.length + 1]: { cellWidth: amtColW, halign: 'right' },
+    },
+    margin: { left: mL, right: mR },
+  })
 
-    const cashRows: (string | { content: string; styles: object })[][] = []
+  const classTableBottom = (doc as any).lastAutoTable.finalY
+
+  // ── Build cash table (right column) ──────────────────────────────
+  if (opts.cashBalance) {
+    const cashX = mL + classW + gap
+    const cashTableW = cashW
+    const descW = cashTableW - 28 - 22  // date 28 + amt 22
+
+    const cashBody: (string | { content: string; styles: object })[][] = []
     const sectionBg: [number, number, number] = [245, 245, 245]
 
     if (opts.cashBalance.cash_sales.length > 0) {
-      cashRows.push([
-        { content: 'Cash продажі', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
-        '', '', '',
+      cashBody.push([
+        { content: 'Cash продажі', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 3, textColor: colGray } },
+        '', '',
       ])
       for (const s of opts.cashBalance.cash_sales) {
-        cashRows.push([
+        cashBody.push([
           `${formatDate(s.created_at)} ${formatTime(s.created_at)}`,
-          s.client_name,
-          s.ticket_name ?? '—',
-          { content: `+${s.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [34, 120, 60] as [number,number,number], fontStyle: 'bold' as const } },
+          s.client_name + (s.ticket_name ? `\n${s.ticket_name}` : ''),
+          { content: `+${s.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: colGreen, fontStyle: 'bold' as const } },
         ])
       }
     }
 
     if (opts.cashBalance.expenses.length > 0) {
-      cashRows.push([
-        { content: 'Витрати', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
-        '', '', '',
+      cashBody.push([
+        { content: 'Витрати', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 3, textColor: colGray } },
+        '', '',
       ])
       for (const e of opts.cashBalance.expenses) {
-        cashRows.push([
+        cashBody.push([
           `${formatDate(e.created_at)} ${formatTime(e.created_at)}`,
           e.description ?? '—',
-          '',
-          { content: `−${e.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [180, 40, 40] as [number,number,number], fontStyle: 'bold' as const } },
+          { content: `−${e.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: colRed, fontStyle: 'bold' as const } },
         ])
       }
     }
 
     if (opts.cashBalance.salary_payments.length > 0) {
-      cashRows.push([
-        { content: 'Виплати ЗП', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
-        '', '', '',
+      cashBody.push([
+        { content: 'Виплати ЗП', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 3, textColor: colGray } },
+        '', '',
       ])
       for (const p of opts.cashBalance.salary_payments) {
-        cashRows.push([
+        cashBody.push([
           formatDate(p.payment_date),
           'Виплата тренеру',
-          '',
-          { content: `−${p.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [180, 40, 40] as [number,number,number], fontStyle: 'bold' as const } },
+          { content: `−${p.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: colRed, fontStyle: 'bold' as const } },
         ])
       }
     }
 
-    // Total row
-    cashRows.push([
-      { content: 'Разом на руках', styles: { fontStyle: 'bold', fillColor: totalBg, colSpan: 3 } },
-      '', '',
-      { content: `${opts.cashBalanceTotal.toLocaleString('uk-UA')} ₴`, styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'right' as const } },
+    cashBody.push([
+      { content: 'Разом на руках', styles: { fontStyle: 'bold', fillColor: colTotalBg, colSpan: 2 } },
+      '',
+      {
+        content: `${opts.cashBalanceTotal.toLocaleString('uk-UA')} ₴`,
+        styles: { fontStyle: 'bold' as const, fillColor: colTotalBg, halign: 'right' as const },
+      },
     ])
 
     autoTable(doc, {
       startY: y,
-      head: [['Дата', 'Клієнт / Опис', 'Абонемент', 'Сума']],
-      body: cashRows,
+      tableWidth: cashTableW,
+      head: [['Дата', 'Клієнт / Опис', 'Сума']],
+      body: cashBody,
       theme: 'striped',
-      headStyles: { fillColor: [60, 60, 60], textColor: 255, fontSize: 9, font: 'NunitoSans' },
-      styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
+      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
+      styles: { font: 'NunitoSans', fontSize: 7.5, cellPadding: 1.5 },
       columnStyles: {
-        0: { cellWidth: 32 },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 28, halign: 'right' },
+        0: { cellWidth: 28 },
+        1: { cellWidth: descW },
+        2: { cellWidth: 22, halign: 'right' },
       },
-      margin: { left: margin, right: margin },
+      margin: { left: cashX, right: mR },
     })
-
-    y = (doc as any).lastAutoTable.finalY + 10
   }
 
-  // ── Payments table ────────────────────────────────────────────────
+  // ── Payments table (below, full width) ───────────────────────────
   if (opts.payments.length > 0) {
-    if (y > 240) { doc.addPage(); y = 14 }
+    const paymentsY = Math.max(classTableBottom, (doc as any).lastAutoTable.finalY) + 6
 
-    doc.setFontSize(12)
+    // If not enough space, new page
+    if (paymentsY > pageH - 30) {
+      doc.addPage()
+      y = mT
+    } else {
+      y = paymentsY
+    }
+
     doc.setFont('NunitoSans', 'bold')
-    doc.text('Виплати', margin, y)
-    y += 5
+    doc.setFontSize(10)
+    doc.text('Виплати', mL, y)
+    y += 4
 
     autoTable(doc, {
       startY: y,
@@ -310,13 +293,13 @@ export async function exportSalaryPdf(opts: {
         p.notes ?? '',
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [60, 60, 60], textColor: 255, fontSize: 9, font: 'NunitoSans' },
-      styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
+      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
+      styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5 },
       columnStyles: {
         4: { halign: 'right' },
         5: { halign: 'right', fontStyle: 'bold' },
       },
-      margin: { left: margin, right: margin },
+      margin: { left: mL, right: mR },
     })
   }
 
@@ -324,15 +307,10 @@ export async function exportSalaryPdf(opts: {
   const pageCount = (doc as any).internal.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
-    doc.setFontSize(8)
     doc.setFont('NunitoSans', 'normal')
-    doc.setTextColor(150)
-    doc.text(
-      `${i} / ${pageCount}`,
-      pageW - margin,
-      doc.internal.pageSize.getHeight() - 8,
-      { align: 'right' }
-    )
+    doc.setFontSize(7)
+    doc.setTextColor(...colGray)
+    doc.text(`${i} / ${pageCount}`, pageW - mR, pageH - 5, { align: 'right' })
   }
 
   const fileName = `salary_${opts.trainerName.replace(/\s+/g, '_')}_${opts.dateFrom}_${opts.dateTo}.pdf`
