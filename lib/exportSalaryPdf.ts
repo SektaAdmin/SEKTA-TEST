@@ -174,8 +174,8 @@ export async function exportSalaryPdf(opts: {
     head: [['Дата', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']],
     body: classBody,
     theme: 'striped',
-    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
-    styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5 },
+    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
     columnStyles: {
       0: { cellWidth: dateColW },
       ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: typeColW, halign: 'right' }])),
@@ -252,8 +252,8 @@ export async function exportSalaryPdf(opts: {
       head: [['Дата', 'Клієнт / Опис', 'Сума']],
       body: cashBody,
       theme: 'striped',
-      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
-      styles: { font: 'NunitoSans', fontSize: 7.5, cellPadding: 1.5 },
+      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      styles: { font: 'NunitoSans', fontSize: 7.5, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
       columnStyles: {
         0: { cellWidth: 28 },
         1: { cellWidth: descW },
@@ -293,8 +293,8 @@ export async function exportSalaryPdf(opts: {
         p.notes ?? '',
       ]),
       theme: 'striped',
-      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255 },
-      styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5 },
+      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
       columnStyles: {
         4: { halign: 'right' },
         5: { halign: 'right', fontStyle: 'bold' },
