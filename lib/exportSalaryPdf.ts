@@ -1,4 +1,4 @@
-import type { TrainerSalaryDetailRow, TrainerPayment } from '@/lib/queries/trainer-rates'
+import type { TrainerSalaryDetailRow, TrainerPayment, TrainerCashBalance } from '@/lib/queries/trainer-rates'
 import { formatDate, formatMoney, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel, enrollmentStatusLabel, paymentLabel } from '@/lib/badges'
 import { DOW_LABELS_SHORT, isoToYMD } from '@/lib/dateUtils'
@@ -48,6 +48,7 @@ export async function exportSalaryPdf(opts: {
   dateTo: string
   rows: TrainerSalaryDetailRow[]
   payments: TrainerPayment[]
+  cashBalance: TrainerCashBalance | null
   totalTrainer: number
   totalPaidPeriod: number
   cashBalanceTotal: number
@@ -117,6 +118,10 @@ export async function exportSalaryPdf(opts: {
 
   y = (doc as any).lastAutoTable.finalY + 8
 
+  const dayBg: [number, number, number] = [240, 240, 240]
+  const totalBg: [number, number, number] = [220, 235, 220]
+  const clientColor: [number, number, number] = [100, 100, 100]
+
   // ── Classes table ─────────────────────────────────────────────────
   if (opts.rows.length > 0) {
     doc.setFontSize(12)
@@ -127,23 +132,28 @@ export async function exportSalaryPdf(opts: {
     const dayGroups = buildDayGroups(opts.rows)
     const ticketTypes = Array.from(new Set(opts.rows.map(r => r.ticket_type))).sort()
 
+    // col layout: Дата/Час | Статус | type1 | type2 | ... | Нараховано
+    const statusColIdx = 1
+    const amtColIdx = ticketTypes.length + 2
+
     const head = [
-      ['Дата / Час', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']
+      ['Дата / Час', 'Статус', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']
     ]
 
     const body: (string | { content: string; styles: object })[][] = []
 
     for (const day of dayGroups) {
-      // Day header row
+      // Day header row — spans status col empty
       body.push([
-        { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } },
+        { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: dayBg } },
+        { content: '', styles: { fillColor: dayBg } },
         ...ticketTypes.map(tt => ({
           content: day.totalByType[tt] != null ? `${day.totalByType[tt]}` : '',
-          styles: { fontStyle: 'bold' as const, fillColor: [240, 240, 240] as [number,number,number], halign: 'center' as const },
+          styles: { fontStyle: 'bold' as const, fillColor: dayBg, halign: 'center' as const },
         })),
         {
           content: `${day.totalTrainer.toLocaleString('uk-UA')} ₴`,
-          styles: { fontStyle: 'bold' as const, fillColor: [240, 240, 240] as [number,number,number], halign: 'right' as const },
+          styles: { fontStyle: 'bold' as const, fillColor: dayBg, halign: 'right' as const },
         },
       ])
 
@@ -151,6 +161,7 @@ export async function exportSalaryPdf(opts: {
         const timeLabel = `  ${formatTime(r.starts_at)}${r.hall_name ? ` · ${r.hall_name}` : ''}`
         body.push([
           timeLabel,
+          '', // статус пустий на рівні заняття
           ...ticketTypes.map(tt => ({
             content: tt === r.ticket_type ? `${r.total_clients}` : '',
             styles: { halign: 'center' as const },
@@ -160,9 +171,10 @@ export async function exportSalaryPdf(opts: {
 
         for (const e of r.enrollments) {
           body.push([
-            { content: `    ${e.client_name}  [${enrollmentStatusLabel(e.status)}]`, styles: { textColor: [100, 100, 100] } },
+            { content: `    ${e.client_name}`, styles: { textColor: clientColor } },
+            { content: enrollmentStatusLabel(e.status), styles: { textColor: clientColor, fontSize: 8 } },
             ...ticketTypes.map(() => ({ content: '', styles: {} })),
-            { content: `${e.trainer_amount.toLocaleString('uk-UA')} ₴`, styles: { textColor: [100, 100, 100] as [number,number,number], halign: 'right' as const } },
+            { content: `${e.trainer_amount.toLocaleString('uk-UA')} ₴`, styles: { textColor: clientColor, halign: 'right' as const } },
           ])
         }
       }
@@ -172,14 +184,15 @@ export async function exportSalaryPdf(opts: {
     const totalByType: Record<string, number> = {}
     for (const r of opts.rows) totalByType[r.ticket_type] = (totalByType[r.ticket_type] ?? 0) + r.total_clients
     body.push([
-      { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: [220, 235, 220] } },
+      { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: totalBg } },
+      { content: '', styles: { fillColor: totalBg } },
       ...ticketTypes.map(tt => ({
         content: totalByType[tt] != null ? `${totalByType[tt]}` : '',
-        styles: { fontStyle: 'bold' as const, fillColor: [220, 235, 220] as [number,number,number], halign: 'center' as const },
+        styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'center' as const },
       })),
       {
         content: `${opts.totalTrainer.toLocaleString('uk-UA')} ₴`,
-        styles: { fontStyle: 'bold' as const, fillColor: [220, 235, 220] as [number,number,number], halign: 'right' as const },
+        styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'right' as const },
       },
     ])
 
@@ -192,8 +205,96 @@ export async function exportSalaryPdf(opts: {
       styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
       columnStyles: {
         0: { cellWidth: 'auto' },
-        ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: 18, halign: 'center' }])),
-        [ticketTypes.length + 1]: { cellWidth: 28, halign: 'right' },
+        [statusColIdx]: { cellWidth: 24 },
+        ...Object.fromEntries(ticketTypes.map((_, i) => [i + 2, { cellWidth: 18, halign: 'center' }])),
+        [amtColIdx]: { cellWidth: 28, halign: 'right' },
+      },
+      margin: { left: margin, right: margin },
+    })
+
+    y = (doc as any).lastAutoTable.finalY + 10
+  }
+
+  // ── Cash on hand detail ───────────────────────────────────────────
+  if (opts.cashBalance && (
+    opts.cashBalance.cash_sales.length > 0 ||
+    opts.cashBalance.expenses.length > 0 ||
+    opts.cashBalance.salary_payments.length > 0
+  )) {
+    if (y > 230) { doc.addPage(); y = 14 }
+
+    doc.setFontSize(12)
+    doc.setFont('NunitoSans', 'bold')
+    doc.text('Готівка на руках', margin, y)
+    y += 5
+
+    const cashRows: (string | { content: string; styles: object })[][] = []
+    const sectionBg: [number, number, number] = [245, 245, 245]
+
+    if (opts.cashBalance.cash_sales.length > 0) {
+      cashRows.push([
+        { content: 'Cash продажі', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
+        '', '', '',
+      ])
+      for (const s of opts.cashBalance.cash_sales) {
+        cashRows.push([
+          `${formatDate(s.created_at)} ${formatTime(s.created_at)}`,
+          s.client_name,
+          s.ticket_name ?? '—',
+          { content: `+${s.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [34, 120, 60] as [number,number,number], fontStyle: 'bold' as const } },
+        ])
+      }
+    }
+
+    if (opts.cashBalance.expenses.length > 0) {
+      cashRows.push([
+        { content: 'Витрати', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
+        '', '', '',
+      ])
+      for (const e of opts.cashBalance.expenses) {
+        cashRows.push([
+          `${formatDate(e.created_at)} ${formatTime(e.created_at)}`,
+          e.description ?? '—',
+          '',
+          { content: `−${e.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [180, 40, 40] as [number,number,number], fontStyle: 'bold' as const } },
+        ])
+      }
+    }
+
+    if (opts.cashBalance.salary_payments.length > 0) {
+      cashRows.push([
+        { content: 'Виплати ЗП', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 4 } },
+        '', '', '',
+      ])
+      for (const p of opts.cashBalance.salary_payments) {
+        cashRows.push([
+          formatDate(p.payment_date),
+          'Виплата тренеру',
+          '',
+          { content: `−${p.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: [180, 40, 40] as [number,number,number], fontStyle: 'bold' as const } },
+        ])
+      }
+    }
+
+    // Total row
+    cashRows.push([
+      { content: 'Разом на руках', styles: { fontStyle: 'bold', fillColor: totalBg, colSpan: 3 } },
+      '', '',
+      { content: `${opts.cashBalanceTotal.toLocaleString('uk-UA')} ₴`, styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'right' as const } },
+    ])
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Дата', 'Клієнт / Опис', 'Абонемент', 'Сума']],
+      body: cashRows,
+      theme: 'striped',
+      headStyles: { fillColor: [60, 60, 60], textColor: 255, fontSize: 9, font: 'NunitoSans' },
+      styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
+      columnStyles: {
+        0: { cellWidth: 32 },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 28, halign: 'right' },
       },
       margin: { left: margin, right: margin },
     })

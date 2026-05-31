@@ -246,6 +246,7 @@ export default function SalaryCalculationsPage() {
         dateTo,
         rows,
         payments,
+        cashBalance,
         totalTrainer,
         totalPaidPeriod,
         cashBalanceTotal,
