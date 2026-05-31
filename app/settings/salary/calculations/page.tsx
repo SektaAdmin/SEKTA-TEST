@@ -145,7 +145,6 @@ export default function SalaryCalculationsPage() {
   }, [rows])
 
   const totalTrainer = useMemo(() => rows.reduce((s, r) => s + r.total_trainer, 0), [rows])
-  const totalStudio = useMemo(() => rows.reduce((s, r) => s + r.total_studio, 0), [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
   const toPay = totalTrainer - cashOnHand - totalPaidPeriod
@@ -516,10 +515,6 @@ export default function SalaryCalculationsPage() {
                 <div className={`${styles.summaryRow} ${styles.summaryRowTotal}`}>
                   <span>До виплати:</span>
                   <strong className={toPay > 0 ? styles.toPayAmt : ''}>{formatMoney(Math.max(0, toPay))}</strong>
-                </div>
-                <div className={`${styles.summaryRow} ${styles.summaryStudio}`}>
-                  <span>Виручка студії (цей період):</span>
-                  <strong>{formatMoney(totalStudio)}</strong>
                 </div>
               </div>
             </section>
