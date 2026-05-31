@@ -143,7 +143,7 @@ export async function exportSalaryPdf(opts: {
       { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: colDayBg } },
       ...ticketTypes.map(tt => ({
         content: day.totalByType[tt] != null ? `${day.totalByType[tt]}` : '—',
-        styles: { fontStyle: 'bold' as const, fillColor: colDayBg, halign: 'center' as const, textColor: day.totalByType[tt] ? [0,0,0] : colGray },
+        styles: { fontStyle: 'bold' as const, fillColor: colDayBg, halign: 'right' as const, textColor: day.totalByType[tt] ? [0,0,0] : colGray },
       })),
       {
         content: `${day.totalTrainer.toLocaleString('uk-UA')} ₴`,
@@ -159,7 +159,7 @@ export async function exportSalaryPdf(opts: {
     { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: colTotalBg } },
     ...ticketTypes.map(tt => ({
       content: totalByType[tt] != null ? `${totalByType[tt]}` : '—',
-      styles: { fontStyle: 'bold' as const, fillColor: colTotalBg, halign: 'center' as const },
+      styles: { fontStyle: 'bold' as const, fillColor: colTotalBg, halign: 'right' as const },
     })),
     {
       content: `${opts.totalTrainer.toLocaleString('uk-UA')} ₴`,
@@ -178,7 +178,7 @@ export async function exportSalaryPdf(opts: {
     styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5 },
     columnStyles: {
       0: { cellWidth: dateColW },
-      ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: typeColW, halign: 'center' }])),
+      ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: typeColW, halign: 'right' }])),
       [ticketTypes.length + 1]: { cellWidth: amtColW, halign: 'right' },
     },
     margin: { left: mL, right: mR },
