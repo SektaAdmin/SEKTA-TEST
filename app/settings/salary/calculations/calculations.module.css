@@ -109,6 +109,7 @@
 
 .toPayAmt { color: var(--accent); }
 .cashAmt { color: var(--success); }
+.amtNegative { color: var(--danger); }
 
 .cashToggle {
   display: flex;

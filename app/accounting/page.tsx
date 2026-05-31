@@ -313,8 +313,16 @@ export default function AccountingPage() {
                           const { date, time } = fmtDatetime(e.created_at)
                           const isExpense = e.direction === 'expense'
                           return (
-                            <tr key={`exp-${e.id}`} className={styles.expenseRow}>
-                              <td className={styles.checkCell}></td>
+                            <tr key={`exp-${e.id}`} className={`${styles.expenseRow} ${checked.has(e.id) ? styles.rowChecked : ''}`} onClick={() => toggleChecked(e.id)}>
+                              <td className={styles.checkCell}>
+                                <input
+                                  type="checkbox"
+                                  className={styles.checkbox}
+                                  checked={checked.has(e.id)}
+                                  onChange={() => toggleChecked(e.id)}
+                                  onClick={ev => ev.stopPropagation()}
+                                />
+                              </td>
                               <td className={styles.iconCell}>
                                 {isExpense
                                   ? <ShoppingBag size={16} className={styles.iconExpense} />
@@ -459,8 +467,15 @@ export default function AccountingPage() {
                       const { date, time } = fmtDatetime(e.created_at)
                       const isExpense = e.direction === 'expense'
                       return (
-                        <div key={`exp-${e.id}`} className={`${styles.card} ${styles.expenseCard}`}>
+                        <div key={`exp-${e.id}`} className={`${styles.card} ${styles.expenseCard} ${checked.has(e.id) ? styles.cardChecked : ''}`} onClick={() => toggleChecked(e.id)}>
                           <div className={styles.cardMain}>
+                            <input
+                              type="checkbox"
+                              className={styles.checkbox}
+                              checked={checked.has(e.id)}
+                              onChange={() => toggleChecked(e.id)}
+                              onClick={ev => ev.stopPropagation()}
+                            />
                             <div className={isExpense ? styles.iconExpense : styles.iconOtherIncome}>
                               {isExpense
                                 ? <ShoppingBag size={16} />

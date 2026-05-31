@@ -324,7 +324,7 @@ export default function SalaryCalculationsPage() {
                                     }
                                   </td>
                                 ))}
-                                <td className={styles.amtCell}>{formatMoney(day.totalTrainer)}</td>
+                                <td className={`${styles.amtCell} ${day.totalTrainer < 0 ? styles.amtNegative : ''}`}>{formatMoney(day.totalTrainer)}</td>
                               </tr>
 
                               {/* Class rows */}
@@ -355,7 +355,7 @@ export default function SalaryCalculationsPage() {
                                           }
                                         </td>
                                       ))}
-                                      <td className={styles.amtCell}>{formatMoney(r.total_trainer)}</td>
+                                      <td className={`${styles.amtCell} ${r.total_trainer < 0 ? styles.amtNegative : ''}`}>{formatMoney(r.total_trainer)}</td>
                                     </tr>
 
                                     {/* Client rows */}
@@ -369,7 +369,7 @@ export default function SalaryCalculationsPage() {
                                           </span>
                                         </td>
                                         {ticketTypes.map(t => <td key={t} />)}
-                                        <td className={styles.amtCell}>{formatMoney(e.trainer_amount)}</td>
+                                        <td className={`${styles.amtCell} ${e.trainer_amount < 0 ? styles.amtNegative : ''}`}>{formatMoney(e.trainer_amount)}</td>
                                       </tr>
                                     ))}
                                   </>
