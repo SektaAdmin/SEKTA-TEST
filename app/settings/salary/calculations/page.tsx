@@ -22,7 +22,8 @@ import { toYMD, isoToYMD, DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Download } from 'lucide-react'
+import { exportSalaryPdf } from '@/lib/exportSalaryPdf'
 import { toast } from 'sonner'
 import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
@@ -96,6 +97,7 @@ export default function SalaryCalculationsPage() {
   const [paymentDate, setPaymentDate] = useState('')
   const [paymentNotes, setPaymentNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -233,11 +235,43 @@ export default function SalaryCalculationsPage() {
     fetchAll()
   }
 
+  async function handleExportPdf() {
+    if (!selectedTrainerId || rows.length === 0) return
+    const trainer = trainers.find(t => t.id === selectedTrainerId)
+    setExporting(true)
+    try {
+      await exportSalaryPdf({
+        trainerName: trainer?.name ?? selectedTrainerId,
+        dateFrom,
+        dateTo,
+        rows,
+        payments,
+        totalTrainer,
+        totalPaidPeriod,
+        cashBalanceTotal,
+        toPay,
+      })
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <>
       <div className="page-head">
         <div className={ss.topbar}>
           <h1 className="page-title">Нарахування тренерів</h1>
+          {rows.length > 0 && (
+            <button
+              className={styles.exportBtn}
+              onClick={handleExportPdf}
+              disabled={exporting}
+              title="Завантажити PDF"
+            >
+              <Download size={15} />
+              {exporting ? 'Генерація...' : 'PDF'}
+            </button>
+          )}
         </div>
         <nav className={ss.tabNav} aria-label="Зарплати">
           {SALARY_TABS.map(t => (

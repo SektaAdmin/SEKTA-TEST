@@ -153,6 +153,25 @@
 .cashItemAmt { text-align: right; color: var(--success); font-weight: 500; }
 .cashItemExpense { text-align: right; color: var(--danger); font-weight: 500; }
 
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
+  flex-shrink: 0;
+}
+.exportBtn:hover { background: var(--bg-3); color: var(--text); border-color: var(--border-hover); }
+.exportBtn:disabled { opacity: 0.6; cursor: default; }
+
 /* Field label inside ModalShell body (not a filter label) */
 .fieldLabel { font-size: 13px; color: var(--text-2); }
 
