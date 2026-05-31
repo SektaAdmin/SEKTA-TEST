@@ -1,6 +1,6 @@
 import type { TrainerSalaryDetailRow, TrainerPayment, TrainerCashBalance } from '@/lib/queries/trainer-rates'
 import { formatDate, formatMoney, formatTime } from '@/lib/formatters'
-import { ticketTypeShortLabel, enrollmentStatusLabel, paymentLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, paymentLabel } from '@/lib/badges'
 import { DOW_LABELS_SHORT, isoToYMD } from '@/lib/dateUtils'
 
 type DayGroup = {
@@ -132,23 +132,21 @@ export async function exportSalaryPdf(opts: {
     const dayGroups = buildDayGroups(opts.rows)
     const ticketTypes = Array.from(new Set(opts.rows.map(r => r.ticket_type))).sort()
 
-    // col layout: Дата/Час | Статус | type1 | type2 | ... | Нараховано
-    const statusColIdx = 1
-    const amtColIdx = ticketTypes.length + 2
+    // col layout: Дата / type1 | type2 | ... | Нараховано (без клієнтів)
+    const amtColIdx = ticketTypes.length + 1
 
     const head = [
-      ['Дата / Час', 'Статус', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']
+      ['Дата / Час', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']
     ]
 
     const body: (string | { content: string; styles: object })[][] = []
 
     for (const day of dayGroups) {
-      // Day header row — spans status col empty
+      // Day header row
       body.push([
         { content: day.dateLabel, styles: { fontStyle: 'bold', fillColor: dayBg } },
-        { content: '', styles: { fillColor: dayBg } },
         ...ticketTypes.map(tt => ({
-          content: day.totalByType[tt] != null ? `${day.totalByType[tt]}` : '',
+          content: day.totalByType[tt] != null ? `${day.totalByType[tt]} чол.` : '',
           styles: { fontStyle: 'bold' as const, fillColor: dayBg, halign: 'center' as const },
         })),
         {
@@ -161,22 +159,12 @@ export async function exportSalaryPdf(opts: {
         const timeLabel = `  ${formatTime(r.starts_at)}${r.hall_name ? ` · ${r.hall_name}` : ''}`
         body.push([
           timeLabel,
-          '', // статус пустий на рівні заняття
           ...ticketTypes.map(tt => ({
-            content: tt === r.ticket_type ? `${r.total_clients}` : '',
-            styles: { halign: 'center' as const },
+            content: tt === r.ticket_type ? `${r.total_clients} чол.` : '',
+            styles: { halign: 'center' as const, textColor: clientColor },
           })),
-          { content: `${r.total_trainer.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const } },
+          { content: `${r.total_trainer.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: clientColor } },
         ])
-
-        for (const e of r.enrollments) {
-          body.push([
-            { content: `    ${e.client_name}`, styles: { textColor: clientColor } },
-            { content: enrollmentStatusLabel(e.status), styles: { textColor: clientColor, fontSize: 8 } },
-            ...ticketTypes.map(() => ({ content: '', styles: {} })),
-            { content: `${e.trainer_amount.toLocaleString('uk-UA')} ₴`, styles: { textColor: clientColor, halign: 'right' as const } },
-          ])
-        }
       }
     }
 
@@ -185,9 +173,8 @@ export async function exportSalaryPdf(opts: {
     for (const r of opts.rows) totalByType[r.ticket_type] = (totalByType[r.ticket_type] ?? 0) + r.total_clients
     body.push([
       { content: 'Всього за період', styles: { fontStyle: 'bold', fillColor: totalBg } },
-      { content: '', styles: { fillColor: totalBg } },
       ...ticketTypes.map(tt => ({
-        content: totalByType[tt] != null ? `${totalByType[tt]}` : '',
+        content: totalByType[tt] != null ? `${totalByType[tt]} чол.` : '',
         styles: { fontStyle: 'bold' as const, fillColor: totalBg, halign: 'center' as const },
       })),
       {
@@ -205,8 +192,7 @@ export async function exportSalaryPdf(opts: {
       styles: { fontSize: 8.5, cellPadding: 2, font: 'NunitoSans' },
       columnStyles: {
         0: { cellWidth: 'auto' },
-        [statusColIdx]: { cellWidth: 24 },
-        ...Object.fromEntries(ticketTypes.map((_, i) => [i + 2, { cellWidth: 18, halign: 'center' }])),
+        ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: 22, halign: 'center' }])),
         [amtColIdx]: { cellWidth: 28, halign: 'right' },
       },
       margin: { left: margin, right: margin },
