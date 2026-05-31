@@ -284,19 +284,18 @@ export default function SalaryCalculationsPage() {
                         <tr>
                           <th style={{ width: 24 }}></th>
                           <th>Дата</th>
+                          <th style={{ width: 120 }}>Статус</th>
                           {ticketTypes.map(t => (
                             <th key={t} className={styles.numCol}>{ticketTypeShortLabel(t)}</th>
                           ))}
                           <th className={styles.numCol}>Нараховано</th>
                         </tr>
-                        {/* Period totals */}
                         <tr className={styles.periodTotalsRow}>
                           <td></td>
-                          <td className={styles.grayCell} style={{ fontSize: 12 }}>Всього за період</td>
+                          <td className={styles.grayCell}>Всього за період</td>
+                          <td></td>
                           {ticketTypes.map(t => (
-                            <td key={t} className={styles.numCell}>
-                              {totalByType[t] ?? 0} чол.
-                            </td>
+                            <td key={t} className={styles.numCell}>{totalByType[t] ?? 0} чол.</td>
                           ))}
                           <td className={styles.amtCell}>{formatMoney(totalTrainer)}</td>
                         </tr>
@@ -316,6 +315,7 @@ export default function SalaryCalculationsPage() {
                                   <span className={`${styles.expandIcon} ${dayExpanded ? styles.expandIconOpen : ''}`}>▶</span>
                                 </td>
                                 <td className={styles.dayLabel}>{day.dateLabel}</td>
+                                <td></td>
                                 {ticketTypes.map(t => (
                                   <td key={t} className={styles.numCell}>
                                     {day.totalByType[t] != null
@@ -342,17 +342,16 @@ export default function SalaryCalculationsPage() {
                                       </td>
                                       <td>
                                         <span className={styles.classIndent}>
-                                          <span className={styles.dateTime}>{formatTime(r.starts_at)}</span>
-                                          {' '}
-                                          <span className="badge badge-type">{ticketTypeShortLabel(r.ticket_type)}</span>
+                                          <span>{formatTime(r.starts_at)}</span>
                                           {r.hall_name && <span className={styles.grayCell}> · {r.hall_name}</span>}
                                         </span>
                                       </td>
+                                      <td></td>
                                       {ticketTypes.map(t => (
                                         <td key={t} className={styles.numCell}>
                                           {t === r.ticket_type
                                             ? <>{r.total_clients} чол.</>
-                                            : <span className={styles.dash}>—</span>
+                                            : null
                                           }
                                         </td>
                                       ))}
@@ -363,12 +362,14 @@ export default function SalaryCalculationsPage() {
                                     {classExpanded && r.enrollments.map(e => (
                                       <tr key={e.client_id} className={styles.clientRow}>
                                         <td></td>
-                                        <td colSpan={ticketTypes.length + 1} className={styles.clientName}>{e.client_name}</td>
-                                        <td className={styles.numCell}>
+                                        <td className={styles.clientName}>{e.client_name}</td>
+                                        <td>
                                           <span className={enrollmentStatusClass(e.status)}>
                                             {enrollmentStatusLabel(e.status)}
                                           </span>
                                         </td>
+                                        {ticketTypes.map(t => <td key={t} />)}
+                                        <td className={styles.amtCell}>{formatMoney(e.trainer_amount)}</td>
                                       </tr>
                                     ))}
                                   </>
