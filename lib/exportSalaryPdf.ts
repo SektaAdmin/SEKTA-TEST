@@ -122,8 +122,8 @@ export async function exportSalaryPdf(opts: {
     head: [summaryItems.map(s => s.label)],
     body: [summaryItems.map(s => s.value)],
     theme: 'grid',
-    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, halign: 'center', cellPadding: 2 },
-    bodyStyles: { font: 'NunitoSans', fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 3 },
+    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, halign: 'center', cellPadding: 2, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    bodyStyles: { font: 'NunitoSans', fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 3, lineWidth: 0.1, lineColor: [180, 180, 180] },
     columnStyles: {
       0: { cellWidth: (pageW - mL - mR) / 4 },
       1: { cellWidth: (pageW - mL - mR) / 4 },
