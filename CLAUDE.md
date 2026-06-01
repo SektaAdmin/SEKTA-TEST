@@ -68,6 +68,7 @@ training_types — довідник типів занять
 - **`clients.balance`** — грошовий депозит у ₴ (може бути від'ємним до `-credit_limit`, дефолт ліміту 10000).
 - **`client_session_balances`** — залишок занять **по типу** (`ticket_type`), не загальний.
 - **`tickets.ticket_type`** — вільний текст, **не enum**. Має збігатися з `training_types.code`. Відомі: `group`, `individual`, `hallrental`, `smallhallrental`, `individualduo`, `individualtrio`, `pylonrental`, `striprental` + будь-які нові з `training_types`. Max 20 активних тарифів (бізнес-правило).
+- **⚠️ Оренда (`hallrental`/`smallhallrental`/`pylonrental`/`striprental`) — звичайний абонемент**, як `group`/`individual`: купується наперед = N сесій, при записі/відвідуванні списується **сесія**. Депозит (гроші) НЕ чіпається. `enrollClient` НЕ створює sale для оренди (стара хибна гілка з `payment_method='deposit'` видалена).
 - **`sales.payment_method`** — `cash` / `fop` / `personal_card` / `deposit`.
 - **`sales.cash_holder`** / `studio_expenses.cash_holder` / `trainer_payments.cash_holder` — **`uuid` → trainers.id**. Хто фізично тримає готівку «на руках» (актуально лише для `cash`). НЕ текст.
 - **`sales` без тікета** (`ticket_id=null`) = депозитна операція: `+amount_given` поповнення, `-price_paid` списання.
@@ -164,7 +165,6 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 
 ## Поточний техборг (відоме, не виправлене)
 
-- **`enrollClient` (rental) нетранзакційний**: enrollment + окремий `create_sale` без перевірки результату → можливий запис без списання. Перенести в один RPC. *(Фаза 2, заплановано.)*
 - **БД-радники**: дубльовані RLS-політики (clients/sales/tickets/trainers/halls), `function_search_path_mutable` на RPC, непроіндексовані FK + невикористані індекси. Прибрати міграцією. *(Фаза 5, заплановано.)*
 - **`as any` в queries** (~38) — join-результати без типу. Типізувати через `QueryData`. *(Фаза 4, заплановано.)*
 - **Дубль перевантажень** `create_sale`/`update_sale` у БД — видалити старе.

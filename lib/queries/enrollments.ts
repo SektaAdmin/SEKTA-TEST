@@ -179,6 +179,12 @@ export async function checkClientConflict(
   return { data: data?.[0] ?? null, error: error?.message ?? null }
 }
 
+/**
+ * Записати клієнта на заняття. Оренда (hallrental тощо) — звичайний запис, як
+ * group/individual: списується СЕСІЯ при відвідуванні, депозит не чіпається.
+ * (Раніше тут була гілка авто-create_sale зі списанням депозиту для rental-
+ * типів — це була хибна логіка через плутанину в слові «оренда»; видалено.)
+ */
 export async function enrollClient(
   supabase: SupabaseClient,
   classId: string,
@@ -196,40 +202,6 @@ export async function enrollClient(
   if (insertError) {
     const isDuplicate = insertError.message.includes('duplicate') || insertError.code === '23505'
     return { error: insertError.message, isDuplicate }
-  }
-
-  // For rental types, automatically create a sales record
-  const { data: classData } = await supabase
-    .from('classes')
-    .select('ticket_type')
-    .eq('id', classId)
-    .maybeSingle()
-
-  const ticketType = classData?.ticket_type
-  const RENTAL_TYPES = ['hallrental', 'smallhallrental', 'pylonrental', 'striprental']
-
-  if (ticketType && RENTAL_TYPES.includes(ticketType)) {
-    const { data: ticketData } = await supabase
-      .from('tickets')
-      .select('id, name, price, sessions')
-      .eq('ticket_type', ticketType)
-      .eq('is_active', true)
-      .maybeSingle()
-
-    if (ticketData) {
-      // Create sales record for the rental
-      await supabase.rpc('create_sale', {
-        p_client_id: clientId,
-        p_ticket_id: ticketData.id,
-        p_trainer_id: null,
-        p_cash_holder: null,
-        p_price_paid: ticketData.price,
-        p_amount_given: ticketData.price,
-        p_payment_method: 'deposit',
-        p_notes: `Оренда через розклад`,
-        p_created_at: new Date().toISOString(),
-      })
-    }
   }
 
   return { error: null, isDuplicate: false }
