@@ -16,10 +16,11 @@ UI — **тільки українською**. Спілкування зі мн
 npm run dev          # localhost:3000
 npm run build        # production build + type-check (єдиний "тест" — лінтера/тестів немає)
 npm run start        # serve build
-npm run sync:schema  # регенерує types/database.types.ts після змін схеми в Supabase
+npm run sync:schema  # регенерує types/database.types.ts через Supabase Management API
 ```
 
 `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+`sync:schema` додатково потребує `SUPABASE_ACCESS_TOKEN` в оточенні (особистий токен з dashboard/account/tokens — НЕ комітити). Тягне офіційний генератор типів, не хардкодить список таблиць.
 
 Деплой: GitHub `SektaAdmin/SEKTA-TEST`, авто-деплой з `main` через Vercel.
 
@@ -104,8 +105,6 @@ training_types — довідник типів занять
 | `check_class_conflicts(p_starts_at, p_duration_min, p_hall_id, p_trainer_id, p_exclude_id)` | Перетин по залу/тренеру |
 | `check_client_conflict(p_client_id, p_class_id)` | Чи клієнт уже на паралельному занятті |
 | `auto_close_classes()` | pg_cron кожні 5 хв. Закриває `enrolled` для занять 5хв–24год тому через `mark_attendance`. Без балансу → лишає `enrolled` для ручного розбору |
-
-> ⚠️ **`create_sale` і `update_sale` мають по 2 перевантаження в БД** — старе (без `p_cash_holder`) і нове (з ним). Код передає `p_cash_holder`, тож резолвиться нова версія. Старе перевантаження варто видалити міграцією, щоб уникнути неоднозначності PostgREST. (Див. техборг.)
 
 ---
 

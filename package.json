@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "sync:schema": "node scripts/sync-schema.js && cp supabase/schema-full.json ./schema-full.json"
+    "sync:schema": "node scripts/sync-schema.js"
   },
   "dependencies": {
     "@fontsource/nunito-sans": "^5.2.7",
