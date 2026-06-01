@@ -88,7 +88,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       setTrainers(t)
       setHalls(h)
       setTrainingTypes(tt)
-      if (!existing && prefill?.hall_id) setValue('hall_id', prefill.hall_id)
     })
   }, [])
 
@@ -406,10 +405,16 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         </FormField>
 
         <FormField id="cm-hall" label="Зал">
-          <select id="cm-hall" {...register('hall_id')} disabled={loading}>
-            <option value="">— без залу —</option>
-            {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-          </select>
+          <Controller
+            name="hall_id"
+            control={control}
+            render={({ field }) => (
+              <select id="cm-hall" value={field.value ?? ''} onChange={field.onChange} disabled={loading}>
+                <option value="">— без залу —</option>
+                {halls.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              </select>
+            )}
+          />
         </FormField>
 
         <FormField id="cm-dur" label="Тривалість, хв" error={errors.duration_min}>
