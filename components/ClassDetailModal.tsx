@@ -20,7 +20,7 @@ import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
-import { getActiveCount } from '@/lib/scheduleMetrics'
+import { getActiveCount, effectiveSessionBalance } from '@/lib/scheduleMetrics'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import { ActionSelect } from '@/components/ui/ActionSelect'
@@ -420,13 +420,16 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     {selectedClient && (
                       <div className={styles.clientPreview}>
                         <span className={styles.clientName}>{formatClientName(selectedClient)}</span>
-                        {clientBalance != null && (
-                          <span className={clientBalance > 0 ? styles.balanceOk : styles.balanceWarn}>
-                            {clientBalance > 0
-                              ? `${clientBalance} год.`
-                              : 'Немає занять'}
-                          </span>
-                        )}
+                        {clientBalance != null && (() => {
+                          // Баланс, яким стане після цього запису (як в обліку адміна).
+                          const cost = isTwoHour(cls) ? Math.max(selectedHours.length, 1) : 1
+                          const after = clientBalance - cost
+                          return (
+                            <span className={after > 0 ? styles.balanceOk : styles.balanceWarn}>
+                              Баланс після запису: {after}
+                            </span>
+                          )
+                        })()}
                       </div>
                     )}
                     {isTwoHour(cls) && (
@@ -477,6 +480,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           <th className={styles.thNum}></th>
                           <th>Клієнт</th>
                           <th>Статус</th>
+                          <th>Баланс</th>
                           <th className={styles.thRight}>Дія</th>
                         </tr>
                       </thead>
@@ -504,6 +508,16 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                       {enrollmentStatusLabel(e.status)}
                                     </span>
+                                  )
+                                })()}
+                              </td>
+                              <td>
+                                {(() => {
+                                  const raw = balanceMap[e.client_id]
+                                  if (raw == null) return <span className={styles.balanceMuted}>—</span>
+                                  const bal = effectiveSessionBalance(raw, e.status, e.sessions_used, e.hours_attended)
+                                  return (
+                                    <span className={bal > 0 ? styles.balanceOk : styles.balanceWarn}>{bal}</span>
                                   )
                                 })()}
                               </td>

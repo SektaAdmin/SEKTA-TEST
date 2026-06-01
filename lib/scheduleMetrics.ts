@@ -2,6 +2,30 @@ type EnrollmentStatus = 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'wait
 
 const ACTIVE_STATUSES: EnrollmentStatus[] = ['enrolled', 'attended', 'noshow']
 
+/**
+ * Ефективний баланс сесій клієнта з урахуванням ЦЬОГО заняття — як в обліку
+ * адміна: записаний клієнт уже «коштує» сесію, тож баланс показуємо так, ніби
+ * заняття списане.
+ * - sessions_used > 0  → вже списано, баланс актуальний → як є
+ * - enrolled            → ще попереду, слот його → віднімаємо вартість («як буде»)
+ * - waitlist            → ще не підтверджено, сесія не його → як є
+ * - cancelled/noshow без списання → сесія не йде → як є
+ * Вартість = довжина hours_attended (1/2 для 2-год занять) або 1.
+ */
+export function effectiveSessionBalance(
+  rawBalance: number,
+  status: string,
+  sessionsUsed: number,
+  hours: number[] | null,
+): number {
+  if (sessionsUsed > 0) return rawBalance
+  if (status === 'enrolled') {
+    const cost = hours && hours.length > 0 ? hours.length : 1
+    return rawBalance - cost
+  }
+  return rawBalance
+}
+
 export function getActiveCount(enrollments: { status: string }[]): number {
   return enrollments.filter(e => (ACTIVE_STATUSES as string[]).includes(e.status)).length
 }

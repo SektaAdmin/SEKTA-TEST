@@ -122,6 +122,7 @@ training_types — довідник типів занять
 - **⚠️ Дні тижня — ДВІ конвенції** в `lib/dateUtils.ts`: `DOW_LABELS_SHORT/FULL` (0=Нд, індексувати значенням `day_of_week` з БД) vs `WEEKDAYS_SHORT/FULL` (0=Пн, для заголовків сітки). JS `Date` → Monday-based через `dowMondayIndex(date)`. Не плутати.
 - **Місяці** → `MONTHS_UK_SHORT/FULL` у `lib/dateUtils.ts`.
 - **Метрики розкладу** (capacity/waitlist/fill) → `lib/scheduleMetrics.ts` (`getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`; для шаблонів — `*ClientCount*`). Не дублювати формули.
+- **Ефективний баланс сесій** (скільки буде з урахуванням заняття, для відображення в рядку enrollment) → `effectiveSessionBalance(raw, status, sessionsUsed, hours)` у `lib/scheduleMetrics.ts`. `enrolled` → `raw − cost` («як буде»); вже-списані/waitlist/cancelled → `raw`. Вживається в ClassDetailModal і ClassDetailClient.
 - **Validation-повідомлення** → `lib/validation-messages.ts` (`VM.required.*`/`VM.invalid.*`). Усі zod/RHF беруть звідси.
 - **Empty-state тексти** → `lib/messages.ts` (`MSG.empty.*`).
 - **Кольори типів занять** → `lib/typeColor.ts`.

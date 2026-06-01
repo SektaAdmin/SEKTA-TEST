@@ -20,6 +20,7 @@ import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
+import { effectiveSessionBalance } from '@/lib/scheduleMetrics'
 import { MSG } from '@/lib/messages'
 import type { Class, Client } from '@/types'
 import styles from './class-detail.module.css'
@@ -467,9 +468,10 @@ if (loading) {
                             })()}
                           </td>
                           <td className={styles.balanceCell}>
-                            {bal != null ? (
-                              <span className={bal > 0 ? styles.balPos : styles.balZero}>{bal}</span>
-                            ) : '—'}
+                            {bal != null ? (() => {
+                              const eff = effectiveSessionBalance(bal, e.status, e.sessions_used, e.hours_attended)
+                              return <span className={eff > 0 ? styles.balPos : styles.balZero}>{eff}</span>
+                            })() : '—'}
                           </td>
                           <td className={styles.dateCell}>
                             {formatSaleDatetime(e.created_at)}

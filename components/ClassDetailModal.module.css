@@ -254,6 +254,13 @@
   background: var(--danger-dim);
   padding: 2px 8px;
   border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.balanceMuted {
+  font-size: 14px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
 }
 
 .enrollError {
