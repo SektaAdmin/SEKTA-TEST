@@ -80,7 +80,7 @@ training_types — довідник типів занять
 - **Правило скасування (дедлайн безкоштовності)** — у `cancellation_deadline(starts_at)`: початок `< 14:00` → дедлайн 19:00 попереднього дня; `>= 14:00` → `starts_at − 6 год`. До дедлайну `cancelled` без списання, після — зі списанням. `noshow` списує завжди. `change_enrollment_status` приймає `p_force_no_charge` для виняткового скасування без штрафу.
 - **`studio_expenses.direction`** — `expense` (зменшує метод) / `income` (збільшує). `payment_method` тут без `deposit`.
 - **`trainer_rates`** — `trainer_rate`+`studio_rate` (₴/людино-годину), `valid_from`/`valid_to` (NULL=активна). Пріоритет: індивід.+зал > індивід. > глоб.+зал > глоб. Зміна = закрити стару (`valid_to`) + додати нову.
-- **RLS вимкнено** на: `tickets`, `trainers`, `sales`, `balance_transactions`, `halls`, `training_types`, `classes`, `class_series`. Увімкнено на: `clients`, `client_session_balances`, `series_clients`, `studio_expenses`, `trainer_rates`, `trainer_payments`.
+- **RLS увімкнено + політика `authenticated_all` (FOR ALL TO authenticated USING(true))** на ВСІХ доменних таблицях, крім `class_series` (RLS вимкнено — єдиний виняток). Модель єдина: будь-який залогінений = повний доступ (інваріант #9). ⚠️ RLS-on БЕЗ політики = deny-all (браузер отримує 0 рядків без помилки) — саме так зламався `halls` після чистки advisors; нова таблиця/чистка політик мусить лишати рівно одну `authenticated_all`.
 
 ---
 
