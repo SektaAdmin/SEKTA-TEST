@@ -9,9 +9,7 @@ import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
   getClientSessionBalance,
-  markAttendance,
-  updateEnrollmentStatus,
-  reverseAttendance,
+  changeEnrollmentStatus,
   checkClientConflict,
   enrollClient as enrollClientQuery,
 } from '@/lib/queries/enrollments'
@@ -141,26 +139,26 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
     setEnrolling(false)
   }
 
-  async function handleMarkAttended(enrollment: EnrollmentRow) {
+  // Єдина точка зміни статусу — через RPC (інваріант балансу + правило скасування).
+  async function handleStatusChange(
+    enrollment: EnrollmentRow,
+    status: 'enrolled' | 'attended' | 'noshow' | 'cancelled',
+    opts?: { forceNoCharge?: boolean },
+  ) {
     setActionLoading(enrollment.id)
     setActionError(prev => { const n = { ...prev }; delete n[enrollment.id]; return n })
-    const sessionsUsed = enrollment.hours_attended?.length ?? 1
-    const { success, error } = await markAttendance(supabase, enrollment.id, sessionsUsed)
+    const sessionsUsed = status === 'attended' ? (enrollment.hours_attended?.length ?? 1) : undefined
+    const { success, charged, error } = await changeEnrollmentStatus(supabase, enrollment.id, status, {
+      forceNoCharge: opts?.forceNoCharge,
+      sessionsUsed,
+    })
     if (!success) {
       setActionError(prev => ({ ...prev, [enrollment.id]: error ?? 'Помилка' }))
-    } else if (cls) {
-      await fetchEnrollments(cls.ticket_type)
-    }
-    setActionLoading(null)
-  }
-
-  async function handleUpdateStatus(enrollmentId: string, status: 'noshow' | 'cancelled') {
-    setActionLoading(enrollmentId)
-    const { error } = await updateEnrollmentStatus(supabase, enrollmentId, status)
-    if (error) {
-      toast.error('Не вдалося оновити статус')
-    } else if (cls) {
-      await fetchEnrollments(cls.ticket_type)
+    } else {
+      if (status === 'cancelled') {
+        toast.success(charged ? 'Скасовано — заняття списано (несвоєчасно)' : 'Скасовано без списання')
+      }
+      if (cls) await fetchEnrollments(cls.ticket_type)
     }
     setActionLoading(null)
   }
@@ -181,10 +179,10 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
     setCancellingClass(false)
   }
 
-  async function handleReverseAttendance(enrollmentId: string) {
+  async function handleReverseAttendance(enrollment: EnrollmentRow) {
     if (!window.confirm('Скасувати відвідування? Заняття буде повернено на баланс клієнта.')) return
-    setActionLoading(enrollmentId)
-    const { success, error } = await reverseAttendance(supabase, enrollmentId)
+    setActionLoading(enrollment.id)
+    const { success, error } = await changeEnrollmentStatus(supabase, enrollment.id, 'enrolled', { forceNoCharge: true })
     if (!success) {
       toast.error(error ?? 'Не вдалося скасувати відвідування')
     } else if (cls) {
@@ -482,7 +480,7 @@ if (loading) {
                                 <>
                                   <button
                                     className={styles.btnAttend}
-                                    onClick={() => handleMarkAttended(e)}
+                                    onClick={() => handleStatusChange(e, 'attended')}
                                     disabled={isLoading}
                                     title={enrollmentStatusLabel('attended')}
                                   >
@@ -490,7 +488,7 @@ if (loading) {
                                   </button>
                                   <button
                                     className={styles.btnNoshow}
-                                    onClick={() => handleUpdateStatus(e.id, 'noshow')}
+                                    onClick={() => handleStatusChange(e, 'noshow')}
                                     disabled={isLoading}
                                     title={enrollmentStatusLabel('noshow')}
                                   >
@@ -498,7 +496,7 @@ if (loading) {
                                   </button>
                                   <button
                                     className={styles.btnCancelEnroll}
-                                    onClick={() => handleUpdateStatus(e.id, 'cancelled')}
+                                    onClick={() => handleStatusChange(e, 'cancelled')}
                                     disabled={isLoading}
                                     title={enrollmentStatusLabel('cancelled')}
                                   >
@@ -509,7 +507,7 @@ if (loading) {
                               {e.status === 'attended' && (
                                 <button
                                   className={styles.btnCancelEnroll}
-                                  onClick={() => handleReverseAttendance(e.id)}
+                                  onClick={() => handleReverseAttendance(e)}
                                   disabled={isLoading}
                                   title="Скасувати відвідування"
                                 >
@@ -519,12 +517,7 @@ if (loading) {
                               {(e.status === 'cancelled' || e.status === 'noshow') && (
                                 <button
                                   className={styles.btnReEnroll}
-                                  onClick={async () => {
-                                    setActionLoading(e.id)
-                                    await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
-                                    if (cls) await fetchEnrollments(cls.ticket_type)
-                                    setActionLoading(null)
-                                  }}
+                                  onClick={() => handleStatusChange(e, 'enrolled')}
                                   disabled={isLoading}
                                 >
                                   Повернути
@@ -583,19 +576,14 @@ if (loading) {
                               <div className={styles.actions}>
                                 <button
                                   className={styles.btnReEnroll}
-                                  onClick={async () => {
-                                    setActionLoading(e.id)
-                                    await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
-                                    if (cls) await fetchEnrollments(cls.ticket_type)
-                                    setActionLoading(null)
-                                  }}
+                                  onClick={() => handleStatusChange(e, 'enrolled')}
                                   disabled={isLoading}
                                 >
                                   Підтвердити
                                 </button>
                                 <button
                                   className={styles.btnCancelEnroll}
-                                  onClick={() => handleUpdateStatus(e.id, 'cancelled')}
+                                  onClick={() => handleStatusChange(e, 'cancelled')}
                                   disabled={isLoading}
                                   title="Скасувати"
                                 >

@@ -139,13 +139,32 @@ export async function reverseAttendance(
   return { success: true, error: null }
 }
 
-export async function updateEnrollmentStatus(
+export type EnrollmentStatus = 'enrolled' | 'attended' | 'noshow' | 'cancelled' | 'waitlist'
+
+/**
+ * Єдина точка зміни статусу enrollment. Обходити прямим UPDATE НЕ МОЖНА —
+ * RPC тримає інваріант client_session_balances і застосовує правило
+ * скасування у часових рамках (див. міграцію 20260603).
+ *
+ * @returns charged — чи списано сесію (для toast адміну).
+ */
+export async function changeEnrollmentStatus(
   supabase: SupabaseClient,
   enrollmentId: string,
-  status: 'noshow' | 'cancelled'
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('enrollments').update({ status }).eq('id', enrollmentId)
-  return { error: error?.message ?? null }
+  status: EnrollmentStatus,
+  opts?: { forceNoCharge?: boolean; sessionsUsed?: number }
+): Promise<{ success: boolean; charged: boolean; error: string | null }> {
+  const { data, error } = await supabase.rpc('change_enrollment_status', {
+    p_enrollment_id: enrollmentId,
+    p_new_status: status,
+    p_force_no_charge: opts?.forceNoCharge ?? false,
+    p_sessions_used: opts?.sessionsUsed ?? null,
+  })
+  const row = data?.[0]
+  if (error || row?.success === false) {
+    return { success: false, charged: false, error: row?.error_message ?? error?.message ?? 'Помилка' }
+  }
+  return { success: true, charged: row?.charged ?? false, error: null }
 }
 
 export async function checkClientConflict(

@@ -30,8 +30,8 @@ npm run sync:schema  # регенерує types/database.types.ts після з�
 Це те, що НЕ видно з коду і ламає дані/гроші, якщо порушити:
 
 1. **Грошовий баланс клієнта (`clients.balance`) — тільки через `update_client_balance()` RPC.** Ніколи не `UPDATE clients.balance` напряму. RPC блокує рядок, перевіряє `credit_limit`, пише в `balance_transactions`.
-2. **Залишок занять (`client_session_balances`) — тільки через `mark_attendance()` / `reverse_attendance()` RPC.** Ніколи не `UPDATE` напряму.
-3. **⚠️ Зміна статусу enrollment, що вже списав сесію, мусить спершу реверснути.** `attended`/`noshow` вже зачепили `client_session_balances`. Прямий `UPDATE enrollments SET status` (як зараз у `updateEnrollmentStatus`) **НЕ повертає сесію** → баланс розходиться. Перш ніж міняти статус з `attended`/`noshow`, виклич `reverse_attendance()`. Це поточний баг — див. техборг нижче.
+2. **Залишок занять (`client_session_balances`) — тільки через RPC.** Ніколи не `UPDATE` напряму. Списання/повернення: `mark_attendance()`/`reverse_attendance()` (вживає cron). Зміна статусу з UI — **тільки `change_enrollment_status()`**.
+3. **Зміна статусу enrollment — тільки через `change_enrollment_status()` RPC.** Прямий `UPDATE enrollments SET status` ламає баланс сесій. RPC сам вирівнює `client_session_balances` (реверс старого списання → застосування нового) і застосовує **правило скасування у часових рамках** (див. нижче). frontend-обгортка — `changeEnrollmentStatus()` у `lib/queries/enrollments.ts`.
 4. **Скасування заняття — тільки через `cancel_class_and_restore_sessions()` RPC.** Воно коректно повертає сесії за статусами. Не `UPDATE classes.is_cancelled` напряму.
 5. **Snapshots у `sales` незмінні.** `ticket_name`, `ticket_price`, `sessions` — знімки на момент продажу. Не оновлювати, не джоїнити `tickets` для звітів — бери зі snapshot.
 6. **Гроші — в гривнях (₴), integer.** `tickets.price`, `sales.price_paid`, `sales.amount_given`, `studio_expenses.amount` — НЕ ділити на 100.
@@ -73,8 +73,9 @@ training_types — довідник типів занять
 - **`sales` без тікета** (`ticket_id=null`) = депозитна операція: `+amount_given` поповнення, `-price_paid` списання.
 - **`training_types.code`** — незмінний ідентифікатор; `label` — редагований. Константи `TICKET_TYPES`/`TICKET_TYPE_LABELS` видалені з коду — всі лейбли читаються з БД (RefsContext / `listTrainingTypeLabels`).
 - **`class_series.type`** — `'template'` (постійний шаблон тижня) vs `'series'` (разова серія). `day_of_week`: 0=Нд..6=Сб. `generate_week()` будує `classes` з `type='template'`.
-- **`enrollments.status`** — `enrolled` / `attended` / `cancelled` / `noshow` / `waitlist`. Тригер `check_class_capacity` авто-переводить `enrolled`→`waitlist` при повному залі.
+- **`enrollments.status`** — `enrolled` / `attended` / `cancelled` / `noshow` / `waitlist`. Тригер `check_class_capacity` авто-переводить `enrolled`→`waitlist` при повному залі. **Фінансовий факт — у `sessions_used`** (>0 = сесію списано), не в окремому статусі: `cancelled` зі `sessions_used>0` = «скасувала пізно, штраф».
 - **`enrollments.hours_attended`** — `int[]` для занять `duration_min >= 120`: `[1]`, `[2]` або `[1,2]`. `NULL` = усе заняття. `sessions_used = hours_attended.length` (або 1 якщо NULL).
+- **Правило скасування (дедлайн безкоштовності)** — у `cancellation_deadline(starts_at)`: початок `< 14:00` → дедлайн 19:00 попереднього дня; `>= 14:00` → `starts_at − 6 год`. До дедлайну `cancelled` без списання, після — зі списанням. `noshow` списує завжди. `change_enrollment_status` приймає `p_force_no_charge` для виняткового скасування без штрафу.
 - **`studio_expenses.direction`** — `expense` (зменшує метод) / `income` (збільшує). `payment_method` тут без `deposit`.
 - **`trainer_rates`** — `trainer_rate`+`studio_rate` (₴/людино-годину), `valid_from`/`valid_to` (NULL=активна). Пріоритет: індивід.+зал > індивід. > глоб.+зал > глоб. Зміна = закрити стару (`valid_to`) + додати нову.
 - **RLS вимкнено** на: `tickets`, `trainers`, `sales`, `balance_transactions`, `halls`, `training_types`, `classes`, `class_series`. Увімкнено на: `clients`, `client_session_balances`, `series_clients`, `studio_expenses`, `trainer_rates`, `trainer_payments`.
@@ -91,7 +92,9 @@ training_types — довідник типів занять
 | `update_sale(p_sale_id, …, p_cash_holder, p_ticket_name, p_ticket_price, p_sessions, p_ticket_type, …)` | Реверс старого балансу + застосування нового |
 | `delete_sale(p_sale_id)` | Видалити sale + реверс балансу |
 | `update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, p_related_sale_id, p_reason)` | → `(success, new_balance, transaction_id, error_message)`. FOR UPDATE + credit_limit + лог |
-| `mark_attendance(p_enrollment_id, p_sessions_used=1)` | → `(success, error_message)`. Декремент сесій, status=attended. `success=false` якщо балансу нема |
+| `mark_attendance(p_enrollment_id, p_sessions_used=1)` | → `(success, error_message)`. Декремент сесій, status=attended. `success=false` якщо балансу нема. **Вживає лише cron**; UI → `change_enrollment_status` |
+| `change_enrollment_status(p_enrollment_id, p_new_status, p_force_no_charge=false, p_sessions_used=null)` | → `(success, charged, error_message)`. Єдина точка зміни статусу з UI. Вирівнює баланс сесій + застосовує правило скасування. `charged` = чи списано сесію |
+| `cancellation_deadline(starts_at) → timestamptz` | Дедлайн безкоштовного скасування (див. бізнес-правило вище) |
 | `reverse_attendance(p_enrollment_id)` | → `(success, error_message)`. Повертає сесії, status=cancelled, sessions_used=0 |
 | `cancel_class_and_restore_sessions(p_class_id)` | → `(success, restored_count, error_message)`. attended→повернути sessions_used; noshow→duration/60; enrolled→скасувати без повернення; is_cancelled=true |
 | `restore_class(p_class_id)` | → `(success, restored_count, error_message)`. Зворотне до cancel. Перед викликом перевір `check_class_conflicts` |
@@ -160,7 +163,6 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 
 ## Поточний техборг (відоме, не виправлене)
 
-- **#3 вище**: `updateEnrollmentStatus` робить прямий UPDATE → `attended/noshow → інше` губить сесійний баланс. Потрібен RPC `change_enrollment_status` з реверсом у транзакції. *(Фаза 1, заплановано.)*
 - **`enrollClient` (rental) нетранзакційний**: enrollment + окремий `create_sale` без перевірки результату → можливий запис без списання. Перенести в один RPC. *(Фаза 2, заплановано.)*
 - **БД-радники**: дубльовані RLS-політики (clients/sales/tickets/trainers/halls), `function_search_path_mutable` на RPC, непроіндексовані FK + невикористані індекси. Прибрати міграцією. *(Фаза 5, заплановано.)*
 - **`as any` в queries** (~38) — join-результати без типу. Типізувати через `QueryData`. *(Фаза 4, заплановано.)*

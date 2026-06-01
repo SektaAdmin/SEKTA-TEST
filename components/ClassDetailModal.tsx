@@ -10,9 +10,7 @@ import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
   getClientSessionBalance,
-  markAttendance,
-  updateEnrollmentStatus,
-  reverseAttendance,
+  changeEnrollmentStatus,
   checkClientConflict,
   enrollClient as enrollClientQuery,
 } from '@/lib/queries/enrollments'
@@ -151,26 +149,27 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setEnrolling(false)
   }
 
-  async function handleMarkAttended(enrollment: EnrollmentRow) {
+  // Єдина точка зміни статусу — через RPC, що тримає інваріант балансу сесій
+  // і застосовує правило скасування у часових рамках (штраф/без штрафу).
+  async function handleStatusChange(
+    enrollment: EnrollmentRow,
+    status: 'enrolled' | 'attended' | 'noshow' | 'cancelled',
+    opts?: { forceNoCharge?: boolean },
+  ) {
     setActionLoading(enrollment.id)
     setActionError(prev => { const n = { ...prev }; delete n[enrollment.id]; return n })
-    const sessionsUsed = enrollment.hours_attended?.length ?? 1
-    const { success, error } = await markAttendance(supabase, enrollment.id, sessionsUsed)
+    const sessionsUsed = status === 'attended' ? (enrollment.hours_attended?.length ?? 1) : undefined
+    const { success, charged, error } = await changeEnrollmentStatus(supabase, enrollment.id, status, {
+      forceNoCharge: opts?.forceNoCharge,
+      sessionsUsed,
+    })
     if (!success) {
       setActionError(prev => ({ ...prev, [enrollment.id]: error ?? 'Помилка' }))
-    } else if (cls) {
-      await fetchEnrollments(cls.ticket_type)
-    }
-    setActionLoading(null)
-  }
-
-  async function handleUpdateStatus(enrollmentId: string, status: 'noshow' | 'cancelled') {
-    setActionLoading(enrollmentId)
-    const { error } = await updateEnrollmentStatus(supabase, enrollmentId, status)
-    if (error) {
-      toast.error('Не вдалося оновити статус')
-    } else if (cls) {
-      await fetchEnrollments(cls.ticket_type)
+    } else {
+      if (status === 'cancelled') {
+        toast.success(charged ? 'Скасовано — заняття списано (несвоєчасно)' : 'Скасовано без списання')
+      }
+      if (cls) await fetchEnrollments(cls.ticket_type)
     }
     setActionLoading(null)
   }
@@ -194,9 +193,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setCancellingClass(false)
   }
 
-  async function handleReverseAttendance(enrollmentId: string) {
-    setActionLoading(enrollmentId)
-    const { success, error } = await reverseAttendance(supabase, enrollmentId)
+  async function handleReverseAttendance(enrollment: EnrollmentRow) {
+    // Скасування відвідування = корекція: повертаємо в enrolled без штрафу.
+    setActionLoading(enrollment.id)
+    const { success, error } = await changeEnrollmentStatus(supabase, enrollment.id, 'enrolled', { forceNoCharge: true })
     if (!success) {
       toast.error(error ?? 'Не вдалося скасувати відвідування')
     } else if (cls) {
@@ -510,23 +510,18 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               <td className={styles.actionsCell}>
                                 {confirmReverseId === e.id ? (
                                   <div className={styles.actions}>
-                                    <button className={styles.btnEdit} onClick={() => handleReverseAttendance(e.id)} disabled={isLoading}>Так</button>
+                                    <button className={styles.btnEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
                                     <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
                                   </div>
                                 ) : (
                                   <ActionSelect
                                     disabled={isLoading}
                                     onChange={async val => {
-                                      if (val === 'attended') { await handleMarkAttended(e) }
-                                      else if (val === 'noshow') { await handleUpdateStatus(e.id, 'noshow') }
-                                      else if (val === 'cancelled') { await handleUpdateStatus(e.id, 'cancelled') }
+                                      if (val === 'attended') { await handleStatusChange(e, 'attended') }
+                                      else if (val === 'noshow') { await handleStatusChange(e, 'noshow') }
+                                      else if (val === 'cancelled') { await handleStatusChange(e, 'cancelled') }
                                       else if (val === 'reverse') { setConfirmReverseId(e.id) }
-                                      else if (val === 'reenroll') {
-                                        setActionLoading(e.id)
-                                        await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
-                                        if (cls) await fetchEnrollments(cls.ticket_type)
-                                        setActionLoading(null)
-                                      }
+                                      else if (val === 'reenroll') { await handleStatusChange(e, 'enrolled') }
                                     }}
                                     options={[
                                       ...(e.status === 'enrolled' ? [
@@ -590,13 +585,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                           setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений' }))
                                           return
                                         }
-                                        setActionLoading(e.id)
-                                        setActionError(prev => { const n = { ...prev }; delete n[e.id]; return n })
-                                        await supabase.from('enrollments').update({ status: 'enrolled' }).eq('id', e.id)
-                                        if (cls) await fetchEnrollments(cls.ticket_type)
-                                        setActionLoading(null)
+                                        await handleStatusChange(e, 'enrolled')
                                       } else if (val === 'cancelled') {
-                                        await handleUpdateStatus(e.id, 'cancelled')
+                                        await handleStatusChange(e, 'cancelled')
                                       }
                                     }}
                                     options={[
