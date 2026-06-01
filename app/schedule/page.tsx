@@ -552,10 +552,12 @@ export default function SchedulePage() {
     const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
     const visHalls = filterHall
       ? activeHalls.filter(h => h.id === filterHall)
-      : activeHalls.filter(h => hallIds.has(h.id))
+      : viewMode === 'day'
+        ? activeHalls  // day view: always show all active halls so slot clicks carry hall_id
+        : activeHalls.filter(h => hallIds.has(h.id))
     const hasNoHall = filteredClasses.some(c => !c.hall_id)
     return { halls: visHalls, hasNoHall }
-  }, [filteredClasses, activeHalls, filterHall])
+  }, [filteredClasses, activeHalls, filterHall, viewMode])
 
   const hallColumns = useMemo(() => [
     ...visibleHalls.halls,
