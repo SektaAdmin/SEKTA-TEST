@@ -88,6 +88,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       setTrainers(t)
       setHalls(h)
       setTrainingTypes(tt)
+      if (!existing && prefill?.hall_id) setValue('hall_id', prefill.hall_id)
     })
   }, [])
 
