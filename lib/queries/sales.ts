@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Sale } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
+import { callRpc } from '@/lib/rpc'
 
 export interface ListSalesParams {
   page: number
@@ -166,11 +167,8 @@ export async function createSale(
     p_created_at: string
   }
 ): Promise<{ success: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('create_sale', params)
-  if (error || !data?.[0]?.success) {
-    return { success: false, error: error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження' }
-  }
-  return { success: true, error: null }
+  const { success, error } = await callRpc(() => supabase.rpc('create_sale', params), 'Помилка збереження')
+  return { success, error }
 }
 
 export async function updateSale(
@@ -192,22 +190,16 @@ export async function updateSale(
     p_created_at: string
   }
 ): Promise<{ success: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('update_sale', params)
-  if (error || !data?.[0]?.success) {
-    return { success: false, error: error?.message ?? data?.[0]?.error_message ?? 'Помилка збереження' }
-  }
-  return { success: true, error: null }
+  const { success, error } = await callRpc(() => supabase.rpc('update_sale', params), 'Помилка збереження')
+  return { success, error }
 }
 
 export async function deleteSale(
   supabase: SupabaseClient,
   saleId: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('delete_sale', { p_sale_id: saleId })
-  if (error || !data?.[0]?.success) {
-    return { success: false, error: error?.message ?? data?.[0]?.error_message ?? 'Помилка видалення' }
-  }
-  return { success: true, error: null }
+  const { success, error } = await callRpc(() => supabase.rpc('delete_sale', { p_sale_id: saleId }), 'Помилка видалення')
+  return { success, error }
 }
 
 export type ReconciliationSale = {

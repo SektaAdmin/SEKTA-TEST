@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { callRpc } from '@/lib/rpc'
 
 export async function listClassesForDate(
   supabase: SupabaseClient,
@@ -134,25 +135,23 @@ export async function markAttendance(
   enrollmentId: string,
   sessionsUsed = 1
 ): Promise<{ success: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('mark_attendance', {
-    p_enrollment_id: enrollmentId,
-    p_sessions_used: sessionsUsed,
-  })
-  if (error || data?.[0]?.success === false) {
-    return { success: false, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
-  }
-  return { success: true, error: null }
+  const { success, error } = await callRpc(() =>
+    supabase.rpc('mark_attendance', {
+      p_enrollment_id: enrollmentId,
+      p_sessions_used: sessionsUsed,
+    })
+  )
+  return { success, error }
 }
 
 export async function reverseAttendance(
   supabase: SupabaseClient,
   enrollmentId: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('reverse_attendance', { p_enrollment_id: enrollmentId })
-  if (error || data?.[0]?.success === false) {
-    return { success: false, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
-  }
-  return { success: true, error: null }
+  const { success, error } = await callRpc(() =>
+    supabase.rpc('reverse_attendance', { p_enrollment_id: enrollmentId })
+  )
+  return { success, error }
 }
 
 export type EnrollmentStatus = 'enrolled' | 'attended' | 'noshow' | 'cancelled' | 'waitlist'
@@ -170,16 +169,15 @@ export async function changeEnrollmentStatus(
   status: EnrollmentStatus,
   opts?: { forceNoCharge?: boolean; sessionsUsed?: number }
 ): Promise<{ success: boolean; charged: boolean; error: string | null }> {
-  const { data, error } = await supabase.rpc('change_enrollment_status', {
-    p_enrollment_id: enrollmentId,
-    p_new_status: status,
-    p_force_no_charge: opts?.forceNoCharge ?? false,
-    p_sessions_used: opts?.sessionsUsed ?? null,
-  })
-  const row = data?.[0]
-  if (error || row?.success === false) {
-    return { success: false, charged: false, error: row?.error_message ?? error?.message ?? 'Помилка' }
-  }
+  const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; charged: boolean }>(
+    () => supabase.rpc('change_enrollment_status', {
+      p_enrollment_id: enrollmentId,
+      p_new_status: status,
+      p_force_no_charge: opts?.forceNoCharge ?? false,
+      p_sessions_used: opts?.sessionsUsed ?? null,
+    })
+  )
+  if (!success) return { success: false, charged: false, error }
   return { success: true, charged: row?.charged ?? false, error: null }
 }
 
