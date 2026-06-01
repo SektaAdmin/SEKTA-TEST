@@ -910,6 +910,20 @@ export type Database = {
           success: boolean
         }[]
       }
+      cancellation_deadline: { Args: { p_starts_at: string }; Returns: string }
+      change_enrollment_status: {
+        Args: {
+          p_enrollment_id: string
+          p_force_no_charge?: boolean
+          p_new_status: string
+          p_sessions_used?: number
+        }
+        Returns: {
+          charged: boolean
+          error_message: string
+          success: boolean
+        }[]
+      }
       check_class_conflicts: {
         Args: {
           p_duration_min: number
@@ -934,23 +948,42 @@ export type Database = {
           ticket_type: string
         }[]
       }
-      create_sale: {
-        Args: {
-          p_amount_given?: number
-          p_client_id: string
-          p_created_at?: string
-          p_notes?: string
-          p_payment_method?: string
-          p_price_paid?: number
-          p_ticket_id?: string
-          p_trainer_id?: string
-        }
-        Returns: {
-          error_message: string
-          sale_id: string
-          success: boolean
-        }[]
-      }
+      create_sale:
+        | {
+            Args: {
+              p_amount_given?: number
+              p_cash_holder?: string
+              p_client_id: string
+              p_created_at?: string
+              p_notes?: string
+              p_payment_method?: string
+              p_price_paid?: number
+              p_ticket_id?: string
+              p_trainer_id?: string
+            }
+            Returns: {
+              error_message: string
+              sale_id: string
+              success: boolean
+            }[]
+          }
+        | {
+            Args: {
+              p_amount_given?: number
+              p_client_id: string
+              p_created_at?: string
+              p_notes?: string
+              p_payment_method?: string
+              p_price_paid?: number
+              p_ticket_id?: string
+              p_trainer_id?: string
+            }
+            Returns: {
+              error_message: string
+              sale_id: string
+              success: boolean
+            }[]
+          }
       delete_sale: {
         Args: { p_sale_id: string }
         Returns: {
@@ -1005,27 +1038,50 @@ export type Database = {
           transaction_id: string
         }[]
       }
-      update_sale: {
-        Args: {
-          p_amount_given: number
-          p_client_id: string
-          p_created_at?: string
-          p_notes: string
-          p_payment_method: string
-          p_price_paid: number
-          p_sale_id: string
-          p_sessions: number
-          p_ticket_id: string
-          p_ticket_name: string
-          p_ticket_price: number
-          p_ticket_type: string
-          p_trainer_id: string
-        }
-        Returns: {
-          error_message: string
-          success: boolean
-        }[]
-      }
+      update_sale:
+        | {
+            Args: {
+              p_amount_given?: number
+              p_cash_holder?: string
+              p_client_id: string
+              p_created_at?: string
+              p_notes?: string
+              p_payment_method?: string
+              p_price_paid?: number
+              p_sale_id: string
+              p_sessions?: number
+              p_ticket_id: string
+              p_ticket_name?: string
+              p_ticket_price?: number
+              p_ticket_type?: string
+              p_trainer_id: string
+            }
+            Returns: {
+              error_message: string
+              success: boolean
+            }[]
+          }
+        | {
+            Args: {
+              p_amount_given: number
+              p_client_id: string
+              p_created_at?: string
+              p_notes: string
+              p_payment_method: string
+              p_price_paid: number
+              p_sale_id: string
+              p_sessions: number
+              p_ticket_id: string
+              p_ticket_name: string
+              p_ticket_price: number
+              p_ticket_type: string
+              p_trainer_id: string
+            }
+            Returns: {
+              error_message: string
+              success: boolean
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never
