@@ -1,40 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Trainer } from '@/types'
+import { refEntityQueries } from './_refEntity'
 
-export async function listTrainers(
-  supabase: SupabaseClient
-): Promise<{ data: Trainer[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('trainers')
-    .select('id, name, is_active, instagram_username, telegram_username')
-    .order('name', { ascending: true })
-  return { data: (data as Trainer[]) ?? [], error: error?.message ?? null }
-}
+const q = refEntityQueries<Trainer>(
+  'trainers',
+  'id, name, is_active, instagram_username, telegram_username',
+  { orderBy: 'name' }
+)
 
-export async function listActiveTrainers(
-  supabase: SupabaseClient
-): Promise<{ data: Trainer[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('trainers')
-    .select('id, name, is_active, instagram_username, telegram_username')
-    .eq('is_active', true)
-    .order('name')
-  return { data: (data as Trainer[]) ?? [], error: error?.message ?? null }
-}
-
-export async function toggleTrainer(
-  supabase: SupabaseClient,
-  id: string,
-  isActive: boolean
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('trainers').update({ is_active: isActive }).eq('id', id)
-  return { error: error?.message ?? null }
-}
+export const listTrainers = q.list
+export const listActiveTrainers = q.listActive
+export const toggleTrainer = q.toggle
 
 export async function insertTrainer(
   supabase: SupabaseClient,
   payload: { name: string; instagram_username: string | null; telegram_username: string | null; is_active: boolean }
 ): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('trainers').insert(payload)
-  return { error: error?.message ?? null }
+  return q.insert(supabase, payload)
 }

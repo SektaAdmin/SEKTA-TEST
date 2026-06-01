@@ -114,6 +114,8 @@ training_types — довідник типів занять
 
 - **Supabase-клієнт** → `lib/supabase.ts` (синглтон `export const supabase`, browser). Server Components → `lib/supabase-server.ts`.
 - **Усі запити читання** → `lib/queries/*.ts`. Компоненти/хуки **не** пишуть `.from()` напряму. Мутації (INSERT/UPDATE/RPC) — у модалках/хуках.
+- **RPC-розпаковка** → `callRpc()` у `lib/rpc.ts`. Усі обгортки success/error_message-RPC йдуть через нього (НЕ переписувати `data?.[0]?.success` руками). Data-RPC (calc_trainer_salary*, check_*) — без нього.
+- **Довідкові сутності** (halls/trainers/tickets/training_types — `{id,…,is_active}`) → query через фабрику `refEntityQueries(table, columns, {orderBy})` у `lib/queries/_refEntity.ts` (list/listActive/toggle/insert); хук через `useRefEntity(table, listFn, toggleFn)` у `hooks/useRefEntity.ts` (`{data,loading,fetchError,toggling,toggle,refetch}`). Іменовані хуки (`useHalls` тощо) — тонкі обгортки, що перейменовують `data`→`halls`. Кастомні запити (Labels, custom insert) — поруч у файлі сутності.
 - **Довідники** (tickets/trainers/halls/trainingTypes) → `contexts/RefsContext.tsx` через `useRefs()`. Не тягнути props зі сторінок. Має `refetch*` для оновлення після мутацій у налаштуваннях.
 - **Лейбли+класи бейджів** (статуси enrollment, методи оплати, короткі типи) → `lib/badges.ts`. `enrollmentStatusClass`/`paymentClass` повертають готовий `'badge badge-cash'` → у `className` напряму. CSS бейджів — у `globals.css`. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга). `personal_card` = «Картка».
 - **Повні людські назви типів занять** → `label` з БД (RefsContext / `listTrainingTypeLabels`), НЕ хардкод. Короткі ярлики для звітів → `ticketTypeShortLabel` у badges.ts.
