@@ -19,17 +19,28 @@
 --   списання цільового стану. Тож будь-який перехід коректний без матриці if.
 
 -- Дедлайн безкоштовного скасування для заняття.
+-- ⚠️ Правило студії (14:00, 19:00 попереднього дня) — у МІСЦЕВОМУ часі (Київ),
+-- а БД зберігає timestamptz в UTC. Тому конвертуємо в Europe/Kyiv для розрахунку
+-- години/календарного дня, а результат повертаємо назад як timestamptz.
+-- STABLE (не IMMUTABLE): залежить від правил таймзони.
 CREATE OR REPLACE FUNCTION public.cancellation_deadline(p_starts_at timestamptz)
 RETURNS timestamptz
 LANGUAGE sql
-IMMUTABLE
+STABLE
 SET search_path = public, pg_temp
 AS $function$
+  WITH local AS (
+    -- локальний wall-clock час заняття у Києві (тип timestamp без tz)
+    SELECT (p_starts_at AT TIME ZONE 'Europe/Kyiv') AS ts
+  )
   SELECT CASE
-    WHEN EXTRACT(HOUR FROM p_starts_at) < 14
-      THEN date_trunc('day', p_starts_at) - interval '1 day' + interval '19 hours'
+    WHEN EXTRACT(HOUR FROM local.ts) < 14
+      -- ранкове: 19:00 попереднього календарного дня (місцевого), назад у tz
+      THEN ((date_trunc('day', local.ts) - interval '1 day' + interval '19 hours')
+            AT TIME ZONE 'Europe/Kyiv')
     ELSE p_starts_at - interval '6 hours'
-  END;
+  END
+  FROM local;
 $function$;
 
 CREATE OR REPLACE FUNCTION public.change_enrollment_status(
