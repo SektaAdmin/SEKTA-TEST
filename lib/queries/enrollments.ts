@@ -4,28 +4,31 @@ export async function listClassesForDate(
   supabase: SupabaseClient,
   date: string
 ): Promise<{
-  id: string; ticket_type: string; title: string | null; starts_at: string;
-  duration_min: number; capacity: number | null; is_cancelled: boolean;
-  trainers: { name: string } | null; halls: { name: string } | null
-}[]> {
+  data: {
+    id: string; ticket_type: string; title: string | null; starts_at: string;
+    duration_min: number; capacity: number | null; is_cancelled: boolean;
+    trainers: { name: string } | null; halls: { name: string } | null
+  }[];
+  error: string | null
+}> {
   const dayStart = new Date(`${date}T00:00:00`).toISOString()
   const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('classes')
     .select('id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, trainers(name), halls(name)')
     .gte('starts_at', dayStart)
     .lte('starts_at', dayEnd)
     .eq('is_cancelled', false)
     .order('starts_at', { ascending: true })
-  return (data ?? []) as any[]
+  return { data: (data ?? []) as any[], error: error?.message ?? null }
 }
 
 export async function listEnrolledCountsForDate(
   supabase: SupabaseClient,
   classIds: string[]
-): Promise<Record<string, number>> {
-  if (classIds.length === 0) return {}
-  const { data } = await supabase
+): Promise<{ data: Record<string, number>; error: string | null }> {
+  if (classIds.length === 0) return { data: {}, error: null }
+  const { data, error } = await supabase
     .from('enrollments')
     .select('class_id, status')
     .in('class_id', classIds)
@@ -35,50 +38,56 @@ export async function listEnrolledCountsForDate(
     if (!e.class_id) continue
     map[e.class_id] = (map[e.class_id] ?? 0) + 1
   }
-  return map
+  return { data: map, error: error?.message ?? null }
 }
 
 export async function listClientEnrolledClassIds(
   supabase: SupabaseClient,
   clientId: string,
   classIds: string[]
-): Promise<Set<string>> {
-  if (classIds.length === 0) return new Set()
-  const { data } = await supabase
+): Promise<{ data: Set<string>; error: string | null }> {
+  if (classIds.length === 0) return { data: new Set(), error: null }
+  const { data, error } = await supabase
     .from('enrollments')
     .select('class_id')
     .eq('client_id', clientId)
     .in('class_id', classIds)
     .in('status', ['enrolled', 'attended'])
-  return new Set(
-    (data ?? [])
-      .map((e: { class_id: string | null }) => e.class_id)
-      .filter((id: string | null): id is string => id != null)
-  )
+  return {
+    data: new Set(
+      (data ?? [])
+        .map((e: { class_id: string | null }) => e.class_id)
+        .filter((id: string | null): id is string => id != null)
+    ),
+    error: error?.message ?? null,
+  }
 }
 
 export async function listEnrollmentsForClass(
   supabase: SupabaseClient,
   classId: string
 ): Promise<{
-  id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
-  clients: { first_name: string | null; last_name: string | null } | null
-}[]> {
-  const { data } = await supabase
+  data: {
+    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
+    clients: { first_name: string | null; last_name: string | null } | null
+  }[];
+  error: string | null
+}> {
+  const { data, error } = await supabase
     .from('enrollments')
     .select('id, client_id, status, sessions_used, hours_attended, created_at, clients(first_name, last_name)')
     .eq('class_id', classId)
     .order('created_at')
-  return (data as any[]) ?? []
+  return { data: (data as any[]) ?? [], error: error?.message ?? null }
 }
 
 export async function listSessionBalancesForClients(
   supabase: SupabaseClient,
   clientIds: string[],
   ticketType: string
-): Promise<Record<string, number>> {
-  if (clientIds.length === 0) return {}
-  const { data } = await supabase
+): Promise<{ data: Record<string, number>; error: string | null }> {
+  if (clientIds.length === 0) return { data: {}, error: null }
+  const { data, error } = await supabase
     .from('client_session_balances')
     .select('client_id, sessions_balance')
     .in('client_id', clientIds)
@@ -87,21 +96,21 @@ export async function listSessionBalancesForClients(
   for (const b of (data ?? []) as { client_id: string; sessions_balance: number }[]) {
     map[b.client_id] = b.sessions_balance
   }
-  return map
+  return { data: map, error: error?.message ?? null }
 }
 
 export async function getClientSessionBalance(
   supabase: SupabaseClient,
   clientId: string,
   ticketType: string
-): Promise<number> {
-  const { data } = await supabase
+): Promise<{ data: number; error: string | null }> {
+  const { data, error } = await supabase
     .from('client_session_balances')
     .select('sessions_balance')
     .eq('client_id', clientId)
     .eq('ticket_type', ticketType)
-    .single()
-  return data?.sessions_balance ?? 0
+    .maybeSingle()
+  return { data: data?.sessions_balance ?? 0, error: error?.message ?? null }
 }
 
 export async function markAttendance(
@@ -143,12 +152,12 @@ export async function checkClientConflict(
   supabase: SupabaseClient,
   clientId: string,
   classId: string
-): Promise<{ starts_at: string; ticket_type: string } | null> {
-  const { data } = await supabase.rpc('check_client_conflict', {
+): Promise<{ data: { starts_at: string; ticket_type: string } | null; error: string | null }> {
+  const { data, error } = await supabase.rpc('check_client_conflict', {
     p_client_id: clientId,
     p_class_id: classId,
   })
-  return data?.[0] ?? null
+  return { data: data?.[0] ?? null, error: error?.message ?? null }
 }
 
 export async function enrollClient(
@@ -175,7 +184,7 @@ export async function enrollClient(
     .from('classes')
     .select('ticket_type')
     .eq('id', classId)
-    .single()
+    .maybeSingle()
 
   const ticketType = classData?.ticket_type
   const RENTAL_TYPES = ['hallrental', 'smallhallrental', 'pylonrental', 'striprental']
@@ -186,7 +195,7 @@ export async function enrollClient(
       .select('id, name, price, sessions')
       .eq('ticket_type', ticketType)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (ticketData) {
       // Create sales record for the rental

@@ -67,6 +67,7 @@ export async function getClientDetail(
   sessionBalances: ClientSessionBalance[]
   permanentEnrollments: PermanentEnrollment[]
   upcomingEnrollments: UpcomingEnrollment[]
+  error: string | null
 }> {
   const now = new Date().toISOString()
 
@@ -75,7 +76,7 @@ export async function getClientDetail(
       .from('clients')
       .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance, credit_limit, balance_updated_at')
       .eq('id', id)
-      .single(),
+      .maybeSingle(),
     supabase
       .from('client_session_balances')
       .select('client_id, ticket_type, sessions_balance')
@@ -97,11 +98,19 @@ export async function getClientDetail(
       .order('starts_at', { referencedTable: 'classes', ascending: true }),
   ])
 
+  const error =
+    clientRes.error?.message ??
+    balancesRes.error?.message ??
+    permanentRes.error?.message ??
+    upcomingRes.error?.message ??
+    null
+
   return {
     client: (clientRes.data as Client) ?? null,
     sessionBalances: (balancesRes.data as ClientSessionBalance[]) ?? [],
     permanentEnrollments: (permanentRes.data as unknown as PermanentEnrollment[]) ?? [],
     upcomingEnrollments: (upcomingRes.data as unknown as UpcomingEnrollment[]) ?? [],
+    error,
   }
 }
 
@@ -110,11 +119,11 @@ export async function listPastEnrollmentsForClient(
   clientId: string,
   page: number,
   pageSize: number
-): Promise<{ data: PastEnrollment[]; count: number }> {
+): Promise<{ data: PastEnrollment[]; count: number; error: string | null }> {
   const from = page * pageSize
   const to = from + pageSize - 1
 
-  const { data, count } = await supabase
+  const { data, count, error } = await supabase
     .from('enrollments')
     .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))', { count: 'exact' })
     .eq('client_id', clientId)
@@ -125,16 +134,17 @@ export async function listPastEnrollmentsForClient(
   return {
     data: (data as unknown as PastEnrollment[]) ?? [],
     count: count ?? 0,
+    error: error?.message ?? null,
   }
 }
 
 export async function listFeedEnrollmentsForClient(
   supabase: SupabaseClient,
   clientId: string
-): Promise<FeedEnrollment[]> {
+): Promise<{ data: FeedEnrollment[]; error: string | null }> {
   const now = new Date().toISOString()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('enrollments')
     .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))')
     .eq('client_id', clientId)
@@ -142,5 +152,5 @@ export async function listFeedEnrollmentsForClient(
     .lt('classes.starts_at', now)
     .order('starts_at', { referencedTable: 'classes', ascending: false })
 
-  return (data as unknown as FeedEnrollment[]) ?? []
+  return { data: (data as unknown as FeedEnrollment[]) ?? [], error: error?.message ?? null }
 }

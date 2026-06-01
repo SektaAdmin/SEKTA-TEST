@@ -66,17 +66,17 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
 
   const fetchClass = useCallback(async () => {
-    const data = await getClassById(supabase, classId)
+    const { data } = await getClassById(supabase, classId)
     if (!data) { setFetchError('Заняття не знайдено'); return null }
     setCls(data as ClassWithJoins)
     return data as ClassWithJoins
   }, [classId])
 
   const fetchEnrollments = useCallback(async (ticketType: string) => {
-    const rows = await listEnrollmentsForClass(supabase, classId)
+    const { data: rows } = await listEnrollmentsForClass(supabase, classId)
     setEnrollments(rows as EnrollmentRow[])
     const clientIds = rows.map(e => e.client_id)
-    const map = await listSessionBalancesForClients(supabase, clientIds, ticketType)
+    const { data: map } = await listSessionBalancesForClients(supabase, clientIds, ticketType)
     setBalanceMap(map)
   }, [classId])
 
@@ -93,14 +93,14 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   useRealtime(['classes', 'enrollments', 'client_session_balances'], loadAll)
 
   useEffect(() => {
-    listTrainingTypeLabels(supabase).then(setTypeLabels)
+    listTrainingTypeLabels(supabase).then(r => setTypeLabels(r.data))
   }, [])
 
   async function handleClientSelect(client: Client) {
     setSelectedClient(client)
     setEnrollError(null)
     if (!cls) return
-    const balance = await getClientSessionBalance(supabase, client.id, cls.ticket_type)
+    const { data: balance } = await getClientSessionBalance(supabase, client.id, cls.ticket_type)
     setClientBalance(balance)
   }
 
@@ -118,7 +118,7 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
       return
     }
 
-    const conflict = await checkClientConflict(supabase, selectedClient.id, cls.id)
+    const { data: conflict } = await checkClientConflict(supabase, selectedClient.id, cls.id)
     if (conflict) {
       const when = new Date(conflict.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
       setEnrollError(`Клієнт вже записана на інше заняття о ${when}`)

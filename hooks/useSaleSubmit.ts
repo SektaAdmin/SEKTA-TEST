@@ -46,7 +46,7 @@ export function useSaleSubmit({
           sessions = editSale!.sessions ?? 0
           ticketType = editSale!.ticket_type ?? null
         } else {
-          const td = await getTicketById(supabase, formData.ticket_id)
+          const { data: td } = await getTicketById(supabase, formData.ticket_id)
           if (!td) { setError('Абонемент не знайдено'); return }
           ticketName = td.name; ticketPrice = td.price; sessions = td.sessions; ticketType = td.ticket_type
         }

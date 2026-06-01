@@ -63,10 +63,10 @@ export default function SalaryRatesPage() {
       listActiveTrainers(supabase),
       listActiveHalls(supabase),
     ])
-    setActiveRates(all.filter(r => r.valid_to === null))
-    setArchivedRates(all.filter(r => r.valid_to !== null))
-    setTrainers(tr)
-    setHalls(hl)
+    setActiveRates(all.data.filter(r => r.valid_to === null))
+    setArchivedRates(all.data.filter(r => r.valid_to !== null))
+    setTrainers(tr.data)
+    setHalls(hl.data)
     setLoading(false)
   }, [])
 

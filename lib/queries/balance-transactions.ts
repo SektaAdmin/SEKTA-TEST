@@ -14,22 +14,22 @@ export async function listClientTransactions(
   supabase: SupabaseClient,
   clientId: string,
   limit = 20
-): Promise<Transaction[]> {
-  const { data } = await supabase
+): Promise<{ data: Transaction[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('balance_transactions')
     .select('id, amount, transaction_type, balance_before, balance_after, description, created_at')
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
     .limit(limit)
-  return (data as Transaction[]) ?? []
+  return { data: (data as Transaction[]) ?? [], error: error?.message ?? null }
 }
 
 export async function listBalanceAfterBySaleIds(
   supabase: SupabaseClient,
   saleIds: string[]
-): Promise<Map<string, number>> {
-  if (saleIds.length === 0) return new Map()
-  const { data } = await supabase
+): Promise<{ data: Map<string, number>; error: string | null }> {
+  if (saleIds.length === 0) return { data: new Map(), error: null }
+  const { data, error } = await supabase
     .from('balance_transactions')
     .select('related_sale_id, balance_after')
     .in('related_sale_id', saleIds)
@@ -40,5 +40,5 @@ export async function listBalanceAfterBySaleIds(
       map.set(tx.related_sale_id, tx.balance_after)
     }
   }
-  return map
+  return { data: map, error: error?.message ?? null }
 }

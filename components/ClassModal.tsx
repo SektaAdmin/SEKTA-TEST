@@ -85,9 +85,9 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       listActiveHalls(supabase),
       listActiveTrainingTypes(supabase),
     ]).then(([t, h, tt]) => {
-      setTrainers(t)
-      setHalls(h)
-      setTrainingTypes(tt)
+      setTrainers(t.data)
+      setHalls(h.data)
+      setTrainingTypes(tt.data)
     })
   }, [])
 

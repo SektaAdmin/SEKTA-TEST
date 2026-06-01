@@ -53,12 +53,15 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
     if (!date) return
     setLoadingClasses(true)
 
-    listClassesForDate(supabase, date).then(async rawClasses => {
+    listClassesForDate(supabase, date).then(async r => {
+      const rawClasses = r.data
       const classIds = rawClasses.map(c => c.id)
-      const [countMap, clientClassIds] = await Promise.all([
+      const [countRes, idsRes] = await Promise.all([
         listEnrolledCountsForDate(supabase, classIds),
         listClientEnrolledClassIds(supabase, client.id, classIds),
       ])
+      const countMap = countRes.data
+      const clientClassIds = idsRes.data
       setClasses(rawClasses.map(c => ({
         ...c,
         enrolledCount: countMap[c.id] ?? 0,

@@ -101,9 +101,9 @@ export default function SalaryCalculationsPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null)
 
   useEffect(() => {
-    listActiveTrainers(supabase).then(data => {
-      setTrainers(data)
-      if (data.length > 0) setSelectedTrainerId(data[0].id)
+    listActiveTrainers(supabase).then(r => {
+      setTrainers(r.data)
+      if (r.data.length > 0) setSelectedTrainerId(r.data[0].id)
     })
   }, [])
 
@@ -118,10 +118,10 @@ export default function SalaryCalculationsPage() {
       listTrainerPayments(supabase, selectedTrainerId, dateFrom, dateTo),
       getTrainerCashBalanceTotal(supabase, selectedTrainerId),
     ])
-    setRows(detail)
-    setCashBalance(cash)
-    setPayments(pays)
-    setCashBalanceTotal(cashTotal)
+    setRows(detail.data)
+    setCashBalance(cash.data)
+    setPayments(pays.data)
+    setCashBalanceTotal(cashTotal.data)
     setExpandedDays(new Set())
     setExpandedClasses(new Set())
     setLoading(false)

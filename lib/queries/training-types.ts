@@ -13,24 +13,24 @@ export async function listTrainingTypes(
 
 export async function listActiveTrainingTypes(
   supabase: SupabaseClient
-): Promise<TrainingType[]> {
-  const { data } = await supabase
+): Promise<{ data: TrainingType[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('training_types')
     .select('id, code, label, is_active, sort_order, created_at')
     .eq('is_active', true)
     .order('sort_order')
-  return (data as TrainingType[]) ?? []
+  return { data: (data as TrainingType[]) ?? [], error: error?.message ?? null }
 }
 
 export async function listTrainingTypeLabels(
   supabase: SupabaseClient
-): Promise<Record<string, string>> {
-  const { data } = await supabase
+): Promise<{ data: Record<string, string>; error: string | null }> {
+  const { data, error } = await supabase
     .from('training_types')
     .select('code, label')
   const map: Record<string, string> = {}
   for (const t of (data ?? []) as { code: string; label: string }[]) map[t.code] = t.label
-  return map
+  return { data: map, error: error?.message ?? null }
 }
 
 export async function insertTrainingType(

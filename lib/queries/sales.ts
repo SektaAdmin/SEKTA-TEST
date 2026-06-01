@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Sale } from '@/types'
+import { sanitizePostgrestSearch } from './_escape'
 
 export interface ListSalesParams {
   page: number
@@ -14,7 +15,7 @@ export async function searchClientIdsByName(
   supabase: SupabaseClient,
   search: string
 ): Promise<string[] | null> {
-  const s = search.trim()
+  const s = sanitizePostgrestSearch(search)
   if (!s) return null
   const parts = s.split(/\s+/)
   let query = supabase.from('clients').select('id')
@@ -77,9 +78,9 @@ export async function listSalesForClient(
   clientId: string,
   page: number,
   pageSize: number
-): Promise<{ data: Sale[]; count: number }> {
+): Promise<{ data: Sale[]; count: number; error: string | null }> {
   const from = page * pageSize
-  const { data, count } = await supabase
+  const { data, count, error } = await supabase
     .from('sales')
     .select(
       'id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers!sales_trainer_id_fkey(name)',
@@ -88,7 +89,7 @@ export async function listSalesForClient(
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
     .range(from, from + pageSize - 1)
-  return { data: (data as unknown as Sale[]) ?? [], count: count ?? 0 }
+  return { data: (data as unknown as Sale[]) ?? [], count: count ?? 0, error: error?.message ?? null }
 }
 
 export type FeedSale = {
@@ -106,13 +107,13 @@ export type FeedSale = {
 export async function listAllSalesForFeed(
   supabase: SupabaseClient,
   clientId: string
-): Promise<FeedSale[]> {
-  const { data } = await supabase
+): Promise<{ data: FeedSale[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('sales')
     .select('id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!sales_trainer_id_fkey(name)')
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
-  return (data as unknown as FeedSale[]) ?? []
+  return { data: (data as unknown as FeedSale[]) ?? [], error: error?.message ?? null }
 }
 
 export async function listSalesForAccounting(
@@ -132,15 +133,15 @@ export async function listSalesForTrainers(
   supabase: SupabaseClient,
   start: string,
   end: string
-): Promise<{ trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]> {
-  const { data } = await supabase
+): Promise<{ data: { trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('sales')
     .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)')
     .not('trainer_id', 'is', null)
     .not('ticket_id', 'is', null)
     .gte('created_at', start)
     .lte('created_at', end)
-  return (data ?? []) as any[]
+  return { data: (data ?? []) as any[], error: error?.message ?? null }
 }
 
 export async function createSale(
@@ -231,11 +232,11 @@ export async function listSalesForReconciliation(
 export async function getTicketById(
   supabase: SupabaseClient,
   ticketId: string
-): Promise<{ name: string; price: number; sessions: number; ticket_type: string } | null> {
-  const { data } = await supabase
+): Promise<{ data: { name: string; price: number; sessions: number; ticket_type: string } | null; error: string | null }> {
+  const { data, error } = await supabase
     .from('tickets')
     .select('name,price,sessions,ticket_type')
     .eq('id', ticketId)
-    .single()
-  return data ?? null
+    .maybeSingle()
+  return { data: data ?? null, error: error?.message ?? null }
 }

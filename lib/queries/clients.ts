@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Client } from '@/types'
+import { sanitizePostgrestSearch } from './_escape'
 
 export interface ListClientsParams {
   search: string
@@ -18,10 +19,12 @@ export async function listClients(
     .order('first_name', { ascending: true })
 
   if (search.trim()) {
-    const s = search.trim()
-    query = query.or(
-      `first_name.ilike.%${s}%,last_name.ilike.%${s}%,phone.ilike.%${s}%,instagram_username.ilike.%${s}%,telegram_username.ilike.%${s}%`
-    )
+    const s = sanitizePostgrestSearch(search)
+    if (s) {
+      query = query.or(
+        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,phone.ilike.%${s}%,instagram_username.ilike.%${s}%,telegram_username.ilike.%${s}%`
+      )
+    }
   }
 
   const rangeFrom = page * pageSize
@@ -34,28 +37,28 @@ export async function listClients(
 export async function getClient(
   supabase: SupabaseClient,
   id: string
-): Promise<Client | null> {
-  const { data } = await supabase
+): Promise<{ data: Client | null; error: string | null }> {
+  const { data, error } = await supabase
     .from('clients')
     .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance, credit_limit, balance_updated_at')
     .eq('id', id)
-    .single()
-  return (data as Client) ?? null
+    .maybeSingle()
+  return { data: (data as Client) ?? null, error: error?.message ?? null }
 }
 
 export async function searchClientsByPhone(
   supabase: SupabaseClient,
   phone: string,
   excludeId?: string
-): Promise<{ id: string; first_name: string; last_name: string }[]> {
+): Promise<{ data: { id: string; first_name: string; last_name: string }[]; error: string | null }> {
   let query = supabase
     .from('clients')
     .select('id, first_name, last_name')
     .eq('phone', phone)
     .limit(1)
   if (excludeId) query = query.neq('id', excludeId)
-  const { data } = await query
-  return (data ?? []) as { id: string; first_name: string; last_name: string }[]
+  const { data, error } = await query
+  return { data: (data ?? []) as { id: string; first_name: string; last_name: string }[], error: error?.message ?? null }
 }
 
 export async function searchClientsByName(
@@ -63,7 +66,7 @@ export async function searchClientsByName(
   firstName: string,
   lastName: string,
   excludeId?: string
-): Promise<{ id: string; phone: string | null }[]> {
+): Promise<{ data: { id: string; phone: string | null }[]; error: string | null }> {
   let query = supabase
     .from('clients')
     .select('id, phone')
@@ -71,8 +74,8 @@ export async function searchClientsByName(
     .ilike('last_name', lastName)
     .limit(1)
   if (excludeId) query = query.neq('id', excludeId)
-  const { data } = await query
-  return (data ?? []) as { id: string; phone: string | null }[]
+  const { data, error } = await query
+  return { data: (data ?? []) as { id: string; phone: string | null }[], error: error?.message ?? null }
 }
 
 export async function insertClient(

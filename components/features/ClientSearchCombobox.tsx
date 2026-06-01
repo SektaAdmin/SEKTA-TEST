@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback, useId } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatClientLabel } from '@/lib/formatters'
+import { sanitizePostgrestSearch } from '@/lib/queries/_escape'
 import type { Client } from '@/types'
 import styles from './ClientSearchCombobox.module.css'
 
@@ -16,7 +17,7 @@ interface Props {
 }
 
 async function searchClients(q: string): Promise<Client[]> {
-  const trimmed = q.trim()
+  const trimmed = sanitizePostgrestSearch(q)
   if (!trimmed) return []
 
   const parts = trimmed.split(/\s+/)

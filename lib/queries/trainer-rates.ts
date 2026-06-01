@@ -66,49 +66,55 @@ export type TrainerCashBalance = {
 
 export async function listTrainerRatesActive(
   supabase: SupabaseClient
-): Promise<TrainerRate[]> {
-  const { data } = await supabase
+): Promise<{ data: TrainerRate[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainer_rates')
     .select('id, trainer_id, ticket_type, hall_id, trainer_rate, studio_rate, valid_from, valid_to, created_at, trainers(name), halls(name)')
     .is('valid_to', null)
     .order('ticket_type')
     .order('trainer_id', { nullsFirst: true })
-  return ((data ?? []) as any[]).map(r => ({
-    id: r.id,
-    trainer_id: r.trainer_id,
-    trainer_name: r.trainers?.name ?? null,
-    ticket_type: r.ticket_type,
-    hall_id: r.hall_id,
-    hall_name: r.halls?.name ?? null,
-    trainer_rate: r.trainer_rate,
-    studio_rate: r.studio_rate,
-    valid_from: r.valid_from,
-    valid_to: r.valid_to,
-    created_at: r.created_at,
-  }))
+  return {
+    data: ((data ?? []) as any[]).map(r => ({
+      id: r.id,
+      trainer_id: r.trainer_id,
+      trainer_name: r.trainers?.name ?? null,
+      ticket_type: r.ticket_type,
+      hall_id: r.hall_id,
+      hall_name: r.halls?.name ?? null,
+      trainer_rate: r.trainer_rate,
+      studio_rate: r.studio_rate,
+      valid_from: r.valid_from,
+      valid_to: r.valid_to,
+      created_at: r.created_at,
+    })),
+    error: error?.message ?? null,
+  }
 }
 
 export async function listTrainerRatesAll(
   supabase: SupabaseClient
-): Promise<TrainerRate[]> {
-  const { data } = await supabase
+): Promise<{ data: TrainerRate[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainer_rates')
     .select('id, trainer_id, ticket_type, hall_id, trainer_rate, studio_rate, valid_from, valid_to, created_at, trainers(name), halls(name)')
     .order('ticket_type')
     .order('valid_from', { ascending: false })
-  return ((data ?? []) as any[]).map(r => ({
-    id: r.id,
-    trainer_id: r.trainer_id,
-    trainer_name: r.trainers?.name ?? null,
-    ticket_type: r.ticket_type,
-    hall_id: r.hall_id,
-    hall_name: r.halls?.name ?? null,
-    trainer_rate: r.trainer_rate,
-    studio_rate: r.studio_rate,
-    valid_from: r.valid_from,
-    valid_to: r.valid_to,
-    created_at: r.created_at,
-  }))
+  return {
+    data: ((data ?? []) as any[]).map(r => ({
+      id: r.id,
+      trainer_id: r.trainer_id,
+      trainer_name: r.trainers?.name ?? null,
+      ticket_type: r.ticket_type,
+      hall_id: r.hall_id,
+      hall_name: r.halls?.name ?? null,
+      trainer_rate: r.trainer_rate,
+      studio_rate: r.studio_rate,
+      valid_from: r.valid_from,
+      valid_to: r.valid_to,
+      created_at: r.created_at,
+    })),
+    error: error?.message ?? null,
+  }
 }
 
 // Додає нову ставку. Якщо є активна ставка для тієї ж комбінації (trainer_id, ticket_type, hall_id) —
@@ -193,7 +199,7 @@ export async function restoreTrainerRate(
 // Залишаємо для зворотної сумісності зі старим кодом (rates/page.tsx)
 export async function listTrainerRates(
   supabase: SupabaseClient
-): Promise<TrainerRate[]> {
+): Promise<{ data: TrainerRate[]; error: string | null }> {
   return listTrainerRatesActive(supabase)
 }
 
@@ -213,19 +219,22 @@ export async function calcTrainerSalary(
   trainerId: string,
   start: string,
   end: string
-): Promise<TrainerSalaryRow[]> {
+): Promise<{ data: TrainerSalaryRow[]; error: string | null }> {
   const { data, error } = await supabase.rpc('calc_trainer_salary', {
     p_trainer_id: trainerId,
     p_start: start,
     p_end: end,
   })
-  if (error || !data) return []
-  return (data as any[]).map(r => ({
-    ticket_type: r.ticket_type,
-    sessions_total: r.sessions_total,
-    rate: r.rate ?? null,
-    amount: r.amount,
-  }))
+  if (error || !data) return { data: [], error: error?.message ?? null }
+  return {
+    data: (data as any[]).map(r => ({
+      ticket_type: r.ticket_type,
+      sessions_total: r.sessions_total,
+      rate: r.rate ?? null,
+      amount: r.amount,
+    })),
+    error: null,
+  }
 }
 
 // Новий деталізований RPC — повертає рядки по кожному enrollment, згруповані по заняттях
@@ -234,13 +243,13 @@ export async function calcTrainerSalaryDetail(
   trainerId: string,
   start: string,
   end: string
-): Promise<TrainerSalaryDetailRow[]> {
+): Promise<{ data: TrainerSalaryDetailRow[]; error: string | null }> {
   const { data, error } = await supabase.rpc('calc_trainer_salary_v2', {
     p_trainer_id: trainerId,
     p_start: start,
     p_end: end,
   })
-  if (error || !data) return []
+  if (error || !data) return { data: [], error: error?.message ?? null }
 
   // Групуємо по class_id
   const map = new Map<string, TrainerSalaryDetailRow>()
@@ -270,7 +279,7 @@ export async function calcTrainerSalaryDetail(
     row.total_trainer += Number(r.trainer_amount)
     row.total_studio += Number(r.studio_amount)
   }
-  return Array.from(map.values())
+  return { data: Array.from(map.values()), error: null }
 }
 
 // Готівка на руках у тренера за період:
@@ -281,7 +290,7 @@ export async function getTrainerCashBalance(
   trainerId: string,
   dateFrom: string,
   dateTo: string
-): Promise<TrainerCashBalance> {
+): Promise<{ data: TrainerCashBalance; error: string | null }> {
   const [salesRes, expensesRes, paymentsRes] = await Promise.all([
     supabase
       .from('sales')
@@ -308,6 +317,12 @@ export async function getTrainerCashBalance(
       .lte('payment_date', dateTo)
       .order('payment_date'),
   ])
+
+  const error =
+    salesRes.error?.message ??
+    expensesRes.error?.message ??
+    paymentsRes.error?.message ??
+    null
 
   const cashSales = ((salesRes.data ?? []) as any[]).map(s => ({
     id: s.id,
@@ -336,10 +351,13 @@ export async function getTrainerCashBalance(
   const totalSalaryPaid = salaryPayments.reduce((s, r) => s + r.amount, 0)
 
   return {
-    cash_sales: cashSales,
-    expenses,
-    salary_payments: salaryPayments,
-    total: totalSales - totalExpenses - totalSalaryPaid,
+    data: {
+      cash_sales: cashSales,
+      expenses,
+      salary_payments: salaryPayments,
+      total: totalSales - totalExpenses - totalSalaryPaid,
+    },
+    error,
   }
 }
 
@@ -347,7 +365,7 @@ export async function getTrainerCashBalance(
 export async function getTrainerCashBalanceTotal(
   supabase: SupabaseClient,
   trainerId: string
-): Promise<number> {
+): Promise<{ data: number; error: string | null }> {
   const [salesRes, expensesRes, paymentsRes] = await Promise.all([
     supabase
       .from('sales')
@@ -366,23 +384,36 @@ export async function getTrainerCashBalanceTotal(
       .eq('payment_method', 'cash'),
   ])
 
+  const error =
+    salesRes.error?.message ??
+    expensesRes.error?.message ??
+    paymentsRes.error?.message ??
+    null
+
   const totalSales = ((salesRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.price_paid), 0)
   const totalExpenses = ((expensesRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.amount), 0)
   const totalPaid = ((paymentsRes.data ?? []) as any[]).reduce((s, r) => s + Number(r.paid_amount), 0)
 
-  return totalSales - totalExpenses - totalPaid
+  return { data: totalSales - totalExpenses - totalPaid, error }
 }
 
 // Баланси готівки всіх тренерів одним запитом (для /accounting)
 export async function listAllCashBalances(
   supabase: SupabaseClient
-): Promise<{ trainer_id: string; trainer_name: string; balance: number }[]> {
+): Promise<{ data: { trainer_id: string; trainer_name: string; balance: number }[]; error: string | null }> {
   const [trainersRes, salesRes, expensesRes, paymentsRes] = await Promise.all([
     supabase.from('trainers').select('id, name').eq('is_active', true).order('name'),
     supabase.from('sales').select('cash_holder, price_paid').eq('payment_method', 'cash').not('cash_holder', 'is', null),
     supabase.from('studio_expenses').select('cash_holder, amount').eq('direction', 'expense').not('cash_holder', 'is', null),
     supabase.from('trainer_payments').select('cash_holder, paid_amount').eq('payment_method', 'cash').not('cash_holder', 'is', null),
   ])
+
+  const error =
+    trainersRes.error?.message ??
+    salesRes.error?.message ??
+    expensesRes.error?.message ??
+    paymentsRes.error?.message ??
+    null
 
   const trainers = (trainersRes.data ?? []) as { id: string; name: string }[]
 
@@ -401,13 +432,16 @@ export async function listAllCashBalances(
     paidByHolder.set(p.cash_holder, (paidByHolder.get(p.cash_holder) ?? 0) + Number(p.paid_amount))
   }
 
-  return trainers
-    .map(t => ({
-      trainer_id: t.id,
-      trainer_name: t.name,
-      balance: (salesByHolder.get(t.id) ?? 0) - (expensesByHolder.get(t.id) ?? 0) - (paidByHolder.get(t.id) ?? 0),
-    }))
-    .filter(t => t.balance !== 0)
+  return {
+    data: trainers
+      .map(t => ({
+        trainer_id: t.id,
+        trainer_name: t.name,
+        balance: (salesByHolder.get(t.id) ?? 0) - (expensesByHolder.get(t.id) ?? 0) - (paidByHolder.get(t.id) ?? 0),
+      }))
+      .filter(t => t.balance !== 0),
+    error,
+  }
 }
 
 // Загальний борг студії перед тренером за весь час:
@@ -416,13 +450,13 @@ export async function getTrainerTotalDebt(
   supabase: SupabaseClient,
   trainerId: string,
   totalAccrued: number
-): Promise<number> {
-  const { data } = await supabase
+): Promise<{ data: number; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainer_payments')
     .select('paid_amount')
     .eq('trainer_id', trainerId)
   const totalPaid = ((data ?? []) as any[]).reduce((s, r) => s + Number(r.paid_amount), 0)
-  return totalAccrued - totalPaid
+  return { data: totalAccrued - totalPaid, error: error?.message ?? null }
 }
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
@@ -432,29 +466,29 @@ export async function listTrainerPayments(
   trainerId: string,
   periodStart: string,
   periodEnd: string
-): Promise<TrainerPayment[]> {
-  const { data } = await supabase
+): Promise<{ data: TrainerPayment[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainer_payments')
     .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
     .eq('trainer_id', trainerId)
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
     .order('created_at', { ascending: false })
-  return (data ?? []) as TrainerPayment[]
+  return { data: (data ?? []) as TrainerPayment[], error: error?.message ?? null }
 }
 
 export async function listTrainerPaymentsForPeriod(
   supabase: SupabaseClient,
   dateFrom: string,
   dateTo: string
-): Promise<TrainerPayment[]> {
-  const { data } = await supabase
+): Promise<{ data: TrainerPayment[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainer_payments')
     .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
     .gte('payment_date', dateFrom)
     .lte('payment_date', dateTo)
     .order('payment_date', { ascending: false })
-  return (data ?? []) as TrainerPayment[]
+  return { data: (data ?? []) as TrainerPayment[], error: error?.message ?? null }
 }
 
 export async function updateTrainerPayment(

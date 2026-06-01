@@ -136,8 +136,8 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
   const tooltipRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    listEnrollmentsForClass(supabase, classId).then(data => {
-      setEnrollments(data as TooltipEnrollment[])
+    listEnrollmentsForClass(supabase, classId).then(r => {
+      setEnrollments(r.data as TooltipEnrollment[])
     })
   }, [classId])
 
@@ -507,7 +507,7 @@ export default function SchedulePage() {
     const { year, month } = calViewMonth
     const start = new Date(year, month, 1)
     const end = new Date(year, month + 1, 0, 23, 59, 59, 999)
-    listDatesWithClasses(supabase, start.toISOString(), end.toISOString()).then(setCalActiveDates)
+    listDatesWithClasses(supabase, start.toISOString(), end.toISOString()).then(r => setCalActiveDates(r.data))
   }, [calViewMonth])
 
   useEffect(() => {

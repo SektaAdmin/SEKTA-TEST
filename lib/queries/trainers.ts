@@ -13,13 +13,13 @@ export async function listTrainers(
 
 export async function listActiveTrainers(
   supabase: SupabaseClient
-): Promise<Trainer[]> {
-  const { data } = await supabase
+): Promise<{ data: Trainer[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('trainers')
     .select('id, name, is_active, instagram_username, telegram_username')
     .eq('is_active', true)
     .order('name')
-  return (data as Trainer[]) ?? []
+  return { data: (data as Trainer[]) ?? [], error: error?.message ?? null }
 }
 
 export async function toggleTrainer(

@@ -125,12 +125,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
   }, [id])
 
   const fetchFeedEnrollments = useCallback(async () => {
-    const data = await listFeedEnrollmentsForClient(supabase, id)
+    const { data } = await listFeedEnrollmentsForClient(supabase, id)
     setFeedEnrollments(data)
   }, [id])
 
   const fetchFeedSales = useCallback(async () => {
-    const data = await listAllSalesForFeed(supabase, id)
+    const { data } = await listAllSalesForFeed(supabase, id)
     setFeedSales(data)
   }, [id])
 
@@ -144,7 +144,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
     setSalesTotal(count)
 
     if (salesData.length > 0) {
-      const newMap = await listBalanceAfterBySaleIds(supabase, salesData.map(s => s.id))
+      const { data: newMap } = await listBalanceAfterBySaleIds(supabase, salesData.map(s => s.id))
       setBalanceAfterMap(prev => {
         const base = page === 0 ? new Map<string, number>() : new Map(prev)
         newMap.forEach((v, k) => base.set(k, v))
@@ -158,7 +158,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      listTrainingTypeLabels(supabase).then(setTypeLabels),
+      listTrainingTypeLabels(supabase).then(r => setTypeLabels(r.data)),
       fetchAllClientData(),
       fetchSales(0),
       fetchPastEnrollments(0),

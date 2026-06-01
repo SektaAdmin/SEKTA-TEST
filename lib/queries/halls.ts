@@ -13,13 +13,13 @@ export async function listHalls(
 
 export async function listActiveHalls(
   supabase: SupabaseClient
-): Promise<Hall[]> {
-  const { data } = await supabase
+): Promise<{ data: Hall[]; error: string | null }> {
+  const { data, error } = await supabase
     .from('halls')
     .select('id, name, capacity, description, is_active')
     .eq('is_active', true)
     .order('name')
-  return (data as Hall[]) ?? []
+  return { data: (data as Hall[]) ?? [], error: error?.message ?? null }
 }
 
 export async function toggleHall(

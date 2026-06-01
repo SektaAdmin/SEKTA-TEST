@@ -11,7 +11,7 @@ export async function listClassesForWeek(
   supabase: SupabaseClient,
   startISO: string,
   endISO: string
-): Promise<{ active: ClassWithJoins[]; cancelled: ClassWithJoins[] }> {
+): Promise<{ active: ClassWithJoins[]; cancelled: ClassWithJoins[]; error: string | null }> {
   const [activeRes, cancelledRes] = await Promise.all([
     supabase
       .from('classes')
@@ -31,20 +31,20 @@ export async function listClassesForWeek(
   return {
     active: (activeRes.data ?? []) as ClassWithJoins[],
     cancelled: (cancelledRes.data ?? []) as ClassWithJoins[],
+    error: activeRes.error?.message ?? cancelledRes.error?.message ?? null,
   }
 }
 
 export async function getClassById(
   supabase: SupabaseClient,
   classId: string
-): Promise<(Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null> {
+): Promise<{ data: (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null; error: string | null }> {
   const { data, error } = await supabase
     .from('classes')
     .select('*, trainers(name), halls(name)')
     .eq('id', classId)
-    .single()
-  if (error || !data) return null
-  return data as any
+    .maybeSingle()
+  return { data: data as any ?? null, error: error?.message ?? null }
 }
 
 export async function updateClassCancelled(
@@ -82,8 +82,8 @@ export async function listDatesWithClasses(
   supabase: SupabaseClient,
   startISO: string,
   endISO: string
-): Promise<Set<string>> {
-  const { data } = await supabase
+): Promise<{ data: Set<string>; error: string | null }> {
+  const { data, error } = await supabase
     .from('classes')
     .select('starts_at')
     .gte('starts_at', startISO)
@@ -94,7 +94,7 @@ export async function listDatesWithClasses(
     const d = new Date(row.starts_at)
     set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
   }
-  return set
+  return { data: set, error: error?.message ?? null }
 }
 
 export async function listSeriesTemplates(

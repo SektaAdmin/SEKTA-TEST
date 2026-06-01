@@ -65,7 +65,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
 
   async function loadHistory() {
     setHistoryLoading(true)
-    const data = await listClientTransactions(supabase, client!.id, 20)
+    const { data } = await listClientTransactions(supabase, client!.id, 20)
     setTransactions(data)
     setHistoryLoading(false)
     setShowHistory(true)
@@ -96,7 +96,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     const lastName = data.last_name.trim()
 
     if (phone) {
-      const phoneMatches = await searchClientsByPhone(supabase, phone, isEdit ? client.id : undefined)
+      const { data: phoneMatches } = await searchClientsByPhone(supabase, phone, isEdit ? client.id : undefined)
       if (phoneMatches.length > 0) {
         const c = phoneMatches[0]
         const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Невідомий клієнт'
@@ -106,7 +106,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
       }
     }
 
-    const nameMatches = await searchClientsByName(supabase, firstName, lastName, isEdit ? client.id : undefined)
+    const { data: nameMatches } = await searchClientsByName(supabase, firstName, lastName, isEdit ? client.id : undefined)
     if (nameMatches.length > 0) {
       const c = nameMatches[0]
       const phoneStr = c.phone ? ` (${c.phone})` : ''
