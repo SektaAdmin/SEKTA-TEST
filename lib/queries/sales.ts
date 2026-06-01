@@ -121,12 +121,16 @@ export async function listSalesForAccounting(
   dateFrom: string,
   dateTo: string
 ): Promise<{ data: { created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null }[]; error: string | null }> {
+  type SalesAccounting = {
+    created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null
+  }
+
   const { data, error } = await supabase
     .from('sales')
     .select('created_at, price_paid, amount_given, payment_method, ticket_id')
     .gte('created_at', `${dateFrom}T00:00:00`)
     .lte('created_at', `${dateTo}T23:59:59`)
-  return { data: (data ?? []) as any[], error: error?.message ?? null }
+  return { data: (data as unknown as SalesAccounting[] | null) ?? [], error: error?.message ?? null }
 }
 
 export async function listSalesForTrainers(
@@ -134,6 +138,10 @@ export async function listSalesForTrainers(
   start: string,
   end: string
 ): Promise<{ data: { trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]; error: string | null }> {
+  type SalesTrainer = {
+    trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null
+  }
+
   const { data, error } = await supabase
     .from('sales')
     .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)')
@@ -141,7 +149,7 @@ export async function listSalesForTrainers(
     .not('ticket_id', 'is', null)
     .gte('created_at', start)
     .lte('created_at', end)
-  return { data: (data ?? []) as any[], error: error?.message ?? null }
+  return { data: (data as unknown as SalesTrainer[] | null) ?? [], error: error?.message ?? null }
 }
 
 export async function createSale(

@@ -13,6 +13,13 @@ export async function listClassesForDate(
 }> {
   const dayStart = new Date(`${date}T00:00:00`).toISOString()
   const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
+
+  type ClassForDate = {
+    id: string; ticket_type: string; title: string | null; starts_at: string;
+    duration_min: number; capacity: number | null; is_cancelled: boolean;
+    trainers: { name: string } | null; halls: { name: string } | null
+  }
+
   const { data, error } = await supabase
     .from('classes')
     .select('id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, trainers(name), halls(name)')
@@ -20,7 +27,9 @@ export async function listClassesForDate(
     .lte('starts_at', dayEnd)
     .eq('is_cancelled', false)
     .order('starts_at', { ascending: true })
-  return { data: (data ?? []) as any[], error: error?.message ?? null }
+    .returns<ClassForDate[]>()
+
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function listEnrolledCountsForDate(
@@ -73,12 +82,19 @@ export async function listEnrollmentsForClass(
   }[];
   error: string | null
 }> {
+  type EnrollmentForClass = {
+    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
+    clients: { first_name: string | null; last_name: string | null } | null
+  }
+
   const { data, error } = await supabase
     .from('enrollments')
     .select('id, client_id, status, sessions_used, hours_attended, created_at, clients(first_name, last_name)')
     .eq('class_id', classId)
     .order('created_at')
-  return { data: (data as any[]) ?? [], error: error?.message ?? null }
+    .returns<EnrollmentForClass[]>()
+
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function listSessionBalancesForClients(

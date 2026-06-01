@@ -44,7 +44,8 @@ export async function getClassById(
     .select('*, trainers(name), halls(name)')
     .eq('id', classId)
     .maybeSingle()
-  return { data: data as any ?? null, error: error?.message ?? null }
+
+  return { data: (data as unknown as (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null) ?? null, error: error?.message ?? null }
 }
 
 export async function updateClassCancelled(
