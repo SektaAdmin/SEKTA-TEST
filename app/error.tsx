@@ -10,7 +10,28 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log to console and external service
     console.error(error);
+
+    // Send to external logging service (e.g., Sentry or custom API)
+    if (typeof window !== 'undefined') {
+      try {
+        fetch('/api/logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            level: 'error',
+            message: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+          }),
+        }).catch(() => {
+          // Silently fail if logging service is unavailable
+        });
+      } catch {
+        // Ignore logging errors to avoid cascading failures
+      }
+    }
   }, [error]);
 
   return (
@@ -32,7 +53,7 @@ export default function Error({
         style={{
           background: 'var(--bg-3)',
           color: 'var(--text)',
-          border: '0.5px solid var(--border)',
+          border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)',
           padding: '6px 14px',
           fontSize: '13px',
