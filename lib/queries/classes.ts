@@ -1,3 +1,4 @@
+import type { QueryData } from '@supabase/supabase-js'
 import type { Db, Insert } from '@/lib/queries/_db'
 import type { Class, ClassSeries } from '@/types'
 import { callRpc } from '@/lib/rpc'
@@ -33,12 +34,11 @@ export interface SeriesPayload {
   time_of_day?: string
 }
 
-export interface SeriesClientRow {
-  id: string
-  client_id: string
-  hours_attended: number[] | null
-  clients: { first_name: string | null; last_name: string | null }
+const SERIES_CLIENT_SELECT = 'id, client_id, hours_attended, clients(first_name, last_name)' as const
+function seriesClientQuery(supabase: Db) {
+  return supabase.from('series_clients').select(SERIES_CLIENT_SELECT)
 }
+export type SeriesClientRow = QueryData<ReturnType<typeof seriesClientQuery>>[number]
 
 export async function listClassesForWeek(
   supabase: Db,
@@ -78,7 +78,7 @@ export async function getClassById(
     .eq('id', classId)
     .maybeSingle()
 
-  return { data: (data as unknown as (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null) ?? null, error: error?.message ?? null }
+  return { data: (data as (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null) ?? null, error: error?.message ?? null }
 }
 
 export async function updateClassCancelled(
@@ -278,12 +278,10 @@ export async function listSeriesClients(
   supabase: Db,
   seriesId: string
 ): Promise<{ data: SeriesClientRow[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('series_clients')
-    .select('id, client_id, hours_attended, clients(first_name, last_name)')
+  const { data, error } = await seriesClientQuery(supabase)
     .eq('series_id', seriesId)
     .order('created_at')
-  return { data: (data ?? []) as unknown as SeriesClientRow[], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function addSeriesClient(
