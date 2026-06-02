@@ -104,7 +104,7 @@ training_types — довідник типів занять
 | `calc_trainer_salary_v2(p_trainer_id, p_start, p_end)` | Рядок на enrollment (attended+noshow). Ставка на дату заняття. Для `/settings/salary/calculations` |
 | `check_class_conflicts(p_starts_at, p_duration_min, p_hall_id, p_trainer_id, p_exclude_id)` | Перетин по залу/тренеру |
 | `check_client_conflict(p_client_id, p_class_id)` | Чи клієнт уже на паралельному занятті |
-| `auto_close_classes()` | pg_cron щохвилини. Модель «почалось = проведено»: закриває всі `enrolled` для занять із `starts_at <= now()` (без верхньої межі) через `mark_attendance` → `attended`, списує сесію (в мінус якщо нема). Непришедших адмін переводить у `noshow`/`cancelled` вручну постфактум |
+| `auto_close_classes()` | pg_cron щохвилини. Модель «почалось = проведено»: закриває всі `enrolled` для занять із `starts_at <= now()` (без верхньої межі) через `mark_attendance` → `attended`, списує сесію (в мінус якщо нема). Непришедших адмін переводить у `noshow`/`cancelled` вручну постфактум. **Запис постфактум** (`enrollClient` у вже-минуле заняття) закривається одразу в `attended`, не чекаючи тик cron (cron лишається страховкою) |
 
 ---
 

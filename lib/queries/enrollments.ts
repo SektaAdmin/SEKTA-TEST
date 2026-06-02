@@ -205,7 +205,15 @@ export async function enrollClient(
   clientId: string,
   hoursAttended?: number[]
 ): Promise<{ error: string | null; isDuplicate: boolean }> {
-  const { error: insertError } = await supabase
+  // Тягнемо starts_at, щоб запис постфактум (заняття вже почалось) одразу закрити
+  // в attended, а не чекати тик cron. Модель «почалось = проведено».
+  const { data: cls } = await supabase
+    .from('classes')
+    .select('starts_at')
+    .eq('id', classId)
+    .maybeSingle()
+
+  const { data: inserted, error: insertError } = await supabase
     .from('enrollments')
     .insert({
       class_id: classId,
@@ -213,9 +221,19 @@ export async function enrollClient(
       status: 'enrolled',
       ...(hoursAttended !== undefined ? { hours_attended: hoursAttended } : {}),
     })
+    .select('id, status')
+    .single()
   if (insertError) {
     const isDuplicate = insertError.message.includes('duplicate') || insertError.code === '23505'
     return { error: insertError.message, isDuplicate }
+  }
+
+  // Заняття вже почалось і тригер не перевів у waitlist → списуємо одразу через RPC.
+  // (sessions_used = к-сть годин для довгих занять, інакше 1 — як у mark_attendance.)
+  const startsAt = cls?.starts_at ? new Date(cls.starts_at) : null
+  if (inserted?.status === 'enrolled' && startsAt && startsAt <= new Date()) {
+    const sessionsUsed = hoursAttended?.length ?? 1
+    await markAttendance(supabase, inserted.id, sessionsUsed)
   }
 
   return { error: null, isDuplicate: false }
