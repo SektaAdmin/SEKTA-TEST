@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import type { PaymentMethod } from '@/types'
 import { TRAINER_FK } from '@/lib/queries/_fk'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
@@ -35,7 +35,7 @@ export interface ReconFilter {
 }
 
 export async function listReconciliationFeed(
-  supabase: SupabaseClient,
+  supabase: Db,
   { method, holder, from, to }: ReconFilter
 ): Promise<{
   sales: ReconSaleRow[]

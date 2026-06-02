@@ -1,8 +1,8 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import { callRpc } from '@/lib/rpc'
 
 export async function listClassesForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   date: string
 ): Promise<{
   data: {
@@ -36,7 +36,7 @@ export async function listClassesForDate(
 }
 
 export async function listEnrolledCountsForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   classIds: string[]
 ): Promise<{ data: Record<string, number>; error: string | null }> {
   if (classIds.length === 0) return { data: {}, error: null }
@@ -54,7 +54,7 @@ export async function listEnrolledCountsForDate(
 }
 
 export async function listClientEnrolledClassIds(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   classIds: string[]
 ): Promise<{ data: Set<string>; error: string | null }> {
@@ -76,7 +76,7 @@ export async function listClientEnrolledClassIds(
 }
 
 export async function listEnrollmentsForClass(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string
 ): Promise<{
   data: {
@@ -101,7 +101,7 @@ export async function listEnrollmentsForClass(
 }
 
 export async function listSessionBalancesForClients(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientIds: string[],
   ticketType: string
 ): Promise<{ data: Record<string, number>; error: string | null }> {
@@ -119,7 +119,7 @@ export async function listSessionBalancesForClients(
 }
 
 export async function getClientSessionBalance(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   ticketType: string
 ): Promise<{ data: number; error: string | null }> {
@@ -133,7 +133,7 @@ export async function getClientSessionBalance(
 }
 
 export async function markAttendance(
-  supabase: SupabaseClient,
+  supabase: Db,
   enrollmentId: string,
   sessionsUsed = 1
 ): Promise<{ success: boolean; error: string | null }> {
@@ -147,7 +147,7 @@ export async function markAttendance(
 }
 
 export async function reverseAttendance(
-  supabase: SupabaseClient,
+  supabase: Db,
   enrollmentId: string
 ): Promise<{ success: boolean; error: string | null }> {
   const { success, error } = await callRpc(() =>
@@ -166,7 +166,7 @@ export type EnrollmentStatus = 'enrolled' | 'attended' | 'noshow' | 'cancelled' 
  * @returns charged — чи списано сесію (для toast адміну).
  */
 export async function changeEnrollmentStatus(
-  supabase: SupabaseClient,
+  supabase: Db,
   enrollmentId: string,
   status: EnrollmentStatus,
   opts?: { forceNoCharge?: boolean; sessionsUsed?: number }
@@ -176,7 +176,7 @@ export async function changeEnrollmentStatus(
       p_enrollment_id: enrollmentId,
       p_new_status: status,
       p_force_no_charge: opts?.forceNoCharge ?? false,
-      p_sessions_used: opts?.sessionsUsed ?? null,
+      p_sessions_used: opts?.sessionsUsed ?? undefined,
     })
   )
   if (!success) return { success: false, charged: false, error }
@@ -184,7 +184,7 @@ export async function changeEnrollmentStatus(
 }
 
 export async function checkClientConflict(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   classId: string
 ): Promise<{ data: { starts_at: string; ticket_type: string } | null; error: string | null }> {
@@ -202,7 +202,7 @@ export async function checkClientConflict(
  * типів — це була хибна логіка через плутанину в слові «оренда»; видалено.)
  */
 export async function enrollClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string,
   clientId: string,
   hoursAttended?: number[]

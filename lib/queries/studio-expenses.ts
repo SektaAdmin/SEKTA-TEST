@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import { TRAINER_FK } from '@/lib/queries/_fk'
 
 export type StudioExpense = {
@@ -14,7 +14,7 @@ export type StudioExpense = {
 }
 
 export async function listStudioExpenses(
-  supabase: SupabaseClient,
+  supabase: Db,
   dateFrom: string,
   dateTo: string
 ): Promise<{ data: StudioExpense[]; error: string | null }> {
@@ -28,7 +28,7 @@ export async function listStudioExpenses(
 }
 
 export async function insertStudioExpense(
-  supabase: SupabaseClient,
+  supabase: Db,
   params: {
     amount: number
     direction: 'expense' | 'income'
@@ -44,7 +44,7 @@ export async function insertStudioExpense(
 }
 
 export async function updateStudioExpense(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string,
   params: {
     amount: number
@@ -61,7 +61,7 @@ export async function updateStudioExpense(
 }
 
 export async function deleteStudioExpense(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{ success: boolean; error: string | null }> {
   const { error } = await supabase.from('studio_expenses').delete().eq('id', id)

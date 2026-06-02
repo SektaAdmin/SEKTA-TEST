@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import type { Sale } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
 import { callRpc } from '@/lib/rpc'
@@ -14,7 +14,7 @@ export interface ListSalesParams {
 }
 
 export async function searchClientIdsByName(
-  supabase: SupabaseClient,
+  supabase: Db,
   search: string
 ): Promise<string[] | null> {
   const s = sanitizePostgrestSearch(search)
@@ -35,7 +35,7 @@ export async function searchClientIdsByName(
 }
 
 export async function listSales(
-  supabase: SupabaseClient,
+  supabase: Db,
   { page, pageSize, search, dateFrom, dateTo, trainerId }: ListSalesParams
 ): Promise<{ data: Sale[]; count: number; error: string | null }> {
   let clientIds: string[] | null = null
@@ -76,7 +76,7 @@ export async function listSales(
 }
 
 export async function listSalesForClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   page: number,
   pageSize: number
@@ -107,7 +107,7 @@ export type FeedSale = {
 }
 
 export async function listAllSalesForFeed(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string
 ): Promise<{ data: FeedSale[]; error: string | null }> {
   const { data, error } = await supabase
@@ -119,7 +119,7 @@ export async function listAllSalesForFeed(
 }
 
 export async function listSalesForAccounting(
-  supabase: SupabaseClient,
+  supabase: Db,
   dateFrom: string,
   dateTo: string
 ): Promise<{ data: { created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null }[]; error: string | null }> {
@@ -136,7 +136,7 @@ export async function listSalesForAccounting(
 }
 
 export async function listSalesForTrainers(
-  supabase: SupabaseClient,
+  supabase: Db,
   start: string,
   end: string
 ): Promise<{ data: { trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]; error: string | null }> {
@@ -155,7 +155,7 @@ export async function listSalesForTrainers(
 }
 
 export async function createSale(
-  supabase: SupabaseClient,
+  supabase: Db,
   params: {
     p_client_id: string
     p_ticket_id: string | null
@@ -168,12 +168,25 @@ export async function createSale(
     p_created_at: string
   }
 ): Promise<{ success: boolean; error: string | null }> {
-  const { success, error } = await callRpc(() => supabase.rpc('create_sale', params), 'Помилка збереження')
+  // Усі optional-args create_sale мають DEFAULT NULL/0 у БД (nullable), але
+  // генератор типізує їх як non-null T → null не проходить. Омісія (undefined)
+  // = той самий DEFAULT NULL.
+  const { success, error } = await callRpc(() => supabase.rpc('create_sale', {
+    p_client_id: params.p_client_id,
+    p_ticket_id: params.p_ticket_id ?? undefined,
+    p_trainer_id: params.p_trainer_id ?? undefined,
+    p_cash_holder: params.p_cash_holder ?? undefined,
+    p_price_paid: params.p_price_paid,
+    p_amount_given: params.p_amount_given,
+    p_payment_method: params.p_payment_method,
+    p_notes: params.p_notes,
+    p_created_at: params.p_created_at,
+  }), 'Помилка збереження')
   return { success, error }
 }
 
 export async function updateSale(
-  supabase: SupabaseClient,
+  supabase: Db,
   params: {
     p_sale_id: string
     p_client_id: string
@@ -191,12 +204,29 @@ export async function updateSale(
     p_created_at: string
   }
 ): Promise<{ success: boolean; error: string | null }> {
-  const { success, error } = await callRpc(() => supabase.rpc('update_sale', params), 'Помилка збереження')
+  const { success, error } = await callRpc(() => supabase.rpc('update_sale', {
+    p_sale_id: params.p_sale_id,
+    p_client_id: params.p_client_id,
+    // p_ticket_id/p_trainer_id у БД nullable (депозитний продаж = null), але
+    // генератор типізує їх non-null (немає DEFAULT). null тут легітимний.
+    p_ticket_id: params.p_ticket_id as string,
+    p_trainer_id: params.p_trainer_id as string,
+    p_cash_holder: params.p_cash_holder ?? undefined,
+    p_ticket_name: params.p_ticket_name ?? undefined,
+    p_ticket_price: params.p_ticket_price,
+    p_sessions: params.p_sessions,
+    p_ticket_type: params.p_ticket_type ?? undefined,
+    p_price_paid: params.p_price_paid,
+    p_amount_given: params.p_amount_given,
+    p_payment_method: params.p_payment_method,
+    p_notes: params.p_notes,
+    p_created_at: params.p_created_at,
+  }), 'Помилка збереження')
   return { success, error }
 }
 
 export async function deleteSale(
-  supabase: SupabaseClient,
+  supabase: Db,
   saleId: string
 ): Promise<{ success: boolean; error: string | null }> {
   const { success, error } = await callRpc(() => supabase.rpc('delete_sale', { p_sale_id: saleId }), 'Помилка видалення')
@@ -215,7 +245,7 @@ export type ReconciliationSale = {
 }
 
 export async function listSalesForReconciliation(
-  supabase: SupabaseClient,
+  supabase: Db,
   dateFrom: string,
   dateTo: string,
   methods: ('fop' | 'personal_card')[]
@@ -231,7 +261,7 @@ export async function listSalesForReconciliation(
 }
 
 export async function getTicketById(
-  supabase: SupabaseClient,
+  supabase: Db,
   ticketId: string
 ): Promise<{ data: { name: string; price: number; sessions: number; ticket_type: string } | null; error: string | null }> {
   const { data, error } = await supabase

@@ -1,8 +1,8 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import type { TrainingType } from '@/types'
 import { refEntityQueries } from './_refEntity'
 
-const q = refEntityQueries<TrainingType>(
+const q = refEntityQueries<'training_types', TrainingType>(
   'training_types',
   'id, code, label, is_active, sort_order, created_at',
   { orderBy: 'sort_order' }
@@ -13,7 +13,7 @@ export const listActiveTrainingTypes = q.listActive
 export const toggleTrainingType = q.toggle
 
 export async function listTrainingTypeLabels(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: Record<string, string>; error: string | null }> {
   const { data, error } = await supabase
     .from('training_types')
@@ -24,14 +24,14 @@ export async function listTrainingTypeLabels(
 }
 
 export async function insertTrainingType(
-  supabase: SupabaseClient,
+  supabase: Db,
   payload: { code: string; label: string }
 ): Promise<{ error: string | null }> {
   return q.insert(supabase, payload)
 }
 
 export async function updateTrainingType(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string,
   label: string
 ): Promise<{ error: string | null }> {

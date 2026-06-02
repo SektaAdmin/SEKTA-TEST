@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import { TRAINER_FK } from '@/lib/queries/_fk'
 
 export type TrainerRate = {
@@ -66,7 +66,7 @@ export type TrainerCashBalance = {
 // ─── Rates ────────────────────────────────────────────────────────────────────
 
 export async function listTrainerRatesActive(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: TrainerRate[]; error: string | null }> {
   type RateRow = {
     id: string; trainer_id: string | null; ticket_type: string; hall_id: string | null;
@@ -99,7 +99,7 @@ export async function listTrainerRatesActive(
 }
 
 export async function listTrainerRatesAll(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: TrainerRate[]; error: string | null }> {
   type RateRow = {
     id: string; trainer_id: string | null; ticket_type: string; hall_id: string | null;
@@ -133,7 +133,7 @@ export async function listTrainerRatesAll(
 // Додає нову ставку. Якщо є активна ставка для тієї ж комбінації (trainer_id, ticket_type, hall_id) —
 // закриває її (valid_to = valid_from - 1 день).
 export async function addTrainerRate(
-  supabase: SupabaseClient,
+  supabase: Db,
   payload: {
     trainer_id: string | null
     ticket_type: string
@@ -187,7 +187,7 @@ export async function addTrainerRate(
 }
 
 export async function archiveTrainerRate(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string,
   validTo: string
 ): Promise<{ error: string | null }> {
@@ -199,7 +199,7 @@ export async function archiveTrainerRate(
 }
 
 export async function restoreTrainerRate(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase
@@ -211,13 +211,13 @@ export async function restoreTrainerRate(
 
 // Залишаємо для зворотної сумісності зі старим кодом (rates/page.tsx)
 export async function listTrainerRates(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: TrainerRate[]; error: string | null }> {
   return listTrainerRatesActive(supabase)
 }
 
 export async function deleteTrainerRate(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('trainer_rates').delete().eq('id', id)
@@ -228,7 +228,7 @@ export async function deleteTrainerRate(
 
 // Старий RPC — залишаємо для зворотної сумісності
 export async function calcTrainerSalary(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string,
   start: string,
   end: string
@@ -254,7 +254,7 @@ export async function calcTrainerSalary(
 
 // Новий деталізований RPC — повертає рядки по кожному enrollment, згруповані по заняттях
 export async function calcTrainerSalaryDetail(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string,
   start: string,
   end: string
@@ -307,7 +307,7 @@ export async function calcTrainerSalaryDetail(
 // cash-продажі − studio_expenses − виплати ЗП готівкою за цей же період
 // Готівка тренера за обраний період (для деталізації в розрахунках)
 export async function getTrainerCashBalance(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string,
   dateFrom: string,
   dateTo: string
@@ -395,7 +395,7 @@ export async function getTrainerCashBalance(
 
 // Загальний баланс готівки тренера за весь час (без фільтра дат)
 export async function getTrainerCashBalanceTotal(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string
 ): Promise<{ data: number; error: string | null }> {
   type SalesTotal = { price_paid: number }
@@ -435,7 +435,7 @@ export async function getTrainerCashBalanceTotal(
 
 // Баланси готівки всіх тренерів одним запитом (для /accounting)
 export async function listAllCashBalances(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: { trainer_id: string; trainer_name: string; balance: number }[]; error: string | null }> {
   type TrainerRow = { id: string; name: string }
   type SalesHolder = { cash_holder: string; price_paid: number }
@@ -488,7 +488,7 @@ export async function listAllCashBalances(
 // Загальний борг студії перед тренером за весь час:
 // сума всіх нарахувань (з calc_trainer_salary_v2 за весь час) мінус сума всіх виплат
 export async function getTrainerTotalDebt(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string,
   totalAccrued: number
 ): Promise<{ data: number; error: string | null }> {
@@ -505,7 +505,7 @@ export async function getTrainerTotalDebt(
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function listTrainerPayments(
-  supabase: SupabaseClient,
+  supabase: Db,
   trainerId: string,
   periodStart: string,
   periodEnd: string
@@ -521,7 +521,7 @@ export async function listTrainerPayments(
 }
 
 export async function listTrainerPaymentsForPeriod(
-  supabase: SupabaseClient,
+  supabase: Db,
   dateFrom: string,
   dateTo: string
 ): Promise<{ data: TrainerPayment[]; error: string | null }> {
@@ -535,7 +535,7 @@ export async function listTrainerPaymentsForPeriod(
 }
 
 export async function updateTrainerPayment(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string,
   payload: {
     paid_amount: number
@@ -551,7 +551,7 @@ export async function updateTrainerPayment(
 }
 
 export async function deleteTrainerPayment(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('trainer_payments').delete().eq('id', id)
@@ -559,7 +559,7 @@ export async function deleteTrainerPayment(
 }
 
 export async function insertTrainerPayment(
-  supabase: SupabaseClient,
+  supabase: Db,
   payload: {
     trainer_id: string
     period_start: string

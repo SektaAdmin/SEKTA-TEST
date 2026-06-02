@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 
 export interface Transaction {
   id: string
@@ -11,7 +11,7 @@ export interface Transaction {
 }
 
 export async function listClientTransactions(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   limit = 20
 ): Promise<{ data: Transaction[]; error: string | null }> {
@@ -25,7 +25,7 @@ export async function listClientTransactions(
 }
 
 export async function listBalanceAfterBySaleIds(
-  supabase: SupabaseClient,
+  supabase: Db,
   saleIds: string[]
 ): Promise<{ data: Map<string, number>; error: string | null }> {
   if (saleIds.length === 0) return { data: new Map(), error: null }

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import { effectiveSessionBalance } from '@/lib/scheduleMetrics'
 import { formatClientName, formatTime } from '@/lib/formatters'
 import { groupDebtRows, type DebtRow, type DebtGroup } from '@/lib/dashboardReport'
@@ -18,7 +18,7 @@ export type MoneyTotals = {
 }
 
 export async function getMoneyTotalsForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   date: string
 ): Promise<{ data: MoneyTotals; error: string | null }> {
   const from = `${date}T00:00:00`
@@ -43,7 +43,7 @@ export async function getMoneyTotalsForDate(
 
 /** Клієнти з від'ємним грошовим депозитом (view clients_negative_balance). */
 export async function listNegativeBalanceClients(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: { id: string; name: string; balance: number }[]; error: string | null }> {
   const { data, error } = await supabase
     .from('clients_negative_balance')
@@ -70,7 +70,7 @@ export type HallBusyInterval = {
 
 /** Зайняті інтервали по залах на дату — для розрахунку вільних вікон. */
 export async function listHallBusyIntervalsForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   date: string
 ): Promise<{ data: HallBusyInterval[]; error: string | null }> {
   const dayStart = new Date(`${date}T00:00:00`).toISOString()
@@ -116,7 +116,7 @@ export async function listHallBusyIntervalsForDate(
    3 запити: класи дня → всі активні enrollments по class_id IN → всі баланси по (client_id, ticket_type).
    «Боржник» = effectiveSessionBalance(...) < 0. */
 export async function listSessionDebtorsForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   date: string
 ): Promise<{ data: DebtGroup[]; error: string | null }> {
   const dayStart = new Date(`${date}T00:00:00`).toISOString()
@@ -193,7 +193,7 @@ export async function listSessionDebtorsForDate(
 
 /** Готівка (cash), що надійшла за день, згрупована по cash_holder (trainer.id). */
 export async function getCashIncomingByHolderForDate(
-  supabase: SupabaseClient,
+  supabase: Db,
   date: string
 ): Promise<{ data: Map<string, number>; error: string | null }> {
   const { data, error } = await supabase

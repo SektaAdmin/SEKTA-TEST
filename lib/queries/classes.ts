@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db, Insert } from '@/lib/queries/_db'
 import type { Class, ClassSeries } from '@/types'
 import { callRpc } from '@/lib/rpc'
 
@@ -41,7 +41,7 @@ export interface SeriesClientRow {
 }
 
 export async function listClassesForWeek(
-  supabase: SupabaseClient,
+  supabase: Db,
   startISO: string,
   endISO: string
 ): Promise<{ active: ClassWithJoins[]; cancelled: ClassWithJoins[]; error: string | null }> {
@@ -69,7 +69,7 @@ export async function listClassesForWeek(
 }
 
 export async function getClassById(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string
 ): Promise<{ data: (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null; error: string | null }> {
   const { data, error } = await supabase
@@ -82,7 +82,7 @@ export async function getClassById(
 }
 
 export async function updateClassCancelled(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string,
   isCancelled: boolean
 ): Promise<{ error: string | null }> {
@@ -91,7 +91,7 @@ export async function updateClassCancelled(
 }
 
 export async function updateClassChoreoStage(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string,
   choreoStage: string | null
 ): Promise<{ error: string | null }> {
@@ -103,7 +103,7 @@ export async function updateClassChoreoStage(
 }
 
 export async function cancelClassAndRestoreSessions(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string
 ): Promise<{ restoredCount: number; error: string | null }> {
   const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; restored_count: number }>(
@@ -114,7 +114,7 @@ export async function cancelClassAndRestoreSessions(
 }
 
 export async function restoreClass(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string
 ): Promise<{ restoredCount: number; error: string | null }> {
   const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; restored_count: number }>(
@@ -125,7 +125,7 @@ export async function restoreClass(
 }
 
 export async function listDatesWithClasses(
-  supabase: SupabaseClient,
+  supabase: Db,
   startISO: string,
   endISO: string
 ): Promise<{ data: Set<string>; error: string | null }> {
@@ -144,7 +144,7 @@ export async function listDatesWithClasses(
 }
 
 export async function listSeriesTemplates(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: ClassSeries[]; error: string | null }> {
   const { data, error } = await supabase
     .from('class_series')
@@ -156,7 +156,7 @@ export async function listSeriesTemplates(
 }
 
 export async function listPastClasses(
-  supabase: SupabaseClient,
+  supabase: Db,
   page: number,
   pageSize: number = 20,
   filters?: {
@@ -197,7 +197,7 @@ export async function listPastClasses(
 // ── Mutations: classes ──────────────────────────────────────────
 
 export async function insertClasses(
-  supabase: SupabaseClient,
+  supabase: Db,
   payloads: (ClassPayload & { series_id?: string })[]
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('classes').insert(payloads)
@@ -205,7 +205,7 @@ export async function insertClasses(
 }
 
 export async function updateClass(
-  supabase: SupabaseClient,
+  supabase: Db,
   classId: string,
   payload: ClassPayload
 ): Promise<{ error: string | null }> {
@@ -215,7 +215,7 @@ export async function updateClass(
 
 /** Майбутні (>= now) нескасовані заняття серії — для edit-scope 'future'. */
 export async function listFutureSeriesClasses(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string
 ): Promise<{ data: { id: string; starts_at: string }[]; error: string | null }> {
   const now = new Date().toISOString()
@@ -230,7 +230,7 @@ export async function listFutureSeriesClasses(
 
 /** Bulk-update майбутніх занять серії (edit-scope 'future'). */
 export async function updateFutureSeriesClasses(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string,
   payload: ClassPayload
 ): Promise<{ error: string | null }> {
@@ -247,15 +247,16 @@ export async function updateFutureSeriesClasses(
 // ── Mutations: class_series ─────────────────────────────────────
 
 export async function insertSeries(
-  supabase: SupabaseClient,
-  payload: SeriesPayload & { type: 'template' | 'series' }
+  supabase: Db,
+  payload: Insert<'class_series'> & { type: 'template' | 'series' }
 ): Promise<{ data: ClassSeries | null; error: string | null }> {
   const { data, error } = await supabase.from('class_series').insert(payload).select().single()
-  return { data: (data as ClassSeries) ?? null, error: error?.message ?? null }
+  // Row.type — text у схемі; доменний ClassSeries звужує до 'template'|'series'.
+  return { data: data ? { ...data, type: data.type as 'template' | 'series' } : null, error: error?.message ?? null }
 }
 
 export async function updateSeries(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string,
   payload: SeriesPayload
 ): Promise<{ error: string | null }> {
@@ -264,7 +265,7 @@ export async function updateSeries(
 }
 
 export async function deleteSeries(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('class_series').delete().eq('id', seriesId)
@@ -274,7 +275,7 @@ export async function deleteSeries(
 // ── Mutations: series_clients (постійники) ──────────────────────
 
 export async function listSeriesClients(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string
 ): Promise<{ data: SeriesClientRow[]; error: string | null }> {
   const { data, error } = await supabase
@@ -286,19 +287,19 @@ export async function listSeriesClients(
 }
 
 export async function addSeriesClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesId: string,
   clientId: string,
   hoursAttended?: number[]
 ): Promise<{ error: string | null }> {
-  const payload: Record<string, unknown> = { series_id: seriesId, client_id: clientId }
+  const payload: Insert<'series_clients'> = { series_id: seriesId, client_id: clientId }
   if (hoursAttended !== undefined) payload.hours_attended = hoursAttended
   const { error } = await supabase.from('series_clients').insert(payload)
   return { error: error?.message ?? null }
 }
 
 export async function removeSeriesClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   rowId: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('series_clients').delete().eq('id', rowId)
@@ -308,7 +309,7 @@ export async function removeSeriesClient(
 // ── Week generation / template teardown (/schedule/templates) ───
 
 export async function generateWeek(
-  supabase: SupabaseClient,
+  supabase: Db,
   monday: string,
   weeks: number = 1
 ): Promise<{ classesCreated: number; enrollmentsCreated: number; error: string | null }> {
@@ -323,7 +324,7 @@ export async function generateWeek(
 
 /** id-шники всіх шаблонів тижня (type='template') — для bulk-видалення тижня. */
 export async function listTemplateSeriesIds(
-  supabase: SupabaseClient
+  supabase: Db
 ): Promise<{ data: string[]; error: string | null }> {
   const { data, error } = await supabase.from('class_series').select('id').eq('type', 'template')
   return { data: (data ?? []).map((s: { id: string }) => s.id), error: error?.message ?? null }
@@ -331,7 +332,7 @@ export async function listTemplateSeriesIds(
 
 /** Видалити заняття вказаних серій у напіввідкритому діапазоні [from, to). */
 export async function deleteClassesInRange(
-  supabase: SupabaseClient,
+  supabase: Db,
   seriesIds: string[],
   fromISO: string,
   toISO: string
@@ -353,7 +354,7 @@ export async function deleteClassesInRange(
  * ClassModal і ClassDetailModal — тримаємо тут, не дублюємо.
  */
 export async function checkClassConflicts(
-  supabase: SupabaseClient,
+  supabase: Db,
   params: {
     starts_at: string
     duration_min: number
@@ -366,9 +367,9 @@ export async function checkClassConflicts(
   const { data } = await supabase.rpc('check_class_conflicts', {
     p_starts_at: params.starts_at,
     p_duration_min: params.duration_min,
-    p_hall_id: params.hall_id ?? null,
-    p_trainer_id: params.trainer_id ?? null,
-    p_exclude_id: params.exclude_id ?? null,
+    p_hall_id: params.hall_id ?? undefined,
+    p_trainer_id: params.trainer_id ?? undefined,
+    p_exclude_id: params.exclude_id ?? undefined,
   })
   if (!data || data.length === 0) return null
   const c = data[0]

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import type { Client } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
 
@@ -9,7 +9,7 @@ export interface ListClientsParams {
 }
 
 export async function listClients(
-  supabase: SupabaseClient,
+  supabase: Db,
   { search, page, pageSize }: ListClientsParams
 ): Promise<{ data: Client[]; count: number; error: string | null }> {
   let query = supabase
@@ -35,7 +35,7 @@ export async function listClients(
 }
 
 export async function getClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{ data: Client | null; error: string | null }> {
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ export async function getClient(
 }
 
 export async function searchClientsByPhone(
-  supabase: SupabaseClient,
+  supabase: Db,
   phone: string,
   excludeId?: string
 ): Promise<{ data: { id: string; first_name: string; last_name: string }[]; error: string | null }> {
@@ -62,7 +62,7 @@ export async function searchClientsByPhone(
 }
 
 export async function searchClientsByName(
-  supabase: SupabaseClient,
+  supabase: Db,
   firstName: string,
   lastName: string,
   excludeId?: string
@@ -79,7 +79,7 @@ export async function searchClientsByName(
 }
 
 export async function insertClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   payload: { first_name: string; last_name: string; phone: string | null; instagram_username: string | null; telegram_username: string | null }
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('clients').insert(payload)
@@ -87,7 +87,7 @@ export async function insertClient(
 }
 
 export async function updateClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string,
   payload: { first_name: string; last_name: string; phone: string | null; instagram_username: string | null; telegram_username: string | null }
 ): Promise<{ error: string | null }> {
@@ -101,7 +101,7 @@ export async function updateClient(
  * Повертає до 10 результатів. Помилки ковтаються (UI-пошук, не критичний).
  */
 export async function searchClientsForCombobox(
-  supabase: SupabaseClient,
+  supabase: Db,
   q: string
 ): Promise<Client[]> {
   const trimmed = sanitizePostgrestSearch(q)
@@ -135,7 +135,7 @@ export async function searchClientsForCombobox(
 
 /** Грошовий баланс клієнта (₴). null якщо не знайдено. */
 export async function getClientBalance(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string
 ): Promise<number | null> {
   const { data } = await supabase.from('clients').select('balance').eq('id', clientId).single()

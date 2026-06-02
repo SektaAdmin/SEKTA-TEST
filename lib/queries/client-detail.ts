@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Db } from '@/lib/queries/_db'
 import type { Client, ClientSessionBalance, Sale } from '@/types'
 
 export type PermanentEnrollment = {
@@ -63,7 +63,7 @@ export type FeedEnrollment = {
 }
 
 export async function getClientDetail(
-  supabase: SupabaseClient,
+  supabase: Db,
   id: string
 ): Promise<{
   client: Client | null
@@ -118,7 +118,7 @@ export async function getClientDetail(
 }
 
 export async function listPastEnrollmentsForClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string,
   page: number,
   pageSize: number
@@ -142,7 +142,7 @@ export async function listPastEnrollmentsForClient(
 }
 
 export async function listFeedEnrollmentsForClient(
-  supabase: SupabaseClient,
+  supabase: Db,
   clientId: string
 ): Promise<{ data: FeedEnrollment[]; error: string | null }> {
   const now = new Date().toISOString()
