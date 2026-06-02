@@ -191,7 +191,7 @@
 .valCash    { color: var(--accent); }
 .valFop     { color: var(--fop); }
 .valCard    { color: var(--card); }
-.valDeposit { color: var(--deposit); }
+.valDeposit { color: var(--text-2); }
 .valNeg     { color: var(--danger); }
 
 /* ── Balance block ───────────────────────────────────────────── */
@@ -212,6 +212,8 @@
   color: var(--text);
   line-height: 1;
 }
+.balanceBigPos { color: var(--success); }
+.balanceBigNeg { color: var(--danger); }
 
 .balanceMeta {
   display: flex;

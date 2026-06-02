@@ -206,7 +206,7 @@ export default function AccountingPage() {
         <div className="page-body">
           {!loading && !error && (
             <div className={styles.balanceBlock}>
-              <div className={styles.balanceBig}>{formatMoney(balance)}</div>
+              <div className={`${styles.balanceBig} ${balance > 0 ? styles.balanceBigPos : balance < 0 ? styles.balanceBigNeg : ''}`}>{formatMoney(balance)}</div>
               <div className={styles.balanceMeta}>
                 <span>Надходження <strong>{formatMoney(income)}</strong></span>
                 <span>Витрати <strong>{formatMoney(outcome)}</strong></span>
