@@ -1,14 +1,9 @@
 'use client'
-import { supabase } from '@/lib/supabase'
-import { useSupabaseList } from '@/lib/useSupabaseList'
-import { listHalls } from '@/lib/queries/halls'
-import { useRealtime } from '@/lib/useRealtime'
+import { useRefEntity } from '@/hooks/useRefEntity'
+import { listHalls, toggleHall } from '@/lib/queries/halls'
 import type { Hall } from '@/types'
 
 export function useHalls() {
-  const { data: halls, loading, fetchError, refetch } = useSupabaseList<Hall>(() =>
-    listHalls(supabase).then(({ data, error }) => ({ data, error: error ? { message: error } : null }))
-  )
-  useRealtime(['halls'], refetch)
-  return { halls, loading, fetchError, refetch }
+  const { data, ...rest } = useRefEntity<Hall>('halls', listHalls, toggleHall)
+  return { halls: data, ...rest }
 }

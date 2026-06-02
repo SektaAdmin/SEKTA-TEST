@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Class, ClassSeries } from '@/types'
+import { callRpc } from '@/lib/rpc'
 
 export type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -61,22 +62,22 @@ export async function cancelClassAndRestoreSessions(
   supabase: SupabaseClient,
   classId: string
 ): Promise<{ restoredCount: number; error: string | null }> {
-  const { data, error } = await supabase.rpc('cancel_class_and_restore_sessions', { p_class_id: classId })
-  if (error || data?.[0]?.success === false) {
-    return { restoredCount: 0, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
-  }
-  return { restoredCount: data?.[0]?.restored_count ?? 0, error: null }
+  const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; restored_count: number }>(
+    () => supabase.rpc('cancel_class_and_restore_sessions', { p_class_id: classId })
+  )
+  if (!success) return { restoredCount: 0, error }
+  return { restoredCount: row?.restored_count ?? 0, error: null }
 }
 
 export async function restoreClass(
   supabase: SupabaseClient,
   classId: string
 ): Promise<{ restoredCount: number; error: string | null }> {
-  const { data, error } = await supabase.rpc('restore_class', { p_class_id: classId })
-  if (error || data?.[0]?.success === false) {
-    return { restoredCount: 0, error: data?.[0]?.error_message ?? error?.message ?? 'Помилка' }
-  }
-  return { restoredCount: data?.[0]?.restored_count ?? 0, error: null }
+  const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; restored_count: number }>(
+    () => supabase.rpc('restore_class', { p_class_id: classId })
+  )
+  if (!success) return { restoredCount: 0, error }
+  return { restoredCount: row?.restored_count ?? 0, error: null }
 }
 
 export async function listDatesWithClasses(

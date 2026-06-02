@@ -16,10 +16,11 @@ UI — **тільки українською**. Спілкування зі мн
 npm run dev          # localhost:3000
 npm run build        # production build + type-check (єдиний "тест" — лінтера/тестів немає)
 npm run start        # serve build
-npm run sync:schema  # регенерує types/database.types.ts після змін схеми в Supabase
+npm run sync:schema  # регенерує types/database.types.ts через Supabase Management API
 ```
 
 `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+`sync:schema` додатково потребує `SUPABASE_ACCESS_TOKEN` в оточенні (особистий токен з dashboard/account/tokens — НЕ комітити). Тягне офіційний генератор типів, не хардкодить список таблиць.
 
 Деплой: GitHub `SektaAdmin/SEKTA-TEST`, авто-деплой з `main` через Vercel.
 
@@ -79,7 +80,7 @@ training_types — довідник типів занять
 - **Правило скасування (дедлайн безкоштовності)** — у `cancellation_deadline(starts_at)`: початок `< 14:00` → дедлайн 19:00 попереднього дня; `>= 14:00` → `starts_at − 6 год`. До дедлайну `cancelled` без списання, після — зі списанням. `noshow` списує завжди. `change_enrollment_status` приймає `p_force_no_charge` для виняткового скасування без штрафу.
 - **`studio_expenses.direction`** — `expense` (зменшує метод) / `income` (збільшує). `payment_method` тут без `deposit`.
 - **`trainer_rates`** — `trainer_rate`+`studio_rate` (₴/людино-годину), `valid_from`/`valid_to` (NULL=активна). Пріоритет: індивід.+зал > індивід. > глоб.+зал > глоб. Зміна = закрити стару (`valid_to`) + додати нову.
-- **RLS вимкнено** на: `tickets`, `trainers`, `sales`, `balance_transactions`, `halls`, `training_types`, `classes`, `class_series`. Увімкнено на: `clients`, `client_session_balances`, `series_clients`, `studio_expenses`, `trainer_rates`, `trainer_payments`.
+- **RLS увімкнено + політика `authenticated_all` (FOR ALL TO authenticated USING(true))** на ВСІХ доменних таблицях, крім `class_series` (RLS вимкнено — єдиний виняток). Модель єдина: будь-який залогінений = повний доступ (інваріант #9). ⚠️ RLS-on БЕЗ політики = deny-all (браузер отримує 0 рядків без помилки) — саме так зламався `halls` після чистки advisors; нова таблиця/чистка політик мусить лишати рівно одну `authenticated_all`.
 
 ---
 
@@ -105,8 +106,6 @@ training_types — довідник типів занять
 | `check_client_conflict(p_client_id, p_class_id)` | Чи клієнт уже на паралельному занятті |
 | `auto_close_classes()` | pg_cron кожні 5 хв. Закриває `enrolled` для занять 5хв–24год тому через `mark_attendance`. Без балансу → лишає `enrolled` для ручного розбору |
 
-> ⚠️ **`create_sale` і `update_sale` мають по 2 перевантаження в БД** — старе (без `p_cash_holder`) і нове (з ним). Код передає `p_cash_holder`, тож резолвиться нова версія. Старе перевантаження варто видалити міграцією, щоб уникнути неоднозначності PostgREST. (Див. техборг.)
-
 ---
 
 ## Карта коду — де що шукати (без grep по всьому проекту)
@@ -115,6 +114,8 @@ training_types — довідник типів занять
 
 - **Supabase-клієнт** → `lib/supabase.ts` (синглтон `export const supabase`, browser). Server Components → `lib/supabase-server.ts`.
 - **Усі запити читання** → `lib/queries/*.ts`. Компоненти/хуки **не** пишуть `.from()` напряму. Мутації (INSERT/UPDATE/RPC) — у модалках/хуках.
+- **RPC-розпаковка** → `callRpc()` у `lib/rpc.ts`. Усі обгортки success/error_message-RPC йдуть через нього (НЕ переписувати `data?.[0]?.success` руками). Data-RPC (calc_trainer_salary*, check_*) — без нього.
+- **Довідкові сутності** (halls/trainers/tickets/training_types — `{id,…,is_active}`) → query через фабрику `refEntityQueries(table, columns, {orderBy})` у `lib/queries/_refEntity.ts` (list/listActive/toggle/insert); хук через `useRefEntity(table, listFn, toggleFn)` у `hooks/useRefEntity.ts` (`{data,loading,fetchError,toggling,toggle,refetch}`). Іменовані хуки (`useHalls` тощо) — тонкі обгортки, що перейменовують `data`→`halls`. Кастомні запити (Labels, custom insert) — поруч у файлі сутності.
 - **Довідники** (tickets/trainers/halls/trainingTypes) → `contexts/RefsContext.tsx` через `useRefs()`. Не тягнути props зі сторінок. Має `refetch*` для оновлення після мутацій у налаштуваннях.
 - **Лейбли+класи бейджів** (статуси enrollment, методи оплати, короткі типи) → `lib/badges.ts`. `enrollmentStatusClass`/`paymentClass` повертають готовий `'badge badge-cash'` → у `className` напряму. CSS бейджів — у `globals.css`. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга). `personal_card` = «Картка».
 - **Повні людські назви типів занять** → `label` з БД (RefsContext / `listTrainingTypeLabels`), НЕ хардкод. Короткі ярлики для звітів → `ticketTypeShortLabel` у badges.ts.
@@ -132,6 +133,18 @@ training_types — довідник типів занять
 - **Типи домену** → `types/index.ts`. Авто-ген типи БД → `types/database.types.ts`.
 
 Ще НЕ централізовано (чекає на друге місце перед виносом): `TX_LABELS` (типи balance-транзакцій, у ClientModal).
+
+---
+
+## Як додати N (scaffold-шляхи)
+
+Готові шаблони з робочим кодом — у `docs/templates/`. Не винаходити з нуля:
+
+- **Нова форм-модалка** → копіювати `TrainerModal` (RHF + FormField + ModalShell + ModalFooter + VM). **НЕ** `SaleModal` (спец-логіка `useSaleForm`/`useSaleSubmit`). Покроково — **[docs/templates/new-modal.md](docs/templates/new-modal.md)**.
+- **Нова довідкова сутність** (таблиця `{id,…,is_active}` + сторінка в /settings) → міграція (RLS+policy+GRANT, інакше deny-all) → `sync:schema` → `refEntityQueries` → `useRefEntity`-обгортка → модалка → `RefEntityPage`. Повний чекліст — **[docs/templates/new-feature.md](docs/templates/new-feature.md)**.
+- **Нова /settings сторінка-довідник** → `RefEntityPage` (`app/settings/_RefEntityPage.tsx`) + масив `RefColumn`, образець — `app/settings/halls/page.tsx` (29 рядків). Editable (inline-редагування) → prop `editable` + модалці `existing={editing}`, образець — `training-types`.
+- **Новий RPC-виклик** (success/error_message) → обгортка в `lib/queries/`, розпаковка через `callRpc()` (`lib/rpc.ts`).
+- **Type-check під час активного `npm run dev`** → `npx tsc --noEmit` (НЕ `npm run build` — ділить `.next` з dev, ламає чанки).
 
 ---
 
@@ -161,11 +174,3 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 | `/settings/{tickets,trainers,halls,training-types}` | Довідники: активні + архів |
 | `/settings`, `/tickets`, `/trainers`, `/halls`, `/training-types`, `/accounting/trainers*` | Редиректи |
 
----
-
-## Техборг завершено (Фази 1–6, 2026-06-01)
-
-**Фаза 3:** Drop дублів RPC. Видалено старі перевантаження `create_sale`/`update_sale` без `p_cash_holder`.
-**Фаза 4:** Type safety. 20 `as any` в queries замінено на явні типи.
-**Фаза 5:** БД-радники. Додано `SET search_path = public, pg_temp` для RPC, видалено дублі RLS-політик (19 шт.), додано індекси для неіндексованих FK (7 шт.), видалено невикористані індекси (10 шт.).
-**Фаза 6:** Дрібне. `app/error.tsx`: `0.5px` → `1px` border, додано external logging. `lib/formatters.ts` дублів не мало. Build чистий.

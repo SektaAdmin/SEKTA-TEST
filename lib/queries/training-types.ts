@@ -1,26 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TrainingType } from '@/types'
+import { refEntityQueries } from './_refEntity'
 
-export async function listTrainingTypes(
-  supabase: SupabaseClient
-): Promise<{ data: TrainingType[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('training_types')
-    .select('id, code, label, is_active, sort_order, created_at')
-    .order('sort_order', { ascending: true })
-  return { data: (data as TrainingType[]) ?? [], error: error?.message ?? null }
-}
+const q = refEntityQueries<TrainingType>(
+  'training_types',
+  'id, code, label, is_active, sort_order, created_at',
+  { orderBy: 'sort_order' }
+)
 
-export async function listActiveTrainingTypes(
-  supabase: SupabaseClient
-): Promise<{ data: TrainingType[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('training_types')
-    .select('id, code, label, is_active, sort_order, created_at')
-    .eq('is_active', true)
-    .order('sort_order')
-  return { data: (data as TrainingType[]) ?? [], error: error?.message ?? null }
-}
+export const listTrainingTypes = q.list
+export const listActiveTrainingTypes = q.listActive
+export const toggleTrainingType = q.toggle
 
 export async function listTrainingTypeLabels(
   supabase: SupabaseClient
@@ -37,8 +27,7 @@ export async function insertTrainingType(
   supabase: SupabaseClient,
   payload: { code: string; label: string }
 ): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('training_types').insert(payload)
-  return { error: error?.message ?? null }
+  return q.insert(supabase, payload)
 }
 
 export async function updateTrainingType(
@@ -47,14 +36,5 @@ export async function updateTrainingType(
   label: string
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('training_types').update({ label }).eq('id', id)
-  return { error: error?.message ?? null }
-}
-
-export async function toggleTrainingType(
-  supabase: SupabaseClient,
-  id: string,
-  isActive: boolean
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('training_types').update({ is_active: isActive }).eq('id', id)
   return { error: error?.message ?? null }
 }
