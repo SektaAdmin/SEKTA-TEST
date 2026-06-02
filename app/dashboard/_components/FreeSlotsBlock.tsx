@@ -77,7 +77,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }
 
   return (
-    <section className={styles.slotsBlock}>
+    <section className={styles.block}>
       <h2 className={styles.blockTitle}>Вільні слоти залів (8:00–22:00)</h2>
 
       {loading && <div className="loading-dots"><span /><span /><span /></div>}

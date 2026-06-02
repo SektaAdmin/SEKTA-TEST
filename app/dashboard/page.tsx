@@ -1,9 +1,10 @@
 'use client'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { toYMD, DOW_LABELS_FULL, MONTHS_UK_FULL } from '@/lib/dateUtils'
-import { FopTodayCard } from './_components/FopTodayCard'
+import { MoneyCardsBlock } from './_components/MoneyCardsBlock'
+import { AlertCardsBlock } from './_components/AlertCardsBlock'
 import { SessionDebtBlock } from './_components/SessionDebtBlock'
 import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
 import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
@@ -11,8 +12,18 @@ import { TrainerCashBlock } from './_components/TrainerCashBlock'
 import styles from './dashboard.module.css'
 
 export default function DashboardPage() {
-  const now = useMemo(() => new Date(), [])
-  const today = toYMD(now)
+  // Дата перераховується при поверненні на вкладку — пульт тримають відкритим весь день,
+  // після опівночі має показати новий день, а не той, що був на момент монтування.
+  const [today, setToday] = useState(() => toYMD(new Date()))
+
+  useEffect(() => {
+    const sync = () => setToday(toYMD(new Date()))
+    document.addEventListener('visibilitychange', sync)
+    const id = setInterval(sync, 60_000)
+    return () => { document.removeEventListener('visibilitychange', sync); clearInterval(id) }
+  }, [])
+
+  const now = new Date(`${today}T00:00:00`)
   const headerDate = `${DOW_LABELS_FULL[now.getDay()]}, ${now.getDate()} ${MONTHS_UK_FULL[now.getMonth()]}`
 
   return (
@@ -28,12 +39,16 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          <div className={styles.topCards}>
-            <FopTodayCard date={today} />
-          </div>
+          {/* Гроші за день */}
+          <MoneyCardsBlock date={today} />
 
+          {/* Алерти — потребує дії сьогодні */}
+          <AlertCardsBlock date={today} />
+
+          {/* Боржники по сесіях — розгортається під картками */}
           <SessionDebtBlock date={today} />
 
+          {/* Розклад */}
           <FreeSpacesBlock date={today} />
 
           <div className={styles.twoCol}>

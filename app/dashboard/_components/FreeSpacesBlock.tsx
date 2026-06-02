@@ -6,6 +6,7 @@ import { listClassesForDate, listEnrolledCountsForDate } from '@/lib/queries/enr
 import { useRefs } from '@/contexts/RefsContext'
 import { useRealtime } from '@/lib/useRealtime'
 import { formatTime } from '@/lib/formatters'
+import { ArrowRightIcon } from '@/components/icons/navigation'
 import styles from '../dashboard.module.css'
 
 /* Блок: вільні місця на заняттях сьогодні (крім selftraining). */
@@ -73,7 +74,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   }, [trainingTypes])
 
   return (
-    <section className={styles.spacesBlock}>
+    <section className={styles.block}>
       <h2 className={styles.blockTitle}>Вільні місця на заняттях сьогодні</h2>
 
       {loading && <div className="loading-dots"><span /><span /><span /></div>}
@@ -96,9 +97,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
           <div className={styles.spacesRight}>
             <span className={styles.spacesFreeChip}>{r.free}</span>
             <Link href={`/schedule/${r.id}`} className={styles.spacesLink} title="Відкрити заняття">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <ArrowRightIcon />
             </Link>
           </div>
         </div>

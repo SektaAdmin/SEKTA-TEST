@@ -26,11 +26,10 @@
   padding: 20px var(--topbar-px) 32px;
 }
 
-.topCards {
+.cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
-  max-width: 480px;
 }
 
 .twoCol {
@@ -39,10 +38,18 @@
   gap: 20px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 640px) {
   .twoCol {
     grid-template-columns: 1fr;
   }
+}
+
+/* Єдиний контейнер блоку-списку (боржники / слоти / готівка / місця). */
+.block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: 20px;
 }
 
 /* ── Спільне для блоків ────────────────────────────────────── */
@@ -59,19 +66,12 @@
   padding: 12px 0;
 }
 
-/* ── Блок 2: боржники ──────────────────────────────────────── */
-.debtBlock {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-2);
-  padding: 20px;
-}
-
+/* ── Блок боржників (згортається) ──────────────────────────── */
+/* Голова блоку без нижнього відступу — тіло дає власний margin-top при розгортанні. */
 .blockHead {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
 }
 
 .blockHead .blockTitle {
@@ -93,10 +93,6 @@
 
 .blockToggle:hover .blockTitle {
   color: var(--text-2);
-}
-
-.debtBlock .blockHead {
-  margin-bottom: 0;
 }
 
 .chevron {
@@ -174,15 +170,7 @@
 }
 
 
-/* ── Блок 3: вільні слоти ──────────────────────────────────── */
-.slotsBlock,
-.cashBlock {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-2);
-  padding: 20px;
-}
-
+/* ── Блок: вільні слоти ────────────────────────────────────── */
 .slotRow {
   display: flex;
   align-items: flex-start;
@@ -281,13 +269,6 @@
 }
 
 /* ── Блок: вільні місця на заняттях ────────────────────────── */
-.spacesBlock {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-2);
-  padding: 20px;
-}
-
 .spacesRow {
   display: flex;
   align-items: center;

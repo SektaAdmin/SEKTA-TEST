@@ -37,6 +37,19 @@
   color: var(--text-3);
 }
 
+.skeleton {
+  height: 35px;
+  width: 60%;
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  animation: statSkeleton 1.2s ease-in-out infinite;
+}
+
+@keyframes statSkeleton {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 .danger .value {
   color: var(--danger);
 }

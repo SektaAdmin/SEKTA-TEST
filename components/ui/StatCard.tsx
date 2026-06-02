@@ -13,14 +13,17 @@ interface Props {
   hint?: ReactNode
   href?: string
   accent?: 'default' | 'danger' | 'success'
+  loading?: boolean     // скелет замість value (не плодити '…'-рядки)
 }
 
-export function StatCard({ label, value, hint, href, accent = 'default' }: Props) {
+export function StatCard({ label, value, hint, href, accent = 'default', loading = false }: Props) {
   const cls = `${styles.card} ${accent !== 'default' ? styles[accent] : ''} ${href ? styles.clickable : ''}`
   const inner = (
     <>
       <div className={styles.label}>{label}</div>
-      <div className={styles.value}>{value}</div>
+      {loading
+        ? <div className={styles.skeleton} />
+        : <div className={styles.value}>{value}</div>}
       {hint != null && <div className={styles.hint}>{hint}</div>}
     </>
   )
