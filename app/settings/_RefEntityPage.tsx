@@ -123,10 +123,7 @@ export function RefEntityPage<T extends { id: string; is_active?: boolean }>({
         </td>
       )}
       {editable && (
-        <td>{!opts.archived
-          ? <button className={styles.editBtn} onClick={() => openEdit(row)}>Редагувати</button>
-          : null}
-        </td>
+        <td><button className={styles.editBtn} onClick={() => openEdit(row)}>Редагувати</button></td>
       )}
     </tr>
   )
@@ -144,15 +141,18 @@ export function RefEntityPage<T extends { id: string; is_active?: boolean }>({
         <div className={styles.cardRow}>
           <span className={styles.name}>{columns[0].cell(row)}</span>
           <div className={styles.cardActions}>
-            {editable && !opts.archived && (
-              <button className={styles.editBtn} onClick={() => openEdit(row)}>Редагувати</button>
-            )}
             {!opts.archived ? (
-              <ToggleBtns id={row.id} active={!!row.is_active} toggling={toggling} onToggle={toggle} />
+              <>
+                {editable && <button className={styles.editBtn} onClick={() => openEdit(row)}>Редагувати</button>}
+                <ToggleBtns id={row.id} active={!!row.is_active} toggling={toggling} onToggle={toggle} />
+              </>
             ) : (
-              <button className={styles.restoreBtn} onClick={() => toggle(row.id, true)} disabled={toggling === row.id}>
-                {toggling === row.id ? '...' : 'Відновити'}
-              </button>
+              <>
+                <button className={styles.restoreBtn} onClick={() => toggle(row.id, true)} disabled={toggling === row.id}>
+                  {toggling === row.id ? '...' : 'Відновити'}
+                </button>
+                {editable && <button className={styles.editBtn} onClick={() => openEdit(row)}>Редагувати</button>}
+              </>
             )}
           </div>
         </div>

@@ -1,206 +1,35 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
-import { toast } from 'sonner'
-import { supabase } from '@/lib/supabase'
 import TrainingTypeModal from '@/components/TrainingTypeModal'
+import { useRefEntity } from '@/hooks/useRefEntity'
+import { listTrainingTypes, toggleTrainingType } from '@/lib/queries/training-types'
 import { MSG } from '@/lib/messages'
-import type { TrainingType } from '@/types'
+import { RefEntityPage, type RefColumn } from '../_RefEntityPage'
 import styles from '../settings.module.css'
+import type { TrainingType } from '@/types'
 
-const SETTINGS_TABS = [
-  { href: '/settings/tickets', label: 'Абонементи' },
-  { href: '/settings/trainers', label: 'Тренери' },
-  { href: '/settings/halls', label: 'Зали' },
-  { href: '/settings/training-types', label: 'Типи' },
+// Перша колонка (label) — заголовок картки, тому без card. Код — у cardMeta як бейдж.
+const columns: RefColumn<TrainingType>[] = [
+  { header: 'Назва', cell: t => t.label, tdClassName: styles.name },
+  {
+    header: 'Код',
+    cell: t => <span className="badge badge-type">{t.code}</span>,
+    card: t => <span className="badge badge-type">{t.code}</span>,
+  },
 ]
 
-function ToggleBtns({ id, active, toggling, onToggle }: {
-  id: string; active: boolean; toggling: string | null; onToggle: (id: string, v: boolean) => void
-}) {
-  return (
-    <div className={styles.toggleBtns}>
-      <button
-        className={`${styles.toggleBtn} ${styles.toggleTrue} ${active ? styles.toggleActiveTrue : ''}`}
-        onClick={() => !active && onToggle(id, true)}
-        disabled={toggling === id || active}
-        aria-pressed={active}
-      >TRUE</button>
-      <button
-        className={`${styles.toggleBtn} ${styles.toggleFalse} ${!active ? styles.toggleActiveFalse : ''}`}
-        onClick={() => active && onToggle(id, false)}
-        disabled={toggling === id || !active}
-        aria-pressed={!active}
-      >FALSE</button>
-    </div>
-  )
-}
-
-function ArchiveSection({ label, count, open, onToggle, children }: {
-  label: string; count: number; open: boolean; onToggle: () => void; children: React.ReactNode
-}) {
-  return (
-    <div className={styles.archiveSection}>
-      <button className={styles.archiveToggle} onClick={onToggle} aria-expanded={open}>
-        <span className={`${styles.archiveChevron} ${open ? styles.archiveChevronOpen : ''}`}>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M2.5 4.5l3.5 3.5 3.5-3.5"/>
-          </svg>
-        </span>
-        {label}
-        <span className={styles.archiveCount}>{count}</span>
-      </button>
-      {open && (count === 0 ? <div className={styles.archiveEmpty}>Архів порожній</div> : children)}
-    </div>
-  )
-}
-
 export default function TrainingTypesPage() {
-  const pathname = usePathname()
-  const [types, setTypes] = useState<TrainingType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-  const [showModal, setShowModal] = useState(false)
-  const [editing, setEditing] = useState<TrainingType | null>(null)
-  const [toggling, setToggling] = useState<string | null>(null)
-  const [archiveOpen, setArchiveOpen] = useState(false)
-
-  const fetchTypes = useCallback(async () => {
-    setLoading(true)
-    setFetchError(null)
-    const { data, error } = await supabase
-      .from('training_types')
-      .select('id, code, label, is_active, sort_order, created_at')
-      .order('sort_order', { ascending: true })
-    if (error) setFetchError(error.message)
-    else setTypes((data as TrainingType[]) ?? [])
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchTypes() }, [fetchTypes])
-
-  async function handleToggle(id: string, newValue: boolean) {
-    setToggling(id)
-    const { error } = await supabase.from('training_types').update({ is_active: newValue }).eq('id', id)
-    if (error) toast.error('Не вдалося змінити статус')
-    else setTypes(prev => prev.map(t => t.id === id ? { ...t, is_active: newValue } : t))
-    setToggling(null)
-  }
-
-  function handleEdit(t: TrainingType) { setEditing(t); setShowModal(true) }
-  function handleClose() { setShowModal(false); setEditing(null) }
-  function handleSaved() { handleClose(); toast.success('Збережено'); fetchTypes() }
-
-  const active = types.filter(t => t.is_active)
-  const archived = types.filter(t => !t.is_active)
-
   return (
-    <>
-      <div className="page-head">
-      <div className={styles.topbar}>
-        <h1 className="page-title">Типи тренувань</h1>
-        <button className="btn-primary" onClick={() => { setEditing(null); setShowModal(true) }}>+ Додати тип</button>
-      </div>
-      <nav className={styles.tabNav}>
-        {SETTINGS_TABS.map(tab => (
-          <a key={tab.href} href={tab.href} className={`${styles.tabNavLink} ${pathname === tab.href ? styles.tabNavLinkActive : ''}`}>{tab.label}</a>
-        ))}
-      </nav>
-      </div>{/* /page-head */}
-
-      <div className={`page-body ${styles.tabSection}`}>
-        {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
-        ) : fetchError ? (
-          <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
-        ) : active.length === 0 ? (
-          <div className={styles.empty}>{MSG.empty.trainingTypes}</div>
-        ) : (
-          <>
-            <div className={styles.tableDesktop}>
-              <div className="data-table-wrap">
-                <table className="data-table">
-                  <thead><tr><th>Назва</th><th>Код</th><th>Статус</th><th></th></tr></thead>
-                  <tbody>
-                    {active.map(t => (
-                      <tr key={t.id}>
-                        <td className={styles.name}>{t.label}</td>
-                        <td><span className="badge badge-type">{t.code}</span></td>
-                        <td><ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} /></td>
-                        <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className={styles.cardList}>
-              {active.map(t => (
-                <div key={t.id} className={styles.settingCard}>
-                  <div className={styles.cardRow}>
-                    <span className={styles.name}>{t.label}</span>
-                    <div className={styles.cardActions}>
-                      <button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button>
-                      <ToggleBtns id={t.id} active={t.is_active} toggling={toggling} onToggle={handleToggle} />
-                    </div>
-                  </div>
-                  <div className={styles.cardMeta}>
-                    <span><span className="badge badge-type">{t.code}</span></span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        <ArchiveSection label="Архів типів" count={archived.length} open={archiveOpen} onToggle={() => setArchiveOpen(o => !o)}>
-          {archived.length === 0 ? null : (
-            <>
-              <div className={styles.tableDesktop}>
-                <div className="data-table-wrap">
-                  <table className="data-table">
-                    <thead><tr><th>Назва</th><th>Код</th><th></th><th></th></tr></thead>
-                    <tbody>
-                      {archived.map(t => (
-                        <tr key={t.id} className={styles.archivedRow}>
-                          <td className={styles.name}>{t.label}</td>
-                          <td><span className="badge badge-type">{t.code}</span></td>
-                          <td>
-                            <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
-                              {toggling === t.id ? '...' : 'Відновити'}
-                            </button>
-                          </td>
-                          <td><button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div className={styles.cardList}>
-                {archived.map(t => (
-                  <div key={t.id} className={styles.settingCard} style={{ opacity: 0.65 }}>
-                    <div className={styles.cardRow}>
-                      <span className={styles.name}>{t.label}</span>
-                      <div className={styles.cardActions}>
-                        <button className={styles.restoreBtn} onClick={() => handleToggle(t.id, true)} disabled={toggling === t.id}>
-                          {toggling === t.id ? '...' : 'Відновити'}
-                        </button>
-                        <button className={styles.editBtn} onClick={() => handleEdit(t)}>Редагувати</button>
-                      </div>
-                    </div>
-                    <div className={styles.cardMeta}>
-                      <span><span className="badge badge-type">{t.code}</span></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </ArchiveSection>
-      </div>
-
-      {showModal && <TrainingTypeModal onClose={handleClose} onSaved={handleSaved} existing={editing} />}
-    </>
+    <RefEntityPage<TrainingType>
+      title="Типи тренувань"
+      addLabel="+ Додати тип"
+      archiveLabel="Архів типів"
+      emptyMsg={MSG.empty.trainingTypes}
+      useEntity={() => useRefEntity<TrainingType>('training_types', listTrainingTypes, toggleTrainingType)}
+      columns={columns}
+      editable
+      renderModal={({ editing, onClose, onSaved }) => (
+        <TrainingTypeModal onClose={onClose} onSaved={onSaved} existing={editing} />
+      )}
+    />
   )
 }
