@@ -45,12 +45,13 @@ export default function DashboardPage() {
           {/* Алерти — потребує дії сьогодні */}
           <AlertCardsBlock date={today} />
 
-          {/* Боржники по сесіях — розгортається під картками */}
-          <SessionDebtBlock date={today} />
+          {/* Боржники по сесіях (згортається) + вільні місця на заняттях */}
+          <div className={styles.twoCol}>
+            <SessionDebtBlock date={today} />
+            <FreeSpacesBlock date={today} />
+          </div>
 
-          {/* Розклад */}
-          <FreeSpacesBlock date={today} />
-
+          {/* Розклад: вільні слоти залів + готівка тренерів */}
           <div className={styles.twoCol}>
             <FreeSlotsBlock date={today} />
             <TrainerCashBlock date={today} />
