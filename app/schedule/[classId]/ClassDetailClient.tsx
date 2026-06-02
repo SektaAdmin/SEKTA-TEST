@@ -453,7 +453,7 @@ if (loading) {
                               {name}
                             </a>
                             {hoursLabel && (
-                              <span className={styles.hoursTag}>{hoursLabel}</span>
+                              <span className={`badge badge-type ${styles.hoursTag}`}>{hoursLabel}</span>
                             )}
                           </td>
                           <td>

@@ -326,7 +326,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
                       <span className={styles.clientName}>
                         {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
                       </span>
-                      {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
+                      {hoursLabel && <span className={`badge badge-type ${styles.hoursTag}`}>{hoursLabel}</span>}
                       {confirmRemoveId === row.id ? (
                         <button
                           type="button"

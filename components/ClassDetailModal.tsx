@@ -498,7 +498,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                 <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                   {name}
                                 </a>
-                                {hoursLabel && <span className={styles.hoursTag}>{hoursLabel}</span>}
+                                {hoursLabel && <span className="badge badge-type">{hoursLabel}</span>}
                               </td>
                               <td>
                                 {(() => {

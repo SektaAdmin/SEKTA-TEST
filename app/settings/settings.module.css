@@ -215,19 +215,6 @@
 }
 .archiveChevronOpen { transform: rotate(180deg); }
 
-.archiveCount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--badge-radius);
-  min-width: 20px;
-  padding: 1px 7px;
-  font-size: 11px;
-  color: var(--text-3);
-  font-variant-numeric: tabular-nums;
-}
 
 .archiveEmpty {
   color: var(--text-3);

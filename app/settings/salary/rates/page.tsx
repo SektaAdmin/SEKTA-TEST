@@ -254,7 +254,7 @@ export default function SalaryRatesPage() {
                   </svg>
                 </span>
                 Архів ставок
-                <span className={ss.archiveCount}>{archivedRates.length}</span>
+                <span className="count-chip">{archivedRates.length}</span>
               </button>
 
               {archiveOpen && (

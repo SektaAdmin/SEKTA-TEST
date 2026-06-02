@@ -94,13 +94,6 @@
 }
 
 .hoursTag {
-  font-size: 11px;
-  color: var(--text-3);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1px 5px;
-  white-space: nowrap;
   flex-shrink: 0;
 }
 

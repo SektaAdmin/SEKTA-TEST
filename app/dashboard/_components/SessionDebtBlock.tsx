@@ -99,7 +99,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         <div className={styles.blockHeadRight}>
           {!loading && totalDebtors > 0 && (
-            <span className={styles.debtCount}>{totalDebtors}</span>
+            <span className="count-chip-danger">{totalDebtors}</span>
           )}
           <svg
             className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}

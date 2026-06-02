@@ -103,16 +103,6 @@
   flex-shrink: 0;
 }
 
-.debtCount {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
-  border-radius: 999px;
-  padding: 1px 8px;
-  min-width: 20px;
-  text-align: center;
-}
 
 .chevron {
   color: var(--text-3);

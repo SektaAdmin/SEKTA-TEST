@@ -44,7 +44,7 @@ export function ArchiveSection({ label, count, open, onToggle, children }: {
           </svg>
         </span>
         {label}
-        <span className={styles.archiveCount}>{count}</span>
+        <span className="count-chip">{count}</span>
       </button>
       {open && (count === 0 ? <div className={styles.archiveEmpty}>Архів порожній</div> : children)}
     </div>
