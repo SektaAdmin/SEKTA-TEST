@@ -1,0 +1,228 @@
+/* ── Head ──────────────────────────────────────────────────── */
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px var(--topbar-px);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.headDate {
+  font-size: 14px;
+  color: var(--text-3);
+  text-transform: capitalize;
+}
+
+/* ── Body ──────────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px var(--topbar-px) 32px;
+}
+
+.topCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 480px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Спільне для блоків ────────────────────────────────────── */
+.blockTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--text-3);
+  padding: 12px 0;
+}
+
+/* ── Блок 2: боржники ──────────────────────────────────────── */
+.debtBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: 20px;
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.blockHead .blockTitle {
+  margin-bottom: 0;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.copyBtn:hover {
+  border-color: var(--text-3);
+}
+
+.debtGroup {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.debtGroup:first-of-type {
+  border-top: none;
+}
+
+.debtGroupHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.debtHall {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.debtType {
+  font-size: 12px;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+.debtClient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-2);
+  padding: 3px 0 3px 12px;
+}
+
+.debtBalance {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+/* ── Блок 3: вільні слоти ──────────────────────────────────── */
+.slotsBlock,
+.cashBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: 20px;
+}
+
+.slotRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.slotRow:first-of-type {
+  border-top: none;
+}
+
+.slotHall {
+  flex-shrink: 0;
+  width: 120px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.slotWindows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slotChip {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--success);
+  background: var(--success-dim);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+
+.slotFull {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ── Блок 4: готівка тренерів ──────────────────────────────── */
+.cashRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.cashRow:first-of-type {
+  border-top: none;
+}
+
+.cashName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.cashTotal {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.cashToday {
+  font-size: 12px;
+  color: var(--success);
+  font-variant-numeric: tabular-nums;
+}

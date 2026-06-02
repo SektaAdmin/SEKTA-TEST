@@ -71,3 +71,12 @@ export const CopyIcon = () => (
     <path d="M3.5 2.5h8a1 1 0 011 1v8"/>
   </svg>
 )
+
+export const DashboardIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <rect x="2" y="2" width="5" height="5" rx="1"/>
+    <rect x="9" y="2" width="5" height="5" rx="1"/>
+    <rect x="2" y="9" width="5" height="5" rx="1"/>
+    <rect x="9" y="9" width="5" height="5" rx="1"/>
+  </svg>
+)

@@ -3,10 +3,11 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon } from './icons/navigation'
+import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
 
 const nav = [
+  { href: '/dashboard', label: 'Дашборд', icon: <DashboardIcon /> },
   { href: '/sales', label: 'Продажи', icon: <SalesIcon /> },
   { href: '/clients', label: 'Клієнти', icon: <ClientsIcon /> },
   { href: '/schedule', label: 'Розклад', icon: <ScheduleIcon /> },

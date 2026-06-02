@@ -1,0 +1,46 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  text-decoration: none;
+}
+
+.clickable {
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.clickable:hover {
+  border-color: var(--text-3);
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.value {
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.danger .value {
+  color: var(--danger);
+}
+
+.success .value {
+  color: var(--success);
+}

@@ -6,6 +6,14 @@ import { createClient } from '@/lib/supabase'
 import styles from './BottomNav.module.css'
 
 const primaryNav = [
+  { href: '/dashboard', label: 'Дашборд', icon: (
+    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <rect x="2" y="2" width="5" height="5" rx="1"/>
+      <rect x="9" y="2" width="5" height="5" rx="1"/>
+      <rect x="2" y="9" width="5" height="5" rx="1"/>
+      <rect x="9" y="9" width="5" height="5" rx="1"/>
+    </svg>
+  )},
   { href: '/sales', label: 'Продажі', icon: (
     <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="2" y="2" width="12" height="12" rx="1.5"/>
@@ -27,17 +35,10 @@ const primaryNav = [
       <line x1="10.5" y1="1.5" x2="10.5" y2="4.5"/>
     </svg>
   )},
-  { href: '/accounting', label: 'Звіти', icon: (
-    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-      <line x1="3" y1="12" x2="3" y2="7"/>
-      <line x1="7" y1="12" x2="7" y2="4"/>
-      <line x1="11" y1="12" x2="11" y2="9"/>
-      <line x1="1" y1="12" x2="15" y2="12"/>
-    </svg>
-  )},
 ]
 
 const moreNav = [
+  { href: '/accounting', label: 'Звіти' },
   { href: '/schedule/templates', label: 'Шаблони' },
   { href: '/journal', label: 'Журнал' },
   { href: '/settings/salary/rates', label: 'Ставки' },

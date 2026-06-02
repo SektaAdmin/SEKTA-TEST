@@ -119,6 +119,8 @@ training_types — довідник типів занять
 - **Довідники** (tickets/trainers/halls/trainingTypes) → `contexts/RefsContext.tsx` через `useRefs()`. Не тягнути props зі сторінок. Має `refetch*` для оновлення після мутацій у налаштуваннях.
 - **Лейбли+класи бейджів** (статуси enrollment, методи оплати, короткі типи) → `lib/badges.ts`. `enrollmentStatusClass`/`paymentClass` повертають готовий `'badge badge-cash'` → у `className` напряму. CSS бейджів — у `globals.css`. Лейбли статусів — дієслова (Записалась/Відвідала/Не прийшла/Скасувала/Черга). `personal_card` = «Картка».
 - **Повні людські назви типів занять** → `label` з БД (RefsContext / `listTrainingTypeLabels`), НЕ хардкод. Короткі ярлики для звітів → `ticketTypeShortLabel` у badges.ts.
+- **KPI-картка** (число + підпис, сітка карток) → `StatCard` (`components/ui/StatCard.tsx`). `value` передавати **вже форматованим** (через `formatMoney` тощо), опційні `hint`/`href`/`accent`. Не плодити локальні `.balanceBlock`/`.summary`-копії.
+- **Дашборд-запити** (агрегати «на сьогодні») → `lib/queries/dashboard.ts` (ФОП-сума, зайняті інтервали залів) + чиста логіка звіту боржників у `lib/dashboardReport.ts`. Решта блоків дашборду збирається з існуючих queries (`listClassesForDate`/`listEnrollmentsForClass`/`listSessionBalancesForClients`/`getTrainerCashBalance*`), не дублювати.
 - **Гроші (формат)** → `formatMoney(n)` у `lib/formatters.ts` («1 000 ₴»). Знак ± і «—» для 0 — на місці виклику.
 - **Дати display** → `lib/formatters.ts`: `formatDate` (ДД.ММ.РРРР), `formatDateShort` (ДД.ММ), `formatDateYY`. Дата → РРРР-ММ-ДД для `<input type=date>` → `toYMD`/`isoToYMD` у `lib/dateUtils.ts`. Не писати `getFullYear()+padStart` локально.
 - **⚠️ Дні тижня — ДВІ конвенції** в `lib/dateUtils.ts`: `DOW_LABELS_SHORT/FULL` (0=Нд, індексувати значенням `day_of_week` з БД) vs `WEEKDAYS_SHORT/FULL` (0=Пн, для заголовків сітки). JS `Date` → Monday-based через `dowMondayIndex(date)`. Не плутати.
@@ -164,6 +166,7 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 | Route | Призначення |
 |-------|-------------|
 | `/login` | Авторизація |
+| `/dashboard` | Операційний пульт на сьогодні: ФОП за день (→ звірка), боржники по сесіях (+копія звіту тренерам), вільні слоти залів 8:00–22:00, готівка на руках тренерів. Головна після логіну |
 | `/sales` | Продажі + кнопка «+ Витрата/Дохід» (studio_expenses). Фільтр дат |
 | `/clients`, `/clients/[id]` | База клієнтів; профіль (депозит, залишки занять, покупки, записи) |
 | `/schedule`, `/schedule/[classId]` | Розклад день/тиждень; деталі заняття. Навігація назад ≤30 днів |
@@ -172,5 +175,6 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 | `/accounting` | Звірка з банком: feed sales+expenses+payments, картки підсумків, чекбокси |
 | `/settings/salary/rates`, `/settings/salary/calculations` | Ставки тренерів; нарахування зп (період → заняття, готівка на руках, виплати) |
 | `/settings/{tickets,trainers,halls,training-types}` | Довідники: активні + архів |
+| `/` | Редирект: залогінений → `/dashboard`, інакше → `/login` |
 | `/settings`, `/tickets`, `/trainers`, `/halls`, `/training-types`, `/accounting/trainers*` | Редиректи |
 
