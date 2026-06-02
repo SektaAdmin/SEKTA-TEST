@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { MSG } from '@/lib/messages'
 import { supabase } from '@/lib/supabase'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
@@ -125,7 +126,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
       return
     }
 
-    toast.success(isEdit ? 'Збережено' : mode === 'expense' ? 'Витрату записано' : 'Дохід записано')
+    toast.success(isEdit ? MSG.toast.saved : mode === 'expense' ? 'Витрату записано' : 'Дохід записано')
     onSaved()
   }
 

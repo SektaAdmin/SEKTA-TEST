@@ -2,6 +2,7 @@
 import { useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
+import { MSG } from '@/lib/messages'
 import styles from './settings.module.css'
 
 const SETTINGS_TABS = [
@@ -102,7 +103,7 @@ export function RefEntityPage<T extends { id: string; is_active?: boolean }>({
   const openAdd = () => { setEditing(null); setShowModal(true) }
   const openEdit = (row: T) => { setEditing(row); setShowModal(true) }
   const onClose = () => { setShowModal(false); setEditing(null) }
-  const onSaved = () => { onClose(); toast.success('Збережено'); refetch() }
+  const onSaved = () => { onClose(); toast.success(MSG.toast.saved); refetch() }
 
   const active = data.filter(r => r.is_active)
   const archived = data.filter(r => !r.is_active)

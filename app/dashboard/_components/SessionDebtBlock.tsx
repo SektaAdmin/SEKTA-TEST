@@ -1,6 +1,7 @@
 'use client'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
+import { MSG } from '@/lib/messages'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsForDate } from '@/lib/queries/dashboard'
 import { buildDebtReportText, type DebtGroup } from '@/lib/dashboardReport'
@@ -22,7 +23,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
     const text = buildDebtReportText(new Date(`${date}T00:00:00`), groups)
     navigator.clipboard.writeText(text)
       .then(() => toast.success('Звіт скопійовано'))
-      .catch(() => toast.error('Не вдалося скопіювати'))
+      .catch(() => toast.error(MSG.toast.copyFailed))
   }, [date, groups])
 
   return (

@@ -56,7 +56,7 @@ export default function ClientsPage() {
   function handleSaved() {
     setShowModal(false)
     setEditingClient(null)
-    toast.success('Збережено')
+    toast.success(MSG.toast.saved)
     refetch()
   }
 

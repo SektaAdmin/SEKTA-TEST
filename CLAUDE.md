@@ -134,7 +134,7 @@ training_types — довідник типів занять
 - **Метрики розкладу** (capacity/waitlist/fill) → `lib/scheduleMetrics.ts` (`getActiveCount`, `getWaitlistCount`, `isFull`, `isAlmost`, `fillPct`; для шаблонів — `*ClientCount*`). Не дублювати формули.
 - **Ефективний баланс сесій** (скільки буде з урахуванням заняття, для відображення в рядку enrollment) → `effectiveSessionBalance(raw, status, sessionsUsed, hours)` у `lib/scheduleMetrics.ts`. `enrolled` → `raw − cost` («як буде»); вже-списані/waitlist/cancelled → `raw`. Вживається в ClassDetailModal і ClassDetailClient.
 - **Validation-повідомлення** → `lib/validation-messages.ts` (`VM.required.*`/`VM.invalid.*`). Усі zod/RHF беруть звідси.
-- **Empty-state тексти** → `lib/messages.ts` (`MSG.empty.*`).
+- **Empty-state тексти** → `lib/messages.ts` (`MSG.empty.*`). Повторювані toast-рядки — `MSG.toast.*` (`saved`/`copied`/`copyFailed`/`deleteFailed`). Одиничні доменні toast-літерали лишаються на місці (виносимо лише з другим використанням).
 - **Кольори типів занять** → `lib/typeColor.ts`.
 - **isMobile** → `hooks/useIsMobile.ts` (matchMedia, breakpoint 640px). Не дублювати `window.innerWidth`.
 - **Realtime** → `lib/useRealtime.ts` (debounce 300ms, JWT обов'язковий для RLS-таблиць).

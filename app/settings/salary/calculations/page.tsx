@@ -230,7 +230,7 @@ export default function SalaryCalculationsPage() {
 
   async function handleDeletePayment(id: string) {
     const { error } = await deleteTrainerPayment(supabase, id)
-    if (error) { toast.error('Помилка видалення'); return }
+    if (error) { toast.error(MSG.toast.deleteFailed); return }
     setDeletingPaymentId(null)
     fetchAll()
   }

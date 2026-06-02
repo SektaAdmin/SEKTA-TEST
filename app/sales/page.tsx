@@ -134,7 +134,7 @@ export default function SalesPage() {
   function handleSaved() {
     setShowModal(false)
     setEditSale(null)
-    toast.success('Збережено')
+    toast.success(MSG.toast.saved)
     refetch()
   }
 

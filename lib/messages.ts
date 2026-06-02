@@ -25,4 +25,10 @@ export const MSG = {
     salaryClasses:      'Занять з нарахуваннями немає за вказаний період',
     salaryPayments:     'Виплат за цей період немає',
   },
+  toast: {
+    saved:              'Збережено',
+    copied:             'Скопійовано',
+    copyFailed:         'Не вдалося скопіювати',
+    deleteFailed:       'Помилка видалення',
+  },
 } as const

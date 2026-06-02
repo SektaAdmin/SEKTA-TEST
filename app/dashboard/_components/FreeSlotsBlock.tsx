@@ -1,6 +1,7 @@
 'use client'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
+import { MSG } from '@/lib/messages'
 import { supabase } from '@/lib/supabase'
 import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queries/dashboard'
 import { useRefs } from '@/contexts/RefsContext'
@@ -59,8 +60,8 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   function handleCopyHall(hallName: string, free: { from: number; to: number }[]) {
     const text = buildHallSlotsText(hallName, free)
     navigator.clipboard.writeText(text)
-      .then(() => toast.success('Скопійовано'))
-      .catch(() => toast.error('Не вдалося скопіювати'))
+      .then(() => toast.success(MSG.toast.copied))
+      .catch(() => toast.error(MSG.toast.copyFailed))
   }
 
   return (
