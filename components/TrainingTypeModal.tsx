@@ -55,7 +55,6 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
     <ModalShell
       title={existing ? 'Редагування типу' : 'Новий тип тренування'}
       onClose={onClose}
-      width={380}
       footer={
         <ModalFooter
           onCancel={onClose}

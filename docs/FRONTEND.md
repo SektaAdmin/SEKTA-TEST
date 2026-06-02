@@ -27,9 +27,9 @@ components/
 
 ## Спільні UI-компоненти
 
-- **ModalShell** (`ui/ModalShell.tsx`) — обгортка ВСІХ модалок: overlay + header (title + close) + body + footer. Props: `title`, `onClose`, `footer`, `children`, `width`(=420), `modalClassName`, `bodyClassName`, `mobileFullScreen`, `headerActions`.
-  - За замовчуванням на ≤640px — bottom sheet (`max-height: 92dvh`, анімація `bottomSheetIn`).
-  - `mobileFullScreen`: на ≤640px модалка на весь екран. ⚠️ Overlay має `background: var(--bg)` — інакше сторінка/BottomNav просвічують. Використовують: SaleModal/ClassModal/EnrollClientModal (завжди), SeriesModal/ClassDetailModal (при isMobile).
+- **ModalShell** (`ui/ModalShell.tsx`) — обгортка ВСІХ модалок: overlay + header (title + close) + body + footer. Props: `title`, `onClose`, `footer`, `children`, `size`('form'|'detail'=form), `modalClassName`, `bodyClassName`, `headerActions`.
+  - **Ширина — лише два токени** (`SIZE_WIDTH` у ModalShell): `form`=440 (форми/довідники/підтвердження — дефолт), `detail`=760 (перегляд деталей, лише ClassDetailModal). НЕ передавати довільний `width` — уніфіковано до двох розмірів.
+  - **На ≤640px ВСІ модалки — bottom sheet** (`max-height: 92dvh`, `width:100%`, анімація `bottomSheetIn`, footer з `safe-area-inset-bottom`). Єдина поведінка: завжди читається як шар поверх, ніколи не плутається зі сторінкою. (Колишній `mobileFullScreen` — модалка на весь екран без overlay — видалено: він візуально був неотличний від окремої сторінки.)
   - z-index: overlay `300` > BottomNav `200`.
 - **ModalFooter** (`ui/ModalFooter.tsx`) — кнопки Скасувати/Зберегти. Props: `onCancel`, `onSave?`, `saveLabel`, `cancelLabel`, `loading`, `saveType`('button'|'submit'), `disabled`. Save рендериться лише при `onSave`.
 - **FormField** (`ui/FormField.tsx`) — label + control + errorHint + hint. ⚠️ `input[type=time]` має браузерний padding → нормалізовано `height:39px; padding-top/bottom:0`.
@@ -70,7 +70,7 @@ components/
 - Нова сторінка **не задає** margin-left/height/overflow/padding-bottom під BottomNav — усе вже в цих класах.
 - **НЕ додавати** `padding-bottom: calc(--bottom-nav-h + ...)` на page-body/foot — застарілий патерн, перекривав пагінацію. Висота обрізана на рівні `.page-layout`.
 - **BottomNav**: `position:fixed; z:200; bottom:0` — поза потоком. Контент фізично не доходить під нього (height обрізана).
-- `.page-content` — застарілий клас, лишається для сумісності (accounting/trainers/*, /schedule/[classId]).
+- `.page-content` — застарілий клас, лишається для сумісності (accounting/trainers/*).
 - Module.css сторінок: мобільна `@media` тільки специфіка (topbar/flex-wrap/padding), не дублювати висоту/overflow.
 
 **Mobile filterbar — два патерни:**

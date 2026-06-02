@@ -1,9 +1,3 @@
-/* overrides ModalShell defaults */
-.modal {
-  max-width: 400px;
-  margin: 16px;
-}
-
 .field { display: flex; flex-direction: column; gap: 5px; }
 
 .field label {

@@ -465,7 +465,6 @@ export default function TemplatesPage() {
           trainers={trainers}
           halls={halls}
           trainingTypes={trainingTypes}
-          mobileFullScreen={isMobile}
         />
       )}
     </div>

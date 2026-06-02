@@ -76,45 +76,18 @@
     align-items: flex-end;
   }
 
+  /* Усі модалки на мобільному — bottom-sheet (виїжджає знизу, видно край фону згори).
+     Єдина поведінка: завжди читається як шар поверх, ніколи не плутається зі сторінкою. */
   .modal {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     max-height: 92dvh;
     border-radius: var(--radius) var(--radius) 0 0;
     border-bottom: none;
     animation: bottomSheetIn var(--motion-fast) both;
   }
 
-  /* fullScreen overlay: розтягує модалку на весь екран без vh */
-  .overlayFullScreen {
-    align-items: stretch;
-    background: var(--bg);
-    backdrop-filter: none;
-    animation: none;
-  }
-
-  /* fullScreen modal: як окрема сторінка */
-  .modalFullScreen {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto;
-    max-height: none;
-    align-self: stretch;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    animation: none;
-  }
-
-  .modalFullScreen .header {
-    padding: var(--topbar-py) var(--topbar-px);
-    height: var(--topbar-h);
-    flex-shrink: 0;
-    box-sizing: border-box;
-  }
-
-  .modalFullScreen .footer {
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-    flex-shrink: 0;
+  .footer {
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
   }
 }

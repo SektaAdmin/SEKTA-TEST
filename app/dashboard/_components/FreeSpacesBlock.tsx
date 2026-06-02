@@ -1,12 +1,12 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { listClassesForDate, listEnrolledCountsForDate } from '@/lib/queries/enrollments'
 import { useRefs } from '@/contexts/RefsContext'
 import { useRealtime } from '@/lib/useRealtime'
 import { formatTime } from '@/lib/formatters'
 import { ArrowRightIcon } from '@/components/icons/navigation'
+import ClassDetailModal from '@/components/ClassDetailModal'
 import styles from '../dashboard.module.css'
 
 /* Блок: вільні місця на заняттях сьогодні (крім selftraining). */
@@ -27,6 +27,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   const [rows, setRows] = useState<ClassRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [detailClassId, setDetailClassId] = useState<string | null>(null)
 
   const load = useCallback(() => {
     let cancelled = false
@@ -99,13 +100,26 @@ export function FreeSpacesBlock({ date }: { date: string }) {
           </div>
           <div className={styles.spacesRight}>
             <span className={styles.spacesFreeChip}>{r.free}</span>
-            <Link href={`/schedule/${r.id}`} className={styles.spacesLink} title="Відкрити заняття">
+            <button
+              type="button"
+              onClick={() => setDetailClassId(r.id)}
+              className={styles.spacesLink}
+              title="Відкрити заняття"
+            >
               <ArrowRightIcon />
-            </Link>
+            </button>
           </div>
         </div>
       ))}
       </div>
+
+      {detailClassId && (
+        <ClassDetailModal
+          classId={detailClassId}
+          onClose={() => setDetailClassId(null)}
+          onClassUpdated={load}
+        />
+      )}
     </section>
   )
 }

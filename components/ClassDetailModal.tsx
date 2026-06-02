@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
-import { useIsMobile } from '@/hooks/useIsMobile'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage } from '@/lib/queries/classes'
 import {
@@ -48,7 +47,6 @@ interface Props {
 }
 
 export default function ClassDetailModal({ classId, onClose, onClassUpdated }: Props) {
-  const isMobile = useIsMobile()
 
   const [cls, setCls] = useState<ClassWithJoins | null>(null)
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
@@ -330,8 +328,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       title={cls ? (cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)) : 'Заняття'}
       onClose={onClose}
       footer={null}
-      width={760}
-      mobileFullScreen={isMobile}
+      size="detail"
       headerActions={headerActions}
       bodyClassName={styles.body}
     >

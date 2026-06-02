@@ -316,9 +316,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       <ModalShell
         title="Редагування заняття"
         onClose={onClose}
-        width={480}
         footer={null}
-        mobileFullScreen
       >
         <p className={styles.scopePrompt}>Це заняття входить до серії. Що змінити?</p>
         <div className={styles.scopeBtns}>
@@ -342,8 +340,6 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           ? editScope === 'future' ? 'Редагування серії' : 'Редагування заняття'
           : isSeries ? 'Нова серія занять' : 'Нове заняття'}
         onClose={onClose}
-        width={480}
-        mobileFullScreen
         footer={
           <ModalFooter
             onCancel={onClose}

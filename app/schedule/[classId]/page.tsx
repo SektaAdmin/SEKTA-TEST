@@ -1,9 +1,10 @@
-import ClassDetailClient from './ClassDetailClient'
+import { redirect } from 'next/navigation'
 
-interface Props {
-  params: { classId: string }
-}
-
-export default function ClassDetailPage({ params }: Props) {
-  return <ClassDetailClient classId={params.classId} />
+/**
+ * Деталі заняття більше не окрема сторінка — це ClassDetailModal (відкривається
+ * з /schedule, /journal, картки клієнта, дашборду). Старі URL-и /schedule/<id>
+ * (закладки, поширені посилання) ведемо на розклад.
+ */
+export default function ClassDetailPage() {
+  redirect('/schedule')
 }

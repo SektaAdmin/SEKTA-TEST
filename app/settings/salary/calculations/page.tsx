@@ -655,7 +655,6 @@ export default function SalaryCalculationsPage() {
         <ModalShell
           title={editingPayment ? 'Редагувати виплату' : 'Зафіксувати виплату'}
           onClose={() => setPaymentModal(false)}
-          width={380}
           footer={
             <ModalFooter
               onCancel={() => setPaymentModal(false)}
@@ -755,7 +754,6 @@ export default function SalaryCalculationsPage() {
         <ModalShell
           title="Видалити виплату?"
           onClose={() => setDeletingPaymentId(null)}
-          width={360}
           footer={
             <ModalFooter
               onCancel={() => setDeletingPaymentId(null)}

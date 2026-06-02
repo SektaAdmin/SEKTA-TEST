@@ -75,7 +75,7 @@ training_types — довідник типів занять
 - **`sales` без тікета** (`ticket_id=null`) = депозитна операція: `+amount_given` поповнення, `-price_paid` списання.
 - **`training_types.code`** — незмінний ідентифікатор; `label` — редагований. Константи `TICKET_TYPES`/`TICKET_TYPE_LABELS` видалені з коду — всі лейбли читаються з БД (RefsContext / `listTrainingTypeLabels`).
 - **`class_series.type`** — `'template'` (постійний шаблон тижня) vs `'series'` (разова серія). `day_of_week`: 0=Нд..6=Сб. `generate_week()` будує `classes` з `type='template'`.
-- **`classes.choreo_stage`** — вільний текст, етап вивчення хореографії **на конкретному занятті** (не на серії). Окреме поле, НЕ змішувати з `classes.notes` (загальні нотатки). Запис на кожне заняття; `generate_week` НЕ переносить (нові заняття з порожнім полем). Редагується inline в ClassDetailModal / `/schedule/[classId]` через `updateClassChoreoStage()`; показується read-only на дашборді (FreeSpacesBlock) і в картці клієнта (upcoming-записи).
+- **`classes.choreo_stage`** — вільний текст, етап вивчення хореографії **на конкретному занятті** (не на серії). Окреме поле, НЕ змішувати з `classes.notes` (загальні нотатки). Запис на кожне заняття; `generate_week` НЕ переносить (нові заняття з порожнім полем). Редагується inline в ClassDetailModal через `updateClassChoreoStage()`; показується read-only на дашборді (FreeSpacesBlock) і в картці клієнта (upcoming-записи).
 - **`enrollments.status`** — `enrolled` / `attended` / `cancelled` / `noshow` / `waitlist`. Тригер `check_class_capacity` авто-переводить `enrolled`→`waitlist` при повному залі. **Фінансовий факт — у `sessions_used`** (>0 = сесію списано), не в окремому статусі: `cancelled` зі `sessions_used>0` = «скасувала пізно, штраф».
 - **`enrollments.hours_attended`** — `int[]` для занять `duration_min >= 120`: `[1]`, `[2]` або `[1,2]`. `NULL` = усе заняття. `sessions_used = hours_attended.length` (або 1 якщо NULL).
 - **Правило скасування (дедлайн безкоштовності)** — у `cancellation_deadline(starts_at)`: початок `< 14:00` → дедлайн 19:00 попереднього дня; `>= 14:00` → `starts_at − 6 год`. До дедлайну `cancelled` без списання, після — зі списанням. `noshow` списує завжди. `change_enrollment_status` приймає `p_force_no_charge` для виняткового скасування без штрафу.
@@ -170,12 +170,12 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 | `/dashboard` | Операційний пульт на сьогодні. Зони згори вниз: **гроші** (KPI-картки по методах: готівка/ФОП/картка/депозит/витрати) → **алерти** (картки: боржники по сесіях, мінус по депозиту) → **боржники по сесіях** (згортається, +копія звіту тренерам) → **розклад** (вільні місця, вільні слоти залів 8:00–22:00, готівка тренерів). Головна після логіну |
 | `/sales` | Продажі + кнопка «+ Витрата/Дохід» (studio_expenses). Фільтр дат |
 | `/clients`, `/clients/[id]` | База клієнтів; профіль (депозит, залишки занять, покупки, записи) |
-| `/schedule`, `/schedule/[classId]` | Розклад день/тиждень; деталі заняття. Навігація назад ≤30 днів |
+| `/schedule` | Розклад день/тиждень. Деталі заняття — `ClassDetailModal` (модалка, не сторінка), відкривається кліком тут / у /journal / картці клієнта / дашборді. Навігація назад ≤30 днів |
 | `/schedule/templates` | Шаблони тижня (HallWeekGrid), постійники, «виставити тиждень» |
 | `/journal` | Минулі заняття (`starts_at < today`), фільтри, пагінація → ClassDetailModal |
 | `/accounting` | Звірка з банком: feed sales+expenses+payments, картки підсумків, чекбокси |
 | `/settings/salary/rates`, `/settings/salary/calculations` | Ставки тренерів; нарахування зп (період → заняття, готівка на руках, виплати) |
 | `/settings/{tickets,trainers,halls,training-types}` | Довідники: активні + архів |
 | `/` | Редирект: залогінений → `/dashboard`, інакше → `/login` |
-| `/settings`, `/tickets`, `/trainers`, `/halls`, `/training-types`, `/accounting/trainers*` | Редиректи |
+| `/settings`, `/tickets`, `/trainers`, `/halls`, `/training-types`, `/accounting/trainers*`, `/schedule/[classId]` | Редиректи (`/schedule/[classId]` → `/schedule`: старі посилання на деталі заняття, тепер модалка) |
 

@@ -57,7 +57,6 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
     <ModalShell
       title="Новий тренер"
       onClose={onClose}
-      width={380}
       footer={
         <ModalFooter
           onCancel={onClose}

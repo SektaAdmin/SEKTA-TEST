@@ -18,6 +18,7 @@ import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
+import ClassDetailModal from '@/components/ClassDetailModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -61,6 +62,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [upcomingEnrollments, setUpcomingEnrollments] = useState<UpcomingEnrollment[]>([])
   const [permanentEnrollments, setPermanentEnrollments] = useState<PermanentEnrollment[]>([])
   const [showEnrollModal, setShowEnrollModal] = useState(false)
+  const [detailClassId, setDetailClassId] = useState<string | null>(null)
   const [pastEnrollments, setPastEnrollments] = useState<PastEnrollment[]>([])
   const [pastTotal, setPastTotal] = useState(0)
   const [pastPage, setPastPage] = useState(0)
@@ -420,7 +422,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             <td>
                               <button
                                 className={styles.btnRowEdit}
-                                onClick={() => router.push(`/schedule/${e.class_id}`)}
+                                onClick={() => setDetailClassId(e.class_id)}
                               >
                                 Перейти
                               </button>
@@ -461,7 +463,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                           <button
                             className={styles.btnRowEdit}
                             style={{ flex: 1, height: 36 }}
-                            onClick={() => router.push(`/schedule/${e.class_id}`)}
+                            onClick={() => setDetailClassId(e.class_id)}
                           >
                             Перейти до заняття
                           </button>
@@ -1006,6 +1008,14 @@ export default function ClientDetailClient({ id }: { id: string }) {
           typeLabels={typeLabels}
           onClose={() => setShowEnrollModal(false)}
           onSaved={() => { setShowEnrollModal(false); fetchUpcomingEnrollments() }}
+        />
+      )}
+
+      {detailClassId && (
+        <ClassDetailModal
+          classId={detailClassId}
+          onClose={() => setDetailClassId(null)}
+          onClassUpdated={reloadAll}
         />
       )}
 

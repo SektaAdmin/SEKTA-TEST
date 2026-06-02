@@ -327,7 +327,6 @@ export default function SalaryRatesPage() {
         <ModalShell
           title="Архівувати ставку?"
           onClose={() => setConfirm({ open: false })}
-          width={380}
           footer={
             <ModalFooter
               onCancel={() => setConfirm({ open: false })}
@@ -352,7 +351,6 @@ export default function SalaryRatesPage() {
         <ModalShell
           title={isEditing ? 'Редагувати ставку' : 'Додати ставку'}
           onClose={() => setModal({ open: false })}
-          width={420}
           footer={
             <ModalFooter
               onCancel={() => setModal({ open: false })}

@@ -13,7 +13,6 @@ import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
-import { useIsMobile } from '@/hooks/useIsMobile'
 import type { Client } from '@/types'
 import styles from './ClientModal.module.css'
 
@@ -61,7 +60,6 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const isMobile = useIsMobile()
 
   async function loadHistory() {
     setHistoryLoading(true)
@@ -146,7 +144,6 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
     <ModalShell
       title={isEdit ? 'Редагувати клієнта' : 'Новий клієнт'}
       onClose={onClose}
-      mobileFullScreen={isMobile}
       footer={
         <ModalFooter
           onCancel={onClose}

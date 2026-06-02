@@ -133,7 +133,6 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
     <ModalShell
       title={isEdit ? 'Редагування операції' : 'Студійна операція'}
       onClose={onClose}
-      width={420}
       footer={<ModalFooter onCancel={onClose} onSave={handleSubmit} loading={saving} />}
     >
       {/* Mode toggle — hidden in edit mode for transfer (complex to re-edit) */}

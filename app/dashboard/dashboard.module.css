@@ -355,6 +355,8 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg-3);
+  cursor: pointer;
+  padding: 0;
 }
 
 .spacesLink:hover {

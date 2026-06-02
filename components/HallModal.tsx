@@ -53,8 +53,6 @@ export default function HallModal({ onClose, onSaved }: Props) {
     <ModalShell
       title="Новий зал"
       onClose={onClose}
-      width={440}
-      modalClassName={styles.modal}
       footer={
         <ModalFooter
           onCancel={onClose}

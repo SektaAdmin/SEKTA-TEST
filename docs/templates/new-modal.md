@@ -68,7 +68,7 @@ export default function PrykladModal({ onClose, onSaved }: Props) {
     <ModalShell
       title="Новий запис"  // або «Редагувати запис» при existing
       onClose={onClose}
-      width={380}           // 380 для простих форм, 480–520 для складних
+      // size не вказуємо — дефолт 'form' (440px). 'detail' (760px) лише для перегляду деталей.
       footer={
         <ModalFooter
           onCancel={onClose}
