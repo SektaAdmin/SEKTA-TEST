@@ -425,7 +425,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           const cost = isTwoHour(cls) ? Math.max(selectedHours.length, 1) : 1
                           const after = clientBalance - cost
                           return (
-                            <span className={after > 0 ? styles.balanceOk : styles.balanceWarn}>
+                            <span className={after > 0 ? 'balance-ok' : 'balance-warn'}>
                               Баланс після запису: {after}
                             </span>
                           )
@@ -514,10 +514,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               <td>
                                 {(() => {
                                   const raw = balanceMap[e.client_id]
-                                  if (raw == null) return <span className={styles.balanceMuted}>—</span>
+                                  if (raw == null) return <span className="balance-muted">—</span>
                                   const bal = effectiveSessionBalance(raw, e.status, e.sessions_used, e.hours_attended)
                                   return (
-                                    <span className={bal > 0 ? styles.balanceOk : styles.balanceWarn}>{bal}</span>
+                                    <span className={bal > 0 ? 'balance-ok' : 'balance-warn'}>{bal}</span>
                                   )
                                 })()}
                               </td>

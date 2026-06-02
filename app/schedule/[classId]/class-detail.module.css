@@ -221,22 +221,6 @@
   color: var(--text);
 }
 
-.balanceOk {
-  font-size: 14px;
-  color: var(--accent);
-  background: var(--accent-dim);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.balanceWarn {
-  font-size: 14px;
-  color: var(--danger);
-  background: var(--danger-dim);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
 
 .enrollError {
   font-size: 14px;

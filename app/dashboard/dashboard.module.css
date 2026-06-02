@@ -194,11 +194,6 @@
   padding: 3px 0 3px 12px;
 }
 
-.debtBalance {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  color: var(--danger);
-}
 
 /* ── Блок 3: вільні слоти ──────────────────────────────────── */
 .slotsBlock,

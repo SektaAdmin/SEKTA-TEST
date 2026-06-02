@@ -137,7 +137,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
             {g.clients.map((c, j) => (
               <div key={j} className={styles.debtClient}>
                 <span>{c.name}</span>
-                <span className={styles.debtBalance}>{c.balance}</span>
+                <span className="balance-warn">{c.balance}</span>
               </div>
             ))}
           </div>

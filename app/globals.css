@@ -402,3 +402,8 @@ input, select, textarea { border: 1px solid var(--border); background: var(--bg-
 
 /* Warning / negative state */
 .badge-danger { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
+
+/* Session balance chips (schedule, dashboard) */
+.balance-ok   { font-size: 14px; color: var(--accent);  background: var(--accent-dim);  padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-warn { font-size: 14px; color: var(--danger);  background: var(--danger-dim);  padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-muted{ font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }

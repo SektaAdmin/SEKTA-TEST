@@ -377,7 +377,7 @@ if (loading) {
                   <div className={styles.clientPreview}>
                     <span className={styles.clientName}>{formatClientName(selectedClient)}</span>
                     {clientBalance != null && (
-                      <span className={clientBalance > 0 ? styles.balanceOk : styles.balanceWarn}>
+                      <span className={clientBalance > 0 ? 'balance-ok' : 'balance-warn'}>
                         {clientBalance > 0
                           ? `${clientBalance} год. на балансі`
                           : 'Немає занять — потрібен абонемент'}
