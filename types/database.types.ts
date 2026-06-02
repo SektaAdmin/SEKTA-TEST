@@ -157,6 +157,7 @@ export type Database = {
       classes: {
         Row: {
           capacity: number | null
+          choreo_stage: string | null
           created_at: string
           duration_min: number
           hall_id: string | null
@@ -172,6 +173,7 @@ export type Database = {
         }
         Insert: {
           capacity?: number | null
+          choreo_stage?: string | null
           created_at?: string
           duration_min?: number
           hall_id?: string | null
@@ -187,6 +189,7 @@ export type Database = {
         }
         Update: {
           capacity?: number | null
+          choreo_stage?: string | null
           created_at?: string
           duration_min?: number
           hall_id?: string | null

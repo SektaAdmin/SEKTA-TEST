@@ -119,6 +119,7 @@ export interface Class {
   capacity: number | null
   is_cancelled: boolean
   notes: string | null
+  choreo_stage: string | null
   series_id: string | null
   created_at: string
   updated_at: string

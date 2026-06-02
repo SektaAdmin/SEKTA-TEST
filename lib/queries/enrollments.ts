@@ -8,6 +8,7 @@ export async function listClassesForDate(
   data: {
     id: string; ticket_type: string; title: string | null; starts_at: string;
     duration_min: number; capacity: number | null; is_cancelled: boolean;
+    choreo_stage: string | null;
     trainers: { name: string } | null; halls: { name: string } | null
   }[];
   error: string | null
@@ -18,12 +19,13 @@ export async function listClassesForDate(
   type ClassForDate = {
     id: string; ticket_type: string; title: string | null; starts_at: string;
     duration_min: number; capacity: number | null; is_cancelled: boolean;
+    choreo_stage: string | null;
     trainers: { name: string } | null; halls: { name: string } | null
   }
 
   const { data, error } = await supabase
     .from('classes')
-    .select('id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, trainers(name), halls(name)')
+    .select('id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, choreo_stage, trainers(name), halls(name)')
     .gte('starts_at', dayStart)
     .lte('starts_at', dayEnd)
     .eq('is_cancelled', false)

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
@@ -73,12 +73,21 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  const [choreoDraft, setChoreoDraft] = useState('')
+  const [savingChoreo, setSavingChoreo] = useState(false)
+
   const fetchClass = useCallback(async () => {
     const { data } = await getClassById(supabase, classId)
     if (!data) { setFetchError('Заняття не знайдено'); return null }
-    setCls(data as ClassWithJoins)
-    return data as ClassWithJoins
-  }, [classId])
+    const next = data as ClassWithJoins
+    setCls(prev => {
+      // не перетирати чернетку, якщо адмін зараз редагує (realtime-тік)
+      const dirty = prev != null && choreoDraft !== (prev.choreo_stage ?? '')
+      if (!dirty) setChoreoDraft(next.choreo_stage ?? '')
+      return next
+    })
+    return next
+  }, [classId, choreoDraft])
 
   const fetchEnrollments = useCallback(async (ticketType: string) => {
     const { data: rows } = await listEnrollmentsForClass(supabase, classId)
@@ -172,6 +181,20 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       if (cls) await fetchEnrollments(cls.ticket_type)
     }
     setActionLoading(null)
+  }
+
+  async function handleSaveChoreo() {
+    if (!cls) return
+    setSavingChoreo(true)
+    const value = choreoDraft.trim() || null
+    const { error } = await updateClassChoreoStage(supabase, cls.id, value)
+    if (error) {
+      toast.error('Не вдалося зберегти етап хореографії')
+    } else {
+      setCls({ ...cls, choreo_stage: value })
+      toast.success('Етап хореографії збережено')
+    }
+    setSavingChoreo(false)
   }
 
   async function handleCancelClass() {
@@ -397,6 +420,27 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     </div>
                   </>
                 )}
+
+                <div className={styles.detailsDivider} />
+                <div className={styles.choreoRow}>
+                  <span className={styles.notesLabel}>Етап хореографії</span>
+                  <textarea
+                    className={styles.choreoInput}
+                    value={choreoDraft}
+                    onChange={e => setChoreoDraft(e.target.value)}
+                    placeholder="На якому етапі вивчення хореографії…"
+                    rows={2}
+                  />
+                  {choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
+                    <button
+                      className={styles.choreoSave}
+                      onClick={handleSaveChoreo}
+                      disabled={savingChoreo}
+                    >
+                      {savingChoreo ? 'Збереження…' : 'Зберегти'}
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Enrollment section */}

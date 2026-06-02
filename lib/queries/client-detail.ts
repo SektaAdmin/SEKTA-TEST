@@ -24,6 +24,7 @@ export type UpcomingEnrollment = {
     title: string | null
     starts_at: string
     duration_min: number
+    choreo_stage: string | null
     trainers: { name: string } | null
     halls: { name: string } | null
   } | null
@@ -39,6 +40,7 @@ export type PastEnrollment = {
     title: string | null
     starts_at: string
     duration_min: number
+    choreo_stage: string | null
     trainers: { name: string } | null
     halls: { name: string } | null
   } | null
@@ -54,6 +56,7 @@ export type FeedEnrollment = {
     title: string | null
     starts_at: string
     duration_min: number
+    choreo_stage: string | null
     trainers: { name: string } | null
     halls: { name: string } | null
   } | null
@@ -91,7 +94,7 @@ export async function getClientDetail(
       .order('time_of_day', { referencedTable: 'class_series', ascending: true }),
     supabase
       .from('enrollments')
-      .select('id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))')
+      .select('id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))')
       .eq('client_id', id)
       .eq('status', 'enrolled')
       .gt('classes.starts_at', now)
@@ -125,7 +128,7 @@ export async function listPastEnrollmentsForClient(
 
   const { data, count, error } = await supabase
     .from('enrollments')
-    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))', { count: 'exact' })
+    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))', { count: 'exact' })
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
     .order('starts_at', { referencedTable: 'classes', ascending: false })
@@ -146,7 +149,7 @@ export async function listFeedEnrollmentsForClient(
 
   const { data, error } = await supabase
     .from('enrollments')
-    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))')
+    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))')
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
     .lt('classes.starts_at', now)

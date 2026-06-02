@@ -180,6 +180,48 @@
   line-height: 1.4;
 }
 
+.choreoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.choreoInput {
+  width: 100%;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.4;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.choreoInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.choreoSave {
+  align-self: flex-end;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.choreoSave:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 
 /* ── Enrollment Section ──────────────────────────────────────── */
 .enrollmentSection {

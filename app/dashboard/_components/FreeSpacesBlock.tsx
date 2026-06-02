@@ -19,6 +19,7 @@ type ClassRow = {
   hall: string | null
   capacity: number
   free: number
+  choreo: string | null
 }
 
 export function FreeSpacesBlock({ date }: { date: string }) {
@@ -52,6 +53,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
           hall: c.halls?.name ?? null,
           capacity: c.capacity!,
           free: Math.max(0, c.capacity! - (counts[c.id] ?? 0)),
+          choreo: c.choreo_stage,
         }))
         .filter(r => r.free > 0)
 
@@ -93,6 +95,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
             <div className={styles.spacesSub}>
               {[r.trainer, r.hall].filter(Boolean).join(' · ')}
             </div>
+            {r.choreo && <div className={styles.spacesChoreo}>🩰 {r.choreo}</div>}
           </div>
           <div className={styles.spacesRight}>
             <span className={styles.spacesFreeChip}>{r.free}</span>

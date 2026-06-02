@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { getClientDetail, listPastEnrollmentsForClient, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
-import type { PastEnrollment, FeedEnrollment } from '@/lib/queries/client-detail'
+import type { PastEnrollment, FeedEnrollment, UpcomingEnrollment } from '@/lib/queries/client-detail'
 import { listSalesForClient, listAllSalesForFeed } from '@/lib/queries/sales'
 import type { FeedSale } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
@@ -32,20 +32,6 @@ type PermanentEnrollment = {
     ticket_type: string
     day_of_week: number
     time_of_day: string
-    duration_min: number
-    trainers: { name: string } | null
-    halls: { name: string } | null
-  } | null
-}
-
-type UpcomingEnrollment = {
-  id: string
-  class_id: string
-  status: string
-  classes: {
-    ticket_type: string
-    title: string | null
-    starts_at: string
     duration_min: number
     trainers: { name: string } | null
     halls: { name: string } | null
@@ -425,7 +411,10 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             <td className={styles.dateCell}>
                               {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
                             </td>
-                            <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
+                            <td>
+                              {typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}
+                              {cls.choreo_stage && <div className={styles.choreoSub}>🩰 {cls.choreo_stage}</div>}
+                            </td>
                             <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                             <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
                             <td>
@@ -463,6 +452,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             {timeStr}{cls.trainers?.name ? ` · ${cls.trainers.name}` : ''}{cls.halls?.name ? ` · ${cls.halls.name}` : ''}
                           </span>
                         </div>
+                        {cls.choreo_stage && (
+                          <div className={styles.itemCardRow}>
+                            <span className={styles.choreoSub}>🩰 {cls.choreo_stage}</span>
+                          </div>
+                        )}
                         <div className={styles.itemCardActions}>
                           <button
                             className={styles.btnRowEdit}

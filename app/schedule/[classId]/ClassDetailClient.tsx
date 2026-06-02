@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, updateClassChoreoStage } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
@@ -64,12 +64,34 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
   const [cancellingClass, setCancellingClass] = useState(false)
   const [confirmCancelClass, setConfirmCancelClass] = useState(false)
 
+  const [choreoDraft, setChoreoDraft] = useState('')
+  const [savingChoreo, setSavingChoreo] = useState(false)
+
   const fetchClass = useCallback(async () => {
     const { data } = await getClassById(supabase, classId)
     if (!data) { setFetchError('Заняття не знайдено'); return null }
-    setCls(data as ClassWithJoins)
-    return data as ClassWithJoins
-  }, [classId])
+    const next = data as ClassWithJoins
+    setCls(prev => {
+      const dirty = prev != null && choreoDraft !== (prev.choreo_stage ?? '')
+      if (!dirty) setChoreoDraft(next.choreo_stage ?? '')
+      return next
+    })
+    return next
+  }, [classId, choreoDraft])
+
+  async function handleSaveChoreo() {
+    if (!cls) return
+    setSavingChoreo(true)
+    const value = choreoDraft.trim() || null
+    const { error } = await updateClassChoreoStage(supabase, cls.id, value)
+    if (error) {
+      toast.error('Не вдалося зберегти етап хореографії')
+    } else {
+      setCls({ ...cls, choreo_stage: value })
+      toast.success('Етап хореографії збережено')
+    }
+    setSavingChoreo(false)
+  }
 
   const fetchEnrollments = useCallback(async (ticketType: string) => {
     const { data: rows } = await listEnrollmentsForClass(supabase, classId)
@@ -352,6 +374,25 @@ if (loading) {
                 <span className={styles.infoValue}>{cls.notes}</span>
               </div>
             )}
+            <div className={styles.choreoBlock}>
+              <span className={styles.infoLabel}>Етап хореографії</span>
+              <textarea
+                className={styles.choreoInput}
+                value={choreoDraft}
+                onChange={e => setChoreoDraft(e.target.value)}
+                placeholder="На якому етапі вивчення хореографії…"
+                rows={2}
+              />
+              {choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
+                <button
+                  className={styles.choreoSave}
+                  onClick={handleSaveChoreo}
+                  disabled={savingChoreo}
+                >
+                  {savingChoreo ? 'Збереження…' : 'Зберегти'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Enrollment section */}

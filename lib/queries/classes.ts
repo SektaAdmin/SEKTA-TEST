@@ -58,6 +58,18 @@ export async function updateClassCancelled(
   return { error: error?.message ?? null }
 }
 
+export async function updateClassChoreoStage(
+  supabase: SupabaseClient,
+  classId: string,
+  choreoStage: string | null
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('classes')
+    .update({ choreo_stage: choreoStage })
+    .eq('id', classId)
+  return { error: error?.message ?? null }
+}
+
 export async function cancelClassAndRestoreSessions(
   supabase: SupabaseClient,
   classId: string
