@@ -136,6 +136,18 @@ training_types — довідник типів занять
 
 ---
 
+## Як додати N (scaffold-шляхи)
+
+Готові шаблони з робочим кодом — у `docs/templates/`. Не винаходити з нуля:
+
+- **Нова форм-модалка** → копіювати `TrainerModal` (RHF + FormField + ModalShell + ModalFooter + VM). **НЕ** `SaleModal` (спец-логіка `useSaleForm`/`useSaleSubmit`). Покроково — **[docs/templates/new-modal.md](docs/templates/new-modal.md)**.
+- **Нова довідкова сутність** (таблиця `{id,…,is_active}` + сторінка в /settings) → міграція (RLS+policy+GRANT, інакше deny-all) → `sync:schema` → `refEntityQueries` → `useRefEntity`-обгортка → модалка → `RefEntityPage`. Повний чекліст — **[docs/templates/new-feature.md](docs/templates/new-feature.md)**.
+- **Нова /settings сторінка-довідник** → `RefEntityPage` (`app/settings/_RefEntityPage.tsx`) + масив `RefColumn`, образець — `app/settings/halls/page.tsx` (29 рядків). Editable (inline-редагування) → prop `editable` + модалці `existing={editing}`, образець — `training-types`.
+- **Новий RPC-виклик** (success/error_message) → обгортка в `lib/queries/`, розпаковка через `callRpc()` (`lib/rpc.ts`).
+- **Type-check під час активного `npm run dev`** → `npx tsc --noEmit` (НЕ `npm run build` — ділить `.next` з dev, ламає чанки).
+
+---
+
 ## Frontend
 
 UI-компоненти, модалки, CSS-система, layout і per-page mobile-адаптація — у **[docs/FRONTEND.md](docs/FRONTEND.md)**. Коротко:
@@ -162,11 +174,3 @@ UI-компоненти, модалки, CSS-система, layout і per-page 
 | `/settings/{tickets,trainers,halls,training-types}` | Довідники: активні + архів |
 | `/settings`, `/tickets`, `/trainers`, `/halls`, `/training-types`, `/accounting/trainers*` | Редиректи |
 
----
-
-## Техборг завершено (Фази 1–6, 2026-06-01)
-
-**Фаза 3:** Drop дублів RPC. Видалено старі перевантаження `create_sale`/`update_sale` без `p_cash_holder`.
-**Фаза 4:** Type safety. 20 `as any` в queries замінено на явні типи.
-**Фаза 5:** БД-радники. Додано `SET search_path = public, pg_temp` для RPC, видалено дублі RLS-політик (19 шт.), додано індекси для неіндексованих FK (7 шт.), видалено невикористані індекси (10 шт.).
-**Фаза 6:** Дрібне. `app/error.tsx`: `0.5px` → `1px` border, додано external logging. `lib/formatters.ts` дублів не мало. Build чистий.
