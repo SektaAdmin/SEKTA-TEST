@@ -9,6 +9,14 @@ import { FormField } from '@/components/ui/FormField'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
+import {
+  listSeriesClients,
+  addSeriesClient,
+  removeSeriesClient,
+  insertSeries,
+  updateSeries,
+  type SeriesClientRow,
+} from '@/lib/queries/classes'
 import type { ClassSeries, Trainer, Hall, TrainingType, Client } from '@/types'
 import styles from './SeriesModal.module.css'
 
@@ -38,13 +46,6 @@ interface Prefill {
   day_of_week?: number
   time_of_day?: string
   hall_id?: string
-}
-
-interface SeriesClientRow {
-  id: string
-  client_id: string
-  hours_attended: number[] | null
-  clients: { first_name: string | null; last_name: string | null }
 }
 
 interface Props {
@@ -110,25 +111,18 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
   useEffect(() => {
     if (!isEdit || !activeSeries?.id) return
     setClientsLoading(true)
-    supabase
-      .from('series_clients')
-      .select('id, client_id, hours_attended, clients(first_name, last_name)')
-      .eq('series_id', activeSeries.id)
-      .order('created_at')
-      .then((result: { data: unknown[] | null; error: { message: string } | null }) => {
-        if (result.error) toast.error(result.error.message)
-        else setClients((result.data ?? []) as SeriesClientRow[])
-        setClientsLoading(false)
-      })
+    listSeriesClients(supabase, activeSeries.id).then(({ data, error }) => {
+      if (error) toast.error(error)
+      else setClients(data)
+      setClientsLoading(false)
+    })
   }, [isEdit, activeSeries?.id])
 
   const addClient = async (client: Client) => {
     if (!activeSeries?.id) return
     const hours = Number(durationMin) >= 120 ? selectedHours.slice().sort() : undefined
-    const insertData: Record<string, unknown> = { series_id: activeSeries.id, client_id: client.id }
-    if (hours !== undefined) insertData.hours_attended = hours
-    const { error } = await supabase.from('series_clients').insert(insertData)
-    if (error) { toast.error(error.message); return }
+    const { error } = await addSeriesClient(supabase, activeSeries.id, client.id, hours)
+    if (error) { toast.error(error); return }
     setClients(prev => [...prev, {
       id: crypto.randomUUID(),
       client_id: client.id,
@@ -139,8 +133,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
   }
 
   const removeClient = async (rowId: string) => {
-    const { error } = await supabase.from('series_clients').delete().eq('id', rowId)
-    if (error) { toast.error(error.message); return }
+    const { error } = await removeSeriesClient(supabase, rowId)
+    if (error) { toast.error(error); return }
     setClients(prev => prev.filter(r => r.id !== rowId))
     setConfirmRemoveId(null)
   }
@@ -160,13 +154,13 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
     }
 
     if (isEdit) {
-      const { error } = await supabase.from('class_series').update(payload).eq('id', activeSeries!.id)
-      if (error) { alert(error.message); return }
+      const { error } = await updateSeries(supabase, activeSeries!.id, payload)
+      if (error) { toast.error(error); return }
       onSaved()
     } else {
-      const { data, error } = await supabase.from('class_series').insert(payload).select().single()
-      if (error) { alert(error.message); return }
-      setCreatedSeries(data as ClassSeries)
+      const { data, error } = await insertSeries(supabase, payload)
+      if (error || !data) { toast.error(error ?? 'Помилка створення серії'); return }
+      setCreatedSeries(data)
       // не закриваємо модалку — даємо змогу одразу додати постійників
     }
   }

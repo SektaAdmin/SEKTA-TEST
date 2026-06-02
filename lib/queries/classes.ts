@@ -8,6 +8,38 @@ export type ClassWithJoins = Class & {
   enrollments: { id: string; status: string }[]
 }
 
+/** Спільні поля для INSERT/UPDATE одного заняття. */
+export interface ClassPayload {
+  ticket_type: string
+  trainer_id: string | null
+  hall_id: string | null
+  starts_at: string
+  duration_min: number
+  capacity: number | null
+  title: string | null
+  notes: string | null
+}
+
+/** Спільні поля для INSERT/UPDATE шаблону серії. `starts_at`-незалежні. */
+export interface SeriesPayload {
+  ticket_type: string
+  trainer_id: string | null
+  hall_id: string | null
+  duration_min: number
+  capacity: number | null
+  title: string | null
+  notes: string | null
+  day_of_week?: number
+  time_of_day?: string
+}
+
+export interface SeriesClientRow {
+  id: string
+  client_id: string
+  hours_attended: number[] | null
+  clients: { first_name: string | null; last_name: string | null }
+}
+
 export async function listClassesForWeek(
   supabase: SupabaseClient,
   startISO: string,
@@ -160,4 +192,188 @@ export async function listPastClasses(
 
   const { data, count, error } = await query
   return { data: (data ?? []) as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
+}
+
+// ── Mutations: classes ──────────────────────────────────────────
+
+export async function insertClasses(
+  supabase: SupabaseClient,
+  payloads: (ClassPayload & { series_id?: string })[]
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('classes').insert(payloads)
+  return { error: error?.message ?? null }
+}
+
+export async function updateClass(
+  supabase: SupabaseClient,
+  classId: string,
+  payload: ClassPayload
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('classes').update(payload).eq('id', classId)
+  return { error: error?.message ?? null }
+}
+
+/** Майбутні (>= now) нескасовані заняття серії — для edit-scope 'future'. */
+export async function listFutureSeriesClasses(
+  supabase: SupabaseClient,
+  seriesId: string
+): Promise<{ data: { id: string; starts_at: string }[]; error: string | null }> {
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('classes')
+    .select('id, starts_at')
+    .eq('series_id', seriesId)
+    .gte('starts_at', now)
+    .eq('is_cancelled', false)
+  return { data: (data ?? []) as { id: string; starts_at: string }[], error: error?.message ?? null }
+}
+
+/** Bulk-update майбутніх занять серії (edit-scope 'future'). */
+export async function updateFutureSeriesClasses(
+  supabase: SupabaseClient,
+  seriesId: string,
+  payload: ClassPayload
+): Promise<{ error: string | null }> {
+  const now = new Date().toISOString()
+  const { error } = await supabase
+    .from('classes')
+    .update(payload)
+    .eq('series_id', seriesId)
+    .gte('starts_at', now)
+    .eq('is_cancelled', false)
+  return { error: error?.message ?? null }
+}
+
+// ── Mutations: class_series ─────────────────────────────────────
+
+export async function insertSeries(
+  supabase: SupabaseClient,
+  payload: SeriesPayload & { type: 'template' | 'series' }
+): Promise<{ data: ClassSeries | null; error: string | null }> {
+  const { data, error } = await supabase.from('class_series').insert(payload).select().single()
+  return { data: (data as ClassSeries) ?? null, error: error?.message ?? null }
+}
+
+export async function updateSeries(
+  supabase: SupabaseClient,
+  seriesId: string,
+  payload: SeriesPayload
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('class_series').update(payload).eq('id', seriesId)
+  return { error: error?.message ?? null }
+}
+
+export async function deleteSeries(
+  supabase: SupabaseClient,
+  seriesId: string
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('class_series').delete().eq('id', seriesId)
+  return { error: error?.message ?? null }
+}
+
+// ── Mutations: series_clients (постійники) ──────────────────────
+
+export async function listSeriesClients(
+  supabase: SupabaseClient,
+  seriesId: string
+): Promise<{ data: SeriesClientRow[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('series_clients')
+    .select('id, client_id, hours_attended, clients(first_name, last_name)')
+    .eq('series_id', seriesId)
+    .order('created_at')
+  return { data: (data ?? []) as unknown as SeriesClientRow[], error: error?.message ?? null }
+}
+
+export async function addSeriesClient(
+  supabase: SupabaseClient,
+  seriesId: string,
+  clientId: string,
+  hoursAttended?: number[]
+): Promise<{ error: string | null }> {
+  const payload: Record<string, unknown> = { series_id: seriesId, client_id: clientId }
+  if (hoursAttended !== undefined) payload.hours_attended = hoursAttended
+  const { error } = await supabase.from('series_clients').insert(payload)
+  return { error: error?.message ?? null }
+}
+
+export async function removeSeriesClient(
+  supabase: SupabaseClient,
+  rowId: string
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('series_clients').delete().eq('id', rowId)
+  return { error: error?.message ?? null }
+}
+
+// ── Week generation / template teardown (/schedule/templates) ───
+
+export async function generateWeek(
+  supabase: SupabaseClient,
+  monday: string,
+  weeks: number = 1
+): Promise<{ classesCreated: number; enrollmentsCreated: number; error: string | null }> {
+  const { data, error } = await supabase.rpc('generate_week', { p_start_date: monday, p_weeks: weeks })
+  if (error) return { classesCreated: 0, enrollmentsCreated: 0, error: error.message }
+  return {
+    classesCreated: data?.[0]?.classes_created ?? 0,
+    enrollmentsCreated: data?.[0]?.enrollments_created ?? 0,
+    error: null,
+  }
+}
+
+/** id-шники всіх шаблонів тижня (type='template') — для bulk-видалення тижня. */
+export async function listTemplateSeriesIds(
+  supabase: SupabaseClient
+): Promise<{ data: string[]; error: string | null }> {
+  const { data, error } = await supabase.from('class_series').select('id').eq('type', 'template')
+  return { data: (data ?? []).map((s: { id: string }) => s.id), error: error?.message ?? null }
+}
+
+/** Видалити заняття вказаних серій у напіввідкритому діапазоні [from, to). */
+export async function deleteClassesInRange(
+  supabase: SupabaseClient,
+  seriesIds: string[],
+  fromISO: string,
+  toISO: string
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('classes')
+    .delete()
+    .in('series_id', seriesIds)
+    .gte('starts_at', fromISO)
+    .lt('starts_at', toISO)
+  return { error: error?.message ?? null }
+}
+
+// ── Conflict check ──────────────────────────────────────────────
+
+/**
+ * Перевірка перетину по залу/тренеру. Повертає готове людське повідомлення
+ * (або null, якщо конфлікту нема). Бізнес-логіка форматування спільна для
+ * ClassModal і ClassDetailModal — тримаємо тут, не дублюємо.
+ */
+export async function checkClassConflicts(
+  supabase: SupabaseClient,
+  params: {
+    starts_at: string
+    duration_min: number
+    hall_id: string | null
+    trainer_id: string | null
+    exclude_id?: string
+  }
+): Promise<string | null> {
+  if (!params.hall_id && !params.trainer_id) return null
+  const { data } = await supabase.rpc('check_class_conflicts', {
+    p_starts_at: params.starts_at,
+    p_duration_min: params.duration_min,
+    p_hall_id: params.hall_id ?? null,
+    p_trainer_id: params.trainer_id ?? null,
+    p_exclude_id: params.exclude_id ?? null,
+  })
+  if (!data || data.length === 0) return null
+  const c = data[0]
+  const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
+  const who = c.conflict_type === 'hall' ? 'Зал' : 'Тренер'
+  const label = c.title || c.ticket_type
+  return `${who} зайнятий — конфлікт із заняттям «${label}» о ${when}`
 }

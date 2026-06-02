@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
@@ -237,19 +237,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     if (!cls) return
     setCancellingClass(true)
 
-    const { data: conflicts } = await supabase.rpc('check_class_conflicts', {
-      p_starts_at: cls.starts_at,
-      p_duration_min: cls.duration_min,
-      p_hall_id: cls.hall_id ?? null,
-      p_trainer_id: cls.trainer_id ?? null,
-      p_exclude_id: cls.id,
+    const conflict = await checkClassConflicts(supabase, {
+      starts_at: cls.starts_at,
+      duration_min: cls.duration_min,
+      hall_id: cls.hall_id ?? null,
+      trainer_id: cls.trainer_id ?? null,
+      exclude_id: cls.id,
     })
-    if (conflicts && conflicts.length > 0) {
-      const c = conflicts[0]
-      const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
-      const who = c.conflict_type === 'hall' ? 'Зал' : 'Тренер'
-      const label = c.title || c.ticket_type
-      toast.error(`${who} зайнятий — конфлікт із «${label}» о ${when}`)
+    if (conflict) {
+      toast.error(conflict)
       setCancellingClass(false)
       return
     }

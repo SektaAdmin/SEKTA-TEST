@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { listStudioExpenses, deleteStudioExpense } from '@/lib/queries/studio-expenses'
+import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
-import { listTrainerPaymentsForPeriod, type TrainerPayment } from '@/lib/queries/trainer-rates'
+import { type TrainerPayment } from '@/lib/queries/trainer-rates'
+import { listReconciliationFeed, type ReconSaleRow } from '@/lib/queries/accounting'
 import { useRefs } from '@/contexts/RefsContext'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
@@ -17,20 +18,7 @@ import type { PaymentMethod } from '@/types'
 import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './accounting.module.css'
 
-type SaleRow = {
-  id: string
-  created_at: string
-  price_paid: number
-  amount_given: number
-  ticket_price: number | null
-  payment_method: PaymentMethod
-  ticket_id: string | null
-  ticket_name: string | null
-  trainer_id: string | null
-  cash_holder: string | null
-  clients: { first_name: string | null; last_name: string | null } | null
-  trainers: { name: string } | null
-}
+type SaleRow = ReconSaleRow
 
 type FeedItem =
   | { kind: 'sale'; data: SaleRow }
@@ -87,39 +75,11 @@ export default function AccountingPage() {
     setError(null)
     const { method, holder } = accountToFilter(key)
 
-    let salesQuery = supabase
-      .from('sales')
-      .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, cash_holder, clients(first_name, last_name), trainers!sales_trainer_id_fkey(name)')
-      .eq('payment_method', method)
-      .lte('created_at', `${to}T23:59:59`)
-      .order('created_at', { ascending: false })
-    if (from) salesQuery = salesQuery.gte('created_at', `${from}T00:00:00`)
-    if (holder) salesQuery = salesQuery.eq('cash_holder', holder)
-
-    let expQuery = supabase
-      .from('studio_expenses')
-      .select('id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!studio_expenses_trainer_id_fkey(name)')
-      .eq('payment_method', method)
-      .lte('created_at', `${to}T23:59:59`)
-      .order('created_at', { ascending: false })
-    if (from) expQuery = expQuery.gte('created_at', `${from}T00:00:00`)
-    if (holder) expQuery = expQuery.eq('cash_holder', holder)
-
-    let payQuery = supabase
-      .from('trainer_payments')
-      .select('id, trainer_id, cash_holder, period_start, period_end, calculated_amount, paid_amount, payment_date, payment_method, payment_type, notes, created_at, trainers(name)')
-      .eq('payment_method', method)
-      .lte('payment_date', to)
-      .order('payment_date', { ascending: false })
-    if (from) payQuery = payQuery.gte('payment_date', from)
-    if (holder) payQuery = payQuery.eq('cash_holder', holder)
-
-    const [salesRes, expRes, payRes] = await Promise.all([salesQuery, expQuery, payQuery])
-
-    if (salesRes.error) { setError(salesRes.error.message); setLoading(false); return }
-    setSales((salesRes.data ?? []) as SaleRow[])
-    setExpenses((expRes.data ?? []) as StudioExpense[])
-    setTrainerPayments((payRes.data ?? []) as TrainerPayment[])
+    const { sales, expenses, payments, error } = await listReconciliationFeed(supabase, { method, holder, from, to })
+    if (error) { setError(error); setLoading(false); return }
+    setSales(sales)
+    setExpenses(expenses)
+    setTrainerPayments(payments)
     setLoading(false)
   }, [])
 

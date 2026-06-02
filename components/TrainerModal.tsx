@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
+import { insertTrainer } from '@/lib/queries/trainers'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -37,7 +38,7 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
     setLoading(true)
     setServerError('')
 
-    const { error: insertError } = await supabase.from('trainers').insert({
+    const { error: insertError } = await insertTrainer(supabase, {
       name: data.name.trim(),
       instagram_username: data.instagram_username.trim() || null,
       telegram_username: data.telegram_username.trim() || null,
@@ -45,7 +46,7 @@ export default function TrainerModal({ onClose, onSaved }: Props) {
     })
 
     if (insertError) {
-      setServerError(insertError.message)
+      setServerError(insertError)
       setLoading(false)
       return
     }

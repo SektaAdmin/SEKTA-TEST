@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useSeriesTemplates } from '@/hooks/useSeriesTemplates'
+import { deleteSeries, generateWeek, listTemplateSeriesIds, deleteClassesInRange } from '@/lib/queries/classes'
 import { useTrainers } from '@/hooks/useTrainers'
 import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
@@ -103,9 +104,9 @@ export default function TemplatesPage() {
     setActiveDowIndex(i => (i + 1) % DAYS_ORDER.length)
   }
 
-  const deleteSeries = useCallback(async (id: string) => {
-    const { error } = await supabase.from('class_series').delete().eq('id', id)
-    if (error) { toast.error(error.message); return }
+  const deleteTemplate = useCallback(async (id: string) => {
+    const { error } = await deleteSeries(supabase, id)
+    if (error) { toast.error(error); return }
     setDeletingId(null)
     refetch()
   }, [refetch])
@@ -115,10 +116,10 @@ export default function TemplatesPage() {
     setGenerating(true)
     let totalClasses = 0, totalEnrollments = 0
     for (const monday of [...selectedMondays].sort()) {
-      const { data, error } = await supabase.rpc('generate_week', { p_start_date: monday, p_weeks: 1 })
-      if (error) { toast.error(error.message); setGenerating(false); return }
-      totalClasses += data?.[0]?.classes_created ?? 0
-      totalEnrollments += data?.[0]?.enrollments_created ?? 0
+      const { classesCreated, enrollmentsCreated, error } = await generateWeek(supabase, monday, 1)
+      if (error) { toast.error(error); setGenerating(false); return }
+      totalClasses += classesCreated
+      totalEnrollments += enrollmentsCreated
     }
     setGenerating(false)
     setShowGenerate(false)
@@ -128,8 +129,7 @@ export default function TemplatesPage() {
   const handleDelete = async () => {
     if (selectedMondays.length === 0) return
     setDeleting(true)
-    const { data: series } = await supabase.from('class_series').select('id').eq('type', 'template')
-    const seriesIds = (series ?? []).map((s: { id: string }) => s.id)
+    const { data: seriesIds } = await listTemplateSeriesIds(supabase)
     if (seriesIds.length === 0) {
       setDeleting(false)
       setShowDelete(false)
@@ -141,12 +141,8 @@ export default function TemplatesPage() {
       const startDate = new Date(y, m - 1, d)
       const endDate = new Date(startDate)
       endDate.setDate(endDate.getDate() + 7)
-      const { error } = await supabase
-        .from('classes').delete()
-        .in('series_id', seriesIds)
-        .gte('starts_at', startDate.toISOString())
-        .lt('starts_at', endDate.toISOString())
-      if (error) { toast.error(error.message); setDeleting(false); return }
+      const { error } = await deleteClassesInRange(supabase, seriesIds, startDate.toISOString(), endDate.toISOString())
+      if (error) { toast.error(error); setDeleting(false); return }
     }
     setDeleting(false)
     setShowDelete(false)
@@ -426,7 +422,7 @@ export default function TemplatesPage() {
                           {deletingId === series.id ? (
                             <span className={styles.deleteConfirm}>
                               Шаблон буде видалено. Вже створені заняття залишаться.{' '}
-                              <button className={styles.btnDanger} onClick={() => deleteSeries(series.id)}>Так, видалити</button>
+                              <button className={styles.btnDanger} onClick={() => deleteTemplate(series.id)}>Так, видалити</button>
                               {' '}
                               <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
                             </span>

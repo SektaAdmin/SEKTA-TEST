@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
+import { insertTicket } from '@/lib/queries/tickets'
+import { listActiveTrainingTypes } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -28,12 +30,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
   const [serverError, setServerError] = useState('')
 
   useEffect(() => {
-    supabase
-      .from('training_types')
-      .select('id, code, label, is_active, sort_order, created_at')
-      .eq('is_active', true)
-      .order('sort_order')
-      .then(({ data }: { data: TrainingType[] | null }) => setTrainingTypes(data ?? []))
+    listActiveTrainingTypes(supabase).then(({ data }) => setTrainingTypes(data))
   }, [])
 
   const {
@@ -51,7 +48,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
     const sessionsNum = parseInt(data.sessions, 10)
     const priceNum = parseInt(data.price, 10)
 
-    const { error: insertError } = await supabase.from('tickets').insert({
+    const { error: insertError } = await insertTicket(supabase, {
       name: data.name.trim(),
       ticket_type: data.ticket_type,
       sessions: sessionsNum,
@@ -60,7 +57,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
     })
 
     if (insertError) {
-      setServerError(insertError.message)
+      setServerError(insertError)
       setLoading(false)
       return
     }

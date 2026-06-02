@@ -94,3 +94,50 @@ export async function updateClient(
   const { error } = await supabase.from('clients').update(payload).eq('id', id)
   return { error: error?.message ?? null }
 }
+
+/**
+ * Пошук клієнтів для combobox: один токен → ilike по імені/прізвищу/телефону;
+ * два токени → ім'я+прізвище в обох порядках (Іван Петров / Петров Іван), dedup.
+ * Повертає до 10 результатів. Помилки ковтаються (UI-пошук, не критичний).
+ */
+export async function searchClientsForCombobox(
+  supabase: SupabaseClient,
+  q: string
+): Promise<Client[]> {
+  const trimmed = sanitizePostgrestSearch(q)
+  if (!trimmed) return []
+
+  const parts = trimmed.split(/\s+/)
+
+  if (parts.length === 1) {
+    const p = parts[0]
+    const { data } = await supabase
+      .from('clients')
+      .select('id,first_name,last_name,phone')
+      .or(`first_name.ilike.%${p}%,last_name.ilike.%${p}%,phone.ilike.%${p}%`)
+      .order('last_name')
+      .limit(10)
+    return (data ?? []) as Client[]
+  }
+
+  const [a, b] = parts
+  const [r1, r2] = await Promise.all([
+    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`).order('last_name').limit(10),
+    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`).order('last_name').limit(10),
+  ])
+  const seen = new Set<string>()
+  return [...(r1.data ?? []), ...(r2.data ?? [])].filter(c => {
+    if (seen.has(c.id)) return false
+    seen.add(c.id)
+    return true
+  }) as Client[]
+}
+
+/** Грошовий баланс клієнта (₴). null якщо не знайдено. */
+export async function getClientBalance(
+  supabase: SupabaseClient,
+  clientId: string
+): Promise<number | null> {
+  const { data } = await supabase.from('clients').select('balance').eq('id', clientId).single()
+  return data?.balance ?? null
+}

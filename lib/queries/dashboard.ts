@@ -190,3 +190,23 @@ export async function listSessionDebtorsForDate(
 
   return { data: groupDebtRows(rows), error: null }
 }
+
+/** Готівка (cash), що надійшла за день, згрупована по cash_holder (trainer.id). */
+export async function getCashIncomingByHolderForDate(
+  supabase: SupabaseClient,
+  date: string
+): Promise<{ data: Map<string, number>; error: string | null }> {
+  const { data, error } = await supabase
+    .from('sales')
+    .select('cash_holder, price_paid')
+    .eq('payment_method', 'cash')
+    .not('cash_holder', 'is', null)
+    .gte('created_at', `${date}T00:00:00`)
+    .lte('created_at', `${date}T23:59:59.999`)
+
+  const byHolder = new Map<string, number>()
+  for (const s of (data ?? []) as { cash_holder: string; price_paid: number }[]) {
+    byHolder.set(s.cash_holder, (byHolder.get(s.cash_holder) ?? 0) + Number(s.price_paid))
+  }
+  return { data: byHolder, error: error?.message ?? null }
+}

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { insertHall } from '@/lib/queries/halls'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -33,7 +34,7 @@ export default function HallModal({ onClose, onSaved }: Props) {
     setSaving(true)
     setError(null)
 
-    const { error: dbError } = await supabase.from('halls').insert({
+    const { error: dbError } = await insertHall(supabase, {
       name: name.trim(),
       capacity: Number(capacity),
       description: description.trim() || null,
@@ -41,7 +42,7 @@ export default function HallModal({ onClose, onSaved }: Props) {
     })
 
     if (dbError) {
-      setError(dbError.message)
+      setError(dbError)
       setSaving(false)
       return
     }

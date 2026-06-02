@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listAllCashBalances } from '@/lib/queries/trainer-rates'
+import { getCashIncomingByHolderForDate } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { useRealtime } from '@/lib/useRealtime'
 import styles from '../dashboard.module.css'
@@ -23,23 +24,14 @@ export function TrainerCashBlock({ date }: { date: string }) {
     async function run() {
       const [balRes, todayRes] = await Promise.all([
         listAllCashBalances(supabase),
-        supabase
-          .from('sales')
-          .select('cash_holder, price_paid')
-          .eq('payment_method', 'cash')
-          .not('cash_holder', 'is', null)
-          .gte('created_at', `${date}T00:00:00`)
-          .lte('created_at', `${date}T23:59:59.999`),
+        getCashIncomingByHolderForDate(supabase, date),
       ])
       if (cancelled) return
 
-      const err = balRes.error ?? todayRes.error?.message ?? null
+      const err = balRes.error ?? todayRes.error ?? null
       if (err) { setError(err); setLoading(false); return }
 
-      const todayByHolder = new Map<string, number>()
-      for (const s of (todayRes.data ?? []) as { cash_holder: string; price_paid: number }[]) {
-        todayByHolder.set(s.cash_holder, (todayByHolder.get(s.cash_holder) ?? 0) + Number(s.price_paid))
-      }
+      const todayByHolder = todayRes.data
 
       const result: Row[] = balRes.data.map(b => ({
         id: b.trainer_id,

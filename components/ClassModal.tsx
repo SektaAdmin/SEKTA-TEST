@@ -5,6 +5,17 @@ import { supabase } from '@/lib/supabase'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { listActiveHalls } from '@/lib/queries/halls'
 import { listActiveTrainingTypes } from '@/lib/queries/training-types'
+import {
+  checkClassConflicts,
+  insertClasses,
+  updateClass,
+  listFutureSeriesClasses,
+  updateFutureSeriesClasses,
+  insertSeries,
+  updateSeries,
+  deleteSeries,
+  type ClassPayload,
+} from '@/lib/queries/classes'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -141,35 +152,21 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     }
   }, [startsAtVal, isSeries, isEdit, setValue])
 
-  async function checkConflicts(
+  const checkConflicts = (
     starts_at: string,
     duration_min: number,
     hall_id: string | null,
     trainer_id: string | null,
     exclude_id?: string,
-  ): Promise<string | null> {
-    if (!hall_id && !trainer_id) return null
-    const { data } = await supabase.rpc('check_class_conflicts', {
-      p_starts_at: starts_at,
-      p_duration_min: duration_min,
-      p_hall_id: hall_id ?? null,
-      p_trainer_id: trainer_id ?? null,
-      p_exclude_id: exclude_id ?? null,
-    })
-    if (!data || data.length === 0) return null
-    const c = data[0]
-    const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
-    const who = c.conflict_type === 'hall' ? 'Зал' : 'Тренер'
-    const label = c.title || c.ticket_type
-    return `${who} зайнятий — конфлікт із заняттям «${label}» о ${when}`
-  }
+  ): Promise<string | null> =>
+    checkClassConflicts(supabase, { starts_at, duration_min, hall_id, trainer_id, exclude_id })
 
   const onSubmit = async (values: FormValues) => {
     if (!scopeChosen) return
     setLoading(true)
     setServerError('')
 
-    const payload = {
+    const payload: ClassPayload = {
       ticket_type: values.ticket_type,
       trainer_id: values.trainer_id || null,
       hall_id: values.hall_id || null,
@@ -183,21 +180,15 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     if (isEdit && (!hasSeries || editScope === 'this')) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id, existing!.id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
-      const { error } = await supabase.from('classes').update(payload).eq('id', existing!.id)
-      if (error) { setServerError(error.message); setLoading(false); return }
+      const { error } = await updateClass(supabase, existing!.id, payload)
+      if (error) { setServerError(error); setLoading(false); return }
       onSaved()
       return
     }
 
     if (isEdit && hasSeries && editScope === 'future') {
-      const now = new Date().toISOString()
-      const { data: futureCls } = await supabase
-        .from('classes')
-        .select('id, starts_at')
-        .eq('series_id', existing!.series_id)
-        .gte('starts_at', now)
-        .eq('is_cancelled', false)
-      for (const fc of futureCls ?? []) {
+      const { data: futureCls } = await listFutureSeriesClasses(supabase, existing!.series_id!)
+      for (const fc of futureCls) {
         const startsAtForClass = new Date(fc.starts_at)
         const newStartsAt = new Date(payload.starts_at)
         startsAtForClass.setHours(newStartsAt.getHours(), newStartsAt.getMinutes(), 0, 0)
@@ -215,15 +206,10 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           return
         }
       }
-      const { error } = await supabase
-        .from('classes')
-        .update(payload)
-        .eq('series_id', existing!.series_id)
-        .gte('starts_at', now)
-        .eq('is_cancelled', false)
-      if (error) { setServerError(error.message); setLoading(false); return }
+      const { error } = await updateFutureSeriesClasses(supabase, existing!.series_id!, payload)
+      if (error) { setServerError(error); setLoading(false); return }
 
-      const seriesPayload = {
+      await updateSeries(supabase, existing!.series_id!, {
         ticket_type: values.ticket_type,
         trainer_id: values.trainer_id || null,
         hall_id: values.hall_id || null,
@@ -231,8 +217,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
         capacity: values.capacity ? Number(values.capacity) : null,
         title: values.title.trim() || null,
         notes: values.notes.trim() || null,
-      }
-      await supabase.from('class_series').update(seriesPayload).eq('id', existing!.series_id)
+      })
       onSaved()
       return
     }
@@ -240,8 +225,8 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     if (!isSeries) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
-      const { error } = await supabase.from('classes').insert(payload)
-      if (error) { setServerError(error.message); setLoading(false); return }
+      const { error } = await insertClasses(supabase, [payload])
+      if (error) { setServerError(error); setLoading(false); return }
       onSaved()
       return
     }
@@ -252,24 +237,21 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     const durationMin = Number(values.duration_min)
     const capacity = values.capacity ? Number(values.capacity) : null
 
-    const { data: seriesData, error: seriesError } = await supabase
-      .from('class_series')
-      .insert({
-        ticket_type: values.ticket_type,
-        trainer_id: values.trainer_id || null,
-        hall_id: values.hall_id || null,
-        title: values.title.trim() || null,
-        notes: values.notes.trim() || null,
-        capacity,
-        duration_min: durationMin,
-        day_of_week: dayOfWeek,
-        time_of_day: values.time_of_day,
-      })
-      .select('id')
-      .single()
+    const { data: seriesData, error: seriesError } = await insertSeries(supabase, {
+      ticket_type: values.ticket_type,
+      trainer_id: values.trainer_id || null,
+      hall_id: values.hall_id || null,
+      title: values.title.trim() || null,
+      notes: values.notes.trim() || null,
+      capacity,
+      duration_min: durationMin,
+      day_of_week: dayOfWeek,
+      time_of_day: values.time_of_day,
+      type: 'series', // разова серія (DB-дефолт), не шаблон тижня
+    })
 
     if (seriesError || !seriesData) {
-      setServerError(seriesError?.message ?? 'Помилка створення серії')
+      setServerError(seriesError ?? 'Помилка створення серії')
       setLoading(false)
       return
     }
@@ -291,7 +273,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
     for (const cls of classes) {
       const conflict = await checkConflicts(cls.starts_at, cls.duration_min, cls.hall_id, cls.trainer_id)
       if (conflict) {
-        await supabase.from('class_series').delete().eq('id', seriesId)
+        await deleteSeries(supabase, seriesId)
         const dateStr = new Date(cls.starts_at).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' })
         setServerError(`${dateStr}: ${conflict}`)
         setLoading(false)
@@ -299,10 +281,10 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       }
     }
 
-    const { error: insertError } = await supabase.from('classes').insert(classes)
+    const { error: insertError } = await insertClasses(supabase, classes)
     if (insertError) {
-      await supabase.from('class_series').delete().eq('id', seriesId)
-      setServerError(insertError.message)
+      await deleteSeries(supabase, seriesId)
+      setServerError(insertError)
       setLoading(false)
       return
     }

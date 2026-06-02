@@ -10,6 +10,7 @@ import StudioExpenseModal from '@/components/StudioExpenseModal'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
+import { deleteSale } from '@/lib/queries/sales'
 import { listStudioExpenses } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
@@ -108,9 +109,9 @@ export default function SalesPage() {
     if (!deleteId) return
     setDeleting(true)
     setDeleteError('')
-    const { data, error } = await supabase.rpc('delete_sale', { p_sale_id: deleteId })
-    if (error || !data?.[0]?.success) {
-      setDeleteError(error?.message ?? data?.[0]?.error_message ?? 'Помилка видалення')
+    const { success, error } = await deleteSale(supabase, deleteId)
+    if (!success) {
+      setDeleteError(error ?? 'Помилка видалення')
       setDeleting(false)
       return
     }

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { supabase } from '@/lib/supabase'
+import { insertTrainingType, updateTrainingType } from '@/lib/queries/training-types'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -36,16 +37,11 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
     setServerError('')
 
     if (existing) {
-      const { error } = await supabase
-        .from('training_types')
-        .update({ label: data.label.trim() })
-        .eq('id', existing.id)
-      if (error) { setServerError(error.message); setLoading(false); return }
+      const { error } = await updateTrainingType(supabase, existing.id, data.label.trim())
+      if (error) { setServerError(error); setLoading(false); return }
     } else {
-      const { error } = await supabase
-        .from('training_types')
-        .insert({ code: data.code.trim(), label: data.label.trim() })
-      if (error) { setServerError(error.message); setLoading(false); return }
+      const { error } = await insertTrainingType(supabase, { code: data.code.trim(), label: data.label.trim() })
+      if (error) { setServerError(error); setLoading(false); return }
     }
 
     onSaved()

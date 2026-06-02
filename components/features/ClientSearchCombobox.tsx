@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback, useId } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatClientLabel } from '@/lib/formatters'
-import { sanitizePostgrestSearch } from '@/lib/queries/_escape'
+import { searchClientsForCombobox } from '@/lib/queries/clients'
 import type { Client } from '@/types'
 import styles from './ClientSearchCombobox.module.css'
 
@@ -16,35 +16,7 @@ interface Props {
   disabled?: boolean
 }
 
-async function searchClients(q: string): Promise<Client[]> {
-  const trimmed = sanitizePostgrestSearch(q)
-  if (!trimmed) return []
-
-  const parts = trimmed.split(/\s+/)
-
-  if (parts.length === 1) {
-    const p = parts[0]
-    const { data } = await supabase
-      .from('clients')
-      .select('id,first_name,last_name,phone')
-      .or(`first_name.ilike.%${p}%,last_name.ilike.%${p}%,phone.ilike.%${p}%`)
-      .order('last_name')
-      .limit(10)
-    return data ?? []
-  }
-
-  const [a, b] = parts
-  const [r1, r2] = await Promise.all([
-    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`).order('last_name').limit(10),
-    supabase.from('clients').select('id,first_name,last_name,phone').ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`).order('last_name').limit(10),
-  ])
-  const seen = new Set<string>()
-  return [...(r1.data ?? []), ...(r2.data ?? [])].filter(c => {
-    if (seen.has(c.id)) return false
-    seen.add(c.id)
-    return true
-  })
-}
+const searchClients = (q: string): Promise<Client[]> => searchClientsForCombobox(supabase, q)
 
 export default function ClientSearchCombobox({ inputId, initialLabel = '', onSelect, onClear, error, disabled }: Props) {
   const listboxId = useId()
