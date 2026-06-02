@@ -1,66 +1,21 @@
+import type { QueryData } from '@supabase/supabase-js'
 import type { Db } from '@/lib/queries/_db'
-import type { Client, ClientSessionBalance, Sale } from '@/types'
+import type { Client, ClientSessionBalance } from '@/types'
 
-export type PermanentEnrollment = {
-  id: string
-  series_id: string
-  class_series: {
-    title: string | null
-    ticket_type: string
-    day_of_week: number
-    time_of_day: string
-    duration_min: number
-    trainers: { name: string } | null
-    halls: { name: string } | null
-  } | null
-}
+// Усі embed тут single-FK (class_series/classes/trainers/halls) → select-літерали
+// напряму, типи виведено через QueryData (джерело істини = .select()).
+const PERMANENT_SELECT = 'id, series_id, class_series(title, ticket_type, day_of_week, time_of_day, duration_min, trainers(name), halls(name))' as const
+const UPCOMING_SELECT = 'id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))' as const
+const PAST_SELECT = 'id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))' as const
 
-export type UpcomingEnrollment = {
-  id: string
-  class_id: string
-  status: string
-  classes: {
-    ticket_type: string
-    title: string | null
-    starts_at: string
-    duration_min: number
-    choreo_stage: string | null
-    trainers: { name: string } | null
-    halls: { name: string } | null
-  } | null
-}
+function permanentQuery(supabase: Db) { return supabase.from('series_clients').select(PERMANENT_SELECT) }
+function upcomingQuery(supabase: Db) { return supabase.from('enrollments').select(UPCOMING_SELECT) }
+function pastQuery(supabase: Db) { return supabase.from('enrollments').select(PAST_SELECT) }
 
-export type PastEnrollment = {
-  id: string
-  class_id: string
-  status: string
-  sessions_used: number
-  classes: {
-    ticket_type: string
-    title: string | null
-    starts_at: string
-    duration_min: number
-    choreo_stage: string | null
-    trainers: { name: string } | null
-    halls: { name: string } | null
-  } | null
-}
-
-export type FeedEnrollment = {
-  id: string
-  class_id: string
-  status: string
-  sessions_used: number
-  classes: {
-    ticket_type: string
-    title: string | null
-    starts_at: string
-    duration_min: number
-    choreo_stage: string | null
-    trainers: { name: string } | null
-    halls: { name: string } | null
-  } | null
-}
+export type PermanentEnrollment = QueryData<ReturnType<typeof permanentQuery>>[number]
+export type UpcomingEnrollment = QueryData<ReturnType<typeof upcomingQuery>>[number]
+export type PastEnrollment = QueryData<ReturnType<typeof pastQuery>>[number]
+export type FeedEnrollment = PastEnrollment
 
 export async function getClientDetail(
   supabase: Db,
@@ -86,15 +41,11 @@ export async function getClientDetail(
       .eq('client_id', id)
       .neq('sessions_balance', 0)
       .order('ticket_type'),
-    supabase
-      .from('series_clients')
-      .select('id, series_id, class_series(title, ticket_type, day_of_week, time_of_day, duration_min, trainers(name), halls(name))')
+    permanentQuery(supabase)
       .eq('client_id', id)
       .order('day_of_week', { referencedTable: 'class_series', ascending: true })
       .order('time_of_day', { referencedTable: 'class_series', ascending: true }),
-    supabase
-      .from('enrollments')
-      .select('id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))')
+    upcomingQuery(supabase)
       .eq('client_id', id)
       .eq('status', 'enrolled')
       .gt('classes.starts_at', now)
@@ -111,8 +62,8 @@ export async function getClientDetail(
   return {
     client: (clientRes.data as Client) ?? null,
     sessionBalances: (balancesRes.data as ClientSessionBalance[]) ?? [],
-    permanentEnrollments: (permanentRes.data as unknown as PermanentEnrollment[]) ?? [],
-    upcomingEnrollments: (upcomingRes.data as unknown as UpcomingEnrollment[]) ?? [],
+    permanentEnrollments: permanentRes.data ?? [],
+    upcomingEnrollments: upcomingRes.data ?? [],
     error,
   }
 }
@@ -128,14 +79,14 @@ export async function listPastEnrollmentsForClient(
 
   const { data, count, error } = await supabase
     .from('enrollments')
-    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))', { count: 'exact' })
+    .select(PAST_SELECT, { count: 'exact' })
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
     .order('starts_at', { referencedTable: 'classes', ascending: false })
     .range(from, to)
 
   return {
-    data: (data as unknown as PastEnrollment[]) ?? [],
+    data: data ?? [],
     count: count ?? 0,
     error: error?.message ?? null,
   }
@@ -147,13 +98,11 @@ export async function listFeedEnrollmentsForClient(
 ): Promise<{ data: FeedEnrollment[]; error: string | null }> {
   const now = new Date().toISOString()
 
-  const { data, error } = await supabase
-    .from('enrollments')
-    .select('id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))')
+  const { data, error } = await pastQuery(supabase)
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
     .lt('classes.starts_at', now)
     .order('starts_at', { referencedTable: 'classes', ascending: false })
 
-  return { data: (data as unknown as FeedEnrollment[]) ?? [], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
 }
