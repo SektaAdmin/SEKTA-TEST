@@ -62,7 +62,7 @@ export async function listReconciliationFeed(
 
   let payQuery = supabase
     .from('trainer_payments')
-    .select('id, trainer_id, cash_holder, period_start, period_end, calculated_amount, paid_amount, payment_date, payment_method, payment_type, notes, created_at, trainers(name)')
+    .select('id, trainer_id, cash_holder, period_start, period_end, calculated_amount, paid_amount, payment_date, payment_method, payment_type, notes, created_at, trainers!trainer_payments_trainer_id_fkey(name)')
     .eq('payment_method', method)
     .lte('payment_date', to)
     .order('payment_date', { ascending: false })
