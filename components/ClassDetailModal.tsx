@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
@@ -75,6 +75,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
 
   const [choreoDraft, setChoreoDraft] = useState('')
   const [savingChoreo, setSavingChoreo] = useState(false)
+  // Через ref, щоб guard читав свіже значення чернетки без перестворення fetchClass
+  // (інакше кожна буква → новий loadAll → useEffect → перезавантаження модалки).
+  const choreoDraftRef = useRef('')
+  useEffect(() => { choreoDraftRef.current = choreoDraft }, [choreoDraft])
 
   const fetchClass = useCallback(async () => {
     const { data } = await getClassById(supabase, classId)
@@ -82,12 +86,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     const next = data as ClassWithJoins
     setCls(prev => {
       // не перетирати чернетку, якщо адмін зараз редагує (realtime-тік)
-      const dirty = prev != null && choreoDraft !== (prev.choreo_stage ?? '')
+      const dirty = prev != null && choreoDraftRef.current !== (prev.choreo_stage ?? '')
       if (!dirty) setChoreoDraft(next.choreo_stage ?? '')
       return next
     })
     return next
-  }, [classId, choreoDraft])
+  }, [classId])
 
   const fetchEnrollments = useCallback(async (ticketType: string) => {
     const { data: rows } = await listEnrollmentsForClass(supabase, classId)
@@ -97,15 +101,17 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setBalanceMap(map)
   }, [classId])
 
-  const loadAll = useCallback(async () => {
-    setLoading(true)
+  // showSpinner=true лише для першого завантаження; refetch (realtime/після дії)
+  // оновлює дані без setLoading, щоб модалка не моргала скелетом.
+  const loadAll = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setLoading(true)
     setFetchError(null)
     const clsData = await fetchClass()
     if (clsData) await fetchEnrollments(clsData.ticket_type)
-    setLoading(false)
+    if (showSpinner) setLoading(false)
   }, [fetchClass, fetchEnrollments])
 
-  useEffect(() => { loadAll() }, [loadAll])
+  useEffect(() => { loadAll(true) }, [loadAll])
 
   useRealtime(['classes', 'enrollments', 'client_session_balances'], loadAll)
 

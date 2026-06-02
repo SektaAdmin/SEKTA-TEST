@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -66,18 +66,22 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
 
   const [choreoDraft, setChoreoDraft] = useState('')
   const [savingChoreo, setSavingChoreo] = useState(false)
+  // Через ref, щоб guard читав свіже значення без перестворення fetchClass
+  // (інакше кожна буква → новий loadAll → useEffect → перезавантаження).
+  const choreoDraftRef = useRef('')
+  useEffect(() => { choreoDraftRef.current = choreoDraft }, [choreoDraft])
 
   const fetchClass = useCallback(async () => {
     const { data } = await getClassById(supabase, classId)
     if (!data) { setFetchError('Заняття не знайдено'); return null }
     const next = data as ClassWithJoins
     setCls(prev => {
-      const dirty = prev != null && choreoDraft !== (prev.choreo_stage ?? '')
+      const dirty = prev != null && choreoDraftRef.current !== (prev.choreo_stage ?? '')
       if (!dirty) setChoreoDraft(next.choreo_stage ?? '')
       return next
     })
     return next
-  }, [classId, choreoDraft])
+  }, [classId])
 
   async function handleSaveChoreo() {
     if (!cls) return
@@ -101,15 +105,17 @@ export default function ClassDetailClient({ classId }: { classId: string }) {
     setBalanceMap(map)
   }, [classId])
 
-  const loadAll = useCallback(async () => {
-    setLoading(true)
+  // showSpinner=true лише для першого завантаження; refetch (realtime/після дії)
+  // оновлює дані без setLoading, щоб сторінка не моргала скелетом.
+  const loadAll = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setLoading(true)
     setFetchError(null)
     const clsData = await fetchClass()
     if (clsData) await fetchEnrollments(clsData.ticket_type)
-    setLoading(false)
+    if (showSpinner) setLoading(false)
   }, [fetchClass, fetchEnrollments])
 
-  useEffect(() => { loadAll() }, [loadAll])
+  useEffect(() => { loadAll(true) }, [loadAll])
 
   useRealtime(['classes', 'enrollments', 'client_session_balances'], loadAll)
 
