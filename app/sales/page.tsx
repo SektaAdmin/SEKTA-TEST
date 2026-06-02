@@ -17,7 +17,7 @@ import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
-import type { Sale } from '@/types'
+import type { Sale, PaymentMethod } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './sales.module.css'
@@ -517,7 +517,7 @@ export default function SalesPage() {
             cash_holder: editSale.cash_holder ?? null,
             price_paid: editSale.price_paid,
             amount_given: editSale.amount_given,
-            payment_method: editSale.payment_method,
+            payment_method: editSale.payment_method as PaymentMethod,
             notes: editSale.notes,
             created_at: editSale.created_at,
           } : undefined}

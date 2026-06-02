@@ -1,5 +1,5 @@
+import type { QueryData } from '@supabase/supabase-js'
 import type { Db } from '@/lib/queries/_db'
-import type { Sale } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
 import { callRpc } from '@/lib/rpc'
 import { TRAINER_FK } from '@/lib/queries/_fk'
@@ -11,6 +11,31 @@ export interface ListSalesParams {
   dateFrom: string
   dateTo: string
   trainerId: string
+}
+
+// Літерал (НЕ template з ${}) — QueryData парсить embed лише зі статичного
+// рядка. FK із TRAINER_FK.sales вшито вручну; узгодженість тримає тест нижче.
+const SALE_SELECT = `
+  id, created_at, client_id, ticket_id, trainer_id, cash_holder,
+  ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given,
+  payment_method, notes,
+  clients(first_name, last_name),
+  tickets(name),
+  trainers!sales_trainer_id_fkey(name)
+` as const
+
+// Compile-time guard: вшитий FK = канонічний TRAINER_FK.sales.
+const _saleFkCheck: typeof TRAINER_FK.sales = 'sales_trainer_id_fkey'
+void _saleFkCheck
+
+/**
+ * Row продажу з усіма embed — тип ВИВЕДЕНО зі схеми через QueryData (джерело
+ * істини = сам .select(), не ручний інтерфейс). Реекспортується як Sale.
+ */
+export type Sale = QueryData<ReturnType<typeof saleListQuery>>[number]
+
+function saleListQuery(supabase: Db) {
+  return supabase.from('sales').select(SALE_SELECT)
 }
 
 export async function searchClientIdsByName(
@@ -51,14 +76,7 @@ export async function listSales(
   const rangeFrom = page * pageSize
   let query = supabase
     .from('sales')
-    .select(`
-      id, created_at, client_id, ticket_id, trainer_id,
-      ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given,
-      payment_method, notes,
-      clients(first_name, last_name),
-      tickets(name),
-      trainers!${TRAINER_FK.sales}(name)
-    `, { count: 'exact' })
+    .select(SALE_SELECT, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(rangeFrom, rangeFrom + pageSize - 1)
 
@@ -69,7 +87,7 @@ export async function listSales(
 
   const { data, count, error } = await query
   return {
-    data: (data as unknown as Sale[]) ?? [],
+    data: data ?? [],
     count: count ?? 0,
     error: error?.message ?? null,
   }
@@ -84,38 +102,27 @@ export async function listSalesForClient(
   const from = page * pageSize
   const { data, count, error } = await supabase
     .from('sales')
-    .select(
-      `id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers!${TRAINER_FK.sales}(name)`,
-      { count: 'exact' }
-    )
+    .select(SALE_SELECT, { count: 'exact' })
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
     .range(from, from + pageSize - 1)
-  return { data: (data as unknown as Sale[]) ?? [], count: count ?? 0, error: error?.message ?? null }
+  return { data: data ?? [], count: count ?? 0, error: error?.message ?? null }
 }
 
-export type FeedSale = {
-  id: string
-  created_at: string
-  ticket_name: string | null
-  ticket_type: string | null
-  sessions: number | null
-  price_paid: number
-  amount_given: number
-  payment_method: string
-  trainers: { name: string } | null
+const FEED_SALE_SELECT = `id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!sales_trainer_id_fkey(name)` as const
+export type FeedSale = QueryData<ReturnType<typeof feedSaleQuery>>[number]
+function feedSaleQuery(supabase: Db) {
+  return supabase.from('sales').select(FEED_SALE_SELECT)
 }
 
 export async function listAllSalesForFeed(
   supabase: Db,
   clientId: string
 ): Promise<{ data: FeedSale[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('sales')
-    .select(`id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!${TRAINER_FK.sales}(name)`)
+  const { data, error } = await feedSaleQuery(supabase)
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
-  return { data: (data as unknown as FeedSale[]) ?? [], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function listSalesForAccounting(
@@ -123,35 +130,31 @@ export async function listSalesForAccounting(
   dateFrom: string,
   dateTo: string
 ): Promise<{ data: { created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null }[]; error: string | null }> {
-  type SalesAccounting = {
-    created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null
-  }
-
   const { data, error } = await supabase
     .from('sales')
     .select('created_at, price_paid, amount_given, payment_method, ticket_id')
     .gte('created_at', `${dateFrom}T00:00:00`)
     .lte('created_at', `${dateTo}T23:59:59`)
-  return { data: (data as unknown as SalesAccounting[] | null) ?? [], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
+const TRAINER_SALE_SELECT = `trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)` as const
+export type SalesTrainerRow = QueryData<ReturnType<typeof trainerSaleQuery>>[number]
+function trainerSaleQuery(supabase: Db) {
+  return supabase.from('sales').select(TRAINER_SALE_SELECT)
 }
 
 export async function listSalesForTrainers(
   supabase: Db,
   start: string,
   end: string
-): Promise<{ data: { trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null }[]; error: string | null }> {
-  type SalesTrainer = {
-    trainer_id: string; sessions: number | null; price_paid: number; payment_method: string; ticket_type: string | null; trainers: { name: string } | null
-  }
-
-  const { data, error } = await supabase
-    .from('sales')
-    .select(`trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!${TRAINER_FK.sales}(name)`)
+): Promise<{ data: SalesTrainerRow[]; error: string | null }> {
+  const { data, error } = await trainerSaleQuery(supabase)
     .not('trainer_id', 'is', null)
     .not('ticket_id', 'is', null)
     .gte('created_at', start)
     .lte('created_at', end)
-  return { data: (data as unknown as SalesTrainer[] | null) ?? [], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function createSale(
@@ -233,15 +236,10 @@ export async function deleteSale(
   return { success, error }
 }
 
-export type ReconciliationSale = {
-  id: string
-  created_at: string
-  price_paid: number
-  amount_given: number
-  payment_method: string
-  ticket_id: string | null
-  ticket_name: string | null
-  clients: { first_name: string | null; last_name: string | null } | null
+const RECON_SALE_SELECT = 'id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, clients(first_name, last_name)' as const
+export type ReconciliationSale = QueryData<ReturnType<typeof reconSaleQuery>>[number]
+function reconSaleQuery(supabase: Db) {
+  return supabase.from('sales').select(RECON_SALE_SELECT)
 }
 
 export async function listSalesForReconciliation(
@@ -250,14 +248,12 @@ export async function listSalesForReconciliation(
   dateTo: string,
   methods: ('fop' | 'personal_card')[]
 ): Promise<{ data: ReconciliationSale[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('sales')
-    .select('id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, clients(first_name, last_name)')
+  const { data, error } = await reconSaleQuery(supabase)
     .in('payment_method', methods)
     .gte('created_at', `${dateFrom}T00:00:00`)
     .lte('created_at', `${dateTo}T23:59:59`)
     .order('created_at', { ascending: false })
-  return { data: (data as unknown as ReconciliationSale[]) ?? [], error: error?.message ?? null }
+  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function getTicketById(

@@ -38,25 +38,12 @@ export interface Trainer {
   telegram_username: string | null
 }
 
-export interface Sale {
-  id: string
-  created_at: string
-  client_id: string
-  ticket_id: string | null
-  trainer_id: string | null
-  cash_holder: string | null
-  ticket_name: string | null
-  ticket_price: number | null
-  ticket_type: string | null
-  sessions: number | null
-  price_paid: number
-  amount_given: number
-  payment_method: PaymentMethod
-  notes: string | null
-  clients: Pick<Client, 'first_name' | 'last_name'>
-  tickets: Pick<Ticket, 'name'> | null
-  trainers: Pick<Trainer, 'name'> | null
-}
+/**
+ * Sale — row продажу виведено зі схеми в lib/queries/sales.ts через QueryData
+ * (джерело істини = .select()). Реекспортуємо звідти, щоб тип не дублювався
+ * і не розходився із запитом.
+ */
+export type { Sale } from '@/lib/queries/sales'
 
 export interface ClientSessionBalance {
   client_id: string

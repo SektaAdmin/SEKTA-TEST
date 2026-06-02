@@ -22,7 +22,7 @@ import ClassDetailModal from '@/components/ClassDetailModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import type { Client, ClientSessionBalance, Sale } from '@/types'
+import type { Client, ClientSessionBalance, Sale, PaymentMethod } from '@/types'
 import styles from './client-profile.module.css'
 
 type PermanentEnrollment = {
@@ -897,7 +897,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                       cash_holder: s.cash_holder ?? null,
                                       price_paid: s.price_paid,
                                       amount_given: s.amount_given,
-                                      payment_method: s.payment_method,
+                                      payment_method: s.payment_method as PaymentMethod,
                                       notes: s.notes,
                                       created_at: s.created_at,
                                     })}
@@ -972,7 +972,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   cash_holder: s.cash_holder ?? null,
                                   price_paid: s.price_paid,
                                   amount_given: s.amount_given,
-                                  payment_method: s.payment_method,
+                                  payment_method: s.payment_method as PaymentMethod,
                                   notes: s.notes,
                                   created_at: s.created_at,
                                 })}
