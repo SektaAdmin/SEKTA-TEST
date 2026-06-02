@@ -70,39 +70,34 @@
 .blockHead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 14px;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: default;
-  text-align: left;
 }
 
 .blockHead .blockTitle {
   margin-bottom: 0;
 }
 
-/* clickable variant (debtBlock header) */
-.debtBlock .blockHead {
-  cursor: pointer;
-  margin-bottom: 0;
-  border-radius: var(--radius-sm);
-}
-
-.debtBlock .blockHead:hover .blockTitle {
-  color: var(--text-2);
-}
-
-.blockHeadRight {
+.blockToggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius-sm);
 }
 
+.blockToggle:hover .blockTitle {
+  color: var(--text-2);
+}
+
+.debtBlock .blockHead {
+  margin-bottom: 0;
+}
 
 .chevron {
   color: var(--text-3);
@@ -116,12 +111,6 @@
 
 .debtBody {
   margin-top: 14px;
-}
-
-.debtCopyRow {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
 }
 
 .copyBtn {

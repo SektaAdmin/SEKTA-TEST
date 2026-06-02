@@ -91,37 +91,29 @@ export function SessionDebtBlock({ date }: { date: string }) {
       .catch(() => toast.error('Не вдалося скопіювати'))
   }, [date, groups])
 
-  const totalDebtors = groups.reduce((s, g) => s + g.clients.length, 0)
-
   return (
     <section className={styles.debtBlock}>
-      <button className={styles.blockHead} onClick={() => setOpen(o => !o)}>
-        <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
-        <div className={styles.blockHeadRight}>
-          {!loading && totalDebtors > 0 && (
-            <span className="count-chip-danger">{totalDebtors}</span>
-          )}
+      <div className={styles.blockHead}>
+        {!loading && groups.length > 0 && (
+          <button className={styles.copyBtn} onClick={handleCopy}>
+            <CopyIcon /> Скопіювати звіт
+          </button>
+        )}
+        <button className={styles.blockToggle} onClick={() => setOpen(o => !o)}>
+          <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
           <svg
             className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}
             width="16" height="16" viewBox="0 0 16 16" fill="none"
           >
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </div>
-      </button>
+        </button>
+      </div>
 
       <div
         className={styles.debtBody}
         style={{ display: open ? undefined : 'none' }}
       >
-        {open && groups.length > 0 && (
-          <div className={styles.debtCopyRow}>
-            <button className={styles.copyBtn} onClick={handleCopy}>
-              <CopyIcon /> Скопіювати звіт
-            </button>
-          </div>
-        )}
-
         {loading && <div className="loading-dots"><span /><span /><span /></div>}
         {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
         {!loading && !error && groups.length === 0 && (
