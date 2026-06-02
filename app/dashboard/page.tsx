@@ -39,13 +39,13 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          {/* Гроші за день */}
-          <MoneyCardsBlock date={today} />
+          {/* Гроші за день + алерти — усі картки в один ряд */}
+          <div className={styles.statRow}>
+            <MoneyCardsBlock date={today} />
+            <AlertCardsBlock date={today} />
+          </div>
 
-          {/* Алерти — потребує дії сьогодні */}
-          <AlertCardsBlock date={today} />
-
-          {/* Боржники по сесіях (згортається) + вільні місця на заняттях */}
+          {/* Боржники по сесіях + вільні місця на заняттях */}
           <div className={styles.twoCol}>
             <SessionDebtBlock date={today} />
             <FreeSpacesBlock date={today} />

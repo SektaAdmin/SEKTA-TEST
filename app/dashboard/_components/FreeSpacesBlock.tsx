@@ -76,9 +76,10 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   }, [trainingTypes])
 
   return (
-    <section className={styles.block}>
-      <h2 className={styles.blockTitle}>Вільні місця на заняттях сьогодні</h2>
+    <section className={`${styles.block} ${styles.equalBlock}`}>
+      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні місця на заняттях сьогодні</h2>
 
+      <div className={styles.scrollBody}>
       {loading && <div className="loading-dots"><span /><span /><span /></div>}
       {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
       {!loading && !error && rows.length === 0 && (
@@ -104,6 +105,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
           </div>
         </div>
       ))}
+      </div>
     </section>
   )
 }

@@ -4,18 +4,17 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsForDate } from '@/lib/queries/dashboard'
 import { buildDebtReportText, type DebtGroup } from '@/lib/dashboardReport'
-import { CopyIcon, ChevronDownIcon } from '@/components/icons/navigation'
+import { CopyIcon } from '@/components/icons/navigation'
 import { useRealtime } from '@/lib/useRealtime'
 import styles from '../dashboard.module.css'
 
 /* Блок боржників: хто піде в мінус по сесіях сьогодні.
    Дані — агрегатно через listSessionDebtorsForDate (3 запити, без N+1).
-   Розгортається під картками (пункт 5). */
+   Список завжди розгорнутий, скролиться; висота збігається з блоком вільних місць. */
 export function SessionDebtBlock({ date }: { date: string }) {
   const [groups, setGroups] = useState<DebtGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
 
   const load = useCallback(() => {
     let cancelled = false
@@ -40,12 +39,9 @@ export function SessionDebtBlock({ date }: { date: string }) {
   }, [date, groups])
 
   return (
-    <section className={styles.block}>
+    <section className={`${styles.block} ${styles.equalBlock}`}>
       <div className={styles.blockHead}>
-        <button className={styles.blockToggle} onClick={() => setOpen(o => !o)}>
-          <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
-          <ChevronDownIcon className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} />
-        </button>
+        <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         {!loading && groups.length > 0 && (
           <button className={styles.copyBtn} onClick={handleCopy}>
             <CopyIcon /> Скопіювати звіт
@@ -53,10 +49,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
         )}
       </div>
 
-      <div
-        className={styles.debtBody}
-        style={{ display: open ? undefined : 'none' }}
-      >
+      <div className={styles.scrollBody}>
         {loading && <div className="loading-dots"><span /><span /><span /></div>}
         {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
         {!loading && !error && groups.length === 0 && (

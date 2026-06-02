@@ -26,9 +26,11 @@
   padding: 20px var(--topbar-px) 32px;
 }
 
-.cardGrid {
+/* Усі KPI-картки (гроші + алерти) в один ряд рівними колонками. */
+.statRow {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 16px;
 }
 
@@ -40,6 +42,11 @@
 }
 
 @media (max-width: 640px) {
+  .statRow {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: 1fr 1fr;
+  }
   .twoCol {
     grid-template-columns: 1fr;
   }
@@ -51,6 +58,32 @@
   border-radius: var(--radius);
   background: var(--bg-2);
   padding: 20px;
+}
+
+/* Рівні за висотою блоки зі скролом тіла (боржники / вільні місця).
+   Фіксована висота — щоб обидві колонки в ряду збігались, а довгі списки скролились. */
+.equalBlock {
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+}
+
+.scrollBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Заголовок-шапка у блоці фіксованої висоти (не стискається при скролі тіла). */
+.blockHeadFixed {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .equalBlock {
+    height: auto;
+    max-height: 70vh;
+  }
 }
 
 /* ── Спільне для блоків ────────────────────────────────────── */
@@ -67,47 +100,19 @@
   padding: 12px 0;
 }
 
-/* ── Блок боржників (згортається) ──────────────────────────── */
-/* Голова блоку без нижнього відступу — тіло дає власний margin-top при розгортанні. */
+/* ── Блок боржників ────────────────────────────────────────── */
+/* Шапка: заголовок ліворуч, кнопка копіювання звіту праворуч. */
 .blockHead {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  flex-shrink: 0;
+  margin-bottom: 14px;
 }
 
 .blockHead .blockTitle {
   margin-bottom: 0;
-}
-
-.blockToggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  border-radius: var(--radius-sm);
-}
-
-.blockToggle:hover .blockTitle {
-  color: var(--text-2);
-}
-
-.chevron {
-  color: var(--text-3);
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.chevronOpen {
-  transform: rotate(180deg);
-}
-
-.debtBody {
-  margin-top: 14px;
 }
 
 .copyBtn {

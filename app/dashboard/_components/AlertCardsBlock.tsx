@@ -5,7 +5,6 @@ import { listSessionDebtorsForDate, listNegativeBalanceClients } from '@/lib/que
 import { formatMoney } from '@/lib/formatters'
 import { StatCard } from '@/components/ui/StatCard'
 import { useRealtime } from '@/lib/useRealtime'
-import styles from '../dashboard.module.css'
 
 /* Картки-алерти: те, що потребує дії сьогодні.
    1) Скільки людей піде в мінус по сесіях сьогодні.
@@ -34,7 +33,7 @@ export function AlertCardsBlock({ date }: { date: string }) {
   useRealtime(['classes', 'enrollments', 'client_session_balances', 'balance_transactions'], load)
 
   return (
-    <div className={styles.cardGrid}>
+    <>
       <StatCard
         label="Боржники по сесіях сьогодні"
         value={debtors == null ? '—' : `${debtors}`}
@@ -50,6 +49,6 @@ export function AlertCardsBlock({ date }: { date: string }) {
         accent={negCount ? 'danger' : 'default'}
         loading={debtors == null && negCount == null}
       />
-    </div>
+    </>
   )
 }
