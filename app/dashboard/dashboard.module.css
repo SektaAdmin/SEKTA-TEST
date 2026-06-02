@@ -166,12 +166,36 @@
   border-top: none;
 }
 
-.slotHall {
+.slotHallRow {
   flex-shrink: 0;
   width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slotHall {
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
+}
+
+.slotCopyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  color: var(--text-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.slotCopyBtn:hover {
+  color: var(--text-2);
+  background: var(--bg-3);
 }
 
 .slotWindows {

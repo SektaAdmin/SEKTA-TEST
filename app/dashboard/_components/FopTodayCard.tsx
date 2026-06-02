@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getFopTotalForDate } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { StatCard } from '@/components/ui/StatCard'
+import { useRealtime } from '@/lib/useRealtime'
 
 /* Блок 1: ФОП за сьогодні — для ранкової звірки з банк-випискою.
    Клік → /accounting (там сама звірка). */
@@ -11,7 +12,7 @@ export function FopTodayCard({ date }: { date: string }) {
   const [total, setTotal] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false
     getFopTotalForDate(supabase, date).then(({ data, error }) => {
       if (cancelled) return
@@ -20,6 +21,9 @@ export function FopTodayCard({ date }: { date: string }) {
     })
     return () => { cancelled = true }
   }, [date])
+
+  useEffect(() => { return load() }, [load])
+  useRealtime(['sales'], load)
 
   return (
     <StatCard

@@ -1,8 +1,11 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queries/dashboard'
 import { useRefs } from '@/contexts/RefsContext'
+import { useRealtime } from '@/lib/useRealtime'
+import { CopyIcon } from '@/components/icons/navigation'
 import styles from '../dashboard.module.css'
 
 /* Блок 3: вільні вікна залів сьогодні (робочий день 8:00–22:00). */
@@ -31,13 +34,19 @@ function computeFreeWindows(busy: HallBusyInterval[]): { from: number; to: numbe
   return free
 }
 
+function buildHallSlotsText(hallName: string, free: { from: number; to: number }[]): string {
+  if (free.length === 0) return `${hallName}: повністю зайнятий`
+  const slots = free.map(w => `${minToStr(w.from)}–${minToStr(w.to)}`).join(', ')
+  return `${hallName}: ${slots}`
+}
+
 export function FreeSlotsBlock({ date }: { date: string }) {
   const { halls } = useRefs()
   const [busy, setBusy] = useState<HallBusyInterval[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false
     setLoading(true)
     listHallBusyIntervalsForDate(supabase, date).then(({ data, error }) => {
@@ -49,6 +58,9 @@ export function FreeSlotsBlock({ date }: { date: string }) {
     return () => { cancelled = true }
   }, [date])
 
+  useEffect(() => { return load() }, [load])
+  useRealtime(['classes'], load)
+
   const byHall = useMemo(() => {
     const activeHalls = halls.filter(h => h.is_active)
     return activeHalls.map(h => {
@@ -56,6 +68,13 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       return { hall: h.name, free: computeFreeWindows(hallBusy) }
     })
   }, [halls, busy])
+
+  function handleCopyHall(hallName: string, free: { from: number; to: number }[]) {
+    const text = buildHallSlotsText(hallName, free)
+    navigator.clipboard.writeText(text)
+      .then(() => toast.success('Скопійовано'))
+      .catch(() => toast.error('Не вдалося скопіювати'))
+  }
 
   return (
     <section className={styles.slotsBlock}>
@@ -66,7 +85,16 @@ export function FreeSlotsBlock({ date }: { date: string }) {
 
       {!loading && !error && byHall.map((h, i) => (
         <div key={i} className={styles.slotRow}>
-          <div className={styles.slotHall}>{h.hall}</div>
+          <div className={styles.slotHallRow}>
+            <span className={styles.slotHall}>{h.hall}</span>
+            <button
+              className={styles.slotCopyBtn}
+              onClick={() => handleCopyHall(h.hall, h.free)}
+              title="Скопіювати слоти"
+            >
+              <CopyIcon />
+            </button>
+          </div>
           <div className={styles.slotWindows}>
             {h.free.length === 0
               ? <span className={styles.slotFull}>Повністю зайнятий</span>

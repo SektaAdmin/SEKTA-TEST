@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   getTrainerCashBalance,
@@ -7,6 +7,7 @@ import {
 } from '@/lib/queries/trainer-rates'
 import { useRefs } from '@/contexts/RefsContext'
 import { formatMoney } from '@/lib/formatters'
+import { useRealtime } from '@/lib/useRealtime'
 import styles from '../dashboard.module.css'
 
 /* Блок 4: готівка на руках у тренерів + що сьогодні доначислиться.
@@ -18,7 +19,7 @@ export function TrainerCashBlock({ date }: { date: string }) {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false
     setLoading(true)
     const active = trainers.filter(t => t.is_active)
@@ -40,6 +41,9 @@ export function TrainerCashBlock({ date }: { date: string }) {
 
     return () => { cancelled = true }
   }, [trainers, date])
+
+  useEffect(() => { return load() }, [load])
+  useRealtime(['sales', 'studio_expenses', 'trainer_payments'], load)
 
   return (
     <section className={styles.cashBlock}>

@@ -16,6 +16,7 @@ import {
   type DebtGroup,
 } from '@/lib/dashboardReport'
 import { CopyIcon } from '@/components/icons/navigation'
+import { useRealtime } from '@/lib/useRealtime'
 import styles from '../dashboard.module.css'
 
 /* Блок 2 (ядро): хто піде в мінус по сесіях сьогодні.
@@ -25,11 +26,11 @@ export function SessionDebtBlock({ date }: { date: string }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false
     setLoading(true)
 
-    async function load() {
+    async function run() {
       const { data: classes, error: clsErr } = await listClassesForDate(supabase, date)
       if (cancelled) return
       if (clsErr) { setError(clsErr); setLoading(false); return }
@@ -75,9 +76,12 @@ export function SessionDebtBlock({ date }: { date: string }) {
       setLoading(false)
     }
 
-    load()
+    run()
     return () => { cancelled = true }
   }, [date])
+
+  useEffect(() => { return load() }, [load])
+  useRealtime(['classes', 'enrollments', 'client_session_balances'], load)
 
   const handleCopy = useCallback(() => {
     const text = buildDebtReportText(new Date(`${date}T00:00:00`), groups)
