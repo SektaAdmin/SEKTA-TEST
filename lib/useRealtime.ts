@@ -18,16 +18,13 @@ export function useRealtime(tables: string[], onChange: () => void) {
 
     async function subscribe() {
       // Realtime postgres_changes with RLS requires the JWT access token
-      // to be set on the channel before subscribing, otherwise Supabase
+      // to be set on the realtime socket before subscribing, otherwise Supabase
       // silently drops all events for RLS-protected tables.
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
+      if (token) supabase.realtime.setAuth(token)
 
-      channel = supabase.channel(channelNameRef.current, {
-        config: {
-          ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
-        },
-      })
+      channel = supabase.channel(channelNameRef.current)
 
       for (const table of tables) {
         channel.on(
