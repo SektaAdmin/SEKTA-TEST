@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Sale } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
 import { callRpc } from '@/lib/rpc'
+import { TRAINER_FK } from '@/lib/queries/_fk'
 
 export interface ListSalesParams {
   page: number
@@ -56,7 +57,7 @@ export async function listSales(
       payment_method, notes,
       clients(first_name, last_name),
       tickets(name),
-      trainers!sales_trainer_id_fkey(name)
+      trainers!${TRAINER_FK.sales}(name)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(rangeFrom, rangeFrom + pageSize - 1)
@@ -84,7 +85,7 @@ export async function listSalesForClient(
   const { data, count, error } = await supabase
     .from('sales')
     .select(
-      'id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers!sales_trainer_id_fkey(name)',
+      `id, created_at, client_id, ticket_id, trainer_id, ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given, payment_method, notes, clients(first_name, last_name), tickets(name), trainers!${TRAINER_FK.sales}(name)`,
       { count: 'exact' }
     )
     .eq('client_id', clientId)
@@ -111,7 +112,7 @@ export async function listAllSalesForFeed(
 ): Promise<{ data: FeedSale[]; error: string | null }> {
   const { data, error } = await supabase
     .from('sales')
-    .select('id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!sales_trainer_id_fkey(name)')
+    .select(`id, created_at, ticket_name, ticket_type, sessions, price_paid, amount_given, payment_method, trainers!${TRAINER_FK.sales}(name)`)
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
   return { data: (data as unknown as FeedSale[]) ?? [], error: error?.message ?? null }
@@ -145,7 +146,7 @@ export async function listSalesForTrainers(
 
   const { data, error } = await supabase
     .from('sales')
-    .select('trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)')
+    .select(`trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!${TRAINER_FK.sales}(name)`)
     .not('trainer_id', 'is', null)
     .not('ticket_id', 'is', null)
     .gte('created_at', start)

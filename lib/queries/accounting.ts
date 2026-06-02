@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PaymentMethod } from '@/types'
+import { TRAINER_FK } from '@/lib/queries/_fk'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import type { TrainerPayment } from '@/lib/queries/trainer-rates'
 
@@ -44,7 +45,7 @@ export async function listReconciliationFeed(
 }> {
   let salesQuery = supabase
     .from('sales')
-    .select('id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, cash_holder, clients(first_name, last_name), trainers!sales_trainer_id_fkey(name)')
+    .select(`id, created_at, price_paid, amount_given, ticket_price, payment_method, ticket_id, ticket_name, trainer_id, cash_holder, clients(first_name, last_name), trainers!${TRAINER_FK.sales}(name)`)
     .eq('payment_method', method)
     .lte('created_at', `${to}T23:59:59`)
     .order('created_at', { ascending: false })
@@ -53,7 +54,7 @@ export async function listReconciliationFeed(
 
   let expQuery = supabase
     .from('studio_expenses')
-    .select('id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!studio_expenses_trainer_id_fkey(name)')
+    .select(`id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!${TRAINER_FK.expenses}(name)`)
     .eq('payment_method', method)
     .lte('created_at', `${to}T23:59:59`)
     .order('created_at', { ascending: false })
@@ -62,7 +63,7 @@ export async function listReconciliationFeed(
 
   let payQuery = supabase
     .from('trainer_payments')
-    .select('id, trainer_id, cash_holder, period_start, period_end, calculated_amount, paid_amount, payment_date, payment_method, payment_type, notes, created_at, trainers!trainer_payments_trainer_id_fkey(name)')
+    .select(`id, trainer_id, cash_holder, period_start, period_end, calculated_amount, paid_amount, payment_date, payment_method, payment_type, notes, created_at, trainers!${TRAINER_FK.payments}(name)`)
     .eq('payment_method', method)
     .lte('payment_date', to)
     .order('payment_date', { ascending: false })

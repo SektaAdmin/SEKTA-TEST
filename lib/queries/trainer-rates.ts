@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { TRAINER_FK } from '@/lib/queries/_fk'
 
 export type TrainerRate = {
   id: string
@@ -511,7 +512,7 @@ export async function listTrainerPayments(
 ): Promise<{ data: TrainerPayment[]; error: string | null }> {
   const { data, error } = await supabase
     .from('trainer_payments')
-    .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
+    .select(`*, trainers!${TRAINER_FK.payments}(name)`)
     .eq('trainer_id', trainerId)
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
@@ -526,7 +527,7 @@ export async function listTrainerPaymentsForPeriod(
 ): Promise<{ data: TrainerPayment[]; error: string | null }> {
   const { data, error } = await supabase
     .from('trainer_payments')
-    .select('*, trainers!trainer_payments_trainer_id_fkey(name)')
+    .select(`*, trainers!${TRAINER_FK.payments}(name)`)
     .gte('payment_date', dateFrom)
     .lte('payment_date', dateTo)
     .order('payment_date', { ascending: false })
