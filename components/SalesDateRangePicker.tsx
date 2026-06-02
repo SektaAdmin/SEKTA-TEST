@@ -1,10 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays, WEEKDAYS_SHORT, toYMD } from '@/lib/dateUtils'
+import { buildCalendarDays, WEEKDAYS_SHORT, toYMD, parseYMD, ymdToDisplay, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import styles from './SalesDateRangePicker.module.css'
-
-const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
 
 interface Props {
   dateFrom: string
@@ -12,19 +10,6 @@ interface Props {
   onChangeFrom: (v: string) => void
   onChangeTo: (v: string) => void
   onClear: () => void
-}
-
-
-function parseYMD(ymd: string): Date | null {
-  if (!ymd) return null
-  const [y,m,d] = ymd.split('-').map(Number)
-  return new Date(y, m-1, d)
-}
-
-function formatDisplay(ymd: string): string {
-  if (!ymd) return ''
-  const [y,m,d] = ymd.split('-')
-  return `${d}.${m}.${y}`
 }
 
 // Маска: raw = '18052026' (8 цифр ДДММРРРР) → display = '18.05.2026'
@@ -62,10 +47,6 @@ function rawToYMD(raw: string): string | null {
 
 function startOfDay(d: Date): Date {
   const r = new Date(d); r.setHours(0,0,0,0); return r
-}
-
-function isTodayYMD(ymd: string): boolean {
-  return ymd === toYMD(startOfDay(new Date()))
 }
 
 type Preset = { label: string; getRange: () => { from: string; to: string } | null }
@@ -240,7 +221,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
 
   const hasValue = dateFrom !== '' || dateTo !== ''
   const triggerLabel = hasValue
-    ? [formatDisplay(dateFrom), formatDisplay(dateTo)].filter(Boolean).join(' – ')
+    ? [ymdToDisplay(dateFrom), ymdToDisplay(dateTo)].filter(Boolean).join(' – ')
     : 'Будь-який період'
 
   function handleRawChange(newRaw: string, field: 'from' | 'to') {
@@ -486,7 +467,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
                   <button type="button" className={styles.monthNav} onClick={prevMonth} aria-label="Попередній місяць">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2L4 6l4 4"/></svg>
                   </button>
-                  <span className={styles.monthLabel}>{MONTHS_UK[leftMonth]} {leftYear}</span>
+                  <span className={styles.monthLabel}>{MONTHS_UK_CAP[leftMonth]} {leftYear}</span>
                   <div className={styles.monthNavPlaceholder} />
                 </div>
                 <div className={styles.grid}>
@@ -501,7 +482,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
               <div className={styles.calWrap}>
                 <div className={styles.calHeader}>
                   <div className={styles.monthNavPlaceholder} />
-                  <span className={styles.monthLabel}>{MONTHS_UK[rightMonth]} {rightYear}</span>
+                  <span className={styles.monthLabel}>{MONTHS_UK_CAP[rightMonth]} {rightYear}</span>
                   <button type="button" className={styles.monthNav} onClick={nextMonth} aria-label="Наступний місяць">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 2l4 4-4 4"/></svg>
                   </button>

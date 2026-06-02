@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
-import { isSameDay, toYMD } from '@/lib/dateUtils'
+import { isSameDay, toYMD, parseYMD, ymdToDisplay } from '@/lib/dateUtils'
 import { useMonthView } from '@/hooks/useMonthView'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DatePicker.module.css'
@@ -11,18 +11,6 @@ interface DatePickerProps {
   placeholder?: string
 }
 
-function parseYMD(ymd: string): Date | null {
-  if (!ymd) return null
-  const [y, m, d] = ymd.split('-').map(Number)
-  return new Date(y, m - 1, d)
-}
-
-function formatDisplay(ymd: string): string {
-  if (!ymd) return ''
-  const [y, m, d] = ymd.split('-')
-  return `${d}.${m}.${y}`
-}
-
 export default function DatePicker({ value, onChange, placeholder = 'Оберіть дату' }: DatePickerProps) {
   const selected = parseYMD(value)
   const today = new Date(); today.setHours(0, 0, 0, 0)
@@ -31,7 +19,7 @@ export default function DatePicker({ value, onChange, placeholder = 'Обері�
   const { viewYear, viewMonth, prevMonth, nextMonth } = useMonthView(selected)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  const label = value ? formatDisplay(value) : placeholder
+  const label = value ? ymdToDisplay(value) : placeholder
   const hasValue = Boolean(value)
 
   return (

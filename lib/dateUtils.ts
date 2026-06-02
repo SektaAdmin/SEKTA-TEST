@@ -38,8 +38,24 @@ export function isoToYMD(input: string | Date): string {
   return toYMD(typeof input === 'string' ? new Date(input) : input)
 }
 
+// РРРР-ММ-ДД → Date (local midnight) або null. Split-based, без TZ-ризику new Date(ymd).
+export function parseYMD(ymd: string): Date | null {
+  if (!ymd) return null
+  const [y, m, d] = ymd.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+// РРРР-ММ-ДД → ДД.ММ.РРРР (display). Split-based — не плутати з formatDate (через new Date).
+export function ymdToDisplay(ymd: string): string {
+  if (!ymd) return ''
+  const [y, m, d] = ymd.split('-')
+  return `${d}.${m}.${y}`
+}
+
 export const MONTHS_UK_SHORT = ['СІЧ.', 'ЛЮТ.', 'БЕРЕ.', 'КВІТ.', 'ТРАВ.', 'ЧЕРВ.', 'ЛИП.', 'СЕРП.', 'ВЕРЕ.', 'ЖОВ.', 'ЛИСТ.', 'ГРУД.']
 export const MONTHS_UK_FULL = ['січень', 'лютий', 'березень', 'квітень', 'травень', 'червень', 'липень', 'серпень', 'вересень', 'жовтень', 'листопад', 'грудень']
+// З великої літери — для заголовків календаря (CalendarPopover, SalesDateRangePicker)
+export const MONTHS_UK_CAP = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень']
 
 export function getISOWeek(date: Date): number {
   const d = new Date(date)

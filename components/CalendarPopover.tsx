@@ -1,10 +1,8 @@
 'use client'
 import { useState, useEffect, useRef, ReactNode, RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { buildCalendarDays, WEEKDAYS_SHORT } from '@/lib/dateUtils'
+import { buildCalendarDays, WEEKDAYS_SHORT, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import styles from './CalendarPopover.module.css'
-
-const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']
 
 export { styles as calStyles }
 
@@ -80,7 +78,7 @@ export default function CalendarPopover({
               <path d="M8 2L4 6l4 4"/>
             </svg>
           </button>
-          <span className={styles.monthLabel}>{MONTHS_UK[viewMonth]} {viewYear}</span>
+          <span className={styles.monthLabel}>{MONTHS_UK_CAP[viewMonth]} {viewYear}</span>
           <button type="button" className={styles.monthNav} onClick={onNextMonth} aria-label="Наступний місяць">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M4 2l4 4-4 4"/>
