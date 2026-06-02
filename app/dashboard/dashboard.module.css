@@ -279,3 +279,75 @@
   color: var(--success);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Блок: вільні місця на заняттях ────────────────────────── */
+.spacesBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: 20px;
+}
+
+.spacesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.spacesTable thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding: 0 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.spacesTable tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.spacesTable tbody tr:last-child {
+  border-bottom: none;
+}
+
+.spacesTable tbody td {
+  padding: 9px 8px 9px 0;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.spacesTime {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.spacesMuted {
+  color: var(--text-3) !important;
+}
+
+.spacesNumCol {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  padding-right: 0 !important;
+}
+
+.spacesTable thead th.spacesNumCol {
+  text-align: right;
+}
+
+.spacesFull td {
+  color: var(--text-3);
+}
+
+.spacesFreeOk {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.spacesFreeZero {
+  color: var(--text-3);
+}

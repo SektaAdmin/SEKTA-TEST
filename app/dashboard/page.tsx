@@ -6,6 +6,7 @@ import { toYMD, DOW_LABELS_FULL, MONTHS_UK_FULL } from '@/lib/dateUtils'
 import { FopTodayCard } from './_components/FopTodayCard'
 import { SessionDebtBlock } from './_components/SessionDebtBlock'
 import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
+import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
 import { TrainerCashBlock } from './_components/TrainerCashBlock'
 import styles from './dashboard.module.css'
 
@@ -32,6 +33,8 @@ export default function DashboardPage() {
           </div>
 
           <SessionDebtBlock date={today} />
+
+          <FreeSpacesBlock date={today} />
 
           <div className={styles.twoCol}>
             <FreeSlotsBlock date={today} />
