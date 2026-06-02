@@ -73,10 +73,65 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: default;
+  text-align: left;
 }
 
 .blockHead .blockTitle {
   margin-bottom: 0;
+}
+
+/* clickable variant (debtBlock header) */
+.debtBlock .blockHead {
+  cursor: pointer;
+  margin-bottom: 0;
+  border-radius: var(--radius-sm);
+}
+
+.debtBlock .blockHead:hover .blockTitle {
+  color: var(--text-2);
+}
+
+.blockHeadRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.debtCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-radius: 999px;
+  padding: 1px 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.chevron {
+  color: var(--text-3);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.debtBody {
+  margin-top: 14px;
+}
+
+.debtCopyRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .copyBtn {

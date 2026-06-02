@@ -25,6 +25,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
   const [groups, setGroups] = useState<DebtGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
 
   const load = useCallback(() => {
     let cancelled = false
@@ -90,37 +91,58 @@ export function SessionDebtBlock({ date }: { date: string }) {
       .catch(() => toast.error('Не вдалося скопіювати'))
   }, [date, groups])
 
+  const totalDebtors = groups.reduce((s, g) => s + g.clients.length, 0)
+
   return (
     <section className={styles.debtBlock}>
-      <div className={styles.blockHead}>
+      <button className={styles.blockHead} onClick={() => setOpen(o => !o)}>
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
-        {groups.length > 0 && (
-          <button className={styles.copyBtn} onClick={handleCopy}>
-            <CopyIcon /> Скопіювати звіт
-          </button>
-        )}
-      </div>
-
-      {loading && <div className="loading-dots"><span /><span /><span /></div>}
-      {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
-      {!loading && !error && groups.length === 0 && (
-        <div className={styles.empty}>Боржників немає 🎉</div>
-      )}
-
-      {!loading && !error && groups.map((g, i) => (
-        <div key={i} className={styles.debtGroup}>
-          <div className={styles.debtGroupHead}>
-            {g.time} · {g.trainer} <span className={styles.debtHall}>({g.hall})</span>
-            {g.indivLabel && <span className={styles.debtType}>{g.indivLabel}</span>}
-          </div>
-          {g.clients.map((c, j) => (
-            <div key={j} className={styles.debtClient}>
-              <span>{c.name}</span>
-              <span className={styles.debtBalance}>{c.balance}</span>
-            </div>
-          ))}
+        <div className={styles.blockHeadRight}>
+          {!loading && totalDebtors > 0 && (
+            <span className={styles.debtCount}>{totalDebtors}</span>
+          )}
+          <svg
+            className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}
+            width="16" height="16" viewBox="0 0 16 16" fill="none"
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
-      ))}
+      </button>
+
+      <div
+        className={styles.debtBody}
+        style={{ display: open ? undefined : 'none' }}
+      >
+        {open && groups.length > 0 && (
+          <div className={styles.debtCopyRow}>
+            <button className={styles.copyBtn} onClick={handleCopy}>
+              <CopyIcon /> Скопіювати звіт
+            </button>
+          </div>
+        )}
+
+        {loading && <div className="loading-dots"><span /><span /><span /></div>}
+        {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
+        {!loading && !error && groups.length === 0 && (
+          <div className={styles.empty}>Боржників немає 🎉</div>
+        )}
+
+        {!loading && !error && groups.map((g, i) => (
+          <div key={i} className={styles.debtGroup}>
+            <div className={styles.debtGroupHead}>
+              {g.time} · {g.trainer} <span className={styles.debtHall}>({g.hall})</span>
+              {g.indivLabel && <span className={styles.debtType}>{g.indivLabel}</span>}
+            </div>
+            {g.clients.map((c, j) => (
+              <div key={j} className={styles.debtClient}>
+                <span>{c.name}</span>
+                <span className={styles.debtBalance}>{c.balance}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </section>
   )
 }
