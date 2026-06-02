@@ -94,11 +94,6 @@ export function SessionDebtBlock({ date }: { date: string }) {
   return (
     <section className={styles.debtBlock}>
       <div className={styles.blockHead}>
-        {!loading && groups.length > 0 && (
-          <button className={styles.copyBtn} onClick={handleCopy}>
-            <CopyIcon /> Скопіювати звіт
-          </button>
-        )}
         <button className={styles.blockToggle} onClick={() => setOpen(o => !o)}>
           <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
           <svg
@@ -108,6 +103,11 @@ export function SessionDebtBlock({ date }: { date: string }) {
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
+        {!loading && groups.length > 0 && (
+          <button className={styles.copyBtn} onClick={handleCopy}>
+            <CopyIcon /> Скопіювати звіт
+          </button>
+        )}
       </div>
 
       <div
