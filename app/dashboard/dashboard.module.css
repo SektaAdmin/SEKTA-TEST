@@ -339,15 +339,7 @@
   text-align: right;
 }
 
-.spacesFull td {
-  color: var(--text-3);
-}
-
 .spacesFreeOk {
   font-weight: 600;
   color: var(--accent);
-}
-
-.spacesFreeZero {
-  color: var(--text-3);
 }

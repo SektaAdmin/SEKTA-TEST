@@ -60,6 +60,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
             free,
           }
         })
+        .filter(r => r.free > 0)
 
       if (cancelled) return
       setRows(result)
@@ -97,24 +98,18 @@ export function FreeSpacesBlock({ date }: { date: string }) {
               <th>Тип</th>
               <th>Тренер</th>
               <th>Зал</th>
-              <th className={styles.spacesNumCol}>Місць</th>
-              <th className={styles.spacesNumCol}>Записано</th>
               <th className={styles.spacesNumCol}>Вільно</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(r => (
-              <tr key={r.id} className={r.free === 0 ? styles.spacesFull : undefined}>
+              <tr key={r.id}>
                 <td className={styles.spacesTime}>{r.time}</td>
                 <td>{typeLabel[r.ticketType] ?? r.ticketType}</td>
                 <td className={styles.spacesMuted}>{r.trainer ?? '—'}</td>
                 <td className={styles.spacesMuted}>{r.hall ?? '—'}</td>
-                <td className={styles.spacesNumCol}>{r.capacity}</td>
-                <td className={styles.spacesNumCol}>{r.enrolled}</td>
                 <td className={styles.spacesNumCol}>
-                  <span className={r.free === 0 ? styles.spacesFreeZero : styles.spacesFreeOk}>
-                    {r.free}
-                  </span>
+                  <span className={styles.spacesFreeOk}>{r.free}</span>
                 </td>
               </tr>
             ))}
