@@ -1,10 +1,9 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listAllCashBalances } from '@/lib/queries/trainer-rates'
 import { getCashIncomingByHolderForDate } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
-import { useRealtime } from '@/lib/useRealtime'
+import { useListQuery } from '@/hooks/useListQuery'
 import styles from '../dashboard.module.css'
 
 /* Блок: готівка на руках у тренерів + що сьогодні надійшло (cash-продажі).
@@ -13,44 +12,27 @@ import styles from '../dashboard.module.css'
 type Row = { id: string; name: string; total: number; todayIncoming: number }
 
 export function TrainerCashBlock({ date }: { date: string }) {
-  const [rows, setRows] = useState<Row[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    let cancelled = false
-    setLoading(true)
-
-    async function run() {
+  const { data: rows, loading, error } = useListQuery<Row>(
+    async () => {
       const [balRes, todayRes] = await Promise.all([
         listAllCashBalances(supabase),
         getCashIncomingByHolderForDate(supabase, date),
       ])
-      if (cancelled) return
-
       const err = balRes.error ?? todayRes.error ?? null
-      if (err) { setError(err); setLoading(false); return }
+      if (err) return { data: [], error: err }
 
       const todayByHolder = todayRes.data
-
       const result: Row[] = balRes.data.map(b => ({
         id: b.trainer_id,
         name: b.trainer_name,
         total: b.balance,
         todayIncoming: todayByHolder.get(b.trainer_id) ?? 0,
       }))
-
-      setError(null)
-      setRows(result)
-      setLoading(false)
-    }
-
-    run()
-    return () => { cancelled = true }
-  }, [date])
-
-  useEffect(() => { return load() }, [load])
-  useRealtime(['sales', 'studio_expenses', 'trainer_payments'], load)
+      return { data: result, error: null }
+    },
+    [date],
+    { realtime: ['sales', 'studio_expenses', 'trainer_payments'] }
+  )
 
   return (
     <section className={styles.block}>

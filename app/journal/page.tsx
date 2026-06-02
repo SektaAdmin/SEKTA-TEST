@@ -1,9 +1,11 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { listPastClasses, type ClassWithJoins } from '@/lib/queries/classes'
+import { listPastClasses } from '@/lib/queries/classes'
+import { useListQuery } from '@/hooks/useListQuery'
+import type { ClassWithJoins } from '@/lib/queries/classes'
 import { useRefs } from '@/contexts/RefsContext'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import DatePicker from '@/components/DatePicker'
@@ -20,9 +22,6 @@ export default function JournalPage() {
   const { trainers, halls, trainingTypes } = useRefs()
 
   const [page, setPage] = useState(0)
-  const [data, setData] = useState<ClassWithJoins[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
 
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -35,26 +34,19 @@ export default function JournalPage() {
 
   const hasFilters = dateFrom || dateTo || filterTrainer || filterHall || filterType || filterCancelled !== 'all'
 
-  const fetchData = useCallback(async (p: number) => {
-    setLoading(true)
-    const res = await listPastClasses(supabase, p, PAGE_SIZE, {
+  const { data, total, loading, error, refetch } = useListQuery<ClassWithJoins>(
+    () => listPastClasses(supabase, page, PAGE_SIZE, {
       dateFrom: dateFrom ? new Date(dateFrom).toISOString() : undefined,
       dateTo: dateTo ? new Date(dateTo + 'T23:59:59').toISOString() : undefined,
       hallId: filterHall || undefined,
       trainerId: filterTrainer || undefined,
       ticketType: filterType || undefined,
       isCancelled: filterCancelled === 'cancelled' ? true : undefined,
-    })
-    if (res.error) {
-      toast.error('Помилка завантаження журналу')
-    } else {
-      setData(res.data)
-      setTotal(res.count)
-    }
-    setLoading(false)
-  }, [dateFrom, dateTo, filterTrainer, filterHall, filterType, filterCancelled])
+    }),
+    [page, dateFrom, dateTo, filterTrainer, filterHall, filterType, filterCancelled]
+  )
 
-  useEffect(() => { fetchData(page) }, [fetchData, page])
+  useEffect(() => { if (error) toast.error('Помилка завантаження журналу') }, [error])
 
   function resetPage(fn: () => void) { fn(); setPage(0) }
 
@@ -215,7 +207,7 @@ export default function JournalPage() {
         <ClassDetailModal
           classId={selectedClassId}
           onClose={() => setSelectedClassId(null)}
-          onClassUpdated={() => { setSelectedClassId(null); fetchData(page) }}
+          onClassUpdated={() => { setSelectedClassId(null); refetch() }}
         />
       )}
     </>

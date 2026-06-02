@@ -1,10 +1,10 @@
 'use client'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queries/dashboard'
 import { useRefs } from '@/contexts/RefsContext'
-import { useRealtime } from '@/lib/useRealtime'
+import { useListQuery } from '@/hooks/useListQuery'
 import { CopyIcon } from '@/components/icons/navigation'
 import styles from '../dashboard.module.css'
 
@@ -42,24 +42,11 @@ function buildHallSlotsText(hallName: string, free: { from: number; to: number }
 
 export function FreeSlotsBlock({ date }: { date: string }) {
   const { halls } = useRefs()
-  const [busy, setBusy] = useState<HallBusyInterval[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    let cancelled = false
-    setLoading(true)
-    listHallBusyIntervalsForDate(supabase, date).then(({ data, error }) => {
-      if (cancelled) return
-      setError(error)
-      setBusy(data)
-      setLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [date])
-
-  useEffect(() => { return load() }, [load])
-  useRealtime(['classes'], load)
+  const { data: busy, loading, error } = useListQuery<HallBusyInterval>(
+    () => listHallBusyIntervalsForDate(supabase, date),
+    [date],
+    { realtime: ['classes'] }
+  )
 
   const byHall = useMemo(() => {
     const activeHalls = halls.filter(h => h.is_active)

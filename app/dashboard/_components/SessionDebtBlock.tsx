@@ -1,35 +1,22 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsForDate } from '@/lib/queries/dashboard'
 import { buildDebtReportText, type DebtGroup } from '@/lib/dashboardReport'
 import { CopyIcon } from '@/components/icons/navigation'
-import { useRealtime } from '@/lib/useRealtime'
+import { useListQuery } from '@/hooks/useListQuery'
 import styles from '../dashboard.module.css'
 
 /* Блок боржників: хто піде в мінус по сесіях сьогодні.
    Дані — агрегатно через listSessionDebtorsForDate (3 запити, без N+1).
    Список завжди розгорнутий, скролиться; висота збігається з блоком вільних місць. */
 export function SessionDebtBlock({ date }: { date: string }) {
-  const [groups, setGroups] = useState<DebtGroup[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    let cancelled = false
-    setLoading(true)
-    listSessionDebtorsForDate(supabase, date).then(({ data, error }) => {
-      if (cancelled) return
-      setError(error)
-      setGroups(data)
-      setLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [date])
-
-  useEffect(() => { return load() }, [load])
-  useRealtime(['classes', 'enrollments', 'client_session_balances'], load)
+  const { data: groups, loading, error } = useListQuery<DebtGroup>(
+    () => listSessionDebtorsForDate(supabase, date),
+    [date],
+    { realtime: ['classes', 'enrollments', 'client_session_balances'] }
+  )
 
   const handleCopy = useCallback(() => {
     const text = buildDebtReportText(new Date(`${date}T00:00:00`), groups)

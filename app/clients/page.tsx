@@ -1,9 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listClients } from '@/lib/queries/clients'
+import { useListQuery } from '@/hooks/useListQuery'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
@@ -18,10 +19,6 @@ const PAGE_SIZES = [20, 50, 100] as const
 
 export default function ClientsPage() {
   const router = useRouter()
-  const [clients, setClients] = useState<Client[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [searchInput, setSearchInput] = useState('')
@@ -31,28 +28,10 @@ export default function ClientsPage() {
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fetchClients = useCallback(async (
-    q: string, p: number, size: number,
-    abortSignal?: AbortSignal
-  ) => {
-    setLoading(true)
-    setFetchError(null)
-    const { data, count, error } = await listClients(supabase, { search: q, page: p, pageSize: size })
-    if (abortSignal?.aborted) return
-    if (error) {
-      setFetchError(typeof error === 'string' ? error : 'Помилка завантаження')
-    } else {
-      setClients(data)
-      setTotal(count)
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetchClients(search, page, pageSize, controller.signal)
-    return () => controller.abort()
-  }, [search, page, pageSize, fetchClients])
+  const { data: clients, total, loading, error: fetchError, refetch } = useListQuery<Client>(
+    () => listClients(supabase, { search, page, pageSize }),
+    [search, page, pageSize]
+  )
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -78,7 +57,7 @@ export default function ClientsPage() {
     setShowModal(false)
     setEditingClient(null)
     toast.success('Збережено')
-    fetchClients(search, page, pageSize)
+    refetch()
   }
 
   function handleEditClose() {

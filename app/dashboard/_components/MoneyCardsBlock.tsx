@@ -1,31 +1,19 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { getMoneyTotalsForDate, type MoneyTotals } from '@/lib/queries/dashboard'
+import { getMoneyTotalsForDate } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { StatCard } from '@/components/ui/StatCard'
-import { useRealtime } from '@/lib/useRealtime'
+import { useAsync } from '@/hooks/useAsync'
 
 /* Гроші за сьогодні по методах оплати — для ранкової звірки з банк-випискою.
    ФОП/Картка → /accounting (там сама звірка). */
 export function MoneyCardsBlock({ date }: { date: string }) {
-  const [t, setT] = useState<MoneyTotals | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const { data: t, loading } = useAsync(
+    () => getMoneyTotalsForDate(supabase, date),
+    [date],
+    { realtime: ['sales', 'studio_expenses'] }
+  )
 
-  const load = useCallback(() => {
-    let cancelled = false
-    getMoneyTotalsForDate(supabase, date).then(({ data, error }) => {
-      if (cancelled) return
-      setError(error)
-      setT(error ? null : data)
-    })
-    return () => { cancelled = true }
-  }, [date])
-
-  useEffect(() => { return load() }, [load])
-  useRealtime(['sales', 'studio_expenses'], load)
-
-  const loading = t == null && !error
   const v = (n: number | undefined) => (n == null ? '—' : n === 0 ? '—' : formatMoney(n))
 
   return (

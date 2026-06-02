@@ -1,9 +1,9 @@
 'use client'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForDate, listEnrolledCountsForDate } from '@/lib/queries/enrollments'
 import { useRefs } from '@/contexts/RefsContext'
-import { useRealtime } from '@/lib/useRealtime'
+import { useListQuery } from '@/hooks/useListQuery'
 import { formatTime } from '@/lib/formatters'
 import { ArrowRightIcon } from '@/components/icons/navigation'
 import ClassDetailModal from '@/components/ClassDetailModal'
@@ -24,26 +24,18 @@ type ClassRow = {
 
 export function FreeSpacesBlock({ date }: { date: string }) {
   const { trainingTypes } = useRefs()
-  const [rows, setRows] = useState<ClassRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [detailClassId, setDetailClassId] = useState<string | null>(null)
 
-  const load = useCallback(() => {
-    let cancelled = false
-    setLoading(true)
-
-    async function run() {
+  const { data: rows, loading, error, refetch } = useListQuery<ClassRow>(
+    async () => {
       const { data: classes, error: clsErr } = await listClassesForDate(supabase, date)
-      if (cancelled) return
-      if (clsErr) { setError(clsErr); setLoading(false); return }
+      if (clsErr) return { data: [], error: clsErr }
 
       const filtered = classes.filter(c => c.ticket_type !== 'selftraining' && c.capacity != null && c.capacity > 0)
-      if (filtered.length === 0) { setRows([]); setLoading(false); return }
+      if (filtered.length === 0) return { data: [], error: null }
 
       const ids = filtered.map(c => c.id)
       const { data: counts } = await listEnrolledCountsForDate(supabase, ids)
-      if (cancelled) return
 
       const result = filtered
         .map(c => ({
@@ -58,17 +50,11 @@ export function FreeSpacesBlock({ date }: { date: string }) {
         }))
         .filter(r => r.free > 0)
 
-      if (cancelled) return
-      setRows(result)
-      setLoading(false)
-    }
-
-    run()
-    return () => { cancelled = true }
-  }, [date])
-
-  useEffect(() => { return load() }, [load])
-  useRealtime(['classes', 'enrollments'], load)
+      return { data: result, error: null }
+    },
+    [date],
+    { realtime: ['classes', 'enrollments'] }
+  )
 
   const typeLabel = useMemo(() => {
     const map: Record<string, string> = {}
@@ -117,7 +103,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
         <ClassDetailModal
           classId={detailClassId}
           onClose={() => setDetailClassId(null)}
-          onClassUpdated={load}
+          onClassUpdated={refetch}
         />
       )}
     </section>

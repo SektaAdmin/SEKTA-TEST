@@ -11,6 +11,8 @@ export function useRealtime(tables: string[], onChange: () => void) {
   const channelNameRef = useRef(`realtime:${[...tables].sort().join(',')}:${++channelCounter}`)
 
   useEffect(() => {
+    if (tables.length === 0) return // нема таблиць — нема підписки (idle-канал не створюємо)
+
     let channel: ReturnType<typeof supabase.channel>
     let debounceTimer: ReturnType<typeof setTimeout>
 

@@ -1,30 +1,14 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSeriesTemplates } from '@/lib/queries/classes'
-import { useRealtime } from '@/lib/useRealtime'
+import { useListQuery } from '@/hooks/useListQuery'
 import type { ClassSeries } from '@/types'
 
 export function useSeriesTemplates() {
-  const [templates, setTemplates] = useState<ClassSeries[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-
-  const fetchTemplates = useCallback(async () => {
-    setLoading(true)
-    setFetchError(null)
-    const { data, error } = await listSeriesTemplates(supabase)
-    if (error) {
-      setFetchError(error)
-    } else {
-      setTemplates(data)
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchTemplates() }, [fetchTemplates])
-
-  useRealtime(['class_series', 'series_clients'], fetchTemplates)
-
-  return { templates, loading, fetchError, refetch: fetchTemplates }
+  const { data: templates, loading, error, refetch } = useListQuery<ClassSeries>(
+    () => listSeriesTemplates(supabase),
+    [],
+    { realtime: ['class_series', 'series_clients'] }
+  )
+  return { templates, loading, fetchError: error, refetch }
 }
