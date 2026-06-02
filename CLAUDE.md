@@ -94,7 +94,7 @@ training_types — довідник типів занять
 | `update_sale(p_sale_id, …, p_cash_holder, p_ticket_name, p_ticket_price, p_sessions, p_ticket_type, …)` | Реверс старого балансу + застосування нового |
 | `delete_sale(p_sale_id)` | Видалити sale + реверс балансу |
 | `update_client_balance(p_client_id, p_amount, p_transaction_type, p_description, p_related_sale_id, p_reason)` | → `(success, new_balance, transaction_id, error_message)`. FOR UPDATE + credit_limit + лог |
-| `mark_attendance(p_enrollment_id, p_sessions_used=1)` | → `(success, error_message)`. Декремент сесій, status=attended. `success=false` якщо балансу нема. **Вживає лише cron**; UI → `change_enrollment_status` |
+| `mark_attendance(p_enrollment_id, p_sessions_used=1)` | → `(success, error_message)`. Декремент сесій (allow negative — балансу нема → йде в мінус), status=attended. **Вживає лише cron**; UI → `change_enrollment_status` |
 | `change_enrollment_status(p_enrollment_id, p_new_status, p_force_no_charge=false, p_sessions_used=null)` | → `(success, charged, error_message)`. Єдина точка зміни статусу з UI. Вирівнює баланс сесій + застосовує правило скасування. `charged` = чи списано сесію |
 | `cancellation_deadline(starts_at) → timestamptz` | Дедлайн безкоштовного скасування (див. бізнес-правило вище) |
 | `reverse_attendance(p_enrollment_id)` | → `(success, error_message)`. Повертає сесії, status=cancelled, sessions_used=0 |
@@ -104,7 +104,7 @@ training_types — довідник типів занять
 | `calc_trainer_salary_v2(p_trainer_id, p_start, p_end)` | Рядок на enrollment (attended+noshow). Ставка на дату заняття. Для `/settings/salary/calculations` |
 | `check_class_conflicts(p_starts_at, p_duration_min, p_hall_id, p_trainer_id, p_exclude_id)` | Перетин по залу/тренеру |
 | `check_client_conflict(p_client_id, p_class_id)` | Чи клієнт уже на паралельному занятті |
-| `auto_close_classes()` | pg_cron кожні 5 хв. Закриває `enrolled` для занять 5хв–24год тому через `mark_attendance`. Без балансу → лишає `enrolled` для ручного розбору |
+| `auto_close_classes()` | pg_cron щохвилини. Модель «почалось = проведено»: закриває всі `enrolled` для занять із `starts_at <= now()` (без верхньої межі) через `mark_attendance` → `attended`, списує сесію (в мінус якщо нема). Непришедших адмін переводить у `noshow`/`cancelled` вручну постфактум |
 
 ---
 
