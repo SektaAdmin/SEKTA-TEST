@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { isSameDay, toYMD } from '@/lib/dateUtils'
+import { useMonthView } from '@/hooks/useMonthView'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DatePicker.module.css'
 
@@ -26,27 +27,9 @@ export default function DatePicker({ value, onChange, placeholder = 'Обері�
   const selected = parseYMD(value)
   const today = new Date(); today.setHours(0, 0, 0, 0)
 
-  const initDate = selected ?? today
   const [open, setOpen] = useState(false)
-  const [viewYear, setViewYear] = useState(initDate.getFullYear())
-  const [viewMonth, setViewMonth] = useState(initDate.getMonth())
+  const { viewYear, viewMonth, prevMonth, nextMonth } = useMonthView(selected)
   const wrapRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (selected) {
-      setViewYear(selected.getFullYear())
-      setViewMonth(selected.getMonth())
-    }
-  }, [value])
-
-  function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
-    else setViewMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
-    else setViewMonth(m => m + 1)
-  }
 
   const label = value ? formatDisplay(value) : placeholder
   const hasValue = Boolean(value)

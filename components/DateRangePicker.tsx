@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { isSameDay, toYMD } from '@/lib/dateUtils'
+import { useMonthView } from '@/hooks/useMonthView'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DateRangePicker.module.css'
 
@@ -23,29 +24,10 @@ function formatLabel(start: Date, end: Date): string {
 
 export default function DateRangePicker({ startDate, endDate, onChange, label, activeDates, onMonthChange }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
-  const [viewYear, setViewYear] = useState(startDate.getFullYear())
-  const [viewMonth, setViewMonth] = useState(startDate.getMonth())
+  const { viewYear, viewMonth, prevMonth, nextMonth } = useMonthView(startDate, onMonthChange)
   const wrapRef = useRef<HTMLDivElement>(null)
 
   const today = new Date(); today.setHours(0, 0, 0, 0)
-
-  useEffect(() => {
-    setViewYear(startDate.getFullYear())
-    setViewMonth(startDate.getMonth())
-  }, [startDate.getFullYear(), startDate.getMonth()])
-
-  function prevMonth() {
-    const newYear = viewMonth === 0 ? viewYear - 1 : viewYear
-    const newMonth = viewMonth === 0 ? 11 : viewMonth - 1
-    setViewYear(newYear); setViewMonth(newMonth)
-    onMonthChange?.(newYear, newMonth)
-  }
-  function nextMonth() {
-    const newYear = viewMonth === 11 ? viewYear + 1 : viewYear
-    const newMonth = viewMonth === 11 ? 0 : viewMonth + 1
-    setViewYear(newYear); setViewMonth(newMonth)
-    onMonthChange?.(newYear, newMonth)
-  }
 
   const displayLabel = label ?? formatLabel(startDate, endDate)
 

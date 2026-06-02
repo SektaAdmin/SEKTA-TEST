@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { isSameDay } from '@/lib/dateUtils'
+import { useMonthView } from '@/hooks/useMonthView'
 import { datetimeLocalToDisplay, parseDisplayToDatetimeLocal } from '@/lib/formatters'
 import CalendarPopover, { calStyles } from './CalendarPopover'
 import styles from './DateTimePicker.module.css'
@@ -34,8 +35,7 @@ export default function DateTimePicker({ value, onChange, disabled }: DateTimePi
   const { date: initDate, hours: initH, minutes: initMin } = parseDatetimeLocal(value)
   const today = new Date(); today.setHours(0, 0, 0, 0)
 
-  const [viewYear, setViewYear] = useState((initDate ?? today).getFullYear())
-  const [viewMonth, setViewMonth] = useState((initDate ?? today).getMonth())
+  const { viewYear, viewMonth, prevMonth, nextMonth } = useMonthView(initDate)
   const [hours, setHours] = useState(initH)
   const [minutes, setMinutes] = useState(initMin)
 
@@ -46,20 +46,7 @@ export default function DateTimePicker({ value, onChange, disabled }: DateTimePi
     setDisplay(datetimeLocalToDisplay(value))
     setHours(parsed.hours)
     setMinutes(parsed.minutes)
-    if (parsed.date) {
-      setViewYear(parsed.date.getFullYear())
-      setViewMonth(parsed.date.getMonth())
-    }
   }, [value])
-
-  function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
-    else setViewMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
-    else setViewMonth(m => m + 1)
-  }
 
   function handleDayClick(day: Date) {
     const newVal = toDatetimeLocal(day, hours, minutes)
