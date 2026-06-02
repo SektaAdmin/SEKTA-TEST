@@ -317,13 +317,6 @@
   text-overflow: ellipsis;
 }
 
-.spacesChoreo {
-  font-size: 12px;
-  color: var(--text-2);
-  margin-top: 2px;
-  line-height: 1.35;
-}
-
 .spacesRight {
   display: flex;
   align-items: center;

@@ -93,9 +93,8 @@ export function FreeSpacesBlock({ date }: { date: string }) {
               <span className={styles.spacesType}>{typeLabel[r.ticketType] ?? r.ticketType}</span>
             </div>
             <div className={styles.spacesSub}>
-              {[r.trainer, r.hall].filter(Boolean).join(' · ')}
+              {[r.trainer, r.hall, r.choreo].filter(Boolean).join(' · ')}
             </div>
-            {r.choreo && <div className={styles.spacesChoreo}>🩰 {r.choreo}</div>}
           </div>
           <div className={styles.spacesRight}>
             <span className={styles.spacesFreeChip}>{r.free}</span>
