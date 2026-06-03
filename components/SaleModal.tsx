@@ -40,6 +40,9 @@ interface Props {
   preselectedClient?: Client
 }
 
+// Способи оплати «живими» грошима (готівка/ФОП/картка). 'deposit' — окремо, лише з абонементом.
+const LIVE_METHODS: PaymentMethod[] = ['cash', 'fop', 'personal_card']
+
 export default function SaleModal({ onClose, onSaved, editSale, preselectedClient }: Props) {
   const isEdit = !!editSale
 
@@ -50,13 +53,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     form,
     clientBalance,
     ticketChanged,
-    payFromDeposit,
     saleDatetime,
     setSaleDatetime,
     pricePaid$,
     amountGiven$,
     loadClientBalance,
-    handleDepositToggle,
+    handlePaymentMethodChange,
     handleTicketChange,
   } = useSaleForm(editSale, preselectedClient?.balance)
 
@@ -79,8 +81,8 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
 
   const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId, cash_holder: cashHolder } = watch()
 
+  const fromDeposit = payment === 'deposit'
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
-  const isDeduction = !ticketId && amountGiven < 0
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -133,7 +135,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           <select
             id="sale-ticket"
             value={ticketId}
-            onChange={e => handleTicketChange(e.target.value, tickets, payFromDeposit)}
+            onChange={e => handleTicketChange(e.target.value, tickets)}
             disabled={busy}
           >
             <option value="">— Оберіть абонемент —</option>
@@ -146,55 +148,41 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           </select>
         </FormField>
 
-        {/* Таб-переключатель: Звичайна оплата / Депозит */}
+        {/* Спосіб оплати — кнопки. «З депозиту» доступна лише з абонементом. */}
         <div className={styles.field}>
+          <label>Спосіб оплати</label>
           <div className={styles.paymentTabs}>
-            <button
-              type="button"
-              className={`${styles.paymentTab} ${!payFromDeposit ? styles.paymentTabActive : ''}`}
-              onClick={() => handleDepositToggle(false, pricePaid)}
-              disabled={busy}
-            >
-              Звичайна оплата
-            </button>
-            <button
-              type="button"
-              className={`${styles.paymentTab} ${payFromDeposit ? styles.paymentTabActive : ''}`}
-              onClick={() => handleDepositToggle(true, pricePaid)}
-              disabled={busy}
-            >
-              Депозит
-            </button>
+            {LIVE_METHODS.map((method) => (
+              <button
+                key={method}
+                type="button"
+                className={`${styles.paymentTab} ${payment === method ? styles.paymentTabActive : ''}`}
+                onClick={() => handlePaymentMethodChange(method, pricePaid)}
+                disabled={busy}
+              >
+                {paymentLabel(method)}
+              </button>
+            ))}
+            {ticketId && (
+              <button
+                type="button"
+                className={`${styles.paymentTab} ${fromDeposit ? styles.paymentTabActive : ''}`}
+                onClick={() => handlePaymentMethodChange('deposit', pricePaid)}
+                disabled={busy}
+              >
+                {paymentLabel('deposit')}
+              </button>
+            )}
           </div>
-          {payFromDeposit && clientBalance !== null && clientBalance < pricePaid && (
+          {fromDeposit && clientBalance !== null && clientBalance < pricePaid && (
             <span className={`${styles.depositHint} ${styles.depositNeg}`}>
               На депозиті {formatMoney(clientBalance)} — може не вистачити
             </span>
           )}
         </div>
 
-        {/* Спосіб оплати — кнопки */}
-        {!isDeduction && !payFromDeposit && (
-          <div className={styles.field}>
-            <label>Спосіб оплати</label>
-            <div className={styles.paymentTabs}>
-              {(['cash', 'fop', 'personal_card'] as PaymentMethod[]).map((method) => (
-                <button
-                  key={method}
-                  type="button"
-                  className={`${styles.paymentTab} ${payment === method ? styles.paymentTabActive : ''}`}
-                  onClick={() => setValue('payment_method', method)}
-                  disabled={busy}
-                >
-                  {paymentLabel(method)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Тренер (тільки для готівки) */}
-        {!isDeduction && payment === 'cash' && (
+        {payment === 'cash' && (
           <div className={styles.field}>
             <label htmlFor="sale-trainer">
               Тренер {ticketId && <span className={styles.required}>* обов'язково</span>}
@@ -221,7 +209,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         )}
 
         {/* Хто прийняв готівку */}
-        {!isDeduction && payment === 'cash' && (
+        {payment === 'cash' && (
           <div className={styles.field}>
             <label htmlFor="sale-cash-holder">Хто прийняв готівку</label>
             <select
@@ -236,12 +224,10 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           </div>
         )}
 
-        {/* Фактична сума */}
-        {ticketId && (
+        {/* Ціна списання з депозиту */}
+        {ticketId && fromDeposit && (
           <div className={styles.field}>
-            <label htmlFor="sale-price-paid">
-              {payFromDeposit ? 'Сума списання (₴)' : 'Фактична сума (₴)'}
-            </label>
+            <label htmlFor="sale-price-paid">Сума списання (₴)</label>
             <input
               id="sale-price-paid"
               type="number"
@@ -253,7 +239,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               step={1}
               disabled={busy}
             />
-            {payFromDeposit && pricePaid > 0 && (
+            {pricePaid > 0 && (
               <span className={`${styles.depositHint} ${styles.depositNeg}`}>
                 −{formatMoney(pricePaid)} з депозиту
               </span>
@@ -261,8 +247,26 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           </div>
         )}
 
-        {/* Сума від клієнта / операція з депозитом */}
-        {!(ticketId && payFromDeposit) && <div className={styles.field}>
+        {/* Ціна абонемента (жива оплата) — редагований номінал */}
+        {ticketId && !fromDeposit && (
+          <div className={styles.field}>
+            <label htmlFor="sale-price-paid">Ціна абонемента (₴)</label>
+            <input
+              id="sale-price-paid"
+              type="number"
+              value={pricePaid$.text}
+              onFocus={e => e.target.select()}
+              onChange={e => pricePaid$.onChange(e, n => setValue('price_paid', n))}
+              onBlur={() => pricePaid$.onBlur(n => setValue('price_paid', n))}
+              min={0}
+              step={1}
+              disabled={busy}
+            />
+          </div>
+        )}
+
+        {/* Сума від клієнта (жива оплата) / операція з депозитом без абонемента */}
+        {!fromDeposit && <div className={styles.field}>
           <label htmlFor="sale-amount-given">
             {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
           </label>
@@ -277,6 +281,9 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             step={1}
             disabled={busy}
           />
+          {errors.amount_given && (
+            <p className={styles.errorHint} role="alert">{errors.amount_given.message}</p>
+          )}
           {!ticketId && (
             <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
               Позитивне — поповнення, негативне — списання
@@ -286,7 +293,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
               {depositDelta > 0
                 ? `+${formatMoney(depositDelta)} на депозит`
-                : `${formatMoney(depositDelta)} з депозиту`}
+                : `${formatMoney(depositDelta)} (борг / з депозиту)`}
             </span>
           )}
           {!ticketId && amountGiven !== 0 && (

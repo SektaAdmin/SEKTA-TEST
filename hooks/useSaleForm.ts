@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { fetchClientBalance } from '@/hooks/useClientBalance'
-import { nowDatetimeLocal, isoToDatetimeLocal, datetimeLocalToDisplay } from '@/lib/formatters'
+import { nowDatetimeLocal, isoToDatetimeLocal } from '@/lib/formatters'
 import { VM } from '@/lib/validation-messages'
 import type { Ticket, PaymentMethod } from '@/types'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
@@ -19,9 +19,17 @@ export const saleSchema = z.object({
   payment_method: z.enum(['cash', 'fop', 'personal_card', 'deposit']),
   notes: z.string().optional(),
 }).superRefine((data, ctx) => {
+  const liveMethod = data.payment_method !== 'deposit'
+  // Тренер обов'язковий при готівковій оплаті абонемента
   if (data.ticket_id && !data.trainer_id && data.payment_method === 'cash') {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: VM.required.selectTrainer, path: ['trainer_id'] })
   }
+  // D-4: жива оплата абонемента мусить мати «дав клієнт» > 0.
+  // «Дав 0» = оплата з депозиту → для цього є метод 'deposit', не cash/fop/card.
+  if (data.ticket_id && liveMethod && data.amount_given <= 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: VM.invalid.amountGivenPositive, path: ['amount_given'] })
+  }
+  // Операція з депозитом без абонемента не може бути нульовою
   if (!data.ticket_id && data.amount_given === 0) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: VM.invalid.amountNonZero, path: ['amount_given'] })
   }
@@ -29,6 +37,16 @@ export const saleSchema = z.object({
 
 export type SaleFormValues = z.infer<typeof saleSchema>
 
+/**
+ * Зводить значення форми до того, що пишеться в sales.
+ * Закон: Δдепозит = amount_given − price_paid (його застосовує create_sale/update_sale).
+ *
+ * - Абонемент + 'deposit': списання з депозиту → ag=0, pp=сума списання, Δ=−pp.
+ * - Абонемент + жива оплата: pp=номінал, ag=скільки дав, Δ=ag−pp (решта→депозит / борг).
+ * - Без абонемента: одне поле ±сума.
+ *     +сума → поповнення (ag=сума, pp=0, Δ=+сума);
+ *     −сума → списання/корекція (ag=0, pp=|сума|, Δ=−|сума|).
+ */
 export function resolveSubmitValues(formData: SaleFormValues) {
   const isNoTicket = !formData.ticket_id
   return {
@@ -75,12 +93,8 @@ export function useSaleForm(editSale?: EditSaleSnapshot, preselectedClientBalanc
 
   const [clientBalance, setClientBalance] = useState<number | null>(preselectedClientBalance ?? null)
   const [ticketChanged, setTicketChanged] = useState(false)
-  const [payFromDeposit, setPayFromDeposit] = useState(editSale?.payment_method === 'deposit')
   const [saleDatetime, setSaleDatetime] = useState(
     editSale ? isoToDatetimeLocal(editSale.created_at) : nowDatetimeLocal()
-  )
-  const [displayDatetime, setDisplayDatetime] = useState(
-    datetimeLocalToDisplay(editSale ? isoToDatetimeLocal(editSale.created_at) : nowDatetimeLocal())
   )
 
   const pricePaid$ = useNumberField(editSale?.price_paid ?? 0)
@@ -95,27 +109,30 @@ export function useSaleForm(editSale?: EditSaleSnapshot, preselectedClientBalanc
     setClientBalance(balance ?? 0)
   }, [])
 
-  function handleDepositToggle(on: boolean, currentPricePaid: number) {
-    setPayFromDeposit(on)
-    if (on) {
+  /**
+   * Вибір способу оплати. 'deposit' = гроші з балансу (ag=0, pp=сума списання).
+   * Перехід на/з 'deposit' вирівнює amount_given під обраний абонемент.
+   */
+  function handlePaymentMethodChange(method: PaymentMethod, currentPricePaid: number) {
+    form.setValue('payment_method', method)
+    if (method === 'deposit') {
       form.setValue('amount_given', 0)
       amountGiven$.setText('0')
-      form.setValue('payment_method', 'deposit')
     } else {
+      // Повертаємось до живої оплати — підставляємо номінал як «дав клієнт»
       form.setValue('amount_given', currentPricePaid)
       amountGiven$.setText(String(currentPricePaid))
-      form.setValue('payment_method', 'cash')
     }
   }
 
-  function handleTicketChange(id: string, tickets: Ticket[], currentPayFromDeposit: boolean) {
+  function handleTicketChange(id: string, tickets: Ticket[]) {
     form.setValue('ticket_id', id)
     setTicketChanged(true)
     if (!id) {
-      setPayFromDeposit(false)
+      // Без абонемента метод 'deposit' не має сенсу → повертаємо живу оплату
+      if (form.getValues('payment_method') === 'deposit') form.setValue('payment_method', 'cash')
       form.setValue('price_paid', 0)
       form.setValue('amount_given', 0)
-      form.setValue('payment_method', 'cash')
       pricePaid$.setText('0')
       amountGiven$.setText('0')
       return
@@ -124,7 +141,7 @@ export function useSaleForm(editSale?: EditSaleSnapshot, preselectedClientBalanc
     if (t) {
       form.setValue('price_paid', t.price)
       pricePaid$.setText(String(t.price))
-      if (currentPayFromDeposit) {
+      if (form.getValues('payment_method') === 'deposit') {
         form.setValue('amount_given', 0)
         amountGiven$.setText('0')
       } else {
@@ -139,15 +156,12 @@ export function useSaleForm(editSale?: EditSaleSnapshot, preselectedClientBalanc
     clientBalance,
     setClientBalance,
     ticketChanged,
-    payFromDeposit,
     saleDatetime,
     setSaleDatetime,
-    displayDatetime,
-    setDisplayDatetime,
     pricePaid$,
     amountGiven$,
     loadClientBalance,
-    handleDepositToggle,
+    handlePaymentMethodChange,
     handleTicketChange,
   }
 }

@@ -22,6 +22,7 @@ export const VM = {
     codePattern:      "Тільки малі латинські букви та цифри",
     capacityPositive: "Місткість > 0",
     amountNonZero:    "Сума не може бути 0",
+    amountGivenPositive: "Введіть суму від клієнта (для оплати з депозиту оберіть «З депозиту»)",
     durationMin:      "Мінімум 15 хвилин",
     weeksRange:       "Від 1 до 52 тижнів",
   },
