@@ -10,9 +10,14 @@ const ERROR_LABELS: Record<string, string> = {
   forbidden: 'Недостатньо прав',
 }
 
+/**
+ * Створити кабінет клієнту АБО скинути пароль наявному (якщо user_id вже є —
+ * сервер генерує новий пароль; старий ніде не зберігається, показати неможливо).
+ * `reset` у відповіді = чи це було скидання (для адаптації тексту в UI).
+ */
 export async function createClientLogin(
   clientId: string
-): Promise<{ login: string | null; password: string | null; error: string | null }> {
+): Promise<{ login: string | null; password: string | null; reset: boolean; error: string | null }> {
   try {
     const res = await fetch('/api/admin/create-client-login', {
       method: 'POST',
@@ -22,10 +27,10 @@ export async function createClientLogin(
     const json = await res.json().catch(() => ({}))
     if (!res.ok) {
       const code = typeof json.error === 'string' ? json.error : ''
-      return { login: null, password: null, error: ERROR_LABELS[code] ?? (code || 'Помилка створення кабінету') }
+      return { login: null, password: null, reset: false, error: ERROR_LABELS[code] ?? (code || 'Помилка створення кабінету') }
     }
-    return { login: json.login ?? null, password: json.password ?? null, error: null }
+    return { login: json.login ?? null, password: json.password ?? null, reset: !!json.reset, error: null }
   } catch {
-    return { login: null, password: null, error: 'Помилка зʼєднання' }
+    return { login: null, password: null, reset: false, error: 'Помилка зʼєднання' }
   }
 }

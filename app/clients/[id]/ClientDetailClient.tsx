@@ -72,9 +72,10 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
   const [showLoginConfirm, setShowLoginConfirm] = useState(false)
+  const [resetMode, setResetMode] = useState(false)
   const [creatingLogin, setCreatingLogin] = useState(false)
   const [loginError, setLoginError] = useState('')
-  const [createdCreds, setCreatedCreds] = useState<{ login: string; password: string } | null>(null)
+  const [createdCreds, setCreatedCreds] = useState<{ login: string; password: string; reset: boolean } | null>(null)
   const [credsCopied, setCredsCopied] = useState(false)
   const isMobile = useIsMobile()
 
@@ -215,7 +216,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
     if (!client) return
     setCreatingLogin(true)
     setLoginError('')
-    const { login, password, error } = await createClientLogin(client.id)
+    const { login, password, reset, error } = await createClientLogin(client.id)
     setCreatingLogin(false)
     if (error || !login || !password) {
       setLoginError(error ?? 'Помилка створення кабінету')
@@ -223,7 +224,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
     }
     setShowLoginConfirm(false)
     setCredsCopied(false)
-    setCreatedCreds({ login, password })
+    setCreatedCreds({ login, password, reset })
     fetchClient()
   }
 
@@ -299,11 +300,19 @@ export default function ClientDetailClient({ id }: { id: string }) {
               <div className={styles.cardHeader}>
                 <h2 className={styles.sectionTitle}>Контакти</h2>
                 {client.user_id ? (
-                  <span className="badge badge-completed">Кабінет активний</span>
+                  <div className={styles.cabinetActions}>
+                    <span className="badge badge-completed">Кабінет активний</span>
+                    <button
+                      className={styles.btnEdit}
+                      onClick={() => { setLoginError(''); setResetMode(true); setShowLoginConfirm(true) }}
+                    >
+                      Скинути пароль
+                    </button>
+                  </div>
                 ) : (
                   <button
                     className={styles.btnPrimary}
-                    onClick={() => { setLoginError(''); setShowLoginConfirm(true) }}
+                    onClick={() => { setLoginError(''); setResetMode(false); setShowLoginConfirm(true) }}
                     disabled={!client.phone}
                     title={client.phone ? '' : 'Додайте номер телефону, щоб створити кабінет'}
                   >
@@ -1096,10 +1105,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
       {showLoginConfirm && (
         <div className={styles.confirmOverlay}>
           <div className={styles.confirmBox}>
-            <h3>Створити кабінет клієнту?</h3>
+            <h3>{resetMode ? 'Скинути пароль?' : 'Створити кабінет клієнту?'}</h3>
             <p>
-              Клієнт зможе входити у свій кабінет за номером <strong>{client.phone}</strong>.
-              Логін і пароль зʼявляться після створення — надішліть їх клієнту.
+              {resetMode ? (
+                <>Згенеруємо новий пароль для входу за номером <strong>{client.phone}</strong>.
+                  Старий пароль перестане діяти. Новий зʼявиться після скидання — надішліть його клієнту.</>
+              ) : (
+                <>Клієнт зможе входити у свій кабінет за номером <strong>{client.phone}</strong>.
+                  Логін і пароль зʼявляться після створення — надішліть їх клієнту.</>
+              )}
             </p>
             {loginError && <p className={styles.confirmError}>{loginError}</p>}
             <div className={styles.confirmBtns}>
@@ -1114,7 +1128,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 onClick={handleCreateLogin}
                 disabled={creatingLogin}
               >
-                {creatingLogin ? 'Створення...' : 'Створити'}
+                {creatingLogin ? (resetMode ? 'Скидання...' : 'Створення...') : (resetMode ? 'Скинути' : 'Створити')}
               </button>
             </div>
           </div>
@@ -1124,7 +1138,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       {createdCreds && (
         <div className={styles.confirmOverlay}>
           <div className={styles.confirmBox}>
-            <h3>Кабінет створено</h3>
+            <h3>{createdCreds.reset ? 'Пароль скинуто' : 'Кабінет створено'}</h3>
             <p>Надішліть ці дані клієнту в Instagram або Telegram:</p>
             <pre style={{
               whiteSpace: 'pre-wrap', background: 'var(--bg-2)', border: '1px solid var(--border)',

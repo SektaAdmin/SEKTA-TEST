@@ -89,6 +89,12 @@
 }
 .cardHeader .sectionTitle { margin: 0; }
 
+.cabinetActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── Contacts ───────────────────────────────────────────────── */
 .fields {
   margin: 0;

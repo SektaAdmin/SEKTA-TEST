@@ -39,7 +39,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
   const [hasCabinet, setHasCabinet] = useState(!!existing?.user_id)
   const [creatingLogin, setCreatingLogin] = useState(false)
   const [loginError, setLoginError] = useState('')
-  const [createdCreds, setCreatedCreds] = useState<{ login: string; password: string } | null>(null)
+  const [createdCreds, setCreatedCreds] = useState<{ login: string; password: string; reset: boolean } | null>(null)
   const [credsCopied, setCredsCopied] = useState(false)
 
   const {
@@ -85,7 +85,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
     if (!existing) return
     setCreatingLogin(true)
     setLoginError('')
-    const { login, password, error } = await createTrainerLogin(existing.id)
+    const { login, password, reset, error } = await createTrainerLogin(existing.id)
     setCreatingLogin(false)
     if (error || !login || !password) {
       setLoginError(error ?? 'Помилка створення кабінету')
@@ -93,7 +93,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
     }
     setHasCabinet(true)
     setCredsCopied(false)
-    setCreatedCreds({ login, password })
+    setCreatedCreds({ login, password, reset })
   }
 
   function credsText() {
@@ -174,10 +174,26 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
         <div className={styles.cabinet}>
           <span className={styles.cabinetLabel}>Кабінет тренера</span>
           {hasCabinet && !createdCreds ? (
-            <span className="badge badge-completed">Кабінет активний</span>
+            <>
+              <span className="badge badge-completed">Кабінет активний</span>
+              <p className={styles.cabinetHint}>
+                Пароль не зберігається — якщо тренер його загубив, згенеруйте новий.
+              </p>
+              {loginError && <p className={styles.error} role="alert">{loginError}</p>}
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleCreateLogin}
+                disabled={creatingLogin}
+              >
+                {creatingLogin ? 'Скидання…' : 'Скинути пароль'}
+              </button>
+            </>
           ) : createdCreds ? (
             <>
-              <p className={styles.cabinetHint}>Надішліть ці дані тренеру:</p>
+              <p className={styles.cabinetHint}>
+                {createdCreds.reset ? 'Новий пароль — надішліть тренеру:' : 'Надішліть ці дані тренеру:'}
+              </p>
               <pre className={styles.creds}>{credsText()}</pre>
               <button type="button" className="btn-primary" onClick={copyCreds}>
                 {credsCopied ? 'Скопійовано ✓' : 'Скопіювати'}

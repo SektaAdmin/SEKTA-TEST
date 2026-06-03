@@ -57,7 +57,6 @@ export async function POST(req: Request) {
 
   if (trainerErr) return NextResponse.json({ error: trainerErr.message }, { status: 500 })
   if (!trainer) return NextResponse.json({ error: 'trainer_not_found' }, { status: 404 })
-  if (trainer.user_id) return NextResponse.json({ error: 'already_linked' }, { status: 409 })
 
   // 3) Ідентифікатор: телефон (нормалізований) у пріоритеті, інакше email.
   let phone: string | null = null
@@ -69,6 +68,17 @@ export async function POST(req: Request) {
   const email = trainer.email?.trim() || null
   if (!phone && !email) {
     return NextResponse.json({ error: 'no_contact' }, { status: 400 })
+  }
+
+  // Кабінет уже є → скидаємо пароль (старий ніде не зберігається — показати
+  // повторно неможливо, тож генеруємо новий). Логін лишається тим самим.
+  if (trainer.user_id) {
+    const newPassword = generatePassword()
+    const { error: resetErr } = await admin.auth.admin.updateUserById(trainer.user_id, {
+      password: newPassword,
+    })
+    if (resetErr) return NextResponse.json({ error: resetErr.message }, { status: 500 })
+    return NextResponse.json({ login: phone ?? email, password: newPassword, reset: true })
   }
 
   // 4) Чи не зайнятий цей контакт іншим auth.users.

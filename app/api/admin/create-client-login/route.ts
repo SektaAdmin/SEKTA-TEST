@@ -57,7 +57,6 @@ export async function POST(req: Request) {
 
   if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 500 })
   if (!client) return NextResponse.json({ error: 'client_not_found' }, { status: 404 })
-  if (client.user_id) return NextResponse.json({ error: 'already_linked' }, { status: 409 })
 
   const { data: contact } = await supabase
     .from('client_contacts')
@@ -69,6 +68,17 @@ export async function POST(req: Request) {
   const { data: normRows } = await admin.rpc('normalize_phone_ua', { p_phone: contact?.phone ?? '' })
   const phone = (normRows as unknown as string | null) ?? null
   if (!phone) return NextResponse.json({ error: 'no_phone' }, { status: 400 })
+
+  // Кабінет уже є → скидаємо пароль (старий ніде не зберігається — показати
+  // повторно неможливо, тож генеруємо новий). Логін (телефон) лишається тим самим.
+  if (client.user_id) {
+    const newPassword = generatePassword()
+    const { error: resetErr } = await admin.auth.admin.updateUserById(client.user_id, {
+      password: newPassword,
+    })
+    if (resetErr) return NextResponse.json({ error: resetErr.message }, { status: 500 })
+    return NextResponse.json({ login: phone, password: newPassword, reset: true })
+  }
 
   // 3) Чи не зайнятий цей номер іншим auth.users (напр. сімейний номер).
   const { data: existing } = await admin.auth.admin.listUsers()
