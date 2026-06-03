@@ -1,0 +1,206 @@
+# План: ролі та особисті кабінети
+
+> Статус: **СОГЛАСОВАНО, код ще не торкаємось.** Цей документ — джерело правди для переходу
+> від моделі «всі залогінені = повний доступ» до рольової моделі з кабінетами тренера і клієнта.
+> Виконуємо фазами; кожна фаза безпечна сама по собі (адмінка працює весь час).
+
+## Контекст і чому це робиться
+
+Зараз CRM — внутрішній інструмент для адміна: 2 користувачі в `auth.users`, усі RLS-політики
+`authenticated_all USING(true)` (інваріант #9). Це безпечно, поки всі залогінені — довірені адміни.
+
+Мета: відкрити доступ **тренерам** і **клієнтам** (особистий кабінет). У поточній моделі перший же
+залогінений клієнт побачить усе — чужі баланси, виручку, зарплати. Тому **модель доступу — фундамент**,
+її треба перебудувати ДО написання кабінетів. Після кабінетів змінювати в 10 разів дорожче.
+
+---
+
+## Ролі (узгоджено через інтерв'ю)
+
+| Роль | Бачить | Змінює |
+|------|--------|--------|
+| **owner** (власник) | усе | усе |
+| **admin** (ресепшен) | усе, **крім зарплат** | усе, **крім** зарплат і налаштувань-довідників (зали / типи тренувань / тарифи) |
+| **trainer** | розклад цілком (чуже — read-only), своя ЗП + своя готівка на руках, усіх клієнтів **без контактів** | лише свої заняття (CRUD) + запис/виписка клієнтів **на свої** заняття |
+| **client** | свій депозит, залишок занять, свій розклад/записи, історія покупок і відвідувань, **свої** контакти, ціни тарифів | запис (якщо є оплачені заняття потрібного типу) / відміна (з попередженням про списання після дедлайну) |
+
+### Уточнені бізнес-правила (з інтерв'ю)
+
+- **Контакти від тренера приховані по-справжньому** (рішення A1): телефон/інстаграм/телеграм виносимо
+  в окрему таблицю `client_contacts`, RLS лише для owner/admin. Тренер не дістане їх навіть через консоль.
+- **Клієнт відміняє після дедлайну** → дозволено, але з попередженням «заняття буде списано» перед
+  підтвердженням (без розвилки no-charge — це привілей лише адміна через `p_force_no_charge`).
+- **Клієнт записується без оплачених занять** → заборонено («немає оплачених занять, купіть абонемент»).
+  НЕ пускати в мінус (мінус — лише авто-закриття адмінського запису).
+- **Один тренер на заняття** (`classes.trainer_id`). Заміна = зміна значення. Нічого не додаємо.
+- **Усім клієнтам потрібні логіни.** Механіку онбордингу (як саме клієнт отримує логін і привʼязується
+  до картки) проєктуємо окремо — Фаза 4.
+
+---
+
+## Модель ролі в БД
+
+Роль зберігаємо в **`auth.users.raw_app_meta_data.role`** (`owner` / `admin` / `trainer` / `client`).
+
+Чому `app_metadata`, а не колонка в таблиці:
+- користувач **не може** змінити її сам (на відміну від `user_metadata`) — це безпечно;
+- вона потрапляє в JWT → RLS читає її дешево, без джойнів на кожен рядок.
+
+Хелпер у БД (єдине джерело правди для всіх політик):
+
+```sql
+create or replace function auth_role() returns text
+language sql stable
+set search_path = public, pg_temp
+as $$
+  select coalesce(
+    (current_setting('request.jwt.claims', true)::jsonb -> 'app_metadata' ->> 'role'),
+    'client'  -- дефолт найменш привілейований: незнайома роль = клієнт
+  );
+$$;
+```
+
+Зв'язок логіна з доменом (nullable — наявні картки без логіна продовжують жити):
+- `clients.user_id uuid references auth.users(id)` — хто з клієнтів має кабінет
+- `trainers.user_id uuid references auth.users(id)` — який тренер за яким логіном
+
+---
+
+## ФАЗИ
+
+### Фаза 0 — закрити поточну витічку (окремо від ролей, безпечно, робиться першою)
+
+В БД зараз висять ДВІ зайві політики, що дають доступ **анонімам** (незалогіненим):
+- `sales` → `"sales: anon can read" SELECT USING(true)` — анонім читає **всю виручку**
+- `tickets` → `"tickets: anon can read" SELECT USING(true)` — анонім читає тарифи
+
+Це витічка незалежно від кабінетів (спадок налагодження). Видалити обидві.
+Адмінка ходить як `authenticated` → не помітить.
+
+```sql
+drop policy if exists "sales: anon can read" on sales;
+drop policy if exists "tickets: anon can read" on tickets;
+```
+
+**Перевірка:** залогінений адмін бачить продажі/тарифи як раніше; анонімний запит → 0 рядків.
+
+---
+
+### Фаза 1 — фундамент ролей у БД (фронт ще не чіпаємо)
+
+1. Створити `auth_role()` (вище).
+2. `alter table clients add column user_id uuid references auth.users(id);`
+   `alter table trainers add column user_id uuid references auth.users(id);`
+   (+ індекси по `user_id`).
+3. Двом наявним користувачам проставити роль:
+   ```sql
+   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"owner"}'  where email = '<owner-email>';
+   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'  where email = '<admin-email>';
+   ```
+4. `npm run sync:schema` → оновити `types/database.types.ts`.
+
+Після Фази 1 **поведінка не змінюється** — політики ще `USING(true)`. Це лише підготовка ґрунту.
+
+---
+
+### Фаза 2 — винести контакти (рішення A1)
+
+Контактні поля в `clients` зараз: **`phone`, `instagram_username`, `telegram_username`**.
+Імʼя (`first_name`/`last_name`) і `balance` лишаються в `clients` (тренер їх бачить).
+
+1. Міграція:
+   ```sql
+   create table client_contacts (
+     client_id uuid primary key references clients(id) on delete cascade,
+     phone text,
+     instagram_username text,
+     telegram_username text
+   );
+   -- перенести наявні дані
+   insert into client_contacts (client_id, phone, instagram_username, telegram_username)
+   select id, phone, instagram_username, telegram_username from clients;
+   -- RLS: лише owner/admin
+   alter table client_contacts enable row level security;
+   create policy owner_admin_all on client_contacts for all to authenticated
+     using (auth_role() in ('owner','admin')) with check (auth_role() in ('owner','admin'));
+   grant select,insert,update,delete on client_contacts to anon, authenticated;
+   -- ⚠️ колонки в clients НЕ дропаємо одразу — спершу мігруємо код (крок 3), потім окремим комітом drop
+   ```
+2. `npm run sync:schema`.
+3. Оновити `lib/queries/clients.ts` — усе читання/запис контактів перевести на `client_contacts`
+   (точки: `listClients` select, пошук по phone в combobox, `createClient`/`updateClient`,
+   дублікат-чек по phone). Компоненти `ClientModal` і `ClientDetailClient` — лише UI, дані беруть з queries.
+4. Після зеленого білда — окремим комітом `alter table clients drop column phone, drop column ...`.
+
+**Чому контакти окремою фазою, до RLS-по-ролях:** щоб «тренер не бачить телефон» працювало на рівні БД,
+телефон має фізично жити в таблиці, куди тренеру закрито доступ. Спершу розділяємо дані, потім роздаємо ролі.
+
+---
+
+### Фаза 3 — переписати RLS по ролях (таблиця за таблицею)
+
+Для кожної доменної таблиці замість єдиної `authenticated_all USING(true)` — політики під ролі.
+Робимо ПО ОДНІЙ таблиці, після кожної перевіряємо, що адмінка не зламалась.
+
+Орієнтовна матриця (деталі уточнюємо на кроці кожної таблиці):
+
+| Таблиця | owner | admin | trainer | client |
+|---------|-------|-------|---------|--------|
+| `clients` | ALL | ALL | SELECT (без контактів — вони вже в окремій таблиці) | SELECT свій (`user_id = auth.uid()`) |
+| `client_contacts` | ALL | ALL | — | SELECT свій |
+| `sales` | ALL | ALL | — | SELECT свій |
+| `balance_transactions` | ALL | ALL | — | SELECT свій |
+| `client_session_balances` | ALL | ALL | SELECT | SELECT свій |
+| `enrollments` | ALL | ALL | SELECT усі + INSERT/UPDATE/DELETE лише на свої заняття | SELECT свій + запис/відміна свій (через RPC, правила нижче) |
+| `classes` | ALL | ALL | SELECT усі + CRUD лише `trainer_id = me` | SELECT (розклад) |
+| `trainer_payments` | ALL | — (admin не бачить ЗП) | SELECT свій | — |
+| `trainer_rates` | ALL | — | SELECT свій | — |
+| `studio_expenses` | ALL | ALL | — | — |
+| `halls` / `training_types` / `tickets` | ALL | SELECT (admin не редагує довідники) | SELECT | SELECT (ціни) |
+
+> ⚠️ Тонкощі, які вирішуємо під час Фази 3, не зараз:
+> - «trainer редагує лише свої заняття» — `USING (trainer_id = (select id from trainers where user_id = auth.uid()))`.
+>   Кеш/продуктивність перевірити (можливо, тренерський `trainers.id` класти теж у JWT).
+> - admin без зарплат: політики `trainer_payments`/`trainer_rates` віддають лише `auth_role() in ('owner','trainer-self')`.
+> - admin не редагує довідники: на `halls`/`training_types`/`tickets` для admin лише SELECT,
+>   INSERT/UPDATE — `auth_role() = 'owner'`.
+
+**Інваріант #9 у CLAUDE.md переписується** в цій фазі: з «усі = повний доступ» на «доступ за роллю через `auth_role()`».
+
+---
+
+### Фаза 4 — кабінети у фронті + RPC для клієнтських дій
+
+1. **Зони маршрутів:** `app/(admin)/`, `app/(trainer)/`, `app/(client)/` — три точки входу,
+   спільний код (queries, компоненти) переused. Поточні сторінки переїжджають у `(admin)`.
+2. **Middleware** читає роль із сесії → пускає/редіректить по зоні; редірект після логіну за роллю
+   (owner/admin → `/dashboard`, trainer → свій розклад, client → свій кабінет).
+3. **RPC для клієнтських дій** (логіка в БД, не у фронті — як і гроші):
+   - `client_enroll(p_class_id)` — перевіряє: це клієнт; є оплачені заняття потрібного типу (інакше
+     `success=false, error='no_sessions'`); немає конфлікту; INSERT enrollment. **Не пускати в мінус.**
+   - `client_cancel(p_enrollment_id)` — застосовує `cancellation_deadline`; до дедлайну — без списання,
+     після — зі списанням (фронт показав попередження). `p_force_no_charge` тут НЕдоступний.
+   - усі — `SET search_path = public, pg_temp` (інваріант #10), розпаковка через `callRpc`.
+4. Тренерські дії (CRUD своїх занять, запис/виписка) — наявні RPC/queries, обмежені RLS Фази 3.
+
+---
+
+### Фаза 5 — онбординг клієнтів (проєктуємо окремо)
+
+Як клієнт отримує логін і привʼязується до наявної картки `clients`. Варіанти (запрошення адміном /
+самореєстрація + звірка) — окреме рішення, поза цим планом. Усім клієнтам логіни потрібні (узгоджено).
+
+---
+
+## Порядок виконання (рекомендований)
+
+Фаза 0 → 1 → 2 → 3 (по таблиці) → 4 → 5. Кожна — окремий коміт (або кілька), build зелений на кожному.
+Фази 0–3 не дають видимих змін адміну (крім зникнення витічки) — це навмисно: фундамент кладемо
+непомітно, кабінети зʼявляються лише у Фазі 4.
+
+## Що НЕ робимо (щоб не палити сили)
+
+- Не будуємо кабінети раніше за RLS (Фаза 4 — після Фази 3).
+- Не ховаємо контакти «на фронті» (відкинули A2 на користь A1 — справжня межа в БД).
+- Не закладаємось на масштаб, якого не буде (мікросервіси/черги/кеші — ні).
+- Не переписуємо робочий CSS/UI заради чистоти.
