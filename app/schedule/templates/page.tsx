@@ -60,11 +60,9 @@ export default function TemplatesPage() {
   const [filterHall, setFilterHall] = useState('')
   const activeHalls = useMemo(() => halls.filter(h => h.is_active), [halls])
 
-  // On mobile day-view we show one hall at a time (the week grid crushes all halls
-  // into the viewport otherwise). Auto-select the first active hall; switching = chips.
-  useEffect(() => {
-    if (isMobile && !filterHall && activeHalls.length > 0) setFilterHall(activeHalls[0].id)
-  }, [isMobile, filterHall, activeHalls])
+  // Overview = всі зали одночасно у вузьких колонках (мобільний day-view, чип «Всі»).
+  // Картки → «абревіатура + тренер». Вибраний зал = один на весь екран.
+  const isOverview = isMobile && viewMode === 'day' && !filterHall && activeHalls.length > 1
   const [filterClient, setFilterClient] = useState<Client | null>(null)
   const [clientFilterKey, setClientFilterKey] = useState(0)
 
@@ -306,9 +304,16 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      {/* Mobile hall chips — one hall at a time on phones (day view) */}
+      {/* Mobile hall chips — «Всі» (overview) або один зал на весь екран (day view) */}
       {viewMode === 'day' && activeHalls.length > 1 && (
         <div className={styles.hallChips}>
+          <button
+            type="button"
+            className={`${styles.hallChip} ${filterHall === '' ? styles.hallChipActive : ''}`}
+            onClick={() => setFilterHall('')}
+          >
+            Всі
+          </button>
           {activeHalls.map(h => (
             <button
               key={h.id}
@@ -378,6 +383,7 @@ export default function TemplatesPage() {
                   setShowCreateModal(true)
                 }}
                 singleDayDow={activeDow}
+                overview={isOverview}
               />
             </div>
           ) : viewMode === 'week' ? (

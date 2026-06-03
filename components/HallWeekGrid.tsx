@@ -2,6 +2,7 @@
 import { useMemo } from 'react'
 import { UserRound } from 'lucide-react'
 import { typeColor } from '@/lib/typeColor'
+import { ticketTypeAbbr } from '@/lib/badges'
 import type { ClassSeries, Hall, TrainingType } from '@/types'
 import {
   getOverCapacityCount,
@@ -94,6 +95,9 @@ interface Props {
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
   singleDayDow?: number
+  // overview: усі зали одночасно у вузьких колонках (мобільний day-view, чип «Всі»).
+  // Картка показує лише абревіатуру типу + тренера.
+  overview?: boolean
 }
 
 // ── Template card ─────────────────────────────────────────────────
@@ -105,9 +109,10 @@ interface CardProps {
   laneIndex: number
   laneCount: number
   onCardClick: (s: ClassSeries) => void
+  overview?: boolean
 }
 
-function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardClick }: CardProps) {
+function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardClick, overview = false }: CardProps) {
   const color = typeColor(s.ticket_type)
   const clientCount = s.series_clients?.length ?? 0
   const capacity = s.capacity
@@ -145,7 +150,12 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
       }}
       onClick={e => { e.stopPropagation(); onCardClick(s) }}
     >
-      {isCompact ? (
+      {overview ? (
+        <span className={styles.cardOverview}>
+          <span className={styles.cardAbbr}>{ticketTypeAbbr(s.ticket_type)}</span>
+          {trainerName && <span className={styles.cardOverviewTrainer}>{trainerName}</span>}
+        </span>
+      ) : isCompact ? (
         <span className={styles.cardCompact}>{label} {timeStart}</span>
       ) : (
         <>
@@ -194,9 +204,10 @@ interface HallSubColProps {
   hallId: string | null
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
+  overview?: boolean
 }
 
-function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }: HallSubColProps) {
+function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick, overview = false }: HallSubColProps) {
   const lanes = useMemo(() => computeLanes(items), [items])
 
   function relYOverlapsCard(relY: number): boolean {
@@ -252,6 +263,7 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick }
             laneIndex={laneIndex}
             laneCount={laneCount}
             onCardClick={onCardClick}
+            overview={overview}
           />
         )
       })}
@@ -267,9 +279,10 @@ interface DayColProps {
   hallColumns: (Hall | null)[]
   onCardClick: (s: ClassSeries) => void
   onSlotClick?: (dow: number, time: string, hallId: string | null) => void
+  overview?: boolean
 }
 
-function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotClick }: DayColProps) {
+function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotClick, overview = false }: DayColProps) {
   // Render the same hall sub-columns for every day so columns stay aligned
   // across the week and match the header labels (mirrors /schedule).
   const cols = hallColumns.length > 0 ? hallColumns : [null as null]
@@ -289,6 +302,7 @@ function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotCli
             hallId={hall?.id ?? null}
             onCardClick={onCardClick}
             onSlotClick={onSlotClick}
+            overview={overview}
           />
         )
       })}
@@ -297,7 +311,7 @@ function DayColumn({ items, typeLabels, dow, hallColumns, onCardClick, onSlotCli
 }
 
 // ── Main component ────────────────────────────────────────────────
-export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick, singleDayDow }: Props) {
+export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick, onSlotClick, singleDayDow, overview = false }: Props) {
   const typeLabels = useMemo(() => {
     const m = new Map<string, string>()
     for (const t of trainingTypes) m.set(t.code, t.label)
@@ -370,6 +384,7 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
               hallColumns={hallColumns}
               onCardClick={onCardClick}
               onSlotClick={onSlotClick}
+              overview={overview}
             />
           ))}
         </div>

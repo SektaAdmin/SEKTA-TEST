@@ -99,3 +99,23 @@ export const TICKET_TYPE_SHORT_LABELS: Record<string, string> = {
 export function ticketTypeShortLabel(type: string): string {
   return TICKET_TYPE_SHORT_LABELS[type] ?? type
 }
+
+// Коди-абревіатури типу абонемента (1–2 латинські літери) — для overview-режиму
+// розкладу на мобільному (всі зали одночасно у вузьких колонках). Латиниця навмисно:
+// працює як технічна мітка-значок поряд із кольором, не як текст для читання, тому
+// не порушує «UI лише українською». Невідомий тип (новий з training_types) → 1-ша
+// літера коду великими.
+export const TICKET_TYPE_ABBR: Record<string, string> = {
+  group:           'G',
+  individual:      'I',
+  individualduo:   'ID',
+  individualtrio:  'IT',
+  hallrental:      'H',
+  smallhallrental: 'SH',
+  pylonrental:     'P',
+  striprental:     'S',
+}
+
+export function ticketTypeAbbr(type: string): string {
+  return TICKET_TYPE_ABBR[type] ?? (type ? type[0].toUpperCase() : '?')
+}

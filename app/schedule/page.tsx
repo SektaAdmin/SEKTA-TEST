@@ -13,6 +13,7 @@ import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
+import { ticketTypeAbbr } from '@/lib/badges'
 import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import FilterSelect from '@/components/ui/FilterSelect'
@@ -252,9 +253,12 @@ interface CardProps {
   laneIndex?: number
   laneCount?: number
   onClick: () => void
+  // overview: усі зали одночасно у вузьких колонках (мобільний day-view, чип «Всі»).
+  // Карточка показує лише абревіатуру типу + тренера, без часу/місць — час уже в гутері.
+  overview?: boolean
 }
 
-function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick }: CardProps) {
+function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick, overview = false }: CardProps) {
   const activeCount = getActiveCount(cls.enrollments)
   const waitlistCount = getWaitlistCount(cls.enrollments)
   const color = typeColor(cls.ticket_type)
@@ -314,7 +318,12 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
           onClose={scheduleClose}
         />
       )}
-      {isCompact ? (
+      {overview ? (
+        <span className={`${styles.cardOverview} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
+          <span className={styles.cardAbbr}>{ticketTypeAbbr(cls.ticket_type)}</span>
+          {cls.trainers?.name && <span className={styles.cardOverviewTrainer}>{cls.trainers.name}</span>}
+        </span>
+      ) : isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
           {label} {formatTime(cls.starts_at)}
         </span>
@@ -364,9 +373,10 @@ interface HallColProps {
   day: Date
   onCardClick: (id: string) => void
   onSlotClick: (startsAt: string) => void
+  overview?: boolean
 }
 
-function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick }: HallColProps) {
+function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick, overview = false }: HallColProps) {
   const lanes = computeLanes(classes)
 
   function relYOverlapsCard(relY: number): boolean {
@@ -421,6 +431,7 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
             laneIndex={laneIndex}
             laneCount={laneCount}
             onClick={() => onCardClick(cls.id)}
+            overview={overview}
           />
         )
       })}
@@ -464,13 +475,6 @@ export default function SchedulePage() {
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
-
-  // On mobile day-view we show one hall at a time (4 hall columns are unreadable on
-  // a phone). Auto-select the first active hall when no filter is set so the grid
-  // never crushes all halls into the viewport. Hall switching = the mobile chip row.
-  useEffect(() => {
-    if (isMobile && !filterHall && activeHalls.length > 0) setFilterHall(activeHalls[0].id)
-  }, [isMobile, filterHall, activeHalls])
 
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
     const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
@@ -570,6 +574,10 @@ export default function SchedulePage() {
     ...visibleHalls.halls,
     ...(visibleHalls.hasNoHall ? [null as null] : []),
   ], [visibleHalls])
+
+  // Overview = всі зали одночасно у вузьких колонках (мобільний day-view без вибраного
+  // залу). Картки переходять у компактний вигляд «абревіатура + тренер».
+  const isOverview = isMobile && viewMode === 'day' && hallColumns.length > 1
 
   // Navigation with slide animation
   const navigateDay = useCallback((dir: 'left' | 'right') => {
@@ -750,9 +758,16 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {/* Mobile hall chips — one hall at a time on phones (day view) */}
+        {/* Mobile hall chips — «Всі» (overview всіх залів) або один зал на весь екран */}
         {viewMode === 'day' && activeHalls.length > 1 && (
           <div className={styles.hallChips}>
+            <button
+              type="button"
+              className={`${styles.hallChip} ${filterHall === '' ? styles.hallChipActive : ''}`}
+              onClick={() => setFilterHall('')}
+            >
+              Всі
+            </button>
             {activeHalls.map(h => (
               <button
                 key={h.id}
@@ -916,6 +931,7 @@ export default function SchedulePage() {
                               setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                               setShowModal(true)
                             }}
+                            overview={isOverview}
                           />
                         )
                       })

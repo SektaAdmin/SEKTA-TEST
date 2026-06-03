@@ -1030,6 +1030,37 @@
   letter-spacing: -0.01em;
 }
 
+/* Тісніший padding для overview-карток у вузьких колонках */
+.card:has(.cardOverview) { padding: 5px 6px; }
+
+/* ── Overview card (всі зали, вузькі колонки): абревіатура + тренер ── */
+.cardOverview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
+.cardAbbr {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--card-color, var(--text));
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.cardOverviewTrainer {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Card hover tooltip ─────────────────────────────────────────── */
 .cardTooltip {
   position: fixed;

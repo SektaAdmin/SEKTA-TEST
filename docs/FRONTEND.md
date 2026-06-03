@@ -94,14 +94,18 @@ components/
 - **Week headers:** `.weekDayHeader` (Пн 18…), сьогодні — зелений pill. `.weekFilterLabel` під датами.
 - **Click** скрізь → `ClassDetailModal`.
 - **Mobile:** topbar = назва дня+дата + іконка-число (сьогодні) + 📅. Свайп ←/→ міняє день (`touchstart/move passive:false` на bodyGridWrapper, slide-out .18s). Календар → bottom sheet. FAB `bottom: calc(--bottom-nav-h + 16px); z:250`. ClassModal завжди fullScreen, ClassDetailModal fullScreen.
-- **⚠️ Mobile — ОДИН зал на весь екран (не 4 вузькі колонки).** На ≤640px у day-view: ефект авто-обирає перший активний зал у `filterHall` (інакше всі зали тиснуться в viewport — нечитабельно), а перемикання — через горизонтальний **рядок чипів залів** (`.hallChips`/`.hallChip`/`.hallChipActive`, mobile-only) над фільтром; сам hall-`FilterSelect` сховано (`.filterBar > :first-child { display:none }`). Гориз. скрол залів НЕ годиться — конфліктує зі свайпом зміни дня (будь-який гориз. свайп `preventDefault`+міняє день). При одному залі `dayHallsRow` у хедері не рендериться (guard `hallColumns.length > 1`) — назва залу і так на активному чипі.
+- **⚠️ Mobile day-view — рядок чипів залів (`.hallChips`/`.hallChip`/`.hallChipActive`, mobile-only) над фільтром; hall-`FilterSelect` сховано (`.filterBar > :first-child { display:none }`).** Два режими:
+  - **«Всі» (overview, `filterHall=''`)** — усі зали одночасно у вузьких колонках (~85px). Картки → `overview`-вигляд: лише **абревіатура типу** (`ticketTypeAbbr` з badges.ts — G/I/ID/IT/H/SH/P/S, латиниця-значок) кольором типу + **тренер**, без часу (він у гутері) / місць. Класи `.cardOverview`/`.cardAbbr`/`.cardOverviewTrainer`, тісніший padding через `.card:has(.cardOverview)`. Повна сітка дня з першого погляду.
+  - **Один зал (`filterHall=id`)** — на весь екран із повними деталями (як десктоп).
+  - `overview`-прапор = `isMobile && viewMode==='day' && hallColumns.length>1`, прокидається page→HallSubCol→ClassCard. Тап у будь-якому режимі → ClassDetailModal.
+  - Гориз. скрол **колонок** залів НЕ годиться — конфліктує зі свайпом зміни дня (будь-який гориз. свайп `preventDefault`+міняє день); тому overview = вузькі колонки в межах viewport, а не скрол.
 
 ### /schedule/templates
 View: День / Тиждень / Список. Mobile — форс day.
 - **HallWeekGrid:** week = 7 колонок-днів, кожна з підколонками залів (HallSubCol). Day = той самий грід з `singleDayDow`. `HOUR_HEIGHT=83`. `min-width:0` на dayCol/header/hallSubCol щоб day fills width.
 - **TemplateCard** — як ClassCard. Клік → SeriesModal; клік на пустий слот → prefill (dow+time+hallId).
 - **SeriesModal порядок полів:** День+Час → Тип → Тренер+Зал → Тривалість+Ліміт → Назва → Нотатки → Постійники. `fullScreen={isMobile}`.
-- **Mobile:** topbar → `mobileTopNav` (← [день] →, navBtn 44×44). FAB як у /schedule. Filterbar static + горизонт. скрол. **Один зал на весь екран** так само як /schedule: авто-вибір першого залу в `filterHall` + рядок чипів (`.hallChips`), hall-`FilterSelect` сховано. `filterHall` уже звужує `dayTemplates` → `HallWeekGrid` рендерить лише колонку обраного залу (повна ширина).
+- **Mobile:** topbar → `mobileTopNav` (← [день] →, navBtn 44×44). FAB як у /schedule. Filterbar static + горизонт. скрол. Рядок чипів залів (`.hallChips`) як у /schedule: **«Всі»** = overview всіх залів (вузькі колонки, картки абревіатура+тренер — `HallWeekGrid` prop `overview`), або **один зал** на весь екран (`filterHall` звужує `dayTemplates` → грід рендерить лише обрану колонку). hall-`FilterSelect` сховано. `overview` = `isMobile && day && !filterHall && activeHalls>1`, прокидається HallWeekGrid→DayColumn→HallSubCol→TemplateCard.
 
 ### /clients
 - Filterbar — стопка. Card: ім'я + депозит-бейдж у рядку; phone як `<a tel:>` + соцмережі (тільки заповнені). Тап → `/clients/[id]`.
