@@ -1071,6 +1071,8 @@ export type Database = {
           success: boolean
         }[]
       }
+      current_client_id: { Args: never; Returns: string }
+      current_trainer_id: { Args: never; Returns: string }
       delete_sale: {
         Args: { p_sale_id: string }
         Returns: {

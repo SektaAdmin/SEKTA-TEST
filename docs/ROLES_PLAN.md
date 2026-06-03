@@ -6,7 +6,11 @@
 >
 > **Прогрес:** ✅ Фаза 0 (anon-витічка закрита) · ✅ Фаза 1 (фундамент: `auth_role()`,
 > `user_id`) · ✅ Фаза 2 (контакти в `client_contacts` + view `clients_with_contacts`
-> security_invoker; перевірено: trainer 0 телефонів, owner 526) · ⏳ Фаза 3 (RLS по ролях) — наступна.
+> security_invoker; перевірено: trainer 0 телефонів, owner 526) · ✅ Фаза 3 (RLS по ролях:
+> хелпери `current_client_id()`/`current_trainer_id()`, усі доменні таблиці переписані на
+> `owner_admin_all` + trainer/client-політики; перевірено симуляцією JWT: owner бачить усе,
+> trainer 0 контактів/продажів/витрат, привʼязаний client — лише свій рядок) · ⏳ Фаза 4
+> (кабінети у фронті + клієнтські RPC + обмеження admin) — наступна.
 
 ## Контекст і чому це робиться
 
@@ -168,6 +172,20 @@ drop policy if exists "tickets: anon can read" on tickets;
 >   INSERT/UPDATE — `auth_role() = 'owner'`.
 
 **Інваріант #9 у CLAUDE.md переписується** в цій фазі: з «усі = повний доступ» на «доступ за роллю через `auth_role()`».
+
+#### Як зроблено (фактичний стан після Фази 3)
+
+- Хелпери `current_client_id()` / `current_trainer_id()` — SECURITY DEFINER, stable, `search_path=public,pg_temp`,
+  мапінг `auth.uid()`→`clients.id`/`trainers.id` (DEFINER, бо читають ці ж таблиці в обхід RLS — інакше рекурсія).
+  `revoke from public` + `grant execute to authenticated`.
+- **owner+admin поки рівні** — обидва `owner_admin_all` (`auth_role() in ('owner','admin')` FOR ALL).
+  Обмеження admin із матриці (без `trainer_payments`/`trainer_rates`, лише SELECT на `halls`/`training_types`/`tickets`)
+  **відкладено на Фазу 4** — реальних admin-логінів ще немає, а звуження зараз ризикує зламати робочу owner-адмінку.
+- trainer/client write-флоу через `SECURITY DEFINER` RPC (`change_enrollment_status`, `mark_attendance` тощо)
+  обходить RLS; прямий INSERT enrollment (`enrollClient`) — INVOKER → під RLS, тому trainer має write-політики
+  на `classes`/`enrollments` лише для своїх занять.
+- `series_clients` (шаблони серій) — owner/admin ALL + trainer SELECT; client доступу не має (бачить `enrollments`, не шаблони).
+- Перевірка — симуляція `set request.jwt.claims` + `set local role authenticated` у транзакції з rollback (без реальних логінів).
 
 ---
 
