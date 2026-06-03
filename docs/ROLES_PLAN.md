@@ -1,8 +1,11 @@
 # План: ролі та особисті кабінети
 
-> Статус: **СОГЛАСОВАНО, код ще не торкаємось.** Цей документ — джерело правди для переходу
-> від моделі «всі залогінені = повний доступ» до рольової моделі з кабінетами тренера і клієнта.
-> Виконуємо фазами; кожна фаза безпечна сама по собі (адмінка працює весь час).
+> Статус: джерело правди для переходу від моделі «всі залогінені = повний доступ» до рольової
+> моделі з кабінетами тренера і клієнта. Виконуємо фазами; кожна фаза безпечна сама по собі
+> (адмінка працює весь час).
+>
+> **Прогрес:** ✅ Фаза 0 (anon-витічка закрита) · ✅ Фаза 1 (фундамент: `auth_role()`,
+> `user_id` на clients/trainers, ролі проставлені) · ⏳ Фаза 2 (винести контакти) — наступна.
 
 ## Контекст і чому це робиться
 
@@ -92,11 +95,9 @@ drop policy if exists "tickets: anon can read" on tickets;
 2. `alter table clients add column user_id uuid references auth.users(id);`
    `alter table trainers add column user_id uuid references auth.users(id);`
    (+ індекси по `user_id`).
-3. Двом наявним користувачам проставити роль:
-   ```sql
-   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"owner"}'  where email = '<owner-email>';
-   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'  where email = '<admin-email>';
-   ```
+3. Наявним користувачам проставити роль. У БД їх двоє: `sekta-admin-owner@proton.me` (реальний
+   власник) і `e2e@sekta.test` (Playwright-бот). Обидва → **owner** (щоб смоук-тести бачили весь
+   функціонал після введення RLS). Реальних адмінів-ресепшенів поки немає — заведуться окремо.
 4. `npm run sync:schema` → оновити `types/database.types.ts`.
 
 Після Фази 1 **поведінка не змінюється** — політики ще `USING(true)`. Це лише підготовка ґрунту.

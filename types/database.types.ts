@@ -280,6 +280,7 @@ export type Database = {
           phone: string | null
           telegram_username: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           balance?: number
@@ -293,6 +294,7 @@ export type Database = {
           phone?: string | null
           telegram_username?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           balance?: number
@@ -306,6 +308,7 @@ export type Database = {
           phone?: string | null
           telegram_username?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -765,6 +768,7 @@ export type Database = {
           name: string
           telegram_username: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -774,6 +778,7 @@ export type Database = {
           name: string
           telegram_username?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -783,6 +788,7 @@ export type Database = {
           name?: string
           telegram_username?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -880,6 +886,7 @@ export type Database = {
       }
     }
     Functions: {
+      auth_role: { Args: never; Returns: string }
       auto_close_classes: {
         Args: never
         Returns: {
