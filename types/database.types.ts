@@ -82,6 +82,13 @@ export type Database = {
             foreignKeyName: "balance_transactions_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "clients_with_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "balance_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "v_client_balance_summary"
             referencedColumns: ["id"]
           },
@@ -227,6 +234,56 @@ export type Database = {
           },
         ]
       }
+      client_contacts: {
+        Row: {
+          client_id: string
+          instagram_username: string | null
+          phone: string | null
+          telegram_username: string | null
+        }
+        Insert: {
+          client_id: string
+          instagram_username?: string | null
+          phone?: string | null
+          telegram_username?: string | null
+        }
+        Update: {
+          client_id?: string
+          instagram_username?: string | null
+          phone?: string | null
+          telegram_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients_with_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "v_client_balance_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_session_balances: {
         Row: {
           client_id: string
@@ -256,6 +313,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_session_balances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_with_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -372,6 +436,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_with_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -495,6 +566,13 @@ export type Database = {
             foreignKeyName: "sales_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "clients_with_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "v_client_balance_summary"
             referencedColumns: ["id"]
           },
@@ -549,6 +627,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_with_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -848,6 +933,23 @@ export type Database = {
           id?: string | null
           last_name?: string | null
           phone?: string | null
+        }
+        Relationships: []
+      }
+      clients_with_contacts: {
+        Row: {
+          balance: number | null
+          balance_updated_at: string | null
+          created_at: string | null
+          credit_limit: number | null
+          first_name: string | null
+          id: string | null
+          instagram_username: string | null
+          last_name: string | null
+          phone: string | null
+          telegram_username: string | null
+          updated_at: string | null
+          user_id: string | null
         }
         Relationships: []
       }

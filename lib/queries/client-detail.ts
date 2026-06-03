@@ -31,7 +31,7 @@ export async function getClientDetail(
 
   const [clientRes, balancesRes, permanentRes, upcomingRes] = await Promise.all([
     supabase
-      .from('clients')
+      .from('clients_with_contacts')
       .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance, credit_limit, balance_updated_at')
       .eq('id', id)
       .maybeSingle(),
