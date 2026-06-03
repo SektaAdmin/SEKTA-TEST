@@ -58,6 +58,13 @@ export default function TemplatesPage() {
 
   const [filterTrainer, setFilterTrainer] = useState('')
   const [filterHall, setFilterHall] = useState('')
+  const activeHalls = useMemo(() => halls.filter(h => h.is_active), [halls])
+
+  // On mobile day-view we show one hall at a time (the week grid crushes all halls
+  // into the viewport otherwise). Auto-select the first active hall; switching = chips.
+  useEffect(() => {
+    if (isMobile && !filterHall && activeHalls.length > 0) setFilterHall(activeHalls[0].id)
+  }, [isMobile, filterHall, activeHalls])
   const [filterClient, setFilterClient] = useState<Client | null>(null)
   const [clientFilterKey, setClientFilterKey] = useState(0)
 
@@ -298,6 +305,22 @@ export default function TemplatesPage() {
           </button>
         </div>
       </div>
+
+      {/* Mobile hall chips — one hall at a time on phones (day view) */}
+      {viewMode === 'day' && activeHalls.length > 1 && (
+        <div className={styles.hallChips}>
+          {activeHalls.map(h => (
+            <button
+              key={h.id}
+              type="button"
+              className={`${styles.hallChip} ${filterHall === h.id ? styles.hallChipActive : ''}`}
+              onClick={() => setFilterHall(h.id)}
+            >
+              {h.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.filterBar}>
         <FilterSelect

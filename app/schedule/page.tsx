@@ -465,6 +465,13 @@ export default function SchedulePage() {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   }, [])
 
+  // On mobile day-view we show one hall at a time (4 hall columns are unreadable on
+  // a phone). Auto-select the first active hall when no filter is set so the grid
+  // never crushes all halls into the viewport. Hall switching = the mobile chip row.
+  useEffect(() => {
+    if (isMobile && !filterHall && activeHalls.length > 0) setFilterHall(activeHalls[0].id)
+  }, [isMobile, filterHall, activeHalls])
+
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
     const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
 
@@ -742,6 +749,22 @@ export default function SchedulePage() {
               </button>
           </div>
         </div>
+
+        {/* Mobile hall chips — one hall at a time on phones (day view) */}
+        {viewMode === 'day' && activeHalls.length > 1 && (
+          <div className={styles.hallChips}>
+            {activeHalls.map(h => (
+              <button
+                key={h.id}
+                type="button"
+                className={`${styles.hallChip} ${filterHall === h.id ? styles.hallChipActive : ''}`}
+                onClick={() => setFilterHall(h.id)}
+              >
+                {h.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Filter bar */}
         <div className={styles.filterBar}>
