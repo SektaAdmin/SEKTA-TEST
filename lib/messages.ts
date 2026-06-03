@@ -9,6 +9,7 @@ export const MSG = {
     futureEnrollments:  'Немає майбутніх записів',
     transactions:       'Транзакцій немає',
     purchases:          'Покупок ще немає',
+    pastEnrollments:    'Минулих записів немає',
     seriesClients:      'Немає постійників',
     salesPeriod:        'За цей період продажів немає',
     operations:         'За цей період операцій немає',

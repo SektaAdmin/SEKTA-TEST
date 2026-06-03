@@ -66,22 +66,23 @@ export async function listMyUpcomingEnrollments(
   return { data: rows, error: error?.message ?? null }
 }
 
-// Покупки абонементів: лише snapshot-поля (інв. #5 — НЕ джойнити tickets).
+// Усі операції з sales: покупка абонемента (з тікетом) АБО депозитна операція
+// (ticket_id=null: +amount_given поповнення / −price_paid списання). Snapshot-поля
+// (інв. #5 — НЕ джойнити tickets). ticket_id/amount_given — щоб фронт визначив тип рядка.
 const MY_PURCHASES_SELECT =
-  'id, ticket_name, ticket_price, sessions, price_paid, payment_method, ticket_type, created_at' as const
+  'id, ticket_id, ticket_name, ticket_price, sessions, price_paid, amount_given, payment_method, ticket_type, created_at' as const
 
 function myPurchasesQuery(supabase: Db, clientId: string) {
   return supabase
     .from('sales')
     .select(MY_PURCHASES_SELECT)
     .eq('client_id', clientId)
-    .not('ticket_id', 'is', null)
     .order('created_at', { ascending: false })
 }
 
 export type MyPurchaseRow = QueryData<ReturnType<typeof myPurchasesQuery>>[number]
 
-/** Покупки абонементів клієнта (sales з тікетом), новіші зверху. */
+/** Усі sales клієнта (покупки абонементів + депозитні операції), новіші зверху. */
 export async function listMyPurchases(
   supabase: Db,
   clientId: string
@@ -90,24 +91,29 @@ export async function listMyPurchases(
   return { data: data ?? [], error: error?.message ?? null }
 }
 
-const MY_BALANCE_TX_SELECT = 'id, amount, transaction_type, description, created_at' as const
+// Архів записів: минулі заняття за статусами attended/noshow/cancelled.
+const MY_PAST_SELECT =
+  'id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))' as const
 
-function myBalanceTxQuery(supabase: Db, clientId: string) {
+function myPastEnrollmentsQuery(supabase: Db, clientId: string, beforeISO: string) {
   return supabase
-    .from('balance_transactions')
-    .select(MY_BALANCE_TX_SELECT)
+    .from('enrollments')
+    .select(MY_PAST_SELECT)
     .eq('client_id', clientId)
-    .order('created_at', { ascending: false })
-    .limit(50)
+    .in('status', ['attended', 'noshow', 'cancelled'])
+    .lt('classes.starts_at', beforeISO)
+    .order('starts_at', { referencedTable: 'classes', ascending: false })
+    .limit(100)
 }
 
-export type MyBalanceTxRow = QueryData<ReturnType<typeof myBalanceTxQuery>>[number]
+export type MyPastEnrollmentRow = QueryData<ReturnType<typeof myPastEnrollmentsQuery>>[number]
 
-/** Рух депозиту клієнта (balance_transactions), новіші зверху, останні 50. */
-export async function listMyBalanceTransactions(
+/** Архів записів клієнта (минулі заняття, усі завершені статуси), новіші зверху, останні 100. */
+export async function listMyPastEnrollments(
   supabase: Db,
-  clientId: string
-): Promise<{ data: MyBalanceTxRow[]; error: string | null }> {
-  const { data, error } = await myBalanceTxQuery(supabase, clientId)
+  clientId: string,
+  beforeISO: string
+): Promise<{ data: MyPastEnrollmentRow[]; error: string | null }> {
+  const { data, error } = await myPastEnrollmentsQuery(supabase, clientId, beforeISO)
   return { data: data ?? [], error: error?.message ?? null }
 }

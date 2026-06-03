@@ -7,7 +7,7 @@ import {
   listMySessionBalances,
   listMyUpcomingEnrollments,
   listMyPurchases,
-  listMyBalanceTransactions,
+  listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
 import CabinetHeader from '@/components/CabinetHeader'
 import ClientCabinet from './ClientCabinet'
@@ -35,13 +35,14 @@ export default async function ClientCabinetPage() {
   }
 
   const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-  const [{ data: sessions }, { data: enrollments }, { data: contacts }, { data: purchases }, { data: transactions }] =
+  const nowISO = new Date().toISOString()
+  const [{ data: sessions }, { data: enrollments }, { data: contacts }, { data: purchases }, { data: pastEnrollments }] =
     await Promise.all([
       listMySessionBalances(supabase, client.id),
       listMyUpcomingEnrollments(supabase, client.id, fromISO),
       getMyContacts(supabase, client.id),
       listMyPurchases(supabase, client.id),
-      listMyBalanceTransactions(supabase, client.id),
+      listMyPastEnrollments(supabase, client.id, nowISO),
     ])
 
   const name = [client.first_name, client.last_name].filter(Boolean).join(' ')
@@ -56,7 +57,7 @@ export default async function ClientCabinetPage() {
         enrollments={enrollments}
         contacts={contacts}
         purchases={purchases}
-        transactions={transactions}
+        pastEnrollments={pastEnrollments}
       />
     </div>
   )
