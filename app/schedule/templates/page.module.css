@@ -466,11 +466,6 @@
   display: none;
 }
 
-/* ── Mobile hall chips (day view, phones only) ─────────────── */
-.hallChips {
-  display: none;
-}
-
 /* ── Mobile top nav (hidden on desktop) ─────────────────────── */
 .mobileTopNav {
   display: none;
@@ -526,42 +521,6 @@
   }
   .clientFilterWrap { width: auto; margin-left: 0; flex-shrink: 0; min-width: 160px; }
   .fsTrigger { height: 36px; font-size: 13px; }
-
-  /* Hall picked via chips on mobile → hide the redundant "Всі зали" dropdown */
-  .filterBar > :first-child { display: none; }
-
-  /* Hall chips — horizontal scroll row, one hall selected at a time */
-  .hallChips {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 0 16px 8px;
-    flex-wrap: nowrap;
-  }
-  .hallChips::-webkit-scrollbar { display: none; }
-  .hallChip {
-    flex-shrink: 0;
-    height: 32px;
-    padding: 0 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-3);
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--font);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
-  }
-  .hallChipActive {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-text);
-  }
 
   /* Grid */
   .gridCard { margin: 8px; overflow: hidden; }

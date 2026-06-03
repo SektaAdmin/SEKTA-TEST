@@ -559,11 +559,6 @@
   }
 }
 
-/* ── Mobile hall chips (day view, phones only) ─────────────── */
-.hallChips {
-  display: none;
-}
-
 /* ── Desktop nav group (← Сьогодні →) ──────────────────────── */
 .desktopNav {
   display: flex;
@@ -674,42 +669,6 @@
   }
   .filterBar::-webkit-scrollbar { display: none; }
   .fsTrigger { height: 36px; font-size: 13px; }
-
-  /* Hall picked via chips on mobile → hide the redundant "Всі зали" dropdown */
-  .filterBar > :first-child { display: none; }
-
-  /* Hall chips — horizontal scroll row, one hall selected at a time */
-  .hallChips {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 0 16px 8px;
-    flex-wrap: nowrap;
-  }
-  .hallChips::-webkit-scrollbar { display: none; }
-  .hallChip {
-    flex-shrink: 0;
-    height: 32px;
-    padding: 0 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-3);
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--font);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
-  }
-  .hallChipActive {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
 
   /* Grid */
   .gridCard { margin: 8px; overflow: hidden; }
@@ -1033,7 +992,7 @@
 /* Тісніший padding для overview-карток у вузьких колонках */
 .card:has(.cardOverview) { padding: 5px 6px; }
 
-/* ── Overview card (всі зали, вузькі колонки): абревіатура + тренер ── */
+/* ── Overview card (всі зали, вузькі колонки): абревіатура + місця + тренер ── */
 .cardOverview {
   display: flex;
   flex-direction: column;
@@ -1041,16 +1000,31 @@
   overflow: hidden;
   min-width: 0;
 }
+.cardOverviewTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+}
 .cardAbbr {
-  display: inline-block;
-  align-self: flex-start;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
   color: var(--card-color, var(--text));
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
+.cardOverviewSlots {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cardOverviewSlotsFull { color: var(--danger); }
 .cardOverviewTrainer {
   font-size: 11px;
   font-weight: 400;

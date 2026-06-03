@@ -304,29 +304,6 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      {/* Mobile hall chips — «Всі» (overview) або один зал на весь екран (day view) */}
-      {viewMode === 'day' && activeHalls.length > 1 && (
-        <div className={styles.hallChips}>
-          <button
-            type="button"
-            className={`${styles.hallChip} ${filterHall === '' ? styles.hallChipActive : ''}`}
-            onClick={() => setFilterHall('')}
-          >
-            Всі
-          </button>
-          {activeHalls.map(h => (
-            <button
-              key={h.id}
-              type="button"
-              className={`${styles.hallChip} ${filterHall === h.id ? styles.hallChipActive : ''}`}
-              onClick={() => setFilterHall(h.id)}
-            >
-              {h.name}
-            </button>
-          ))}
-        </div>
-      )}
-
       <div className={styles.filterBar}>
         <FilterSelect
           value={filterHall}

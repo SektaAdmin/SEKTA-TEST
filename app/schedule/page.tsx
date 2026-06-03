@@ -320,7 +320,14 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
       )}
       {overview ? (
         <span className={`${styles.cardOverview} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
-          <span className={styles.cardAbbr}>{ticketTypeAbbr(cls.ticket_type)}</span>
+          <span className={styles.cardOverviewTop}>
+            <span className={styles.cardAbbr}>{ticketTypeAbbr(cls.ticket_type)}</span>
+            {cls.capacity != null && !cls.is_cancelled && (
+              <span className={`${styles.cardOverviewSlots} ${full ? styles.cardOverviewSlotsFull : ''}`}>
+                {activeCount}/{cls.capacity}
+              </span>
+            )}
+          </span>
           {cls.trainers?.name && <span className={styles.cardOverviewTrainer}>{cls.trainers.name}</span>}
         </span>
       ) : isCompact ? (
@@ -757,29 +764,6 @@ export default function SchedulePage() {
               </button>
           </div>
         </div>
-
-        {/* Mobile hall chips — «Всі» (overview всіх залів) або один зал на весь екран */}
-        {viewMode === 'day' && activeHalls.length > 1 && (
-          <div className={styles.hallChips}>
-            <button
-              type="button"
-              className={`${styles.hallChip} ${filterHall === '' ? styles.hallChipActive : ''}`}
-              onClick={() => setFilterHall('')}
-            >
-              Всі
-            </button>
-            {activeHalls.map(h => (
-              <button
-                key={h.id}
-                type="button"
-                className={`${styles.hallChip} ${filterHall === h.id ? styles.hallChipActive : ''}`}
-                onClick={() => setFilterHall(h.id)}
-              >
-                {h.name}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Filter bar */}
         <div className={styles.filterBar}>

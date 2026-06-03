@@ -326,7 +326,7 @@
   letter-spacing: -0.01em;
 }
 
-/* ── Overview card (всі зали, вузькі колонки): абревіатура + тренер ── */
+/* ── Overview card (всі зали, вузькі колонки): абревіатура + місця + тренер ── */
 .card:has(.cardOverview) { padding: 5px 6px; }
 .cardOverview {
   display: flex;
@@ -335,16 +335,31 @@
   overflow: hidden;
   min-width: 0;
 }
+.cardOverviewTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+}
 .cardAbbr {
-  display: inline-block;
-  align-self: flex-start;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
   color: var(--card-color, var(--text));
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
+.cardOverviewSlots {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cardOverviewSlotsFull { color: var(--danger); }
 .cardOverviewTrainer {
   font-size: 11px;
   font-weight: 400;

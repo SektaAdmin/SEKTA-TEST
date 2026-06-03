@@ -152,7 +152,14 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
     >
       {overview ? (
         <span className={styles.cardOverview}>
-          <span className={styles.cardAbbr}>{ticketTypeAbbr(s.ticket_type)}</span>
+          <span className={styles.cardOverviewTop}>
+            <span className={styles.cardAbbr}>{ticketTypeAbbr(s.ticket_type)}</span>
+            {capacity != null && (
+              <span className={`${styles.cardOverviewSlots} ${isFull ? styles.cardOverviewSlotsFull : ''}`}>
+                {clientCount}/{capacity}
+              </span>
+            )}
+          </span>
           {trainerName && <span className={styles.cardOverviewTrainer}>{trainerName}</span>}
         </span>
       ) : isCompact ? (
