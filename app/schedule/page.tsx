@@ -325,6 +325,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
             {cls.capacity != null && !cls.is_cancelled && (
               <span className={`${styles.cardOverviewSlots} ${full ? styles.cardOverviewSlotsFull : ''}`}>
                 {activeCount}/{cls.capacity}
+                {waitlistCount > 0 && <span className={styles.cardOverviewReserve}> · {waitlistCount}</span>}
               </span>
             )}
           </span>
@@ -346,15 +347,18 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
           )}
           {cls.capacity != null && !cls.is_cancelled && (() => {
             const free = cls.capacity - activeCount
-            if (waitlistCount > 0) {
+            const reserve = waitlistCount > 0 && (
+              <>
+                <span className={styles.cardSlotsSeparator}>·</span>
+                <span className={styles.cardSlotsReserve}>{waitlistCount}</span>
+              </>
+            )
+            if (free <= 0) {
               return (
-                <div className={styles.cardSlotsWaitlist}>
-                  Резерв: <strong>{waitlistCount}</strong>
+                <div className={styles.cardSlotsEmpty}>
+                  Немає місць{reserve}
                 </div>
               )
-            }
-            if (free <= 0) {
-              return <div className={styles.cardSlotsEmpty}>Немає місць</div>
             }
             const freeText = free === 1 ? 'місце' : free >= 2 && free <= 4 ? 'місця' : 'місць'
             return (
@@ -363,6 +367,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
                 <span className={styles.cardSlotsTotal}>/{cls.capacity}</span>
                 <span className={styles.cardSlotsSeparator}>·</span>
                 <span className={styles.cardSlotsFree}>{free} {freeText}</span>
+                {reserve}
               </div>
             )
           })()}
