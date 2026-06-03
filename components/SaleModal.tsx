@@ -131,22 +131,11 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           <div className={styles.depositBox}>
             {!clientId || clientBalance === null ? (
               <span className={styles.depositBoxEmpty}>Оберіть клієнта</span>
-            ) : depositDelta === 0 ? (
-              <span className={`${styles.depositBoxCurrent} ${clientBalance < 0 ? styles.depositNeg : ''}`}>
-                {formatMoney(clientBalance)}
-              </span>
             ) : (
-              <>
-                <span className={styles.depositBoxCurrent}>{formatMoney(clientBalance)}</span>
-                <span className={styles.depositBoxArrow}>→</span>
-                <span className={`${styles.depositBoxNext} ${clientBalance + depositDelta < 0 ? styles.depositNeg : styles.depositPos}`}>
-                  {formatMoney(clientBalance + depositDelta)}
-                </span>
-                <span className={`${styles.depositBoxDelta} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
-                  {depositDelta > 0 ? '+' : ''}{formatMoney(depositDelta)}
-                  {clientBalance + depositDelta < 0 ? ' · борг' : ''}
-                </span>
-              </>
+              <span className={`${styles.depositBoxNext} ${(clientBalance + depositDelta) < 0 ? styles.depositNeg : (clientBalance + depositDelta) > 0 ? styles.depositPos : ''}`}>
+                {formatMoney(clientBalance + depositDelta)}
+                {(clientBalance + depositDelta) < 0 ? ' · борг' : ''}
+              </span>
             )}
           </div>
         </div>

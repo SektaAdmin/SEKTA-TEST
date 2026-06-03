@@ -72,10 +72,7 @@
   gap: 8px;
   min-height: 39px;
 }
-.depositBoxCurrent { font-size: 15px; font-weight: 500; color: var(--text); }
-.depositBoxArrow { color: var(--text-3); }
-.depositBoxNext { font-size: 15px; font-weight: 600; }
-.depositBoxDelta { margin-left: auto; font-size: 12px; font-weight: 600; }
+.depositBoxNext { font-size: 15px; font-weight: 600; color: var(--text); }
 .depositBoxEmpty { font-size: 13px; color: var(--text-3); }
 
 .paymentTabs {
