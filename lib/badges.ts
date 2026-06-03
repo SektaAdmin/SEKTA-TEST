@@ -80,6 +80,22 @@ export function paymentClass(method: string): string {
   return PAYMENT_CLASS[method as PaymentMethod] ?? ''
 }
 
+/* ── Типи транзакцій балансу (balance_transactions.transaction_type) ── */
+// Відомі типи: purchase / deposit_topup / admin_adjustment (+ історичні
+// deduction / refund / adjustment). Невідомий → код як є.
+const TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  purchase:         'Покупка',
+  deposit_topup:    'Поповнення',
+  deduction:        'Списання',
+  refund:           'Повернення',
+  adjustment:       'Коригування',
+  admin_adjustment: 'Коригування',
+}
+
+export function transactionTypeLabel(type: string): string {
+  return TRANSACTION_TYPE_LABELS[type] ?? type
+}
+
 /* ── Короткі ярлики типів тренувань ─────────────────────────────── */
 // Скорочені підписи для щільних таблиць (звіти тренерів, ставки).
 // Це НЕ training_types.label з БД — це навмисно стислі форми.

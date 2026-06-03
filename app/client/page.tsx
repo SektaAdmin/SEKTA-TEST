@@ -1,7 +1,14 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
-import { getMyClient, listMySessionBalances, listMyUpcomingEnrollments } from '@/lib/queries/client-cabinet-data'
+import {
+  getMyClient,
+  getMyContacts,
+  listMySessionBalances,
+  listMyUpcomingEnrollments,
+  listMyPurchases,
+  listMyBalanceTransactions,
+} from '@/lib/queries/client-cabinet-data'
 import CabinetHeader from '@/components/CabinetHeader'
 import ClientCabinet from './ClientCabinet'
 import styles from './client.module.css'
@@ -28,17 +35,29 @@ export default async function ClientCabinetPage() {
   }
 
   const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-  const [{ data: sessions }, { data: enrollments }] = await Promise.all([
-    listMySessionBalances(supabase, client.id),
-    listMyUpcomingEnrollments(supabase, client.id, fromISO),
-  ])
+  const [{ data: sessions }, { data: enrollments }, { data: contacts }, { data: purchases }, { data: transactions }] =
+    await Promise.all([
+      listMySessionBalances(supabase, client.id),
+      listMyUpcomingEnrollments(supabase, client.id, fromISO),
+      getMyContacts(supabase, client.id),
+      listMyPurchases(supabase, client.id),
+      listMyBalanceTransactions(supabase, client.id),
+    ])
 
   const name = [client.first_name, client.last_name].filter(Boolean).join(' ')
 
   return (
     <div className={styles.page}>
       <CabinetHeader title={name} subtitle="Особистий кабінет" />
-      <ClientCabinet balance={client.balance} sessions={sessions} enrollments={enrollments} />
+      <ClientCabinet
+        name={name}
+        balance={client.balance}
+        sessions={sessions}
+        enrollments={enrollments}
+        contacts={contacts}
+        purchases={purchases}
+        transactions={transactions}
+      />
     </div>
   )
 }

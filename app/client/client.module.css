@@ -44,6 +44,15 @@
   margin-bottom: 12px;
 }
 
+/* Відступ між секціями: усі заголовки крім першого. */
+.sectionTitle ~ .sectionTitle,
+.list + .sectionTitle,
+.txList + .sectionTitle,
+.empty + .sectionTitle,
+.profile + .sectionTitle {
+  margin-top: 28px;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -134,4 +143,91 @@
 .cancelBtn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* ── Списки історії (покупки, рух депозиту) ─────────────────────── */
+.txList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.txItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.txMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.txTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.txMeta {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.txAmount {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.amountPos {
+  color: var(--success);
+}
+
+.amountNeg {
+  color: var(--danger);
+}
+
+/* ── Профіль (read-only) ────────────────────────────────────────── */
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.profileRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.profileLabel {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.profileValue {
+  font-size: 14px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }

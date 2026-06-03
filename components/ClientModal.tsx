@@ -11,6 +11,7 @@ import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
 import { SocialHandleInput } from '@/components/ui/SocialHandleInput'
 import { formatDateYY } from '@/lib/formatters'
+import { transactionTypeLabel } from '@/lib/badges'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
 import type { Client } from '@/types'
@@ -25,15 +26,6 @@ interface Transaction {
   balance_after: number
   description: string | null
   created_at: string
-}
-
-const TX_LABELS: Record<string, string> = {
-  purchase:         'Покупка',
-  deposit_topup:    'Поповнення',
-  deduction:        'Списання',
-  refund:           'Повернення',
-  adjustment:       'Коригування',
-  admin_adjustment: 'Коригування',
 }
 
 const clientSchema = z.object({
@@ -231,7 +223,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
                       <tr key={tx.id}>
                         <td className={styles.txDate}>{formatDateYY(tx.created_at)}</td>
                         <td className={styles.txType}>
-                          {TX_LABELS[tx.transaction_type] ?? tx.transaction_type}
+                          {transactionTypeLabel(tx.transaction_type)}
                         </td>
                         {/* Голі числа без ₴ — навмисно (компактна таблиця транзакцій), не formatMoney */}
                         <td className={`${styles.txAmount} ${tx.amount > 0 ? styles.txPos : styles.txNeg}`}>
