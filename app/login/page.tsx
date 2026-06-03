@@ -58,7 +58,7 @@ export default function LoginPage() {
               inputMode="text"
               value={identifier}
               onChange={e => setIdentifier(e.target.value)}
-              placeholder="admin@sekta.com або +380…"
+              placeholder="+380…"
               required
               autoComplete="username"
             />
