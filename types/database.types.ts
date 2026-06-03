@@ -339,10 +339,7 @@ export type Database = {
           credit_limit: number | null
           first_name: string | null
           id: string
-          instagram_username: string | null
           last_name: string | null
-          phone: string | null
-          telegram_username: string | null
           updated_at: string
           user_id: string | null
         }
@@ -353,10 +350,7 @@ export type Database = {
           credit_limit?: number | null
           first_name?: string | null
           id?: string
-          instagram_username?: string | null
           last_name?: string | null
-          phone?: string | null
-          telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -367,10 +361,7 @@ export type Database = {
           credit_limit?: number | null
           first_name?: string | null
           id?: string
-          instagram_username?: string | null
           last_name?: string | null
-          phone?: string | null
-          telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -914,7 +905,6 @@ export type Database = {
           first_name: string | null
           id: string | null
           last_name: string | null
-          phone: string | null
         }
         Insert: {
           balance?: number | null
@@ -923,7 +913,6 @@ export type Database = {
           first_name?: string | null
           id?: string | null
           last_name?: string | null
-          phone?: string | null
         }
         Update: {
           balance?: number | null
@@ -932,7 +921,6 @@ export type Database = {
           first_name?: string | null
           id?: string | null
           last_name?: string | null
-          phone?: string | null
         }
         Relationships: []
       }
