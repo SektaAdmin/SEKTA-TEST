@@ -1053,6 +1053,22 @@ export type Database = {
           ticket_type: string
         }[]
       }
+      client_cancel: {
+        Args: { p_enrollment_id: string }
+        Returns: {
+          charged: boolean
+          error_message: string
+          success: boolean
+        }[]
+      }
+      client_enroll: {
+        Args: { p_class_id: string }
+        Returns: {
+          enrollment_id: string
+          error_message: string
+          success: boolean
+        }[]
+      }
       create_sale: {
         Args: {
           p_amount_given?: number

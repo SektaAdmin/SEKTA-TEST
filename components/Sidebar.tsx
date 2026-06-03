@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { useRole } from '@/hooks/useRole'
 import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
 
@@ -41,6 +42,8 @@ function Chevron({ open }: { open: boolean }) {
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const role = useRole()
+  const isOwner = role === 'owner'
   const isInSettings = pathname.startsWith('/settings')
   const isInSalary = pathname.startsWith('/settings/salary')
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
@@ -102,6 +105,7 @@ export default function Sidebar() {
               )
             })}
 
+            {isOwner && (
             <li>
               <button
                 type="button"
@@ -131,6 +135,7 @@ export default function Sidebar() {
                 </ul>
               )}
             </li>
+            )}
           </ul>
         )}
       </nav>

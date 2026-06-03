@@ -21,7 +21,8 @@ export default function LoginPage() {
       setError('Невірний email або пароль')
       setLoading(false)
     } else {
-      window.location.href = '/sales'
+      // Редирект у домашню зону ролі робить middleware (корінь → home за роллю).
+      window.location.href = '/'
     }
   }
 

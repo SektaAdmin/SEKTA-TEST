@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { useRole } from '@/hooks/useRole'
 import styles from './BottomNav.module.css'
 
 const primaryNav = [
@@ -37,6 +38,9 @@ const primaryNav = [
   )},
 ]
 
+// Пункти, доступні лише owner (зарплати). Для admin фільтруються.
+const ownerOnlyMore = ['/settings/salary/rates', '/settings/salary/calculations']
+
 const moreNav = [
   { href: '/accounting', label: 'Звіти' },
   { href: '/schedule/templates', label: 'Шаблони' },
@@ -49,7 +53,12 @@ const moreNav = [
 export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const role = useRole()
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const visibleMore = role === 'owner'
+    ? moreNav
+    : moreNav.filter(item => !ownerOnlyMore.includes(item.href))
 
   async function handleLogout() {
     const supabase = createClient()
@@ -63,7 +72,7 @@ export default function BottomNav() {
     return pathname.startsWith(href)
   }
 
-  const isMoreActive = moreNav.some(item => pathname.startsWith(item.href))
+  const isMoreActive = visibleMore.some(item => pathname.startsWith(item.href))
 
   return (
     <>
@@ -71,7 +80,7 @@ export default function BottomNav() {
         <div className={styles.drawerOverlay} onClick={() => setDrawerOpen(false)}>
           <div className={styles.drawer} onClick={e => e.stopPropagation()}>
             <div className={styles.drawerHeader}>Ще</div>
-            {moreNav.map(item => (
+            {visibleMore.map(item => (
               <Link
                 key={item.href}
                 href={item.href}

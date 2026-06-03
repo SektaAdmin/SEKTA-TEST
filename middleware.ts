@@ -1,5 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { roleFromUser, homePathForRole, isStaff, type Role } from '@/lib/auth/role'
+
+/** Чи дозволено роль на цьому шляху. Адмін-зона = корінь; /trainer і /client — окремі зони. */
+function canAccess(role: Role, pathname: string): boolean {
+  if (pathname.startsWith('/trainer')) return role === 'trainer' || isStaff(role)
+  if (pathname.startsWith('/client')) return role === 'client' || isStaff(role)
+  // решта (dashboard/sales/clients/schedule/journal/accounting/settings…) — лише owner/admin
+  return isStaff(role)
+}
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -22,19 +31,37 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const { pathname } = request.nextUrl
+  const isLoginPage = pathname === '/login'
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
-
-  if (user && isLoginPage) {
-    const redirectResponse = NextResponse.redirect(new URL('/sales', request.url))
-    response.cookies.getAll().forEach(cookie => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-    return redirectResponse
+  // Незалогінений → на логін (крім самого логіну).
+  if (!user) {
+    if (isLoginPage) return response
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (!user && !isLoginPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  const role = roleFromUser(user)
+  const home = homePathForRole(role)
+
+  // Залогінений на /login → у свою домашню зону.
+  if (isLoginPage) {
+    const redirect = NextResponse.redirect(new URL(home, request.url))
+    response.cookies.getAll().forEach(c => redirect.cookies.set(c.name, c.value))
+    return redirect
+  }
+
+  // Корінь → домашня зона ролі.
+  if (pathname === '/') {
+    const redirect = NextResponse.redirect(new URL(home, request.url))
+    response.cookies.getAll().forEach(c => redirect.cookies.set(c.name, c.value))
+    return redirect
+  }
+
+  // Доступ до чужої зони → редирект у свою.
+  if (!canAccess(role, pathname)) {
+    const redirect = NextResponse.redirect(new URL(home, request.url))
+    response.cookies.getAll().forEach(c => redirect.cookies.set(c.name, c.value))
+    return redirect
   }
 
   return response

@@ -9,8 +9,11 @@
 > security_invoker; перевірено: trainer 0 телефонів, owner 526) · ✅ Фаза 3 (RLS по ролях:
 > хелпери `current_client_id()`/`current_trainer_id()`, усі доменні таблиці переписані на
 > `owner_admin_all` + trainer/client-політики; перевірено симуляцією JWT: owner бачить усе,
-> trainer 0 контактів/продажів/витрат, привʼязаний client — лише свій рядок) · ⏳ Фаза 4
-> (кабінети у фронті + клієнтські RPC + обмеження admin) — наступна.
+> trainer 0 контактів/продажів/витрат, привʼязаний client — лише свій рядок) · ✅ Фаза 4
+> (хелпери ролі `lib/auth/*`+`useRole`; middleware за роллю; admin-обмеження в RLS — ЗП owner-only,
+> довідники admin SELECT-only; клієнтські RPC `client_enroll`/`client_cancel`; MVP-кабінети
+> `/trainer` і `/client`; префікс-шляхи; перевірено симуляцією: admin без ЗП/без write-довідників,
+> client_enroll happy+no_sessions) · ⏳ Фаза 5 (онбординг клієнтів — логіни/привʼязка) — наступна.
 
 ## Контекст і чому це робиться
 
@@ -191,17 +194,55 @@ drop policy if exists "tickets: anon can read" on tickets;
 
 ### Фаза 4 — кабінети у фронті + RPC для клієнтських дій
 
-1. **Зони маршрутів:** `app/(admin)/`, `app/(trainer)/`, `app/(client)/` — три точки входу,
-   спільний код (queries, компоненти) переused. Поточні сторінки переїжджають у `(admin)`.
-2. **Middleware** читає роль із сесії → пускає/редіректить по зоні; редірект після логіну за роллю
-   (owner/admin → `/dashboard`, trainer → свій розклад, client → свій кабінет).
-3. **RPC для клієнтських дій** (логіка в БД, не у фронті — як і гроші):
-   - `client_enroll(p_class_id)` — перевіряє: це клієнт; є оплачені заняття потрібного типу (інакше
+> Рішення (інтервʼю 2026-06-03): **префікс-шляхи** (не route-групи), **MVP-кабінети** (решта
+> ітеративно), **admin-обмеження в RLS — у цій фазі**.
+
+1. **Маршрути — префікс-шляхи:** адмін-сторінки лишаються в корені (`/dashboard`, `/sales`, …);
+   додаємо `app/trainer/*` і `app/client/*`. (Sidebar/BottomNav рендеряться per-page, не в
+   root-layout, тож масовий git-move сторінок не потрібен.)
+2. **Хелпер ролі:** `lib/auth/role.ts` — server `getRole()` (з `getUser().app_metadata.role`,
+   union `owner|admin|trainer|client`, дефолт `client`) + клієнтський `useRole()`.
+3. **Middleware за роллю:** після `getUser()` читає роль → матриця «роль → дозволені шляхи» →
+   недозволений шлях редіректить у домашню зону ролі. Виправити дефолтний редирект з `/sales` на
+   `/dashboard` (owner/admin), `/trainer` (trainer), `/client` (client). Login-редирект — теж за роллю.
+4. **Sidebar/BottomNav за роллю:** owner — усе; admin — без «Зарплати»; trainer/client — свій набір.
+5. **MVP-кабінети:**
+   - trainer: `/trainer` — свій розклад (read-only чужого, дії на свої заняття через наявні RPC).
+   - client: `/client` — депозит, залишок занять, свій розклад/записи, запис/відміна.
+6. **RPC для клієнтських дій** (логіка в БД, `SET search_path = public, pg_temp`, розпаковка `callRpc`):
+   - `client_enroll(p_class_id)` — роль=client; є оплачені заняття потрібного типу (інакше
      `success=false, error='no_sessions'`); немає конфлікту; INSERT enrollment. **Не пускати в мінус.**
-   - `client_cancel(p_enrollment_id)` — застосовує `cancellation_deadline`; до дедлайну — без списання,
-     після — зі списанням (фронт показав попередження). `p_force_no_charge` тут НЕдоступний.
-   - усі — `SET search_path = public, pg_temp` (інваріант #10), розпаковка через `callRpc`.
-4. Тренерські дії (CRUD своїх занять, запис/виписка) — наявні RPC/queries, обмежені RLS Фази 3.
+   - `client_cancel(p_enrollment_id)` — застосовує `cancellation_deadline`; після дедлайну зі списанням
+     (фронт показав попередження). `p_force_no_charge` НЕдоступний.
+7. **RLS: admin-обмеження** (окрема міграція) — звузити admin: `trainer_payments`/`trainer_rates` →
+   owner-only; `halls`/`training_types`/`tickets` → admin лише SELECT, INSERT/UPDATE/DELETE owner-only.
+   Інваріант #9 у CLAUDE.md оновити (admin ≠ owner у RLS).
+8. **Перевірка:** симуляція JWT (admin/trainer/client) + ручний прохід адмінки; build зелений.
+
+#### Як зроблено (фактичний стан після Фази 4)
+
+- **Хелпери ролі:** `lib/auth/role.ts` (чистий/edge-safe: `Role`, `roleFromUser`, `homePathForRole`,
+  `isStaff`), `lib/auth/getRole.ts` (server), `hooks/useRole.ts` (client, слухає auth-зміни).
+  `server-only` пакет НЕ встановлено — getRole серверний завдяки `next/headers` усередині
+  `createServerSupabase` (не імпортувати `server-only`, build впаде).
+- **Middleware:** `canAccess(role, path)` — `/trainer*`→trainer|staff, `/client*`→client|staff,
+  решта→staff. `/` і `/login` редіректять у `homePathForRole`. Login-сторінка тепер шле на `/` (роль
+  розводить middleware), не хардкод `/sales`.
+- **RLS admin-обмеження:** `trainer_payments`/`trainer_rates` → `owner_all` (owner-only);
+  `halls`/`training_types`/`tickets` → `owner_all` + `staff_ref_select` (admin/trainer/client SELECT).
+  Поточні логіни обидва owner → робоча адмінка не зачеплена. Перевірено: admin read довідників ✅,
+  UPDATE tickets = 0 рядків ✅, payments/rates = 0 ✅; owner UPDATE tickets = 1 ✅.
+- **Клієнтські RPC** (`SECURITY DEFINER` + self-перевірка `current_client_id()`): `client_enroll`
+  (гейт no_sessions/conflict/duplicate, не в мінус, списання потім через auto_close), `client_cancel`
+  (делегує в `change_enrollment_status('cancelled')`). Обгортки — `lib/queries/client-cabinet.ts`.
+  Перевірено: happy enroll ✅, no_sessions ✅, чужий enrollment відсікає RLS+RPC ✅.
+- **Кабінети:** `/trainer` (свій майбутній розклад) і `/client` (депозит, залишки по типах, майбутні
+  записи + self-відміна). Серверні сторінки + `CabinetHeader` (вихід), без Sidebar. Запис клієнта на
+  нові заняття (browse розкладу) — свідомо відкладено на наступну ітерацію.
+
+> ⚠️ Спадковий ризик (поза Фазою 4): старі RPC `change_enrollment_status`/`mark_attendance`/
+> `cancel_class_and_restore_sessions`/`reverse_attendance` досі anon-executable (advisor 0028). Нові
+> client-RPC від цього захищені (`revoke from public`). Закрити окремо при потребі.
 
 ---
 
