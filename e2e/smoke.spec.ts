@@ -29,13 +29,11 @@ test('навігація по основних розділах працює', a
   }
 })
 
-test('/sales рендерить таблицю або empty-state без помилки', async ({ page }) => {
+test('/sales рендерить заголовок без помилки', async ({ page }) => {
   await page.goto('/sales')
   await expect(page).toHaveURL(/\/sales$/)
-  // або є рядки, або порожній стан — головне не крах
-  await expect(
-    page.getByText('Продажі').or(page.getByText('Операцій немає'))
-  ).toBeVisible()
+  // h1 присутній → сторінка змонтувалась без краху
+  await expect(page.getByRole('heading', { level: 1, name: 'Продажі' })).toBeVisible()
 })
 
 test('неавторизований доступ закритий (sanity)', async ({ browser }) => {
