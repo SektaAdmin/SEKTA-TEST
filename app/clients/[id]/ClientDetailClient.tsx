@@ -10,6 +10,7 @@ import type { FeedSale } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import { deleteSale } from '@/lib/queries/sales'
+import { createClientLogin } from '@/lib/queries/client-login'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
@@ -70,6 +71,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [feedSales, setFeedSales] = useState<FeedSale[]>([])
   const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
+  const [showLoginConfirm, setShowLoginConfirm] = useState(false)
+  const [creatingLogin, setCreatingLogin] = useState(false)
+  const [loginError, setLoginError] = useState('')
+  const [createdCreds, setCreatedCreds] = useState<{ login: string; password: string } | null>(null)
+  const [credsCopied, setCredsCopied] = useState(false)
   const isMobile = useIsMobile()
 
   const fetchAllClientData = useCallback(async () => {
@@ -205,6 +211,36 @@ export default function ClientDetailClient({ id }: { id: string }) {
     fetchAllClientData()
   }
 
+  async function handleCreateLogin() {
+    if (!client) return
+    setCreatingLogin(true)
+    setLoginError('')
+    const { login, password, error } = await createClientLogin(client.id)
+    setCreatingLogin(false)
+    if (error || !login || !password) {
+      setLoginError(error ?? 'Помилка створення кабінету')
+      return
+    }
+    setShowLoginConfirm(false)
+    setCredsCopied(false)
+    setCreatedCreds({ login, password })
+    fetchClient()
+  }
+
+  function credsText() {
+    if (!createdCreds) return ''
+    return `Вхід у кабінет студії:\nЛогін: ${createdCreds.login}\nПароль: ${createdCreds.password}\n\nРекомендуємо змінити пароль після входу.`
+  }
+
+  async function copyCreds() {
+    try {
+      await navigator.clipboard.writeText(credsText())
+      setCredsCopied(true)
+    } catch {
+      setLoginError('Не вдалося скопіювати')
+    }
+  }
+
   function handleLoadMore() {
     const next = salesPage + 1
     setSalesPage(next)
@@ -260,7 +296,21 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <div className={styles.topGrid}>
 
             <section className={styles.card}>
-              <h2 className={styles.sectionTitle}>Контакти</h2>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.sectionTitle}>Контакти</h2>
+                {client.user_id ? (
+                  <span className="badge badge-completed">Кабінет активний</span>
+                ) : (
+                  <button
+                    className={styles.btnPrimary}
+                    onClick={() => { setLoginError(''); setShowLoginConfirm(true) }}
+                    disabled={!client.phone}
+                    title={client.phone ? '' : 'Додайте номер телефону, щоб створити кабінет'}
+                  >
+                    Створити кабінет
+                  </button>
+                )}
+              </div>
               <dl className={styles.fields}>
                 <div className={styles.field}>
                   <dt>Телефон</dt>
@@ -1041,6 +1091,56 @@ export default function ClientDetailClient({ id }: { id: string }) {
           onClose={() => setEditingSale(null)}
           onSaved={handleSaleSaved}
         />
+      )}
+
+      {showLoginConfirm && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmBox}>
+            <h3>Створити кабінет клієнту?</h3>
+            <p>
+              Клієнт зможе входити у свій кабінет за номером <strong>{client.phone}</strong>.
+              Логін і пароль зʼявляться після створення — надішліть їх клієнту.
+            </p>
+            {loginError && <p className={styles.confirmError}>{loginError}</p>}
+            <div className={styles.confirmBtns}>
+              <button
+                className={styles.btnConfirmCancel}
+                onClick={() => { setShowLoginConfirm(false); setLoginError('') }}
+              >
+                Скасувати
+              </button>
+              <button
+                className={styles.btnPrimary}
+                onClick={handleCreateLogin}
+                disabled={creatingLogin}
+              >
+                {creatingLogin ? 'Створення...' : 'Створити'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {createdCreds && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmBox}>
+            <h3>Кабінет створено</h3>
+            <p>Надішліть ці дані клієнту в Instagram або Telegram:</p>
+            <pre style={{
+              whiteSpace: 'pre-wrap', background: 'var(--bg-2)', border: '1px solid var(--border)',
+              borderRadius: 8, padding: 12, fontSize: 14, margin: '8px 0',
+            }}>{credsText()}</pre>
+            {loginError && <p className={styles.confirmError}>{loginError}</p>}
+            <div className={styles.confirmBtns}>
+              <button className={styles.btnConfirmCancel} onClick={() => setCreatedCreds(null)}>
+                Закрити
+              </button>
+              <button className={styles.btnPrimary} onClick={copyCreds}>
+                {credsCopied ? 'Скопійовано ✓' : 'Скопіювати'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {deleteId && (

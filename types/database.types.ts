@@ -1110,6 +1110,7 @@ export type Database = {
           success: boolean
         }[]
       }
+      normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
       restore_class: {
         Args: { p_class_id: string }
         Returns: {

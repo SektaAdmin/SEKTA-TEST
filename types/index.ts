@@ -19,6 +19,7 @@ export interface Client {
   balance?: number
   credit_limit?: number
   balance_updated_at?: string | null
+  user_id?: string | null
 }
 
 export interface Ticket {
