@@ -79,7 +79,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
     if (editSale?.client_id) loadClientBalance(editSale.client_id)
   }, [editSale?.client_id, loadClientBalance])
 
-  const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId, cash_holder: cashHolder } = watch()
+  const { client_id: clientId, ticket_id: ticketId, amount_given: amountGiven, price_paid: pricePaid, payment_method: payment, trainer_id: trainerId } = watch()
 
   const fromDeposit = payment === 'deposit'
   const depositDelta = useMemo(() => amountGiven - pricePaid, [amountGiven, pricePaid])
@@ -181,19 +181,16 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           )}
         </div>
 
-        {/* Тренер (тільки для готівки) */}
+        {/* Тренер (тільки для готівки). Цей же тренер = хто прийняв готівку (cash_holder). */}
         {payment === 'cash' && (
           <div className={styles.field}>
             <label htmlFor="sale-trainer">
-              Тренер {ticketId && <span className={styles.required}>* обов'язково</span>}
+              Тренер (прийняв готівку) {ticketId && <span className={styles.required}>* обов'язково</span>}
             </label>
             <select
               id="sale-trainer"
               value={trainerId}
-              onChange={e => {
-                setValue('trainer_id', e.target.value)
-                if (!cashHolder) setValue('cash_holder', e.target.value)
-              }}
+              onChange={e => setValue('trainer_id', e.target.value)}
               disabled={busy}
             >
               <option value="">— Оберіть тренера —</option>
@@ -205,22 +202,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             {errors.trainer_id && (
               <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
             )}
-          </div>
-        )}
-
-        {/* Хто прийняв готівку */}
-        {payment === 'cash' && (
-          <div className={styles.field}>
-            <label htmlFor="sale-cash-holder">Хто прийняв готівку</label>
-            <select
-              id="sale-cash-holder"
-              value={cashHolder}
-              onChange={e => setValue('cash_holder', e.target.value)}
-              disabled={busy}
-            >
-              <option value="">— Оберіть —</option>
-              {trainers.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
           </div>
         )}
 
