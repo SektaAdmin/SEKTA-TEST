@@ -1,7 +1,27 @@
-.page {
+/* ── Каркас кабінету (структура .page-head/.page-body проекту, але без
+   Sidebar/BottomNav — зона кабінету). На десктопі — звичайний потік (скролить
+   body). На мобільному html/body мають overflow:hidden (globals.css), тому
+   .shell зажимаємо в 100dvh і скролимо всередині .scroll — див. @media в кінці. */
+.shell {
+  display: flex;
+  flex-direction: column;
+}
+
+/* CabinetHeader (перший дочірній .shell) — шапка зверху. */
+.shell > header {
+  flex-shrink: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.scroll {
+  padding: 16px 16px 40px;
+}
+
+.scroll > :global(*) {
   max-width: 640px;
-  margin: 0 auto;
-  padding: 0 16px 40px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .empty {
@@ -11,46 +31,99 @@
   text-align: center;
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-  margin-bottom: 24px;
+/* ── Карусель балансів (депозит + типи абонементів) ──────────────── */
+/* Канон гориз. смуг проекту: flex:0 0 <width>, край наступної картки видно
+   (сигнал «свайпається»), overflow-y:hidden щоб не перехоплювати верт. скрол. */
+.carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.card {
-  padding: 14px;
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.balanceCard {
+  flex: 0 0 85%;
+  scroll-snap-align: start;
+  padding: 20px;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-sizing: border-box;
 }
 
-.cardLabel {
-  font-size: 12px;
+/* Єдина картка (тільки депозит) — на всю ширину, без виглядання. */
+.balanceCard:only-child {
+  flex-basis: 100%;
+}
+
+.balanceLabel {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.balanceValue {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 8px;
+}
+
+.balanceUnit {
+  font-size: 16px;
+  font-weight: 400;
   color: var(--text-3);
 }
 
-.cardValue {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text);
-  margin-top: 4px;
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
 }
 
-.sectionTitle {
-  font-size: 16px;
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-hover);
+  transition: background 0.15s;
+}
+
+.dotActive {
+  background: var(--text-2);
+}
+
+/* ── Вкладки (Майбутні / Архів / Покупки) ───────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 24px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 14px;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.tabActive {
+  color: var(--text);
   font-weight: 500;
-  color: var(--text);
-  margin-bottom: 12px;
-}
-
-/* Відступ між секціями: усі заголовки крім першого. */
-.sectionTitle ~ .sectionTitle,
-.list + .sectionTitle,
-.txList + .sectionTitle,
-.empty + .sectionTitle,
-.profile + .sectionTitle {
-  margin-top: 28px;
+  border-bottom-color: var(--text);
 }
 
 .list {
@@ -200,6 +273,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
+  margin-bottom: 16px;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -230,4 +304,22 @@
   margin-top: 4px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
+}
+
+/* ── Мобільна адаптація (єдиний @media-блок у кінці файлу — інакше
+   десктопні стилі перебивають, патерн проекту) ─────────────────── */
+@media (max-width: 640px) {
+  /* Документ не скролиться (html/body overflow:hidden у globals.css) — весь
+     скрол всередині .scroll; .shell зажато у viewport, шапка лишається зверху. */
+  .shell {
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
