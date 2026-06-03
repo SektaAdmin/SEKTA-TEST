@@ -7,6 +7,12 @@ node_modules/
 .DS_Store
 tsconfig.tsbuildinfo
 
+# Playwright e2e
+e2e/.auth/
+test-results/
+playwright-report/
+.playwright/
+
 # External agent artifacts
 .codex/
 AGENTS.md
