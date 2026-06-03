@@ -13,14 +13,14 @@ import type { PaymentMethod } from '@/types'
 /* ── Статус запису клієнта на заняття ───────────────────────────── */
 // Дієслова: описують дію клієнта. waitlist = «Черга» (зал повний).
 
-export type EnrollmentStatus =
+type EnrollmentStatus =
   | 'enrolled'
   | 'attended'
   | 'cancelled'
   | 'noshow'
   | 'waitlist'
 
-export const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
+const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
   enrolled:  'Записалась',
   attended:  'Відвідала',
   cancelled: 'Скасувала',
@@ -28,7 +28,7 @@ export const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
   waitlist:  'Черга',
 }
 
-export const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
+const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
   enrolled:  'badge badge-enrolled',
   attended:  'badge badge-attended',
   cancelled: 'badge badge-cancelled',
@@ -36,7 +36,7 @@ export const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
   waitlist:  'badge badge-waitlist',
 }
 
-export const ENROLLMENT_STATUS_ICON: Record<EnrollmentStatus, LucideIcon> = {
+const ENROLLMENT_STATUS_ICON: Record<EnrollmentStatus, LucideIcon> = {
   enrolled:  Clock,
   attended:  CheckCircle2,
   cancelled: X,
@@ -58,14 +58,14 @@ export function enrollmentStatusIcon(status: string): LucideIcon | null {
 
 /* ── Метод оплати ───────────────────────────────────────────────── */
 
-export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash:          'Готівка',
   fop:           'ФОП',
   personal_card: 'Картка',
   deposit:       'Депозит',
 }
 
-export const PAYMENT_CLASS: Record<PaymentMethod, string> = {
+const PAYMENT_CLASS: Record<PaymentMethod, string> = {
   cash:          'badge badge-cash',
   fop:           'badge badge-fop',
   personal_card: 'badge badge-card',
@@ -85,7 +85,7 @@ export function paymentClass(method: string): string {
 // Це НЕ training_types.label з БД — це навмисно стислі форми.
 // Для повних людських назв (dropdown, дисплеї) читати label з БД через RefsContext.
 
-export const TICKET_TYPE_SHORT_LABELS: Record<string, string> = {
+const TICKET_TYPE_SHORT_LABELS: Record<string, string> = {
   group:           'Груп',
   individual:      'Індив',
   individualduo:   'Дует',
@@ -105,7 +105,7 @@ export function ticketTypeShortLabel(type: string): string {
 // працює як технічна мітка-значок поряд із кольором, не як текст для читання, тому
 // не порушує «UI лише українською». Невідомий тип (новий з training_types) → 1-ша
 // літера коду великими.
-export const TICKET_TYPE_ABBR: Record<string, string> = {
+const TICKET_TYPE_ABBR: Record<string, string> = {
   group:           'G',
   individual:      'I',
   individualduo:   'ID',

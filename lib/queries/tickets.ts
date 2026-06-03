@@ -9,7 +9,6 @@ const q = refEntityQueries<'tickets', Ticket>(
 )
 
 export const listTickets = q.list
-export const listActiveTickets = q.listActive
 export const toggleTicket = q.toggle
 
 export async function insertTicket(

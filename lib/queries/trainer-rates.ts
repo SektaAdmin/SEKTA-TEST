@@ -19,13 +19,6 @@ export type TrainerRate = {
   created_at: string
 }
 
-export type TrainerSalaryRow = {
-  ticket_type: string
-  sessions_total: number
-  rate: number | null
-  amount: number
-}
-
 export type TrainerSalaryDetailRow = {
   class_id: string
   starts_at: string
@@ -66,31 +59,6 @@ export type TrainerCashBalance = {
 }
 
 // ─── Rates ────────────────────────────────────────────────────────────────────
-
-export async function listTrainerRatesActive(
-  supabase: Db
-): Promise<{ data: TrainerRate[]; error: string | null }> {
-  const { data, error } = await rateQuery(supabase)
-    .is('valid_to', null)
-    .order('ticket_type')
-    .order('trainer_id', { nullsFirst: true })
-  return {
-    data: (data ?? []).map(r => ({
-      id: r.id,
-      trainer_id: r.trainer_id,
-      trainer_name: r.trainers?.name ?? null,
-      ticket_type: r.ticket_type,
-      hall_id: r.hall_id,
-      hall_name: r.halls?.name ?? null,
-      trainer_rate: r.trainer_rate,
-      studio_rate: r.studio_rate,
-      valid_from: r.valid_from,
-      valid_to: r.valid_to,
-      created_at: r.created_at,
-    })),
-    error: error?.message ?? null,
-  }
-}
 
 export async function listTrainerRatesAll(
   supabase: Db
@@ -196,47 +164,9 @@ export async function restoreTrainerRate(
 }
 
 // Залишаємо для зворотної сумісності зі старим кодом (rates/page.tsx)
-export async function listTrainerRates(
-  supabase: Db
-): Promise<{ data: TrainerRate[]; error: string | null }> {
-  return listTrainerRatesActive(supabase)
-}
-
-export async function deleteTrainerRate(
-  supabase: Db,
-  id: string
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('trainer_rates').delete().eq('id', id)
-  return { error: error?.message ?? null }
-}
-
 // ─── Salary calculation ────────────────────────────────────────────────────────
 
-// Старий RPC — залишаємо для зворотної сумісності
-export async function calcTrainerSalary(
-  supabase: Db,
-  trainerId: string,
-  start: string,
-  end: string
-): Promise<{ data: TrainerSalaryRow[]; error: string | null }> {
-  const { data, error } = await supabase.rpc('calc_trainer_salary', {
-    p_trainer_id: trainerId,
-    p_start: start,
-    p_end: end,
-  })
-  if (error || !data) return { data: [], error: error?.message ?? null }
-  return {
-    data: data.map(r => ({
-      ticket_type: r.ticket_type,
-      sessions_total: r.sessions_total,
-      rate: r.rate ?? null,
-      amount: r.amount,
-    })),
-    error: null,
-  }
-}
-
-// Новий деталізований RPC — повертає рядки по кожному enrollment, згруповані по заняттях
+// Деталізований RPC — повертає рядки по кожному enrollment, згруповані по заняттях
 export async function calcTrainerSalaryDetail(
   supabase: Db,
   trainerId: string,
@@ -449,19 +379,6 @@ export async function listAllCashBalances(
 
 // Загальний борг студії перед тренером за весь час:
 // сума всіх нарахувань (з calc_trainer_salary_v2 за весь час) мінус сума всіх виплат
-export async function getTrainerTotalDebt(
-  supabase: Db,
-  trainerId: string,
-  totalAccrued: number
-): Promise<{ data: number; error: string | null }> {
-  const { data, error } = await supabase
-    .from('trainer_payments')
-    .select('paid_amount')
-    .eq('trainer_id', trainerId)
-  const totalPaid = (data ?? []).reduce((s, r) => s + Number(r.paid_amount), 0)
-  return { data: totalAccrued - totalPaid, error: error?.message ?? null }
-}
-
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function listTrainerPayments(
@@ -475,18 +392,6 @@ export async function listTrainerPayments(
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
     .order('created_at', { ascending: false })
-  return { data: (data ?? []) as TrainerPayment[], error: error?.message ?? null }
-}
-
-export async function listTrainerPaymentsForPeriod(
-  supabase: Db,
-  dateFrom: string,
-  dateTo: string
-): Promise<{ data: TrainerPayment[]; error: string | null }> {
-  const { data, error } = await paymentQuery(supabase)
-    .gte('payment_date', dateFrom)
-    .lte('payment_date', dateTo)
-    .order('payment_date', { ascending: false })
   return { data: (data ?? []) as TrainerPayment[], error: error?.message ?? null }
 }
 

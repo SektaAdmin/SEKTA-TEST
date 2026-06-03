@@ -132,7 +132,8 @@ export async function getClientSessionBalance(
   return { data: data?.sessions_balance ?? 0, error: error?.message ?? null }
 }
 
-export async function markAttendance(
+// Вживає лише enrollClient нижче (запис у вже-минуле заняття). UI → changeEnrollmentStatus.
+async function markAttendance(
   supabase: Db,
   enrollmentId: string,
   sessionsUsed = 1
@@ -142,16 +143,6 @@ export async function markAttendance(
       p_enrollment_id: enrollmentId,
       p_sessions_used: sessionsUsed,
     })
-  )
-  return { success, error }
-}
-
-export async function reverseAttendance(
-  supabase: Db,
-  enrollmentId: string
-): Promise<{ success: boolean; error: string | null }> {
-  const { success, error } = await callRpc(() =>
-    supabase.rpc('reverse_attendance', { p_enrollment_id: enrollmentId })
   )
   return { success, error }
 }

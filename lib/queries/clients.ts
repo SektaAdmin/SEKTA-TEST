@@ -34,18 +34,6 @@ export async function listClients(
   return { data: (data as Client[]) ?? [], count: count ?? 0, error: error?.message ?? null }
 }
 
-export async function getClient(
-  supabase: Db,
-  id: string
-): Promise<{ data: Client | null; error: string | null }> {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('id, first_name, last_name, phone, instagram_username, telegram_username, balance, credit_limit, balance_updated_at')
-    .eq('id', id)
-    .maybeSingle()
-  return { data: (data as Client) ?? null, error: error?.message ?? null }
-}
-
 export async function searchClientsByPhone(
   supabase: Db,
   phone: string,

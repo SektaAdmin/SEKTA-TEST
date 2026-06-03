@@ -38,7 +38,7 @@ function saleListQuery(supabase: Db) {
   return supabase.from('sales').select(SALE_SELECT)
 }
 
-export async function searchClientIdsByName(
+async function searchClientIdsByName(
   supabase: Db,
   search: string
 ): Promise<string[] | null> {
@@ -125,38 +125,6 @@ export async function listAllSalesForFeed(
   return { data: data ?? [], error: error?.message ?? null }
 }
 
-export async function listSalesForAccounting(
-  supabase: Db,
-  dateFrom: string,
-  dateTo: string
-): Promise<{ data: { created_at: string; price_paid: number; amount_given: number; payment_method: string; ticket_id: string | null }[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('sales')
-    .select('created_at, price_paid, amount_given, payment_method, ticket_id')
-    .gte('created_at', `${dateFrom}T00:00:00`)
-    .lte('created_at', `${dateTo}T23:59:59`)
-  return { data: data ?? [], error: error?.message ?? null }
-}
-
-const TRAINER_SALE_SELECT = `trainer_id, sessions, price_paid, payment_method, ticket_type, trainers!sales_trainer_id_fkey(name)` as const
-export type SalesTrainerRow = QueryData<ReturnType<typeof trainerSaleQuery>>[number]
-function trainerSaleQuery(supabase: Db) {
-  return supabase.from('sales').select(TRAINER_SALE_SELECT)
-}
-
-export async function listSalesForTrainers(
-  supabase: Db,
-  start: string,
-  end: string
-): Promise<{ data: SalesTrainerRow[]; error: string | null }> {
-  const { data, error } = await trainerSaleQuery(supabase)
-    .not('trainer_id', 'is', null)
-    .not('ticket_id', 'is', null)
-    .gte('created_at', start)
-    .lte('created_at', end)
-  return { data: data ?? [], error: error?.message ?? null }
-}
-
 export async function createSale(
   supabase: Db,
   params: {
@@ -234,26 +202,6 @@ export async function deleteSale(
 ): Promise<{ success: boolean; error: string | null }> {
   const { success, error } = await callRpc(() => supabase.rpc('delete_sale', { p_sale_id: saleId }), 'Помилка видалення')
   return { success, error }
-}
-
-const RECON_SALE_SELECT = 'id, created_at, price_paid, amount_given, payment_method, ticket_id, ticket_name, clients(first_name, last_name)' as const
-export type ReconciliationSale = QueryData<ReturnType<typeof reconSaleQuery>>[number]
-function reconSaleQuery(supabase: Db) {
-  return supabase.from('sales').select(RECON_SALE_SELECT)
-}
-
-export async function listSalesForReconciliation(
-  supabase: Db,
-  dateFrom: string,
-  dateTo: string,
-  methods: ('fop' | 'personal_card')[]
-): Promise<{ data: ReconciliationSale[]; error: string | null }> {
-  const { data, error } = await reconSaleQuery(supabase)
-    .in('payment_method', methods)
-    .gte('created_at', `${dateFrom}T00:00:00`)
-    .lte('created_at', `${dateTo}T23:59:59`)
-    .order('created_at', { ascending: false })
-  return { data: data ?? [], error: error?.message ?? null }
 }
 
 export async function getTicketById(

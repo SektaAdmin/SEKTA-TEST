@@ -9,7 +9,7 @@ import { VM } from '@/lib/validation-messages'
 import type { Ticket, PaymentMethod } from '@/types'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 
-export const saleSchema = z.object({
+const saleSchema = z.object({
   client_id: z.string().min(1, VM.required.selectClient),
   ticket_id: z.string().optional().or(z.literal('')),
   trainer_id: z.string().optional().or(z.literal('')),
@@ -55,7 +55,7 @@ export function resolveSubmitValues(formData: SaleFormValues) {
   }
 }
 
-export function useNumberField(initial: number) {
+function useNumberField(initial: number) {
   const [text, setText] = useState(String(initial))
   function onChange(e: React.ChangeEvent<HTMLInputElement>, set: (n: number) => void) {
     setText(e.target.value)

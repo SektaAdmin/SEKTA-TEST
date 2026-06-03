@@ -9,8 +9,7 @@ import type { Database } from '@/types/database.types'
    схемою через QueryData<typeof query> замість `as unknown as RowType`. */
 export type Db = SupabaseClient<Database>
 
-/** Row/Insert/Update хелпери для таблиць public-схеми. */
+/** Row/Insert хелпери для таблиць public-схеми. */
 type Tables = Database['public']['Tables']
 export type Row<T extends keyof Tables> = Tables[T]['Row']
 export type Insert<T extends keyof Tables> = Tables[T]['Insert']
-export type Update<T extends keyof Tables> = Tables[T]['Update']

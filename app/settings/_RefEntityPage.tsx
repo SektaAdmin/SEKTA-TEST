@@ -12,7 +12,7 @@ const SETTINGS_TABS = [
   { href: '/settings/training-types', label: 'Типи' },
 ]
 
-export function ToggleBtns({ id, active, toggling, onToggle }: {
+function ToggleBtns({ id, active, toggling, onToggle }: {
   id: string; active: boolean; toggling: string | null; onToggle: (id: string, v: boolean) => void
 }) {
   return (
@@ -33,7 +33,7 @@ export function ToggleBtns({ id, active, toggling, onToggle }: {
   )
 }
 
-export function ArchiveSection({ label, count, open, onToggle, children }: {
+function ArchiveSection({ label, count, open, onToggle, children }: {
   label: string; count: number; open: boolean; onToggle: () => void; children: ReactNode
 }) {
   return (

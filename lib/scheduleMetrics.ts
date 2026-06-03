@@ -38,17 +38,6 @@ export function isFull(enrollments: { status: string }[], capacity: number | nul
   return capacity != null && getActiveCount(enrollments) >= capacity
 }
 
-export function isAlmost(enrollments: { status: string }[], capacity: number | null | undefined): boolean {
-  if (capacity == null) return false
-  const active = getActiveCount(enrollments)
-  return active < capacity && active >= capacity * 0.8
-}
-
-export function fillPct(enrollments: { status: string }[], capacity: number | null | undefined): string {
-  if (capacity == null) return '0%'
-  return `${Math.min((getActiveCount(enrollments) / capacity) * 100, 100)}%`
-}
-
 // Для шаблонів і HallWeekGrid (підрахунок постійників, не enrollments)
 export function getOverCapacityCount(clientCount: number, capacity: number | null | undefined): number {
   if (capacity == null || clientCount <= capacity) return 0

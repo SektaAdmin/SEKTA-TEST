@@ -51,16 +51,6 @@ export interface ClientSessionBalance {
   sessions_balance: number
 }
 
-export interface SaleFormData {
-  client_id: string
-  ticket_id: string
-  trainer_id: string | null
-  price_paid: number
-  amount_given: number
-  payment_method: PaymentMethod
-  notes: string
-}
-
 export interface ClassSeries {
   id: string
   type: 'template' | 'series'
@@ -77,14 +67,6 @@ export interface ClassSeries {
   trainers?: { name: string } | null
   halls?: { name: string } | null
   series_clients?: { id: string; client_id: string }[]
-}
-
-export interface SeriesClient {
-  id: string
-  series_id: string
-  client_id: string
-  hours_attended: number[] | null
-  created_at: string
 }
 
 export interface Hall {
@@ -108,19 +90,6 @@ export interface Class {
   notes: string | null
   choreo_stage: string | null
   series_id: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface Enrollment {
-  id: string
-  class_id: string
-  client_id: string
-  status: 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
-  sessions_used: number
-  hours_attended: number[] | null
-  sale_id: string | null
-  notes: string | null
   created_at: string
   updated_at: string
 }

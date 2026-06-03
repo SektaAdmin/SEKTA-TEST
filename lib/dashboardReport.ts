@@ -6,7 +6,7 @@ import { formatDateShort } from '@/lib/formatters'
    для надсилання тренерам у телеграм. Без UI/Supabase — тестується окремо. */
 
 /** Ярлики типів індив-занять для тексту звіту (НЕ ticketTypeShortLabel — там Дует/Тріо). */
-export const INDIV_REPORT_LABEL: Record<string, string> = {
+const INDIV_REPORT_LABEL: Record<string, string> = {
   individual: 'Індив',
   individualduo: 'Індив Duo',
   individualtrio: 'Індив Trio',
