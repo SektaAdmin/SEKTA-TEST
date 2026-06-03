@@ -59,6 +59,25 @@
 .depositNeg { color: var(--danger); }
 .depositZero { color: var(--text-3); }
 
+/* Read-only «поле» стану депозиту — той самий розмір, що й інпути форми */
+.depositBox {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 39px;
+}
+.depositBoxCurrent { font-size: 15px; font-weight: 500; color: var(--text); }
+.depositBoxArrow { color: var(--text-3); }
+.depositBoxNext { font-size: 15px; font-weight: 600; }
+.depositBoxDelta { margin-left: auto; font-size: 12px; font-weight: 600; }
+.depositBoxEmpty { font-size: 13px; color: var(--text-3); }
+
 .paymentTabs {
   display: flex;
   gap: 6px;

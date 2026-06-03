@@ -123,11 +123,32 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             error={errors.client_id?.message}
             disabled={busy}
           />
-          {clientId && clientBalance !== null && (
-            <span className={`${styles.depositHint} ${clientBalance > 0 ? styles.depositPos : clientBalance < 0 ? styles.depositNeg : styles.depositZero}`}>
-              Депозит: {clientBalance > 0 ? '+' : ''}{formatMoney(clientBalance)}
-            </span>
-          )}
+        </div>
+
+        {/* Стан депозиту — read-only «поле», завжди видиме. було → стане (±дельта) */}
+        <div className={styles.field}>
+          <label>Депозит</label>
+          <div className={styles.depositBox}>
+            {!clientId || clientBalance === null ? (
+              <span className={styles.depositBoxEmpty}>Оберіть клієнта</span>
+            ) : depositDelta === 0 ? (
+              <span className={`${styles.depositBoxCurrent} ${clientBalance < 0 ? styles.depositNeg : ''}`}>
+                {formatMoney(clientBalance)}
+              </span>
+            ) : (
+              <>
+                <span className={styles.depositBoxCurrent}>{formatMoney(clientBalance)}</span>
+                <span className={styles.depositBoxArrow}>→</span>
+                <span className={`${styles.depositBoxNext} ${clientBalance + depositDelta < 0 ? styles.depositNeg : styles.depositPos}`}>
+                  {formatMoney(clientBalance + depositDelta)}
+                </span>
+                <span className={`${styles.depositBoxDelta} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
+                  {depositDelta > 0 ? '+' : ''}{formatMoney(depositDelta)}
+                  {clientBalance + depositDelta < 0 ? ' · борг' : ''}
+                </span>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Абонемент */}
@@ -220,11 +241,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               step={1}
               disabled={busy}
             />
-            {pricePaid > 0 && (
-              <span className={`${styles.depositHint} ${styles.depositNeg}`}>
-                −{formatMoney(pricePaid)} з депозиту
-              </span>
-            )}
           </div>
         )}
 
@@ -268,20 +284,6 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
           {!ticketId && (
             <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
               Позитивне — поповнення, негативне — списання
-            </span>
-          )}
-          {ticketId && depositDelta !== 0 && (
-            <span className={`${styles.depositHint} ${depositDelta > 0 ? styles.depositPos : styles.depositNeg}`}>
-              {depositDelta > 0
-                ? `+${formatMoney(depositDelta)} на депозит`
-                : `${formatMoney(depositDelta)} (борг / з депозиту)`}
-            </span>
-          )}
-          {!ticketId && amountGiven !== 0 && (
-            <span className={`${styles.depositHint} ${amountGiven > 0 ? styles.depositPos : styles.depositNeg}`}>
-              {amountGiven > 0
-                ? `+${formatMoney(amountGiven)} на депозит`
-                : `${formatMoney(amountGiven)} з депозиту`}
             </span>
           )}
         </div>}
