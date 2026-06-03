@@ -7,4 +7,37 @@
   line-height: 1.4;
 }
 
+.cabinet {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cabinetLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.cabinetHint {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.creds {
+  width: 100%;
+  white-space: pre-wrap;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 14px;
+  margin: 0;
+}
+
 

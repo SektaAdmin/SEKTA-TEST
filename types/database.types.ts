@@ -838,30 +838,36 @@ export type Database = {
       trainers: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           instagram_username: string | null
           is_active: boolean
           name: string
+          phone: string | null
           telegram_username: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
           instagram_username?: string | null
           is_active?: boolean
           name: string
+          phone?: string | null
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           instagram_username?: string | null
           is_active?: boolean
           name?: string
+          phone?: string | null
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null

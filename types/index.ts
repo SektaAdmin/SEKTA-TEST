@@ -37,6 +37,10 @@ export interface Trainer {
   is_active: boolean
   instagram_username: string | null
   telegram_username: string | null
+  phone: string | null
+  email: string | null
+  /** Привʼязка до auth.users — заповнений = у тренера є кабінет (логін). */
+  user_id: string | null
 }
 
 /**
