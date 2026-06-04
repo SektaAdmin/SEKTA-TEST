@@ -13,8 +13,8 @@ import {
 import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
-import { formatMoney, formatDateShort } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { formatMoney, formatDate } from '@/lib/formatters'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
@@ -162,6 +162,7 @@ export default function ClientCabinet({
       )}
 
       <section className={styles.balanceBlock}>
+        <div className={styles.balanceHeader}>Баланс</div>
         <div className={styles.balanceRow}>
           <span className={styles.balanceRowLabel}>Депозит</span>
           <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
@@ -283,15 +284,18 @@ export default function ClientCabinet({
                   <div className={styles.txMain}>
                     <div className={styles.txTitle}>{title}</div>
                     <div className={styles.txMeta}>
-                      {formatDateShort(p.created_at)}
-                      {p.ticket_id ? ` · ${p.sessions} занять · ${paymentLabel(p.payment_method)}` : ''}
+                      {formatDate(p.created_at)}
+                      {p.payment_method && (
+                        <span className={paymentClass(p.payment_method)}>
+                          {paymentLabel(p.payment_method)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div
                     className={`${styles.txAmount} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : ''}`}
                   >
-                    {sign}
-                    {formatMoney(amount)}
+                    {sign}{formatMoney(amount)}
                   </div>
                 </li>
               )
