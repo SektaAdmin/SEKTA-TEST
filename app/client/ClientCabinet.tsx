@@ -310,9 +310,6 @@ export default function ClientCabinet({
                     <div className={styles.txTitle}>{title}</div>
                     <div className={styles.txMeta}>
                       {formatDate(p.created_at)}
-                      <span className={`${styles.amountBadge} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : styles.amountNeutral}`}>
-                        {sign}{formatMoney(amount)}
-                      </span>
                       {p.payment_method && (
                         <span className={paymentClass(p.payment_method)}>
                           {paymentLabel(p.payment_method)}
@@ -320,6 +317,9 @@ export default function ClientCabinet({
                       )}
                     </div>
                   </div>
+                  <span className={`${styles.amountBadge} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : styles.amountNeutral}`}>
+                    {sign}{formatMoney(amount)}
+                  </span>
                 </li>
               )
             })}
