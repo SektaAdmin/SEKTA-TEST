@@ -27,7 +27,7 @@ export async function getMyContacts(
   return { data, error: error?.message ?? null }
 }
 
-/** Залишки занять по типах (лише ненульові). */
+/** Залишки занять по типах (усі куплені коли-небудь типи, включно з нульовими). */
 export async function listMySessionBalances(
   supabase: Db,
   clientId: string
@@ -36,7 +36,6 @@ export async function listMySessionBalances(
     .from('client_session_balances')
     .select('ticket_type, sessions_balance')
     .eq('client_id', clientId)
-    .neq('sessions_balance', 0)
   return { data: data ?? [], error: error?.message ?? null }
 }
 

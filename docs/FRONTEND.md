@@ -53,6 +53,12 @@ components/
 
 **Бейджі:** CSS у globals.css, логіка в `lib/badges.ts`. Класи `.badge` + `.badge-{cash,fop,card,deposit,enrolled,attended,...,type,danger,class-cancelled,completed}`. Не оголошувати локальні `.badge` в module.css; не патерн `${styles.badge} ${styles[..]}`.
 
+**Бейджі балансу** (депозит ₴ і залишок занять год) — завжди квадратні чіпи `border-radius: 4px`, три стани:
+- `balance-ok` — зелений, значення `> 0`
+- `balance-zero` — жовтий, значення `= 0`
+- `balance-warn` — червоний, значення `< 0`
+Правило єдине для грошей і сесій. Не плодити локальні варіанти кольорів для балансу.
+
 ## Layout-механіка (globals.css)
 
 **Глобально:** `html, body { overflow: hidden }` — **ніколи не міняти через JS**.

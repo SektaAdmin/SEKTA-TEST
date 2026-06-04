@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
@@ -14,7 +14,7 @@ import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDateShort } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeGenitiveLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { ticketTypeShortLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
@@ -61,8 +61,6 @@ export default function ClientCabinet({
 }: Props) {
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('upcoming')
-  const [slide, setSlide] = useState(0)
-  const carouselRef = useRef<HTMLDivElement>(null)
 
   // Межі дат рахуємо один раз на маунт — інакше new Date() щорендеру міняв би deps хуків.
   const { fromISO, nowISO } = useMemo(() => ({
@@ -124,30 +122,23 @@ export default function ClientCabinet({
     toast.success(charged ? 'Запис скасовано, заняття списано' : 'Запис скасовано')
   }
 
-  function onCarouselScroll() {
-    const el = carouselRef.current
-    if (!el || el.children.length === 0) return
-    // Картки ~85% ширини + gap → міряємо по реальному кроку першої картки.
-    const first = el.children[0] as HTMLElement
-    const step = first.offsetWidth + 12 // gap: 12px
-    const i = Math.round(el.scrollLeft / step)
-    if (i !== slide) setSlide(i)
-  }
-
   const sorted = [...enrollments].sort(
     (a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()
   )
 
-  // Картки каруселі: депозит + кожен тип занять.
-  const cards = [
-    { key: '__deposit', label: 'Депозит:', value: formatMoney(balance), unit: '' },
-    ...sessions.map(s => ({
-      key: s.ticket_type,
-      label: `Залишок: ${ticketTypeGenitiveLabel(s.ticket_type, typeLabel(s.ticket_type))}`,
-      value: String(s.sessions_balance),
-      unit: 'годин',
-    })),
-  ]
+  // Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
+  function balanceClass(n: number) {
+    if (n > 0) return 'balance-ok'
+    if (n === 0) return 'balance-zero'
+    return 'balance-warn'
+  }
+
+  // Сесії: >0 зверху (за спаданням), потім нульові, потім від'ємні.
+  const sessionsSorted = [...sessions].sort((a, b) => {
+    const aSign = a.sessions_balance > 0 ? 0 : a.sessions_balance === 0 ? 1 : 2
+    const bSign = b.sessions_balance > 0 ? 0 : b.sessions_balance === 0 ? 1 : 2
+    return aSign !== bSign ? aSign - bSign : b.sessions_balance - a.sessions_balance
+  })
 
   return (
     <>
@@ -175,25 +166,17 @@ export default function ClientCabinet({
         </section>
       )}
 
-      <section>
-        <div ref={carouselRef} className={styles.carousel} onScroll={onCarouselScroll}>
-          {cards.map(c => (
-            <div key={c.key} className={styles.balanceCard}>
-              <div className={styles.balanceLabel}>{c.label}</div>
-              <div className={styles.balanceValue}>
-                {c.value}
-                {c.unit && <span className={styles.balanceUnit}> {c.unit}</span>}
-              </div>
-            </div>
-          ))}
+      <section className={styles.balanceBlock}>
+        <div className={styles.balanceRow}>
+          <span className={styles.balanceRowLabel}>Депозит</span>
+          <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
         </div>
-        {cards.length > 1 && (
-          <div className={styles.dots}>
-            {cards.map((c, i) => (
-              <span key={c.key} className={`${styles.dot} ${i === slide ? styles.dotActive : ''}`} />
-            ))}
+        {sessionsSorted.map(s => (
+          <div key={s.ticket_type} className={styles.balanceRow}>
+            <span className={styles.balanceRowLabel}>{typeLabel(s.ticket_type)}</span>
+            <span className={balanceClass(s.sessions_balance)}>{s.sessions_balance} год</span>
           </div>
-        )}
+        ))}
       </section>
 
       <div className={styles.tabs} role="tablist">

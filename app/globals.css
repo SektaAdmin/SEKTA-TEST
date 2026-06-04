@@ -403,8 +403,11 @@ input, select, textarea { border: 1px solid var(--border); background: var(--bg-
 /* Warning / negative state */
 .badge-danger { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
 
-/* Session balance chips (schedule, dashboard) */
+/* Session balance chips (schedule, dashboard, client cabinet).
+   balance-ok = >0 (green), balance-zero = 0 (yellow), balance-warn = <0 (red).
+   Used for both money (₴) and session counts. */
 .balance-ok   { font-size: 14px; color: var(--success); background: var(--success-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-zero { font-size: 14px; color: var(--warning); background: var(--warning-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
 .balance-warn { font-size: 14px; color: var(--danger);  background: var(--danger-dim);  padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
 .balance-muted{ font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }
 
