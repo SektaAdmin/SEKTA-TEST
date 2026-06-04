@@ -385,8 +385,8 @@ input, select, textarea { border: 1px solid var(--border); background: var(--bg-
 
 /* Enrollment statuses */
 .badge-enrolled  { background: var(--bg-3);        color: var(--text-2);  border-color: var(--border); }
-.badge-attended  { background: var(--accent-dim);  color: var(--accent);  border-color: var(--accent-border); }
-.badge-cancelled { background: var(--bg-3);        color: var(--text-3);  border-color: var(--border); }
+.badge-attended  { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
+.badge-cancelled { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
 .badge-noshow    { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
 .badge-waitlist  { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
 
