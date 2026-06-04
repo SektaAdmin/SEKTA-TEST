@@ -241,19 +241,31 @@
   margin-top: 4px;
 }
 
-.txAmount {
-  font-size: 15px;
+.amountBadge {
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  padding: 2px 8px;
+  border-radius: 4px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountNeutral {
+  background: var(--bg-3);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .amountPos {
+  background: var(--success-dim);
   color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .amountNeg {
+  background: var(--danger-dim);
   color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 /* ── Профіль (read-only) ────────────────────────────────────────── */
