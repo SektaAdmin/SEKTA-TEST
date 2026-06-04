@@ -587,7 +587,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   }
                 } else {
                   const type = item.data.classes?.ticket_type
-                  if (type && item.data.status === 'attended' && item.data.sessions_used > 0) {
+                  if (type && item.data.sessions_used > 0) {
                     running[type] = (running[type] ?? 0) - item.data.sessions_used
                   }
                 }
