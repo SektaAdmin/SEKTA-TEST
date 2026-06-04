@@ -15,7 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
-import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
+import { MONTHS_UK_SHORT, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
 
@@ -126,9 +126,23 @@ export default function ClientCabinet({
     (a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()
   )
 
-  const sortedPast = [...pastEnrollments].sort(
-    (a, b) => new Date(b.classes!.starts_at).getTime() - new Date(a.classes!.starts_at).getTime()
-  )
+  const pastByMonth = useMemo(() => {
+    const sorted = [...pastEnrollments].sort(
+      (a, b) => new Date(b.classes!.starts_at).getTime() - new Date(a.classes!.starts_at).getTime()
+    )
+    const groups: { key: string; label: string; items: typeof sorted }[] = []
+    for (const e of sorted) {
+      const d = new Date(e.classes!.starts_at)
+      const key = `${d.getFullYear()}-${d.getMonth()}`
+      const last = groups[groups.length - 1]
+      if (last?.key === key) {
+        last.items.push(e)
+      } else {
+        groups.push({ key, label: `${MONTHS_UK_CAP[d.getMonth()]} ${d.getFullYear()}`, items: [e] })
+      }
+    }
+    return groups
+  }, [pastEnrollments])
 
   // Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
   function balanceClass(n: number) {
@@ -248,32 +262,39 @@ export default function ClientCabinet({
         ))}
 
       {tab === 'archive' &&
-        (pastEnrollments.length === 0 ? (
+        (pastByMonth.length === 0 ? (
           <p className={styles.empty}>{MSG.empty.pastEnrollments}.</p>
         ) : (
-          <ul className={styles.list}>
-            {sortedPast.map(e => {
-              const c = e.classes!
-              const d = new Date(c.starts_at)
-              return (
-                <li key={e.id} className={styles.item}>
-                  <div className={styles.date}>
-                    <span className={styles.day}>{d.getDate()}</span>
-                    <span className={styles.month}>{MONTHS_UK_SHORT[d.getMonth()]}</span>
-                  </div>
-                  <div className={styles.info}>
-                    <div className={styles.title}>{c.title || typeLabel(c.ticket_type)}</div>
-                    <div className={styles.meta}>
-                      {timeOf(c.starts_at)} · {c.duration_min} хв
-                      {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
-                      {c.halls?.name ? ` · ${c.halls.name}` : ''}
-                    </div>
-                  </div>
-                  <span className={enrollmentStatusClass(e.status)}>{enrollmentStatusLabel(e.status)}</span>
-                </li>
-              )
-            })}
-          </ul>
+          <div className={styles.list}>
+            {pastByMonth.map(group => (
+              <div key={group.key}>
+                <div className={styles.monthHeader}>{group.label}</div>
+                <ul className={styles.monthList}>
+                  {group.items.map(e => {
+                    const c = e.classes!
+                    const d = new Date(c.starts_at)
+                    return (
+                      <li key={e.id} className={styles.item}>
+                        <div className={styles.date}>
+                          <span className={styles.day}>{d.getDate()}</span>
+                          <span className={styles.month}>{MONTHS_UK_SHORT[d.getMonth()]}</span>
+                        </div>
+                        <div className={styles.info}>
+                          <div className={styles.title}>{c.title || typeLabel(c.ticket_type)}</div>
+                          <div className={styles.meta}>
+                            {timeOf(c.starts_at)} · {c.duration_min} хв
+                            {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
+                            {c.halls?.name ? ` · ${c.halls.name}` : ''}
+                          </div>
+                        </div>
+                        <span className={enrollmentStatusClass(e.status)}>{enrollmentStatusLabel(e.status)}</span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
         ))}
 
       {tab === 'purchases' &&

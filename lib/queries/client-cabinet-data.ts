@@ -118,7 +118,7 @@ function myPastEnrollmentsQuery(supabase: Db, clientId: string, beforeISO: strin
     .in('status', ['attended', 'noshow', 'cancelled'])
     .lt('classes.starts_at', beforeISO)
     .order('starts_at', { referencedTable: 'classes', ascending: false })
-    .limit(100)
+    .limit(50)
 }
 
 export type MyPastEnrollmentRow = QueryData<ReturnType<typeof myPastEnrollmentsQuery>>[number]

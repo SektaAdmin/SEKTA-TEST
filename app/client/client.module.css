@@ -98,6 +98,25 @@
   gap: 8px;
 }
 
+.monthHeader {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 4px 0 6px;
+  margin-top: 8px;
+}
+
+.monthList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .item {
   display: flex;
   align-items: center;
