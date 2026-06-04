@@ -24,6 +24,18 @@ function timeOf(iso: string): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+// Відносна мітка дня для майбутніх записів: «Сьогодні»/«Завтра», інакше null
+// (тоді показуємо число+місяць). Порівняння — по локальній даті (00:00).
+function relativeDay(iso: string): string | null {
+  const d = new Date(iso)
+  const today = new Date()
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+  const diffDays = Math.round((startOfDay(d) - startOfDay(today)) / 86400000)
+  if (diffDays === 0) return 'Сьогодні'
+  if (diffDays === 1) return 'Завтра'
+  return null
+}
+
 // Опис одного рядка sales: покупка абонемента (з тікетом) АБО депозитна операція
 // (ticket_id=null: +amount_given поповнення / −price_paid списання).
 function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): { title: string; amount: number; sign: '' | '+' | '−' } {
@@ -126,6 +138,14 @@ export default function ClientCabinet({
     (a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()
   )
 
+  // Hero «наступне заняття» — найближчий активний запис строго в майбутньому
+  // (listMyUpcomingEnrollments бере від початку дня, тож сьогоднішнє вже-минуле
+  // сюди б потрапило — відсікаємо по now і виключаємо скасовані заняття).
+  const nowMs = Date.now()
+  const heroEnrollment = sorted.find(
+    e => !e.classes!.is_cancelled && new Date(e.classes!.starts_at).getTime() > nowMs
+  )
+
   const pastByMonth = useMemo(() => {
     const sorted = [...pastEnrollments].sort(
       (a, b) => new Date(b.classes!.starts_at).getTime() - new Date(a.classes!.starts_at).getTime()
@@ -155,34 +175,41 @@ export default function ClientCabinet({
 
   return (
     <>
-      {(contacts?.phone || contacts?.instagram_username || contacts?.telegram_username) && (
-        <section className={styles.profile}>
-          {contacts?.phone && (
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Телефон</span>
-              <span className={styles.profileValue}>{contacts.phone}</span>
+      {heroEnrollment && (() => {
+        const c = heroEnrollment.classes!
+        const rel = relativeDay(c.starts_at)
+        const d = new Date(c.starts_at)
+        return (
+          <section className={styles.hero}>
+            <div className={styles.heroLabel}>Наступне заняття</div>
+            <div className={styles.heroWhen}>
+              {rel ?? `${d.getDate()} ${MONTHS_UK_SHORT[d.getMonth()]}`}, {timeOf(c.starts_at)}
             </div>
-          )}
-          {contacts?.instagram_username && (
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Instagram</span>
-              <span className={styles.profileValue}>@{contacts.instagram_username}</span>
+            <div className={styles.heroTitle}>{c.title || typeLabel(c.ticket_type)}</div>
+            <div className={styles.heroMeta}>
+              {c.duration_min} хв
+              {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
+              {c.halls?.name ? ` · ${c.halls.name}` : ''}
             </div>
-          )}
-          {contacts?.telegram_username && (
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Telegram</span>
-              <span className={styles.profileValue}>@{contacts.telegram_username}</span>
-            </div>
-          )}
-          <p className={styles.hint}>Щоб змінити дані, зверніться до адміністратора студії.</p>
-        </section>
-      )}
+            {heroEnrollment.status === 'waitlist' && (
+              <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
+            )}
+            <button
+              type="button"
+              className={styles.heroCancelBtn}
+              onClick={() => handleCancel(heroEnrollment.id)}
+              disabled={cancelling === heroEnrollment.id}
+            >
+              {cancelling === heroEnrollment.id ? '…' : 'Скасувати запис'}
+            </button>
+          </section>
+        )
+      })()}
 
       <section className={styles.balanceBlock}>
         <div className={styles.balanceHeader}>Баланс</div>
-        <div className={styles.balanceRow}>
-          <span className={styles.balanceRowLabel}>Депозит</span>
+        <div className={styles.depositRow}>
+          <span className={styles.depositLabel}>Депозит</span>
           <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
         </div>
         {sessions.map(s => (
@@ -221,45 +248,58 @@ export default function ClientCabinet({
       </div>
 
       {tab === 'upcoming' &&
-        (sorted.length === 0 ? (
-          <p className={styles.empty}>{MSG.empty.futureEnrollments}.</p>
-        ) : (
-          <ul className={styles.list}>
-            {sorted.map(e => {
-              const c = e.classes!
-              const d = new Date(c.starts_at)
-              return (
-                <li key={e.id} className={`${styles.item} ${c.is_cancelled ? styles.cancelled : ''}`}>
-                  <div className={styles.date}>
-                    <span className={styles.day}>{d.getDate()}</span>
-                    <span className={styles.month}>{MONTHS_UK_SHORT[d.getMonth()]}</span>
-                  </div>
-                  <div className={styles.info}>
-                    <div className={styles.title}>{c.title || typeLabel(c.ticket_type)}</div>
-                    <div className={styles.meta}>
-                      {timeOf(c.starts_at)} · {c.duration_min} хв
-                      {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
-                      {c.halls?.name ? ` · ${c.halls.name}` : ''}
+        // Hero вже показує найближчий запис — у списку лишаємо решту.
+        (() => {
+          const rest = sorted.filter(e => e.id !== heroEnrollment?.id)
+          return rest.length === 0 ? (
+            <p className={styles.empty}>{MSG.empty.futureEnrollments}.</p>
+          ) : (
+            <ul className={styles.list}>
+              {rest.map(e => {
+                const c = e.classes!
+                const d = new Date(c.starts_at)
+                const rel = relativeDay(c.starts_at)
+                return (
+                  <li key={e.id} className={`${styles.item} ${c.is_cancelled ? styles.cancelled : ''}`}>
+                    <div className={styles.date}>
+                      {rel ? (
+                        <span className={styles.relDay}>{rel}</span>
+                      ) : (
+                        <>
+                          <span className={styles.day}>{d.getDate()}</span>
+                          <span className={styles.month}>{MONTHS_UK_SHORT[d.getMonth()]}</span>
+                        </>
+                      )}
                     </div>
-                    {e.status === 'waitlist' && <div className={styles.waitlist}>У черзі</div>}
-                  </div>
-                  {c.is_cancelled ? (
-                    <span className={styles.badge}>Скасовано</span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.cancelBtn}
-                      onClick={() => handleCancel(e.id)}
-                      disabled={cancelling === e.id}
-                    >
-                      {cancelling === e.id ? '…' : 'Скасувати'}
-                    </button>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        ))}
+                    <div className={styles.info}>
+                      <div className={styles.title}>{c.title || typeLabel(c.ticket_type)}</div>
+                      <div className={styles.meta}>
+                        {timeOf(c.starts_at)} · {c.duration_min} хв
+                        {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
+                        {c.halls?.name ? ` · ${c.halls.name}` : ''}
+                      </div>
+                      {e.status === 'waitlist' && (
+                        <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
+                      )}
+                    </div>
+                    {c.is_cancelled ? (
+                      <span className={styles.badge}>Скасовано</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.cancelBtn}
+                        onClick={() => handleCancel(e.id)}
+                        disabled={cancelling === e.id}
+                      >
+                        {cancelling === e.id ? '…' : 'Скасувати'}
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )
+        })()}
 
       {tab === 'archive' &&
         (pastByMonth.length === 0 ? (
@@ -325,6 +365,31 @@ export default function ClientCabinet({
             })}
           </ul>
         ))}
+
+      {(contacts?.phone || contacts?.instagram_username || contacts?.telegram_username) && (
+        <section className={styles.profile}>
+          <div className={styles.profileHeader}>Контакти</div>
+          {contacts?.phone && (
+            <div className={styles.profileRow}>
+              <span className={styles.profileLabel}>Телефон</span>
+              <span className={styles.profileValue}>{contacts.phone}</span>
+            </div>
+          )}
+          {contacts?.instagram_username && (
+            <div className={styles.profileRow}>
+              <span className={styles.profileLabel}>Instagram</span>
+              <span className={styles.profileValue}>@{contacts.instagram_username}</span>
+            </div>
+          )}
+          {contacts?.telegram_username && (
+            <div className={styles.profileRow}>
+              <span className={styles.profileLabel}>Telegram</span>
+              <span className={styles.profileValue}>@{contacts.telegram_username}</span>
+            </div>
+          )}
+          <p className={styles.hint}>Щоб змінити дані, зверніться до адміністратора студії.</p>
+        </section>
+      )}
     </>
   )
 }
