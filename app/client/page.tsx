@@ -4,10 +4,6 @@ import { roleFromUser } from '@/lib/auth/role'
 import {
   getMyClient,
   getMyContacts,
-  listMySessionBalances,
-  listMyUpcomingEnrollments,
-  listMyPurchases,
-  listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import CabinetHeader from '@/components/CabinetHeader'
@@ -37,21 +33,13 @@ export default async function ClientCabinetPage() {
     )
   }
 
-  const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-  const nowISO = new Date().toISOString()
+  // Серверно тягнемо лише незмінне для гейту/шапки: контакти (read-only) і лейбли типів.
+  // Депозит/сесії/записи/покупки кабінет вантажить сам клієнтськими хуками з realtime.
   const [
-    { data: sessions },
-    { data: enrollments },
     { data: contacts },
-    { data: purchases },
-    { data: pastEnrollments },
     { data: typeLabels },
   ] = await Promise.all([
-    listMySessionBalances(supabase, client.id),
-    listMyUpcomingEnrollments(supabase, client.id, fromISO),
     getMyContacts(supabase, client.id),
-    listMyPurchases(supabase, client.id),
-    listMyPastEnrollments(supabase, client.id, nowISO),
     listTrainingTypeLabels(supabase),
   ])
 
@@ -62,12 +50,10 @@ export default async function ClientCabinetPage() {
       <CabinetHeader title={name} subtitle="Особистий кабінет" />
       <div className={styles.scroll}>
         <ClientCabinet
-          balance={client.balance}
-          sessions={sessions}
-          enrollments={enrollments}
+          clientId={client.id}
+          userId={user.id}
+          initialBalance={client.balance}
           contacts={contacts}
-          purchases={purchases}
-          pastEnrollments={pastEnrollments}
           typeLabels={typeLabels}
         />
       </div>

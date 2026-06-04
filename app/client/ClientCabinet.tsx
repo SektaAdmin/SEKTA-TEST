@@ -1,13 +1,18 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
-import type {
-  MyEnrollmentRow,
-  MyPurchaseRow,
-  MyPastEnrollmentRow,
+import {
+  getMyClient,
+  listMySessionBalances,
+  listMyUpcomingEnrollments,
+  listMyPurchases,
+  listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
+import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
+import { useAsync } from '@/hooks/useAsync'
+import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDateShort } from '@/lib/formatters'
 import { ticketTypeShortLabel, ticketTypeGenitiveLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
@@ -40,29 +45,67 @@ type Contacts = {
 type Tab = 'upcoming' | 'archive' | 'purchases'
 
 type Props = {
-  balance: number
-  sessions: { ticket_type: string; sessions_balance: number }[]
-  enrollments: MyEnrollmentRow[]
+  clientId: string
+  userId: string
+  initialBalance: number
   contacts: Contacts
-  purchases: MyPurchaseRow[]
-  pastEnrollments: MyPastEnrollmentRow[]
   typeLabels: Record<string, string>
 }
 
 export default function ClientCabinet({
-  balance,
-  sessions,
-  enrollments: initial,
+  clientId,
+  userId,
+  initialBalance,
   contacts,
-  purchases,
-  pastEnrollments,
   typeLabels,
 }: Props) {
-  const [enrollments, setEnrollments] = useState(initial)
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('upcoming')
   const [slide, setSlide] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
+
+  // Межі дат рахуємо один раз на маунт — інакше new Date() щорендеру міняв би deps хуків.
+  const { fromISO, nowISO } = useMemo(() => ({
+    fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+    nowISO: new Date().toISOString(),
+  }), [])
+
+  // Депозит: realtime по clients (баланс) + balance_transactions (лог змін).
+  // initialBalance — миттєвий рендер до першого fetch (без скелета на головному числі).
+  const { data: client } = useAsync(
+    () => getMyClient(supabase, userId),
+    [userId],
+    { realtime: ['clients', 'balance_transactions'] }
+  )
+  const balance = client?.balance ?? initialBalance
+
+  // Залишки занять по типах — realtime по client_session_balances (списання/повернення сесій).
+  const { data: sessions } = useListQuery(
+    () => listMySessionBalances(supabase, clientId),
+    [clientId],
+    { realtime: ['client_session_balances'] }
+  )
+
+  // Майбутні активні записи — realtime по enrollments (свій запис/відміна) + classes (скасування заняття).
+  const { data: enrollments, refetch: refetchUpcoming } = useListQuery(
+    () => listMyUpcomingEnrollments(supabase, clientId, fromISO),
+    [clientId, fromISO],
+    { realtime: ['enrollments', 'classes'], refetchOnVisible: true }
+  )
+
+  // Архів минулих записів.
+  const { data: pastEnrollments } = useListQuery(
+    () => listMyPastEnrollments(supabase, clientId, nowISO),
+    [clientId, nowISO],
+    { realtime: ['enrollments', 'classes'] }
+  )
+
+  // Усі sales: покупки абонементів + депозитні операції.
+  const { data: purchases } = useListQuery(
+    () => listMyPurchases(supabase, clientId),
+    [clientId],
+    { realtime: ['sales'] }
+  )
 
   // Повна назва типу з БД (training_types.label); fallback — короткий ярлик.
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
@@ -76,7 +119,8 @@ export default function ClientCabinet({
       toast.error(error ?? MSG.toast.deleteFailed)
       return
     }
-    setEnrollments(prev => prev.filter(e => e.id !== enrollmentId))
+    // Realtime по enrollments підхопить зміну сам; refetch — миттєвий відгук без чекання сокета.
+    refetchUpcoming()
     toast.success(charged ? 'Запис скасовано, заняття списано' : 'Запис скасовано')
   }
 
