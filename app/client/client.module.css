@@ -31,73 +31,11 @@
   text-align: center;
 }
 
-/* ── Hero «Наступне заняття» (перший fold) — двоколонка: дата | деталі ── */
+/* ── Hero «Наступне заняття» (перший fold) ──────────────────────────
+   Та сама картка, що у списках (.item), щоб не було стилістичного розбою.
+   Виділення «героя» — лейбл зверху + тонка ліва акцентна смуга на .item. */
 .hero {
-  display: flex;
-  gap: 16px;
-  padding: 16px;
   margin-bottom: 16px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent, var(--text));
-  border-radius: var(--radius);
-}
-
-/* Ліва колонка — дата (центрована, фіксована ширина), розділювач справа. */
-.heroDate {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  min-width: 56px;
-  padding-right: 16px;
-  border-right: 1px solid var(--border);
-  text-align: center;
-}
-
-.heroDay {
-  font-size: 30px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1;
-}
-
-.heroMonth {
-  font-size: 12px;
-  color: var(--text-2);
-  margin-top: 2px;
-}
-
-.heroDow {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 1px;
-}
-
-/* «Сьогодні»/«Завтра» замість числа — займає місце блоку число+місяць+день. */
-.heroRel {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.2;
-}
-
-.heroTime {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  margin-top: 6px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Права колонка — деталі заняття. */
-.heroBody {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
 }
 
 .heroLabel {
@@ -106,40 +44,11 @@
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-3);
+  margin-bottom: 8px;
 }
 
-.heroTitle {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.heroMeta {
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.heroCancelBtn {
-  align-self: flex-start;
-  height: var(--control-h);
-  margin-top: 8px;
-  padding: 0 14px;
-  font-size: 13px;
-  color: var(--text-2);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.heroCancelBtn:hover:not(:disabled) {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-.heroCancelBtn:disabled {
-  opacity: 0.5;
-  cursor: default;
+.hero .item {
+  border-left: 3px solid var(--accent, var(--text));
 }
 
 /* ── Блок балансів (депозит + типи занять) ───────────────────────── */
