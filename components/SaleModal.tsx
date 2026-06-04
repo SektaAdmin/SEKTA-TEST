@@ -152,7 +152,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             {isEdit && ticketId && !tickets.find(t => t.id === ticketId) && (
               <option value={ticketId}>{editSale!.ticket_name}</option>
             )}
-            {tickets.map(t => (
+            {tickets.filter(t => t.is_active).map(t => (
               <option key={t.id} value={t.id}>{t.name} — {formatMoney(t.price)}</option>
             ))}
           </select>
