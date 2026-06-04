@@ -27,22 +27,32 @@ export async function getMyContacts(
   return { data, error: error?.message ?? null }
 }
 
-/** Залишки занять по типах (усі куплені типи крім striprental, сортування по sort_order). */
+/** Залишки занять по типах (усі куплені типи крім striprental).
+ *  Сортування — на фронті по sort_order з окремого запиту до training_types. */
 export async function listMySessionBalances(
   supabase: Db,
   clientId: string
 ): Promise<{ data: { ticket_type: string; sessions_balance: number }[]; error: string | null }> {
-  const { data, error } = await supabase
-    .from('client_session_balances')
-    .select('ticket_type, sessions_balance, training_types(sort_order)')
-    .eq('client_id', clientId)
-    .neq('ticket_type', 'striprental')
-    .order('sort_order', { referencedTable: 'training_types', ascending: true })
-  const rows = (data ?? []).map(r => ({
-    ticket_type: r.ticket_type,
-    sessions_balance: r.sessions_balance,
-  }))
-  return { data: rows, error: error?.message ?? null }
+  const [balRes, ttRes] = await Promise.all([
+    supabase
+      .from('client_session_balances')
+      .select('ticket_type, sessions_balance')
+      .eq('client_id', clientId)
+      .neq('ticket_type', 'striprental'),
+    supabase
+      .from('training_types')
+      .select('code, sort_order')
+      .order('sort_order', { ascending: true }),
+  ])
+  if (balRes.error) return { data: [], error: balRes.error.message }
+
+  const sortMap: Record<string, number> = {}
+  for (const t of (ttRes.data ?? [])) sortMap[t.code] = t.sort_order ?? 999
+
+  const rows = (balRes.data ?? []).sort(
+    (a, b) => (sortMap[a.ticket_type] ?? 999) - (sortMap[b.ticket_type] ?? 999)
+  )
+  return { data: rows, error: null }
 }
 
 const MY_ENROLLMENTS_SELECT =
