@@ -14,7 +14,7 @@ import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDateShort } from '@/lib/formatters'
-import { ticketTypeShortLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
@@ -133,12 +133,7 @@ export default function ClientCabinet({
     return 'balance-warn'
   }
 
-  // Сесії: >0 зверху (за спаданням), потім нульові, потім від'ємні.
-  const sessionsSorted = [...sessions].sort((a, b) => {
-    const aSign = a.sessions_balance > 0 ? 0 : a.sessions_balance === 0 ? 1 : 2
-    const bSign = b.sessions_balance > 0 ? 0 : b.sessions_balance === 0 ? 1 : 2
-    return aSign !== bSign ? aSign - bSign : b.sessions_balance - a.sessions_balance
-  })
+  // Порядок сесій визначається training_types.sort_order на рівні query.
 
   return (
     <>
@@ -171,9 +166,9 @@ export default function ClientCabinet({
           <span className={styles.balanceRowLabel}>Депозит</span>
           <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
         </div>
-        {sessionsSorted.map(s => (
+        {sessions.map(s => (
           <div key={s.ticket_type} className={styles.balanceRow}>
-            <span className={styles.balanceRowLabel}>{typeLabel(s.ticket_type)}</span>
+            <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
             <span className={balanceClass(s.sessions_balance)}>{s.sessions_balance} год</span>
           </div>
         ))}

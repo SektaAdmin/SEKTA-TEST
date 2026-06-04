@@ -27,16 +27,22 @@ export async function getMyContacts(
   return { data, error: error?.message ?? null }
 }
 
-/** Залишки занять по типах (усі куплені коли-небудь типи, включно з нульовими). */
+/** Залишки занять по типах (усі куплені типи крім striprental, сортування по sort_order). */
 export async function listMySessionBalances(
   supabase: Db,
   clientId: string
 ): Promise<{ data: { ticket_type: string; sessions_balance: number }[]; error: string | null }> {
   const { data, error } = await supabase
     .from('client_session_balances')
-    .select('ticket_type, sessions_balance')
+    .select('ticket_type, sessions_balance, training_types(sort_order)')
     .eq('client_id', clientId)
-  return { data: data ?? [], error: error?.message ?? null }
+    .neq('ticket_type', 'striprental')
+    .order('sort_order', { referencedTable: 'training_types', ascending: true })
+  const rows = (data ?? []).map(r => ({
+    ticket_type: r.ticket_type,
+    sessions_balance: r.sessions_balance,
+  }))
+  return { data: rows, error: error?.message ?? null }
 }
 
 const MY_ENROLLMENTS_SELECT =

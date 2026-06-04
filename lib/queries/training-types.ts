@@ -38,3 +38,15 @@ export async function updateTrainingType(
   const { error } = await supabase.from('training_types').update({ label }).eq('id', id)
   return { error: error?.message ?? null }
 }
+
+export async function reorderTrainingTypes(
+  supabase: Db,
+  ids: string[],
+  orders: number[]
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.rpc('update_training_type_sort_orders', {
+    p_ids: ids,
+    p_orders: orders,
+  })
+  return { error: error?.message ?? null }
+}

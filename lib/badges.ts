@@ -116,6 +116,23 @@ export function ticketTypeShortLabel(type: string): string {
   return TICKET_TYPE_SHORT_LABELS[type] ?? type
 }
 
+// Людські назви типів у називному відмінку для клієнтського кабінету.
+// НЕ training_types.label (там бренд-назви типу «Exotic» — для адмінів).
+export const TICKET_TYPE_NOMINATIVE_LABELS: Record<string, string> = {
+  group:           'Групове тренування',
+  individual:      'Індивідуальне тренування',
+  individualduo:   'Індивідуальне Duo',
+  individualtrio:  'Індивідуальне Trio',
+  hallrental:      'Оренда залу',
+  smallhallrental: 'Оренда залу (Малий)',
+  pylonrental:     'Оренда пілону',
+  selftraining:    'Самостійне тренування',
+}
+
+export function ticketTypeNominativeLabel(type: string): string {
+  return TICKET_TYPE_NOMINATIVE_LABELS[type] ?? type
+}
+
 // Назва типу в родовому відмінку для конструкції «Залишок: ___» (кабінет клієнта).
 // Узагальнені формули, НЕ training_types.label (там бренд-назви типу «Exotic»).
 // Невідомий код → fallback (передається label з БД у нижньому регістрі).

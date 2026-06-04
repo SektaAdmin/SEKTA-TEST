@@ -1172,6 +1172,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      update_training_type_sort_orders: {
+        Args: { p_ids: string[]; p_orders: number[] }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
