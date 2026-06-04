@@ -651,7 +651,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
-                                      ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
+                                      ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>{bal}</span>
                                       : <span className={styles.empty2}>—</span>
                                     }
                                   </td>
@@ -684,7 +684,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   </td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
-                                      ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.empty2}>{bal}</span>
+                                      ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>{bal}</span>
                                       : <span className={styles.empty2}>—</span>
                                     }
                                   </td>
@@ -729,7 +729,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   {enrollmentStatusLabel(e.status)}
                                 </span>
                                 {bal !== undefined
-                                  ? <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
+                                  ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>
                                       Залишок: {bal} год.
                                     </span>
                                   : null
@@ -761,7 +761,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               {bal !== undefined && (
                                 <div className={styles.itemCardRow}>
                                   <span />
-                                  <span className={bal > 0 ? styles.sessionsPos : bal < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
+                                  <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>
                                     Залишок: {bal} год.
                                   </span>
                                 </div>
