@@ -126,6 +126,10 @@ export default function ClientCabinet({
     (a, b) => new Date(a.classes!.starts_at).getTime() - new Date(b.classes!.starts_at).getTime()
   )
 
+  const sortedPast = [...pastEnrollments].sort(
+    (a, b) => new Date(b.classes!.starts_at).getTime() - new Date(a.classes!.starts_at).getTime()
+  )
+
   // Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
   function balanceClass(n: number) {
     if (n > 0) return 'balance-ok'
@@ -248,7 +252,7 @@ export default function ClientCabinet({
           <p className={styles.empty}>{MSG.empty.pastEnrollments}.</p>
         ) : (
           <ul className={styles.list}>
-            {pastEnrollments.map(e => {
+            {sortedPast.map(e => {
               const c = e.classes!
               const d = new Date(c.starts_at)
               return (
