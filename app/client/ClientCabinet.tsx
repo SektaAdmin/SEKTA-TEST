@@ -9,7 +9,7 @@ import type {
   MyPastEnrollmentRow,
 } from '@/lib/queries/client-cabinet-data'
 import { formatMoney, formatDateShort } from '@/lib/formatters'
-import { ticketTypeShortLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeGenitiveLabel, paymentLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { MONTHS_UK_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
@@ -96,12 +96,12 @@ export default function ClientCabinet({
 
   // Картки каруселі: депозит + кожен тип занять.
   const cards = [
-    { key: '__deposit', label: 'Депозит', value: formatMoney(balance), unit: '' },
+    { key: '__deposit', label: 'Депозит:', value: formatMoney(balance), unit: '' },
     ...sessions.map(s => ({
       key: s.ticket_type,
-      label: `Залишок: ${typeLabel(s.ticket_type)}`,
+      label: `Залишок: ${ticketTypeGenitiveLabel(s.ticket_type, typeLabel(s.ticket_type))}`,
       value: String(s.sessions_balance),
-      unit: 'занять',
+      unit: 'годин',
     })),
   ]
 

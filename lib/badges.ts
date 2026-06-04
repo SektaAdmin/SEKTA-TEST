@@ -116,6 +116,25 @@ export function ticketTypeShortLabel(type: string): string {
   return TICKET_TYPE_SHORT_LABELS[type] ?? type
 }
 
+// Назва типу в родовому відмінку для конструкції «Залишок: ___» (кабінет клієнта).
+// Узагальнені формули, НЕ training_types.label (там бренд-назви типу «Exotic»).
+// Невідомий код → fallback (передається label з БД у нижньому регістрі).
+const TICKET_TYPE_GENITIVE_LABELS: Record<string, string> = {
+  group:           'групових тренувань',
+  individual:      'індивідуальних тренувань',
+  individualduo:   'індивідуальних Duo',
+  individualtrio:  'індивідуальних Trio',
+  selftraining:    'самостійних тренувань',
+  hallrental:      'оренд залу',
+  smallhallrental: 'оренд малого залу',
+  pylonrental:     'оренд пілону',
+  striprental:     'оренд стрипів',
+}
+
+export function ticketTypeGenitiveLabel(type: string, fallback: string): string {
+  return TICKET_TYPE_GENITIVE_LABELS[type] ?? fallback
+}
+
 // Коди-абревіатури типу абонемента (1–2 латинські літери) — для overview-режиму
 // розкладу на мобільному (всі зали одночасно у вузьких колонках). Латиниця навмисно:
 // працює як технічна мітка-значок поряд із кольором, не як текст для читання, тому
