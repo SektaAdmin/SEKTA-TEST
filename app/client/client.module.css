@@ -31,16 +31,73 @@
   text-align: center;
 }
 
-/* ── Hero «Наступне заняття» (перший fold) ──────────────────────── */
+/* ── Hero «Наступне заняття» (перший fold) — двоколонка: дата | деталі ── */
 .hero {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 16px;
   padding: 16px;
   margin-bottom: 16px;
   background: var(--bg-2);
-  border: 1px solid var(--accent, var(--text));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent, var(--text));
   border-radius: var(--radius);
+}
+
+/* Ліва колонка — дата (центрована, фіксована ширина), розділювач справа. */
+.heroDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 56px;
+  padding-right: 16px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+
+.heroDay {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+
+.heroMonth {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.heroDow {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* «Сьогодні»/«Завтра» замість числа — займає місце блоку число+місяць+день. */
+.heroRel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.heroTime {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Права колонка — деталі заняття. */
+.heroBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .heroLabel {
@@ -51,18 +108,10 @@
   color: var(--text-3);
 }
 
-.heroWhen {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.2;
-}
-
 .heroTitle {
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
-  margin-top: 2px;
 }
 
 .heroMeta {

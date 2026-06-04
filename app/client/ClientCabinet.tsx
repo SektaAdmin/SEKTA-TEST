@@ -15,7 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
-import { MONTHS_UK_SHORT, MONTHS_UK_CAP } from '@/lib/dateUtils'
+import { MONTHS_UK_SHORT, MONTHS_UK_CAP, DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from './client.module.css'
 
@@ -181,27 +181,38 @@ export default function ClientCabinet({
         const d = new Date(c.starts_at)
         return (
           <section className={styles.hero}>
-            <div className={styles.heroLabel}>Наступне заняття</div>
-            <div className={styles.heroWhen}>
-              {rel ?? `${d.getDate()} ${MONTHS_UK_SHORT[d.getMonth()]}`}, {timeOf(c.starts_at)}
+            <div className={styles.heroDate}>
+              {rel ? (
+                <span className={styles.heroRel}>{rel}</span>
+              ) : (
+                <>
+                  <span className={styles.heroDay}>{d.getDate()}</span>
+                  <span className={styles.heroMonth}>{MONTHS_UK_SHORT[d.getMonth()]}</span>
+                  <span className={styles.heroDow}>{DOW_LABELS_SHORT[d.getDay()]}</span>
+                </>
+              )}
+              <span className={styles.heroTime}>{timeOf(c.starts_at)}</span>
             </div>
-            <div className={styles.heroTitle}>{c.title || typeLabel(c.ticket_type)}</div>
-            <div className={styles.heroMeta}>
-              {c.duration_min} хв
-              {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
-              {c.halls?.name ? ` · ${c.halls.name}` : ''}
+            <div className={styles.heroBody}>
+              <div className={styles.heroLabel}>Наступне заняття</div>
+              <div className={styles.heroTitle}>{c.title || typeLabel(c.ticket_type)}</div>
+              <div className={styles.heroMeta}>
+                {c.duration_min} хв
+                {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
+                {c.halls?.name ? ` · ${c.halls.name}` : ''}
+              </div>
+              {heroEnrollment.status === 'waitlist' && (
+                <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
+              )}
+              <button
+                type="button"
+                className={styles.heroCancelBtn}
+                onClick={() => handleCancel(heroEnrollment.id)}
+                disabled={cancelling === heroEnrollment.id}
+              >
+                {cancelling === heroEnrollment.id ? '…' : 'Скасувати запис'}
+              </button>
             </div>
-            {heroEnrollment.status === 'waitlist' && (
-              <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
-            )}
-            <button
-              type="button"
-              className={styles.heroCancelBtn}
-              onClick={() => handleCancel(heroEnrollment.id)}
-              disabled={cancelling === heroEnrollment.id}
-            >
-              {cancelling === heroEnrollment.id ? '…' : 'Скасувати запис'}
-            </button>
           </section>
         )
       })()}
@@ -227,7 +238,7 @@ export default function ClientCabinet({
           className={`${styles.tab} ${tab === 'upcoming' ? styles.tabActive : ''}`}
           onClick={() => setTab('upcoming')}
         >
-          Майбутні
+          Мої записи
         </button>
         <button
           type="button"
