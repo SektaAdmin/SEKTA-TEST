@@ -1,13 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
-import {
-  getMyClient,
-  getMyContacts,
-} from '@/lib/queries/client-cabinet-data'
-import { listTrainingTypeLabels } from '@/lib/queries/training-types'
+import { getMyClient, getMyContacts } from '@/lib/queries/client-cabinet-data'
 import CabinetHeader from '@/components/CabinetHeader'
-import ClientCabinet from './ClientCabinet'
+import ClientHome from './ClientHome'
 import styles from './client.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -33,29 +29,14 @@ export default async function ClientCabinetPage() {
     )
   }
 
-  // Серверно тягнемо лише незмінне для гейту/шапки: контакти (read-only) і лейбли типів.
-  // Депозит/сесії/записи/покупки кабінет вантажить сам клієнтськими хуками з realtime.
-  const [
-    { data: contacts },
-    { data: typeLabels },
-  ] = await Promise.all([
-    getMyContacts(supabase, client.id),
-    listTrainingTypeLabels(supabase),
-  ])
-
+  const { data: contacts } = await getMyContacts(supabase, client.id)
   const name = [client.first_name, client.last_name].filter(Boolean).join(' ')
 
   return (
     <>
-      <CabinetHeader title={name} subtitle="Особистий кабінет" />
+      <CabinetHeader title={name || 'Особистий кабінет'} subtitle="Особистий кабінет" />
       <div className={styles.scroll}>
-        <ClientCabinet
-          clientId={client.id}
-          userId={user.id}
-          initialBalance={client.balance}
-          contacts={contacts}
-          typeLabels={typeLabels}
-        />
+        <ClientHome name={name} email={user.email ?? null} contacts={contacts} />
       </div>
     </>
   )
