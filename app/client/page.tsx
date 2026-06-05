@@ -35,7 +35,7 @@ export default async function ClientCabinetPage() {
 
   return (
     <>
-      <CabinetHeader title="Особистий кабінет" address={STUDIO.address} />
+      <CabinetHeader title="Особистий кабінет" address={STUDIO.address} hideLogout />
       <div className={styles.scroll}>
         <ClientHome name={name} email={user.email ?? null} contacts={contacts} />
       </div>

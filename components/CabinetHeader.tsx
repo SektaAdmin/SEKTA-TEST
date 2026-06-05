@@ -17,11 +17,13 @@ export default function CabinetHeader({
   subtitle,
   address,
   backHref,
+  hideLogout,
 }: {
   title: string
   subtitle?: string
   address?: string
   backHref?: string
+  hideLogout?: boolean
 }) {
   const router = useRouter()
 
@@ -49,10 +51,12 @@ export default function CabinetHeader({
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
       </div>
-      <button type="button" className={styles.logout} onClick={handleLogout} aria-label="Вийти">
-        <LogoutIcon />
-        <span>Вийти</span>
-      </button>
+      {!hideLogout && (
+        <button type="button" className={styles.logout} onClick={handleLogout} aria-label="Вийти">
+          <LogoutIcon />
+          <span>Вийти</span>
+        </button>
+      )}
     </header>
   )
 }
