@@ -325,7 +325,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   <dt>Телефон</dt>
                   <dd>
                     {client.phone
-                      ? <a href={`tel:${client.phone}`} className={styles.fieldLink}>{client.phone}</a>
+                      ? <span>{client.phone}</span>
                       : <span className={styles.empty2}>—</span>}
                   </dd>
                 </div>

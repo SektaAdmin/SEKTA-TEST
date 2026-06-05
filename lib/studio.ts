@@ -15,3 +15,7 @@ export const STUDIO = {
 
 export const STUDIO_TELEGRAM_URL = `https://t.me/${STUDIO.telegram}`
 export const STUDIO_INSTAGRAM_URL = `https://www.instagram.com/${STUDIO.instagram}`
+// Deep-link'и для нативних застосунків. openInApp() (lib/openInApp.ts) пробує
+// app-URL першим, із fallback на web-URL (браузер), якщо застосунку нема.
+export const STUDIO_INSTAGRAM_APP_URL = `instagram://user?username=${STUDIO.instagram}`
+export const STUDIO_TELEGRAM_APP_URL = `tg://resolve?domain=${STUDIO.telegram}`
