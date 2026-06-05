@@ -45,6 +45,15 @@ function timeUntil(startISO: string, nowMs: number): string {
   return parts.length ? `Через ${parts.join(' ')}` : 'Зараз'
 }
 
+// Колір бейджа минулого візиту за статусом — узгоджено з badge-* проекту
+// (attended→зелений, cancelled→жовтий, noshow→червоний).
+function pastTimerClass(status: string): string {
+  if (status === 'attended') return styles.visitTimerAttended
+  if (status === 'noshow') return styles.visitTimerNoshow
+  if (status === 'cancelled') return styles.visitTimerCancelled
+  return styles.visitTimerPast
+}
+
 type Props = {
   clientId: string
   typeLabels: Record<string, string>
@@ -96,7 +105,7 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
             const c = e.classes!
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} className={styles.visitCard}>
-                <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerCancelled : ''}`}>
+                <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
                   {c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
                 </div>
                 <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
@@ -130,7 +139,7 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
             const c = e.classes!
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} className={styles.visitCard}>
-                <div className={`${styles.visitTimer} ${styles.visitTimerPast}`}>
+                <div className={`${styles.visitTimer} ${pastTimerClass(e.status)}`}>
                   {enrollmentStatusLabel(e.status)}
                 </div>
                 <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
