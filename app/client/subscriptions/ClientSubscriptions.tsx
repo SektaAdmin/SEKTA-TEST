@@ -21,15 +21,17 @@ type SaleDesc = {
   deposit: { label: string; amount: number; sign: '+' | '−' } | null
   // для депозитних операцій без тікета
   sign: '' | '+' | '−'
+  // рядок «Всього» — показується лише коли решта пішла на депозит (amount_given)
+  total: number | null
 }
 
 function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleDesc {
   // Депозитна операція без абонемента (ticket_id=null)
   if (!p.ticket_id) {
     if (p.amount_given > 0) {
-      return { title: 'Поповнення депозиту', amount: p.amount_given, sign: '+', deposit: null }
+      return { title: 'Поповнення депозиту', amount: p.amount_given, sign: '+', deposit: null, total: null }
     }
-    return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−', deposit: null }
+    return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−', deposit: null, total: null }
   }
 
   const title = p.ticket_name ?? typeLabel(p.ticket_type ?? '')
@@ -37,18 +39,18 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
 
   // Повна оплата з депозиту (amount_given=0)
   if (p.amount_given === 0) {
-    return { title, amount: null, sign: '', deposit: { label: 'З депозиту', amount: p.price_paid, sign: '−' } }
+    return { title, amount: null, sign: '', deposit: { label: 'З депозиту', amount: p.price_paid, sign: '−' }, total: null }
   }
-  // Решта пішла на депозит
+  // Решта пішла на депозит — показуємо «Всього» (amount_given = скільки клієнт дав)
   if (diff > 0) {
-    return { title, amount: p.price_paid, sign: '', deposit: { label: 'Решта на депозит', amount: diff, sign: '+' } }
+    return { title, amount: p.price_paid, sign: '', deposit: { label: 'Решта на депозит', amount: diff, sign: '+' }, total: p.amount_given }
   }
   // Часткова оплата з депозиту (amount_given < price_paid)
   if (diff < 0) {
-    return { title, amount: p.price_paid, sign: '', deposit: { label: 'З депозиту', amount: -diff, sign: '−' } }
+    return { title, amount: p.price_paid, sign: '', deposit: { label: 'З депозиту', amount: -diff, sign: '−' }, total: null }
   }
   // Звичайна покупка
-  return { title, amount: p.price_paid, sign: '', deposit: null }
+  return { title, amount: p.price_paid, sign: '', deposit: null, total: null }
 }
 
 // Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
@@ -124,7 +126,7 @@ export default function ClientSubscriptions({
       ) : (
         <ul className={styles.txList}>
           {purchases.map(p => {
-            const { title, amount, sign, deposit } = describeSale(p, typeLabel)
+            const { title, amount, sign, deposit, total } = describeSale(p, typeLabel)
             return (
               <li key={p.id} className={styles.txItem}>
                 <div className={styles.txItemMain}>
@@ -150,6 +152,14 @@ export default function ClientSubscriptions({
                     <span>{deposit.label}</span>
                     <span className={`${styles.amountBadge} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
                       {deposit.sign}{formatMoney(deposit.amount)}
+                    </span>
+                  </div>
+                )}
+                {total !== null && (
+                  <div className={`${styles.txDepositRow} ${styles.txTotalRow}`}>
+                    <span>Всього</span>
+                    <span className={`${styles.amountBadge} ${styles.amountNeutral}`}>
+                      {formatMoney(total)}
                     </span>
                   </div>
                 )}

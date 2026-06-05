@@ -157,26 +157,26 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
       </section>
 
       {/* Студія. Без вбудованої карти — щоб не тягнути сторонній трекінг (Google
-          iframe) у кабінет. Адреса + лінк, що відкриває точку в нативних картах. */}
+          iframe) у кабінет. Адреса + кнопка «Показати на карті» на всю ширину. */}
       <div className={styles.sectionLabel}>Студія</div>
-      <a
-        className={`${styles.detailCard} ${styles.detailCardLink}`}
-        href={STUDIO.mapsUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <section className={styles.detailCard}>
         <div className={styles.detailRow}>
           <span className={styles.detailRowMain}>{STUDIO.name}</span>
-          <span className={styles.detailMapLink}>
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" focusable="false">
-              <path d="M10 18s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z" strokeLinejoin="round"/>
-              <circle cx="10" cy="8" r="2.2"/>
-            </svg>
-            <span>На карті</span>
-          </span>
         </div>
         <div className={styles.detailRowSub}>{STUDIO.address}</div>
-      </a>
+        <a
+          className={styles.mapBtn}
+          href={STUDIO.mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" focusable="false">
+            <path d="M10 18s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z" strokeLinejoin="round"/>
+            <circle cx="10" cy="8" r="2.2"/>
+          </svg>
+          Показати на карті
+        </a>
+      </section>
 
       {/* Контакти */}
       <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Контакти</div>
