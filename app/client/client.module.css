@@ -738,28 +738,29 @@
   height: 240px;
 }
 
-.contactRow {
+.contactIcons {
   display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 8px 0;
+}
+
+.contactIcon {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
+  gap: 6px;
   text-decoration: none;
   color: var(--text);
 }
 
-.contactRow + .contactRow {
-  border-top: 1px solid var(--border);
+.contactIcon svg {
+  display: block;
 }
 
-.contactLabel {
-  font-size: 14px;
+.contactIconLabel {
+  font-size: 12px;
   color: var(--text-2);
-}
-
-.contactValue {
-  font-size: 14px;
-  color: var(--text);
 }
 
 /* ── Мобільна адаптація (єдиний @media-блок у кінці файлу — інакше

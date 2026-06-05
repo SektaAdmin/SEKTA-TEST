@@ -8,7 +8,6 @@ import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
 import { formatMoney } from '@/lib/formatters'
 import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
-import { ChevronRight } from 'lucide-react'
 import { STUDIO, STUDIO_TELEGRAM_URL, STUDIO_INSTAGRAM_URL } from '@/lib/studio'
 import { MSG } from '@/lib/messages'
 import styles from '../../client.module.css'
@@ -179,18 +178,33 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
 
       {/* Контакти */}
       <div className={styles.sectionLabel}>Контакти</div>
-      <section className={styles.detailCard}>
-        <a className={styles.contactRow} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
-          <span className={styles.contactLabel}>Telegram</span>
-          <span className={styles.contactValue}>{STUDIO.telegram}</span>
-          <ChevronRight size={16} className={styles.visitChevron} />
+      <div className={styles.contactIcons}>
+        <a className={styles.contactIcon} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="22" fill="#229ED9"/>
+            <path d="M10 21.5c6.4-2.8 10.7-4.6 12.9-5.6 6.1-2.6 7.4-3 8.2-3 .2 0 .6 0 .9.3.2.2.3.5.3.7 0 .2 0 .5-.1.7l-2.1 10c-.1.6-.5.8-.8.8-.4 0-.7-.2-1.1-.5l-3-2.3-1.5 1.4c-.2.2-.4.3-.7.3l.3-3.1 6.5-5.9c.3-.3 0-.4-.4-.2l-8 5-3.5-1.1c-.7-.2-.7-.7.2-1.1z" fill="white"/>
+          </svg>
+          <span className={styles.contactIconLabel}>Telegram</span>
         </a>
-        <a className={styles.contactRow} href={STUDIO_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-          <span className={styles.contactLabel}>Instagram</span>
-          <span className={styles.contactValue}>{STUDIO.instagram}</span>
-          <ChevronRight size={16} className={styles.visitChevron} />
+        <a className={styles.contactIcon} href={STUDIO_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="22" fill="url(#ig)"/>
+            <defs>
+              <radialGradient id="ig" cx="30%" cy="107%" r="130%">
+                <stop offset="0%" stopColor="#fdf497"/>
+                <stop offset="5%" stopColor="#fdf497"/>
+                <stop offset="45%" stopColor="#fd5949"/>
+                <stop offset="60%" stopColor="#d6249f"/>
+                <stop offset="90%" stopColor="#285AEB"/>
+              </radialGradient>
+            </defs>
+            <rect x="13" y="13" width="18" height="18" rx="5" stroke="white" strokeWidth="1.5" fill="none"/>
+            <circle cx="22" cy="22" r="4.5" stroke="white" strokeWidth="1.5" fill="none"/>
+            <circle cx="27.5" cy="16.5" r="1" fill="white"/>
+          </svg>
+          <span className={styles.contactIconLabel}>Instagram</span>
         </a>
-      </section>
+      </div>
     </>
   )
 }
