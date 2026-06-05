@@ -26,19 +26,9 @@ export default function CabinetHeader({
 }) {
   const router = useRouter()
 
-  // «Назад» — router.back() для миттєвого переходу з кешу Next.js Router.
-  // Якщо сторінку відкрили напряму (закладка/refresh/прямий URL) — back() нічого
-  // не робить. Fallback: через 150ms перевіряємо чи URL змінився; якщо ні —
-  // push на backHref.
   function handleBack() {
     if (!backHref) return
-    const urlBefore = window.location.href
-    router.back()
-    setTimeout(() => {
-      if (window.location.href === urlBefore) {
-        router.push(backHref)
-      }
-    }, 150)
+    router.push(backHref)
   }
 
   return (
