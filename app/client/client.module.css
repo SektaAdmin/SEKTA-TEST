@@ -559,6 +559,12 @@
   border-color: var(--danger-border);
 }
 
+/* Плашка «Стан абонемента» знизу карточки — відступ зверху від тренера, без margin-bottom. */
+.visitTimerBottom {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
 /* Майбутнє заняття скасоване студією — danger (відрізняється від cancelled-статусу). */
 .visitTimerClassCancelled {
   color: var(--danger);

@@ -13,6 +13,14 @@ import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
+function pluralHours(n: number): string {
+  const abs = Math.abs(n)
+  const m10 = abs % 10, m100 = abs % 100
+  if (m10 === 1 && m100 !== 11) return 'година'
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'години'
+  return 'годин'
+}
+
 function hhmm(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
@@ -136,8 +144,8 @@ export default function ClientVisits({ clientId, typeLabels, sessionBalances }: 
                   <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
                 )}
                 {!c.is_cancelled && (
-                  <div className={`${styles.visitTimer} ${styles.visitTimerPast} ${balanceAfter <= 0 ? styles.visitTimerNoshow : ''}`}>
-                    Залишок після: {balanceAfter} {balanceAfter === 1 ? 'година' : balanceAfter >= 2 && balanceAfter <= 4 ? 'години' : 'годин'}
+                  <div className={`${styles.visitTimer} ${styles.visitTimerBottom} ${balanceAfter <= 0 ? styles.visitTimerNoshow : styles.visitTimerPast}`}>
+                    Стан абонемента: {balanceAfter} {pluralHours(balanceAfter)}
                   </div>
                 )}
               </Link>
