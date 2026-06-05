@@ -1,6 +1,7 @@
 'use client'
 import { useMemo } from 'react'
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
   listMyUpcomingEnrollments,
@@ -114,11 +115,16 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
                   {c.halls?.name ? ` · ${c.halls.name}` : ''}
                   {` · ${c.duration_min} хв`}
                 </div>
-                {c.trainers?.name && (
+                {c.trainers?.name ? (
                   <div className={styles.visitTrainer}>
                     <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
                     <span className={styles.visitTrainerName}>{c.trainers.name}</span>
                     <span className={styles.visitTrainerRole}>Тренер</span>
+                    <ChevronRight className={styles.visitChevron} size={16} />
+                  </div>
+                ) : (
+                  <div className={styles.visitTrainer}>
+                    <ChevronRight className={styles.visitChevron} size={16} />
                   </div>
                 )}
                 {e.status === 'waitlist' && (
@@ -148,11 +154,16 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
                   {c.halls?.name ? ` · ${c.halls.name}` : ''}
                   {` · ${c.duration_min} хв`}
                 </div>
-                {c.trainers?.name && (
+                {c.trainers?.name ? (
                   <div className={styles.visitTrainer}>
                     <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
                     <span className={styles.visitTrainerName}>{c.trainers.name}</span>
                     <span className={styles.visitTrainerRole}>Тренер</span>
+                    <ChevronRight className={styles.visitChevron} size={16} />
+                  </div>
+                ) : (
+                  <div className={styles.visitTrainer}>
+                    <ChevronRight className={styles.visitChevron} size={16} />
                   </div>
                 )}
               </Link>

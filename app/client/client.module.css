@@ -497,6 +497,7 @@
   border-radius: var(--radius);
   color: var(--text);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .visitCard:hover {
@@ -566,6 +567,13 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
+  justify-content: space-between;
+}
+
+.visitChevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+  margin-left: auto;
 }
 
 .visitTrainerAvatar {
