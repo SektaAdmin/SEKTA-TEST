@@ -60,9 +60,8 @@ export default function ClientVisits({
   initialPast,
 }: Props) {
   const balanceByType = Object.fromEntries(sessionBalances.map(b => [b.ticket_type, b.sessions_balance]))
-  const { fromISO, nowISO, nowMs } = useMemo(() => ({
+  const { fromISO, nowMs } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-    nowISO: new Date().toISOString(),
     nowMs: Date.now(),
   }), [])
 
@@ -76,8 +75,8 @@ export default function ClientVisits({
   )
 
   const { data: past } = useListQuery(
-    () => listMyPastEnrollments(supabase, clientId, nowISO),
-    [clientId, nowISO],
+    () => listMyPastEnrollments(supabase, clientId),
+    [clientId],
     { refetchOnVisible: true, initialData: initialPast }
   )
 

@@ -25,18 +25,14 @@ export default async function ClientVisitsPage() {
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  // Межі запиту мусять збігатися з тими, що порахує клієнт (useMemo у ClientVisits):
-  // upcoming — від початку сьогодні, past — до «зараз». Дрейф у кілька мс між
-  // server- і client-«зараз» на межі дня неважливий (фільтр по даті заняття).
   const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-  const nowISO = new Date().toISOString()
 
   const [{ data: typeLabels }, { data: sessionBalances }, { data: upcoming }, { data: past }] =
     await Promise.all([
       listTrainingTypeLabels(supabase),
       listMySessionBalances(supabase, client.id),
       listMyUpcomingEnrollments(supabase, client.id, fromISO),
-      listMyPastEnrollments(supabase, client.id, nowISO),
+      listMyPastEnrollments(supabase, client.id),
     ])
 
   return (

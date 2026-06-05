@@ -93,6 +93,7 @@ function myPurchasesQuery(supabase: Db, clientId: string) {
     .select(MY_PURCHASES_SELECT)
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
+    .limit(100)
 }
 
 export type MyPurchaseRow = QueryData<ReturnType<typeof myPurchasesQuery>>[number]
@@ -110,26 +111,24 @@ export async function listMyPurchases(
 const MY_PAST_SELECT =
   'id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))' as const
 
-function myPastEnrollmentsQuery(supabase: Db, clientId: string, beforeISO: string) {
+function myPastEnrollmentsQuery(supabase: Db, clientId: string) {
   return supabase
     .from('enrollments')
     .select(MY_PAST_SELECT)
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
-    .lt('classes.starts_at', beforeISO)
     .order('starts_at', { referencedTable: 'classes', ascending: false })
     .limit(50)
 }
 
 export type MyPastEnrollmentRow = QueryData<ReturnType<typeof myPastEnrollmentsQuery>>[number]
 
-/** Архів записів клієнта (минулі заняття, усі завершені статуси), новіші зверху, останні 100. */
+/** Архів записів клієнта (минулі заняття, усі завершені статуси), новіші зверху, останні 50. */
 export async function listMyPastEnrollments(
   supabase: Db,
-  clientId: string,
-  beforeISO: string
+  clientId: string
 ): Promise<{ data: MyPastEnrollmentRow[]; error: string | null }> {
-  const { data, error } = await myPastEnrollmentsQuery(supabase, clientId, beforeISO)
+  const { data, error } = await myPastEnrollmentsQuery(supabase, clientId)
   return { data: data ?? [], error: error?.message ?? null }
 }
 
