@@ -145,7 +145,7 @@ export default function ClientVisits({ clientId, typeLabels, sessionBalances }: 
                 )}
                 {!c.is_cancelled && (
                   <div className={`${styles.visitTimer} ${styles.visitTimerBottom} ${balanceAfter <= 0 ? styles.visitTimerNoshow : styles.visitTimerPast}`}>
-                    Стан абонемента: {balanceAfter} {pluralHours(balanceAfter)}
+                    Стан абонемента після тренування: {balanceAfter} {pluralHours(balanceAfter)}
                   </div>
                 )}
               </Link>
