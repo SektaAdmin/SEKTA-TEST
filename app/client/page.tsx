@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
 import { getMyClient, getMyContacts } from '@/lib/queries/client-cabinet-data'
+import { STUDIO } from '@/lib/studio'
 import CabinetHeader from '@/components/CabinetHeader'
 import ClientHome from './ClientHome'
 import styles from './client.module.css'
@@ -21,7 +22,7 @@ export default async function ClientCabinetPage() {
   if (!client) {
     return (
       <>
-        <CabinetHeader title="Особистий кабінет" />
+        <CabinetHeader title="Особистий кабінет" address={STUDIO.address} />
         <div className={styles.scroll}>
           <p className={styles.empty}>Кабінет не привʼязано до картки клієнта. Зверніться до адміністратора.</p>
         </div>
@@ -34,7 +35,7 @@ export default async function ClientCabinetPage() {
 
   return (
     <>
-      <CabinetHeader title={name || 'Особистий кабінет'} subtitle="Особистий кабінет" />
+      <CabinetHeader title="Особистий кабінет" address={STUDIO.address} />
       <div className={styles.scroll}>
         <ClientHome name={name} email={user.email ?? null} contacts={contacts} />
       </div>

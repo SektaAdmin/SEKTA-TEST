@@ -6,17 +6,21 @@ import { LogoutIcon } from './icons/navigation'
 import styles from './CabinetHeader.module.css'
 
 /**
- * Шапка особистого кабінету (тренер/клієнт): назва + кнопка виходу.
- * `backHref` — якщо задано, зліва зʼявляється кнопка «‹ назад» (для під-екранів
- * кабінету: /client/visits, /client/subscriptions, деталі запису).
+ * Шапка особистого кабінету (тренер/клієнт).
+ * - Головна (без backHref): лого SEKTA + опційний `address` (адреса студії) +
+ *   `title`/`subtitle`.
+ * - Під-екран (з backHref): кнопка «‹ назад» + `title` (назва екрана), без лого
+ *   й адреси (як у референсі Altegio).
  */
 export default function CabinetHeader({
   title,
   subtitle,
+  address,
   backHref,
 }: {
   title: string
   subtitle?: string
+  address?: string
   backHref?: string
 }) {
   const router = useRouter()
@@ -39,8 +43,9 @@ export default function CabinetHeader({
           </Link>
         )}
         <div>
-          <div className={styles.logo}>SEKTA</div>
+          {!backHref && <div className={styles.logo}>SEKTA</div>}
           <h1 className={styles.title}>{title}</h1>
+          {address && <p className={styles.address}>{address}</p>}
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
       </div>
