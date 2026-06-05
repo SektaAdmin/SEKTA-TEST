@@ -718,17 +718,16 @@
 }
 
 .detailMap {
-  display: block;
   margin-top: 12px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   border: 1px solid var(--border);
 }
 
-.detailMap img {
+.detailMap iframe {
   display: block;
   width: 100%;
-  height: auto;
+  height: 240px;
 }
 
 .contactRow {

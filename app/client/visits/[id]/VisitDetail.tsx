@@ -37,10 +37,6 @@ function googleCalendarUrl(title: string, startISO: string, durationMin: number,
   return `https://calendar.google.com/calendar/render?${p.toString()}`
 }
 
-// Статична карта OSM за координатами (без API key).
-function staticMapUrl(lat: number, lng: number): string {
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x240&markers=${lat},${lng},red-pushpin`
-}
 
 type Props = {
   enrollment: MyEnrollmentDetailRow
@@ -153,10 +149,18 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
           <span className={styles.detailRowMain}>{STUDIO.name}</span>
         </div>
         <div className={styles.detailRowSub}>{STUDIO.address}</div>
-        <a className={styles.detailMap} href={STUDIO.mapsUrl} target="_blank" rel="noopener noreferrer">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={staticMapUrl(STUDIO.lat, STUDIO.lng)} alt="Карта студії" loading="lazy" />
-        </a>
+        <div className={styles.detailMap}>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d563.929085849513!2d35.04347147941503!3d48.46453316770994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40dbe2e70d6686bb%3A0x9492dd4a63962314!2z0JHRg9C00LjQvdC-0Log0L_QvtCx0YPRgtGD!5e0!3m2!1suk!2sua!4v1780650402076!5m2!1suk!2sua"
+            width="600"
+            height="240"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Карта студії SEKTA"
+          />
+        </div>
       </section>
 
       {/* Контакти */}
