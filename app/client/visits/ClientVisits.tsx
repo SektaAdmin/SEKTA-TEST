@@ -7,6 +7,7 @@ import {
   listMyUpcomingEnrollments,
   listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
+import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
 import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
@@ -67,9 +68,17 @@ type Props = {
   clientId: string
   typeLabels: Record<string, string>
   sessionBalances: { ticket_type: string; sessions_balance: number }[]
+  initialUpcoming: MyEnrollmentRow[]
+  initialPast: MyPastEnrollmentRow[]
 }
 
-export default function ClientVisits({ clientId, typeLabels, sessionBalances }: Props) {
+export default function ClientVisits({
+  clientId,
+  typeLabels,
+  sessionBalances,
+  initialUpcoming,
+  initialPast,
+}: Props) {
   const balanceByType = Object.fromEntries(sessionBalances.map(b => [b.ticket_type, b.sessions_balance]))
   const { fromISO, nowISO, nowMs } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
@@ -77,16 +86,19 @@ export default function ClientVisits({ clientId, typeLabels, sessionBalances }: 
     nowMs: Date.now(),
   }), [])
 
+  // Дані прийшли зі сервера (initialData) — без realtime, без дубль-запиту при
+  // монтуванні. Свіжість — через refetchOnVisible (повернення до екрана після
+  // чату з адміном). Клієнт кабінету бачить лише свої дані, що змінює адмін.
   const { data: upcoming } = useListQuery(
     () => listMyUpcomingEnrollments(supabase, clientId, fromISO),
     [clientId, fromISO],
-    { realtime: ['enrollments', 'classes'], refetchOnVisible: true }
+    { refetchOnVisible: true, initialData: initialUpcoming }
   )
 
   const { data: past } = useListQuery(
     () => listMyPastEnrollments(supabase, clientId, nowISO),
     [clientId, nowISO],
-    { realtime: ['enrollments', 'classes'] }
+    { refetchOnVisible: true, initialData: initialPast }
   )
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)

@@ -1,7 +1,11 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
-import { getMyClient } from '@/lib/queries/client-cabinet-data'
+import {
+  getMyClient,
+  listMySessionBalances,
+  listMyPurchases,
+} from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import CabinetHeader from '@/components/CabinetHeader'
 import ClientSubscriptions from './ClientSubscriptions'
@@ -20,7 +24,11 @@ export default async function ClientSubscriptionsPage() {
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  const { data: typeLabels } = await listTrainingTypeLabels(supabase)
+  const [{ data: typeLabels }, { data: sessions }, { data: purchases }] = await Promise.all([
+    listTrainingTypeLabels(supabase),
+    listMySessionBalances(supabase, client.id),
+    listMyPurchases(supabase, client.id),
+  ])
 
   return (
     <>
@@ -31,6 +39,8 @@ export default async function ClientSubscriptionsPage() {
           userId={user.id}
           initialBalance={client.balance}
           typeLabels={typeLabels}
+          initialSessions={sessions}
+          initialPurchases={purchases}
         />
       </div>
     </>

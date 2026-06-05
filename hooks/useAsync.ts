@@ -12,6 +12,10 @@ import { useRealtime } from '@/lib/useRealtime'
  * fetcher замикає актуальні deps і повертає `{ data, error }`. `data` лишається
  * `null` поки не прийшла перша успішна відповідь.
  *
+ * `initialData` — server-prefetch: стартує з ними без loading і пропускає перший
+ * fetch (дані вже в HTML). `refetchOnVisible` — перепідтягнути при поверненні до
+ * екрана (visibilitychange). Обидва — як у `useListQuery`.
+ *
  * @example
  *   const { data: t, loading, error } = useAsync(
  *     () => getMoneyTotalsForDate(supabase, date),
@@ -22,16 +26,20 @@ import { useRealtime } from '@/lib/useRealtime'
 export function useAsync<T>(
   fetcher: (signal: AbortSignal) => Promise<{ data: T; error: string | null }>,
   deps: React.DependencyList,
-  opts: { realtime?: string[] } = {}
+  opts: { realtime?: string[]; refetchOnVisible?: boolean; initialData?: T } = {}
 ) {
-  const { realtime } = opts
+  const { realtime, refetchOnVisible, initialData } = opts
 
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<T | null>(initialData ?? null)
+  // Є initialData (server-prefetch) — стартуємо без loading і пропускаємо
+  // перший fetch: дані вже в HTML. Аналогічно useListQuery.
+  const [loading, setLoading] = useState(initialData === undefined)
   const [error, setError] = useState<string | null>(null)
 
   const fetcherRef = useRef(fetcher)
   fetcherRef.current = fetcher
+
+  const skipNextFetchRef = useRef(initialData !== undefined)
 
   const run = useCallback(async (signal: AbortSignal) => {
     setLoading(true)
@@ -48,6 +56,10 @@ export function useAsync<T>(
   }, [])
 
   useEffect(() => {
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false
+      return
+    }
     const controller = new AbortController()
     run(controller.signal)
     return () => controller.abort()
@@ -57,6 +69,15 @@ export function useAsync<T>(
   const refetch = useCallback(() => {
     run(new AbortController().signal)
   }, [run])
+
+  useEffect(() => {
+    if (!refetchOnVisible) return
+    function onVisible() {
+      if (document.visibilityState === 'visible') refetch()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [refetchOnVisible, refetch])
 
   useRealtime(realtime ?? [], refetch)
 

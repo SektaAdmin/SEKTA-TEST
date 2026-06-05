@@ -17,6 +17,11 @@ import { useRealtime } from '@/lib/useRealtime'
  * `deps` — як для useEffect: при зміні буде новий fetch (старий — abort).
  * `total` = `count` з останньої відповіді (0, якщо fetcher його не повертає).
  *
+ * `initialData` — server-prefetch (дані, передані зі Server Component як проп):
+ * хук стартує з ними БЕЗ loading і пропускає перший fetch при монтуванні (дані
+ * вже в HTML — нема дубль-запиту). Наступні зміни deps / refetch / visible
+ * фетчать як зазвичай. Без опції — поведінка незмінна (loading=true + fetch).
+ *
  * @example
  *   const { data: sales, total, loading, error, refetch } = useListQuery(
  *     () => listSales(supabase, { page, pageSize, search, dateFrom, dateTo, trainerId }),
@@ -27,19 +32,25 @@ import { useRealtime } from '@/lib/useRealtime'
 export function useListQuery<T>(
   fetcher: (signal: AbortSignal) => Promise<{ data: T[]; count?: number; error: string | null }>,
   deps: React.DependencyList,
-  opts: { realtime?: string[]; refetchOnVisible?: boolean } = {}
+  opts: { realtime?: string[]; refetchOnVisible?: boolean; initialData?: T[] } = {}
 ) {
-  const { realtime, refetchOnVisible } = opts
+  const { realtime, refetchOnVisible, initialData } = opts
 
-  const [data, setData] = useState<T[]>([])
+  const [data, setData] = useState<T[]>(initialData ?? [])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
+  // Якщо є initialData (server-prefetch) — стартуємо без loading і без fetch
+  // при монтуванні: дані вже в HTML. Перший fetch — лише по deps-зміні/refetch.
+  const [loading, setLoading] = useState(initialData === undefined)
   const [error, setError] = useState<string | null>(null)
 
   // Тримаємо актуальний fetcher у ref, щоб refetch/listeners не залежали від
   // його ідентичності — інакше кожен рендер пересоздавав би підписки.
   const fetcherRef = useRef(fetcher)
   fetcherRef.current = fetcher
+
+  // Пропускаємо лише ПЕРШИЙ ефект, коли є initialData (дані вже є). Наступні
+  // зміни deps мусять фетчити. Ref, а не state — щоб не тригерити ре-рендер.
+  const skipNextFetchRef = useRef(initialData !== undefined)
 
   const run = useCallback(async (signal: AbortSignal) => {
     setLoading(true)
@@ -56,6 +67,10 @@ export function useListQuery<T>(
   }, [])
 
   useEffect(() => {
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false
+      return
+    }
     const controller = new AbortController()
     run(controller.signal)
     return () => controller.abort()

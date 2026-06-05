@@ -63,26 +63,41 @@ type Props = {
   userId: string
   initialBalance: number
   typeLabels: Record<string, string>
+  initialSessions: { ticket_type: string; sessions_balance: number }[]
+  initialPurchases: MyPurchaseRow[]
 }
 
-export default function ClientSubscriptions({ clientId, userId, initialBalance, typeLabels }: Props) {
-  const { data: client } = useAsync(
-    () => getMyClient(supabase, userId),
+export default function ClientSubscriptions({
+  clientId,
+  userId,
+  initialBalance,
+  typeLabels,
+  initialSessions,
+  initialPurchases,
+}: Props) {
+  // Усе прийшло зі сервера (initialData) — без realtime, без дубль-запиту.
+  // Свіжість балансу/покупок — через refetchOnVisible (повернення з чату з
+  // адміном, який списав заняття / провів продаж).
+  const { data: balanceData } = useAsync(
+    async () => {
+      const { data, error } = await getMyClient(supabase, userId)
+      return { data: data ? { balance: data.balance } : null, error }
+    },
     [userId],
-    { realtime: ['clients', 'balance_transactions'] }
+    { refetchOnVisible: true, initialData: { balance: initialBalance } }
   )
-  const balance = client?.balance ?? initialBalance
+  const balance = balanceData?.balance ?? initialBalance
 
   const { data: sessions } = useListQuery(
     () => listMySessionBalances(supabase, clientId),
     [clientId],
-    { realtime: ['client_session_balances'] }
+    { refetchOnVisible: true, initialData: initialSessions }
   )
 
   const { data: purchases } = useListQuery(
     () => listMyPurchases(supabase, clientId),
     [clientId],
-    { realtime: ['sales'] }
+    { refetchOnVisible: true, initialData: initialPurchases }
   )
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)

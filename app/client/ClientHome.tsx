@@ -43,12 +43,13 @@ export default function ClientHome({ name, email, contacts }: Props) {
       <p className={styles.profileHintHome}>Щоб змінити дані, зверніться до адміністрації студії.</p>
 
       <nav className={styles.menu}>
-        <Link href="/client/visits" className={styles.menuItem}>
+        {/* prefetch — Next тягне роут заздалегідь, тап відкривається миттєво. */}
+        <Link href="/client/visits" prefetch className={styles.menuItem}>
           <span className={styles.menuIcon}><ScheduleIcon /></span>
           <span className={styles.menuLabel}>Мої візити</span>
           <ArrowRightIcon className={styles.menuArrow} />
         </Link>
-        <Link href="/client/subscriptions" className={styles.menuItem}>
+        <Link href="/client/subscriptions" prefetch className={styles.menuItem}>
           <span className={styles.menuIcon}><SalesIcon /></span>
           <span className={styles.menuLabel}>Абонементи</span>
           <ArrowRightIcon className={styles.menuArrow} />
