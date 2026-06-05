@@ -22,17 +22,25 @@ export default async function VisitDetailPage({ params }: { params: { id: string
   const role = roleFromUser(user)
   if (role === 'trainer') redirect('/trainer')
 
+  // typeLabels ні від чого не залежить — стартуємо одразу, паралельно всьому.
+  const typeLabelsP = listTrainingTypeLabels(supabase)
+
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  const { data: enrollment } = await getMyEnrollmentDetail(supabase, client.id, params.id)
+  // enrollment і sessionBalances залежать лише від client.id (не один від
+  // одного) — тягнемо паралельно, а не послідовно.
+  const [{ data: enrollment }, { data: sessionBalances }] = await Promise.all([
+    getMyEnrollmentDetail(supabase, client.id, params.id),
+    listMySessionBalances(supabase, client.id),
+  ])
   if (!enrollment) notFound()
 
   const ticketType = enrollment.classes.ticket_type
-  const [{ data: basePrice }, { data: sessionBalances }, { data: typeLabels }] = await Promise.all([
+  // basePrice залежить від ticketType (відомий лише після enrollment) — останнім.
+  const [{ data: basePrice }, { data: typeLabels }] = await Promise.all([
     getBaseTicketPrice(supabase, ticketType),
-    listMySessionBalances(supabase, client.id),
-    listTrainingTypeLabels(supabase),
+    typeLabelsP,
   ])
 
   const sessionBalance = sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0

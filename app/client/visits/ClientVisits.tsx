@@ -130,7 +130,7 @@ export default function ClientVisits({
             const currentBalance = balanceByType[c.ticket_type] ?? 0
             const balanceAfter = currentBalance - cost
             return (
-              <Link key={e.id} href={`/client/visits/${e.id}`} className={styles.visitCard}>
+              <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
                   {c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
                 </div>
@@ -174,7 +174,7 @@ export default function ClientVisits({
           {pastSorted.map(e => {
             const c = e.classes!
             return (
-              <Link key={e.id} href={`/client/visits/${e.id}`} className={styles.visitCard}>
+              <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
                 <div className={`${styles.visitTimer} ${pastTimerClass(e.status)}`}>
                   {enrollmentStatusLabel(e.status)}
                 </div>
