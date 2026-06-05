@@ -4,6 +4,8 @@ import styles from './client.module.css'
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
+  // Android Chrome читає themeColor в реальному часі (маніфест — лише при встановленні)
+  themeColor: '#0a0a0a',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
