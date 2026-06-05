@@ -20,7 +20,7 @@ function hhmm(d: Date): string {
 function fullWhen(startISO: string, durationMin: number): string {
   const start = new Date(startISO)
   const end = new Date(start.getTime() + durationMin * 60000)
-  const dow = DOW_LABELS_FULL[start.getDay()].toLowerCase()
+  const dow = DOW_LABELS_FULL[start.getDay()]
   return `${dow}, ${start.getDate()} ${MONTHS_UK_GENITIVE[start.getMonth()]}, ${hhmm(start)} – ${hhmm(end)}`
 }
 

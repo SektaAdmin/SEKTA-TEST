@@ -24,7 +24,7 @@ export default async function ClientVisitsPage() {
 
   return (
     <>
-      <CabinetHeader title="Мої візити" backHref="/client" />
+      <CabinetHeader title="Мої візити" backHref="/client" hideLogout />
       <div className={styles.scroll}>
         <ClientVisits clientId={client.id} typeLabels={typeLabels} />
       </div>

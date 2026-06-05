@@ -40,7 +40,7 @@ export default async function VisitDetailPage({ params }: { params: { id: string
 
   return (
     <>
-      <CabinetHeader title={isPast ? 'Минулий запис' : 'Майбутній запис'} backHref="/client/visits" />
+      <CabinetHeader title={isPast ? 'Минулий запис' : 'Майбутній запис'} backHref="/client/visits" hideLogout />
       <div className={styles.scroll}>
         <VisitDetail
           enrollment={enrollment}

@@ -10,7 +10,7 @@
 
 .left {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   min-width: 0;
 }
@@ -22,7 +22,6 @@
   flex-shrink: 0;
   width: var(--control-h);
   height: var(--control-h);
-  margin-top: 2px;
   color: var(--text-2);
   background: var(--bg-2);
   border: 1px solid var(--border);

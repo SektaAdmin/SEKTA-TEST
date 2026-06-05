@@ -101,7 +101,12 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
                 onClick={handleCancel}
                 disabled={cancelling}
               >
-                <span className={styles.detailActionIcon}>✕</span>
+                <span className={styles.detailActionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4">
+                    <line x1="5" y1="5" x2="15" y2="15"/>
+                    <line x1="15" y1="5" x2="5" y2="15"/>
+                  </svg>
+                </span>
                 <span>{cancelling ? '…' : 'Скасувати запис'}</span>
               </button>
             )}
@@ -112,7 +117,15 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className={styles.detailActionIcon}>📅</span>
+                <span className={styles.detailActionIcon}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4">
+                    <rect x="3" y="4" width="14" height="13" rx="2"/>
+                    <line x1="3" y1="8" x2="17" y2="8"/>
+                    <line x1="7" y1="2" x2="7" y2="5.5"/>
+                    <line x1="13" y1="2" x2="13" y2="5.5"/>
+                    <line x1="7" y1="12" x2="13" y2="12"/>
+                  </svg>
+                </span>
                 <span>Додати до Google-календаря</span>
               </a>
             )}

@@ -24,7 +24,7 @@ export default async function ClientSubscriptionsPage() {
 
   return (
     <>
-      <CabinetHeader title="Абонементи" backHref="/client" />
+      <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
       <div className={styles.scroll}>
         <ClientSubscriptions
           clientId={client.id}
