@@ -8,6 +8,7 @@ import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
 import { formatMoney } from '@/lib/formatters'
 import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { ChevronRight } from 'lucide-react'
 import { STUDIO, STUDIO_TELEGRAM_URL, STUDIO_INSTAGRAM_URL } from '@/lib/studio'
 import { MSG } from '@/lib/messages'
 import styles from '../../client.module.css'
@@ -182,10 +183,12 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
         <a className={styles.contactRow} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
           <span className={styles.contactLabel}>Telegram</span>
           <span className={styles.contactValue}>{STUDIO.telegram}</span>
+          <ChevronRight size={16} className={styles.visitChevron} />
         </a>
         <a className={styles.contactRow} href={STUDIO_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
           <span className={styles.contactLabel}>Instagram</span>
           <span className={styles.contactValue}>{STUDIO.instagram}</span>
+          <ChevronRight size={16} className={styles.visitChevron} />
         </a>
       </section>
     </>
