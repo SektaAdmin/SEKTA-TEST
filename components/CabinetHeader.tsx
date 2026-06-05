@@ -28,7 +28,10 @@ export default function CabinetHeader({
 
   function handleBack() {
     if (!backHref) return
-    router.push(backHref)
+    // Назад через історію браузера — миттєво з кешу (без нового SSR).
+    // Якщо історії нема (прямий захід/перезавантаження в PWA) — fallback на backHref.
+    if (window.history.length > 1) router.back()
+    else router.push(backHref)
   }
 
   return (

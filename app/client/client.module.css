@@ -31,6 +31,37 @@
   text-align: center;
 }
 
+/* ── Скелетони завантаження (loading.tsx) ────────────────────────────
+   Показуються миттєво при кліку, поки SSR-сторінка рахує дані. Форма
+   повторює реальні картки (.profileCard/.menuItem/.visitCard), щоб не було
+   стрибка layout при підміні на справжній контент. */
+.skel {
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+  animation: skelPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes skelPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+}
+
+.skelBlock {
+  height: 56px;
+  margin-bottom: 10px;
+  border-radius: var(--radius);
+}
+
+.skelCard {
+  height: 96px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+}
+
 /* ── Hero «Наступне заняття» (перший fold) ──────────────────────────
    Та сама картка, що у списках (.item), щоб не було стилістичного розбою.
    Виділення «героя» — лейбл зверху + тонка ліва акцентна смуга на .item. */
