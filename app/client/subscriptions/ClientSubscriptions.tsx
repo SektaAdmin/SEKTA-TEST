@@ -13,16 +13,42 @@ import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentC
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
-// Опис рядка sales: покупка абонемента (з тікетом) АБО депозитна операція
-// (ticket_id=null: +amount_given поповнення / −price_paid списання). Snapshot інв. #5.
-function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): { title: string; amount: number; sign: '' | '+' | '−' } {
-  if (p.ticket_id) {
-    return { title: p.ticket_name ?? typeLabel(p.ticket_type ?? ''), amount: p.price_paid, sign: '' }
+type SaleDesc = {
+  title: string
+  // null = не показувати суму у шапці (повна оплата з депозиту)
+  amount: number | null
+  // депозитний рядок знизу: null = не показувати
+  deposit: { label: string; amount: number; sign: '+' | '−' } | null
+  // для депозитних операцій без тікета
+  sign: '' | '+' | '−'
+}
+
+function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleDesc {
+  // Депозитна операція без абонемента (ticket_id=null)
+  if (!p.ticket_id) {
+    if (p.amount_given > 0) {
+      return { title: 'Поповнення депозиту', amount: p.amount_given, sign: '+', deposit: null }
+    }
+    return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−', deposit: null }
   }
-  if (p.amount_given > 0) {
-    return { title: 'Поповнення депозиту', amount: p.amount_given, sign: '+' }
+
+  const title = p.ticket_name ?? typeLabel(p.ticket_type ?? '')
+  const diff = p.amount_given - p.price_paid
+
+  // Повна оплата з депозиту (amount_given=0)
+  if (p.amount_given === 0) {
+    return { title, amount: null, sign: '', deposit: { label: 'З депозиту', amount: p.price_paid, sign: '−' } }
   }
-  return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−' }
+  // Решта пішла на депозит
+  if (diff > 0) {
+    return { title, amount: p.price_paid, sign: '', deposit: { label: 'Решта на депозит', amount: diff, sign: '+' } }
+  }
+  // Часткова оплата з депозиту (amount_given < price_paid)
+  if (diff < 0) {
+    return { title, amount: p.price_paid, sign: '', deposit: { label: 'З депозиту', amount: -diff, sign: '−' } }
+  }
+  // Звичайна покупка
+  return { title, amount: p.price_paid, sign: '', deposit: null }
 }
 
 // Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
@@ -83,23 +109,35 @@ export default function ClientSubscriptions({ clientId, userId, initialBalance, 
       ) : (
         <ul className={styles.txList}>
           {purchases.map(p => {
-            const { title, amount, sign } = describeSale(p, typeLabel)
+            const { title, amount, sign, deposit } = describeSale(p, typeLabel)
             return (
               <li key={p.id} className={styles.txItem}>
-                <div className={styles.txMain}>
-                  <div className={styles.txTitle}>{title}</div>
-                  <div className={styles.txMeta}>
-                    {formatDate(p.created_at)}
-                    {p.payment_method && (
-                      <span className={paymentClass(p.payment_method)}>
-                        {paymentLabel(p.payment_method)}
-                      </span>
-                    )}
+                <div className={styles.txItemMain}>
+                  <div className={styles.txMain}>
+                    <div className={styles.txTitle}>{title}</div>
+                    <div className={styles.txMeta}>
+                      {formatDate(p.created_at)}
+                      {p.payment_method && (
+                        <span className={paymentClass(p.payment_method)}>
+                          {paymentLabel(p.payment_method)}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {amount !== null && (
+                    <span className={`${styles.amountBadge} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : styles.amountNeutral}`}>
+                      {sign}{formatMoney(amount)}
+                    </span>
+                  )}
                 </div>
-                <span className={`${styles.amountBadge} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : styles.amountNeutral}`}>
-                  {sign}{formatMoney(amount)}
-                </span>
+                {deposit && (
+                  <div className={styles.txDepositRow}>
+                    <span>{deposit.label}</span>
+                    <span className={`${styles.amountBadge} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
+                      {deposit.sign}{formatMoney(deposit.amount)}
+                    </span>
+                  </div>
+                )}
               </li>
             )
           })}
