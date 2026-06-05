@@ -13,12 +13,15 @@ const withPWA = require('@ducanh2912/next-pwa').default({
     // HTML-сторінки: спочатку мережа, fallback кеш (до 10 сторінок, 24 год)
     runtimeCaching: [
       {
+        // HTML сторінок кабінету: StaleWhileRevalidate — перший раз після встановлення
+        // іде в мережу (один раз), всі наступні відкриття — з кешу миттєво (~5ms),
+        // паралельно SW оновлює кеш у фоні. refetchOnVisible у компонентах забезпечує
+        // свіжість даних щоразу як клієнт повертається до кабінету.
         urlPattern: /^https:\/\/[^/]+\/client(\/.*)?$/,
-        handler: 'NetworkFirst',
+        handler: 'StaleWhileRevalidate',
         options: {
           cacheName: 'sekta-client-pages',
           expiration: { maxEntries: 10, maxAgeSeconds: 24 * 60 * 60 },
-          networkTimeoutSeconds: 3,
         },
       },
       {
