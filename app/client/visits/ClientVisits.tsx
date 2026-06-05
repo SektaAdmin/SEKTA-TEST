@@ -58,9 +58,11 @@ function pastTimerClass(status: string): string {
 type Props = {
   clientId: string
   typeLabels: Record<string, string>
+  sessionBalances: { ticket_type: string; sessions_balance: number }[]
 }
 
-export default function ClientVisits({ clientId, typeLabels }: Props) {
+export default function ClientVisits({ clientId, typeLabels, sessionBalances }: Props) {
+  const balanceByType = Object.fromEntries(sessionBalances.map(b => [b.ticket_type, b.sessions_balance]))
   const { fromISO, nowISO, nowMs } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
     nowISO: new Date().toISOString(),
@@ -104,6 +106,9 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
         <div className={styles.visitList}>
           {upcomingSorted.map(e => {
             const c = e.classes!
+            const cost = e.hours_attended?.length ?? 1
+            const currentBalance = balanceByType[c.ticket_type] ?? 0
+            const balanceAfter = currentBalance - cost
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} className={styles.visitCard}>
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
@@ -129,6 +134,11 @@ export default function ClientVisits({ clientId, typeLabels }: Props) {
                 )}
                 {e.status === 'waitlist' && (
                   <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
+                )}
+                {!c.is_cancelled && (
+                  <div className={`${styles.visitTimer} ${styles.visitTimerPast} ${balanceAfter <= 0 ? styles.visitTimerNoshow : ''}`}>
+                    Залишок після: {balanceAfter} {balanceAfter === 1 ? 'година' : balanceAfter >= 2 && balanceAfter <= 4 ? 'години' : 'годин'}
+                  </div>
                 )}
               </Link>
             )

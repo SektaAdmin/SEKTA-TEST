@@ -56,7 +56,7 @@ export async function listMySessionBalances(
 }
 
 const MY_ENROLLMENTS_SELECT =
-  'id, status, class_id, classes(id, ticket_type, title, starts_at, duration_min, is_cancelled, trainers(name), halls(name))' as const
+  'id, status, class_id, hours_attended, classes(id, ticket_type, title, starts_at, duration_min, is_cancelled, trainers(name), halls(name))' as const
 
 function myUpcomingEnrollmentsQuery(supabase: Db, clientId: string, fromISO: string) {
   return supabase
