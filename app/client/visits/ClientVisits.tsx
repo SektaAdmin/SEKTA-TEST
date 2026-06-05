@@ -10,29 +10,9 @@ import {
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
 import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
-import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
-
-function pluralHours(n: number): string {
-  const abs = Math.abs(n)
-  const m10 = abs % 10, m100 = abs % 100
-  if (m10 === 1 && m100 !== 11) return 'година'
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'години'
-  return 'годин'
-}
-
-function hhmm(d: Date): string {
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
-// «пʼятниця, 5 червня, 14:00 – 15:00» — повна дата + діапазон часу.
-function fullWhen(startISO: string, durationMin: number): string {
-  const start = new Date(startISO)
-  const end = new Date(start.getTime() + durationMin * 60000)
-  const dow = DOW_LABELS_FULL[start.getDay()]
-  return `${dow}, ${start.getDate()} ${MONTHS_UK_GENITIVE[start.getMonth()]}, ${hhmm(start)} – ${hhmm(end)}`
-}
 
 // «Через 3 години 43 хвилини» / «Через 12 хвилин» / «Зараз».
 function timeUntil(startISO: string, nowMs: number): string {

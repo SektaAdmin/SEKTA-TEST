@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { LogoutIcon } from './icons/navigation'
 import styles from './CabinetHeader.module.css'
 
@@ -26,13 +26,6 @@ export default function CabinetHeader({
 }) {
   const router = useRouter()
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
-
   // «Назад» — нативна історія (миттєво з клієнт-кешу роутера), а не Link на
   // backHref (той рендерив би force-dynamic-сторінку з нуля на сервері). Якщо
   // історії в межах застосунку немає (прямий захід/закладка/refresh) — fallback
@@ -55,7 +48,7 @@ export default function CabinetHeader({
       <div className={styles.left}>
         {backHref && (
           <button type="button" onClick={handleBack} className={styles.back} aria-label="Назад">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" focusable="false">
               <path d="M12.5 4 7 10l5.5 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -68,7 +61,7 @@ export default function CabinetHeader({
         </div>
       </div>
       {!hideLogout && (
-        <button type="button" className={styles.logout} onClick={handleLogout} aria-label="Вийти">
+        <button type="button" className={styles.logout} onClick={() => signOutAndRedirect(router)} aria-label="Вийти">
           <LogoutIcon />
           <span>Вийти</span>
         </button>

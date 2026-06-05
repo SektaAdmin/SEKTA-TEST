@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { ScheduleIcon, SalesIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
 import StudioContactIcons from '@/components/StudioContactIcons'
 import styles from './client.module.css'
@@ -22,13 +22,6 @@ type Props = {
 export default function ClientHome({ name, email, contacts }: Props) {
   const router = useRouter()
   const initial = (name.trim()[0] || '?').toUpperCase()
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
 
   return (
     <>
@@ -54,7 +47,7 @@ export default function ClientHome({ name, email, contacts }: Props) {
           <span className={styles.menuLabel}>Абонементи</span>
           <ArrowRightIcon className={styles.menuArrow} />
         </Link>
-        <button type="button" className={`${styles.menuItem} ${styles.menuLogout}`} onClick={handleLogout}>
+        <button type="button" className={`${styles.menuItem} ${styles.menuLogout}`} onClick={() => signOutAndRedirect(router)}>
           <span className={styles.menuIcon}><LogoutIcon /></span>
           <span className={styles.menuLabel}>Вийти</span>
         </button>

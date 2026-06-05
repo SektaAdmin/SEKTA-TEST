@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { useRole } from '@/hooks/useRole'
 import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
@@ -48,13 +48,6 @@ export default function Sidebar() {
   const isInSalary = pathname.startsWith('/settings/salary')
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
   const [salaryOpen, setSalaryOpen] = useState(isInSalary)
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
 
   return (
     <aside className={styles.sidebar}>
@@ -139,7 +132,7 @@ export default function Sidebar() {
           </ul>
         )}
       </nav>
-      <button type="button" className={styles.logout} onClick={handleLogout} aria-label="Вийти з системи">
+      <button type="button" className={styles.logout} onClick={() => signOutAndRedirect(router)} aria-label="Вийти з системи">
         <LogoutIcon />
         Вийти
       </button>

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { useRole } from '@/hooks/useRole'
 import styles from './BottomNav.module.css'
 
@@ -60,13 +60,6 @@ export default function BottomNav() {
     ? moreNav
     : moreNav.filter(item => !ownerOnlyMore.includes(item.href))
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
-
   function isActive(href: string) {
     if (href === '/schedule') return pathname === href
     return pathname.startsWith(href)
@@ -91,7 +84,7 @@ export default function BottomNav() {
               </Link>
             ))}
             <div className={styles.drawerDivider} />
-            <button className={styles.drawerLogout} onClick={handleLogout}>
+            <button className={styles.drawerLogout} onClick={() => signOutAndRedirect(router)}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
                 <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3"/>
                 <polyline points="11,11 14,8 11,5"/>

@@ -32,7 +32,7 @@ export default function StudioContactIcons({
           openInApp(STUDIO_TELEGRAM_APP_URL, STUDIO_TELEGRAM_URL)
         }}
       >
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.3">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true" focusable="false">
           <circle cx="22" cy="22" r="19" />
           <path d="M9 21.5 Q9 21.5 28.5 13.5 Q31 12.5 30.5 14.5 L27 30 Q26.7 31.3 25.3 30.7 L20.5 27 L18 29.5 Q17.5 30 17 29 L15.5 24 Z" strokeLinejoin="round" strokeLinecap="round" />
           <line x1="17" y1="29" x2="20.5" y2="27" strokeLinecap="round" />
@@ -50,7 +50,7 @@ export default function StudioContactIcons({
           openInApp(STUDIO_INSTAGRAM_APP_URL, STUDIO_INSTAGRAM_URL)
         }}
       >
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true" focusable="false">
           <circle cx="22" cy="22" r="19" />
           <rect x="14" y="14" width="16" height="16" rx="4.5" strokeWidth="1.4" />
           <circle cx="22" cy="22" r="4" strokeWidth="1.4" />
