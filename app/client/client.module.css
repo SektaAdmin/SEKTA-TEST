@@ -469,6 +469,110 @@
   color: var(--danger);
 }
 
+/* ── Екран «Мої візити» (картки візитів) ────────────────────────── */
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 24px 0 12px;
+}
+
+.sectionLabel:first-child {
+  margin-top: 4px;
+}
+
+.visitList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visitCard {
+  display: block;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.visitCard:hover {
+  border-color: var(--border-hover);
+}
+
+/* Бейдж-таймер на всю ширину зверху картки (майбутні — зелений). */
+.visitTimer {
+  display: block;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  color: var(--success);
+  background: var(--success-dim);
+  border: 1px solid var(--success-border);
+}
+
+.visitTimerPast {
+  color: var(--text-2);
+  background: var(--bg-3);
+  border-color: var(--border);
+}
+
+.visitTimerCancelled {
+  color: var(--danger);
+  background: var(--danger-dim);
+  border-color: var(--danger-border);
+}
+
+.visitWhen {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.visitMeta {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+.visitTrainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.visitTrainerAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-dim, var(--bg-3));
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.visitTrainerName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.visitTrainerRole {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
 /* ── Мобільна адаптація (єдиний @media-блок у кінці файлу — інакше
    десктопні стилі перебивають, патерн проекту) ─────────────────── */
 @media (max-width: 640px) {
