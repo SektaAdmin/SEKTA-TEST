@@ -13,6 +13,9 @@ const nunitoSans = Nunito_Sans({
 export const metadata: Metadata = {
   title: 'Sekta CRM',
   description: 'CRM система для студії танців',
+  // Safari iOS автоматично перетворює телефони/email/адреси на посилання —
+  // вимикаємо, щоб текст залишався звичайним текстом (кабінет клієнта).
+  formatDetection: { telephone: false, email: false, address: false },
 }
 
 export const viewport: Viewport = {
