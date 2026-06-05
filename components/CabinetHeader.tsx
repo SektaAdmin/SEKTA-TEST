@@ -26,21 +26,19 @@ export default function CabinetHeader({
 }) {
   const router = useRouter()
 
-  // «Назад» — нативна історія (миттєво з клієнт-кешу роутера), а не Link на
-  // backHref (той рендерив би force-dynamic-сторінку з нуля на сервері). Якщо
-  // історії в межах застосунку немає (прямий захід/закладка/refresh) — fallback
-  // на backHref через push. Ознака «прийшли зсередини» — referrer того ж origin.
+  // «Назад» — router.back() для миттєвого переходу з кешу Next.js Router.
+  // Якщо сторінку відкрили напряму (закладка/refresh/прямий URL) — back() нічого
+  // не робить. Fallback: через 150ms перевіряємо чи URL змінився; якщо ні —
+  // push на backHref.
   function handleBack() {
     if (!backHref) return
-    const sameOrigin =
-      typeof document !== 'undefined' &&
-      document.referrer &&
-      new URL(document.referrer).origin === window.location.origin
-    if (sameOrigin && window.history.length > 1) {
-      router.back()
-    } else {
-      router.push(backHref)
-    }
+    const urlBefore = window.location.href
+    router.back()
+    setTimeout(() => {
+      if (window.location.href === urlBefore) {
+        router.push(backHref)
+      }
+    }, 150)
   }
 
   return (
