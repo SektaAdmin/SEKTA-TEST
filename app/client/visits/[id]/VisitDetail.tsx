@@ -182,8 +182,8 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
         <a className={styles.contactIcon} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
           <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4">
             <circle cx="22" cy="22" r="19"/>
-            <path d="M13 22l5 5 13-13" strokeLinecap="round" strokeLinejoin="round" stroke="none"/>
-            <path d="M12 21c5-2.2 8.5-3.6 10.5-4.4 5-2 6-2.3 6.7-2.3.2 0 .5 0 .7.2.2.2.2.4.2.6v.5l-1.7 8c-.1.5-.4.6-.7.6-.3 0-.6-.2-.9-.4l-2.4-1.8-1.2 1.1c-.2.2-.3.2-.6.2l.2-2.5 5.3-4.8c.2-.2 0-.3-.3-.1l-6.5 4.1-2.8-.9c-.6-.2-.6-.6.2-.9z" strokeWidth="0" fill="currentColor"/>
+            <path d="M12 23 L32 14.5 L27 31.5 L22 26.5 L18 29 L19.5 24 L27 17.5" fill="none" strokeLinejoin="round" strokeLinecap="round"/>
+            <line x1="22" y1="26.5" x2="27" y2="17.5" strokeLinecap="round"/>
           </svg>
           <span className={styles.contactIconLabel}>Telegram</span>
         </a>
