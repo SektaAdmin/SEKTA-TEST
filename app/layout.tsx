@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   // Safari iOS автоматично перетворює телефони/email/адреси на посилання —
   // вимикаємо, щоб текст залишався звичайним текстом (кабінет клієнта).
   formatDetection: { telephone: false, email: false, address: false },
+  icons: {
+    apple: '/icons/icon-192.png',
+  },
 }
 
 export const viewport: Viewport = {
