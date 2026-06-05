@@ -1,0 +1,176 @@
+'use client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
+import { clientCancel } from '@/lib/queries/client-cabinet'
+import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
+import { formatMoney } from '@/lib/formatters'
+import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { STUDIO, STUDIO_TELEGRAM_URL, STUDIO_INSTAGRAM_URL } from '@/lib/studio'
+import { MSG } from '@/lib/messages'
+import styles from '../../client.module.css'
+
+function hhmm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function fullWhen(startISO: string, durationMin: number): string {
+  const start = new Date(startISO)
+  const end = new Date(start.getTime() + durationMin * 60000)
+  const dow = DOW_LABELS_FULL[start.getDay()]
+  return `${dow}, ${start.getDate()} ${MONTHS_UK_GENITIVE[start.getMonth()]}, ${hhmm(start)} – ${hhmm(end)}`
+}
+
+// Google Calendar «додати подію»: dates у форматі UTC YYYYMMDDTHHMMSSZ.
+function googleCalendarUrl(title: string, startISO: string, durationMin: number, location: string): string {
+  const start = new Date(startISO)
+  const end = new Date(start.getTime() + durationMin * 60000)
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const p = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    location,
+  })
+  return `https://calendar.google.com/calendar/render?${p.toString()}`
+}
+
+// Статична карта OSM за координатами (без API key).
+function staticMapUrl(lat: number, lng: number): string {
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x240&markers=${lat},${lng},red-pushpin`
+}
+
+type Props = {
+  enrollment: MyEnrollmentDetailRow
+  basePrice: number | null
+  sessionBalance: number
+  typeLabels: Record<string, string>
+  isPast: boolean
+}
+
+export default function VisitDetail({ enrollment, basePrice, sessionBalance, typeLabels, isPast }: Props) {
+  const router = useRouter()
+  const [cancelling, setCancelling] = useState(false)
+
+  const c = enrollment.classes
+  const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
+  const className = c.title || typeLabel(c.ticket_type)
+  const trainerName = c.trainers?.name ?? null
+
+  // Скільки сесій коштує заняття: минуле — фактичне sessions_used; майбутнє —
+  // hours_attended.length ?? 1 (як спише mark_attendance / auto_close).
+  const cost = isPast
+    ? (enrollment.sessions_used || 1)
+    : (enrollment.hours_attended?.length ?? 1)
+  const hasBalance = sessionBalance >= cost
+  const canCancel = !isPast && !c.is_cancelled && (enrollment.status === 'enrolled' || enrollment.status === 'waitlist')
+
+  async function handleCancel() {
+    if (!confirm('Скасувати запис? Якщо до заняття лишилось мало часу, заняття буде списано.')) return
+    setCancelling(true)
+    const { success, charged, error } = await clientCancel(supabase, enrollment.id)
+    setCancelling(false)
+    if (!success) {
+      toast.error(error ?? MSG.toast.deleteFailed)
+      return
+    }
+    toast.success(charged ? 'Запис скасовано, заняття списано' : 'Запис скасовано')
+    router.push('/client/visits')
+    router.refresh()
+  }
+
+  const initial = trainerName?.trim()[0]?.toUpperCase() || '?'
+
+  return (
+    <>
+      {/* Тренер */}
+      <section className={styles.detailHero}>
+        <div className={styles.detailAvatar}>{initial}</div>
+        <div className={styles.detailTrainerName}>{trainerName || 'Тренер'}</div>
+        <div className={styles.detailTrainerRole}>Тренер</div>
+        <div className={styles.detailWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
+        {isPast && (
+          <span className={enrollmentStatusClass(enrollment.status)}>{enrollmentStatusLabel(enrollment.status)}</span>
+        )}
+        {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
+
+        {(canCancel || !isPast) && (
+          <div className={styles.detailActions}>
+            {canCancel && (
+              <button
+                type="button"
+                className={styles.detailAction}
+                onClick={handleCancel}
+                disabled={cancelling}
+              >
+                <span className={styles.detailActionIcon}>✕</span>
+                <span>{cancelling ? '…' : 'Скасувати запис'}</span>
+              </button>
+            )}
+            {!isPast && !c.is_cancelled && (
+              <a
+                className={styles.detailAction}
+                href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className={styles.detailActionIcon}>📅</span>
+                <span>Додати до Google-календаря</span>
+              </a>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Заняття */}
+      <div className={styles.sectionLabel}>Заняття</div>
+      <section className={styles.detailCard}>
+        <div className={styles.detailRow}>
+          <span className={styles.detailRowMain}>{className}</span>
+          {!hasBalance && basePrice != null && (
+            <span className={styles.detailPrice}>{formatMoney(basePrice * cost)}</span>
+          )}
+        </div>
+        <div className={styles.detailRowSub}>
+          {hasBalance ? (
+            <>
+              {cost === 1 ? '1 заняття' : `${cost} заняття`} з абонемента
+              {!isPast && ` · залишок після: ${sessionBalance - cost} год`}
+            </>
+          ) : (
+            'Буде списано з балансу (немає активного абонемента)'
+          )}
+        </div>
+        {c.halls?.name && <div className={styles.detailRowSub}>{c.halls.name} · {c.duration_min} хв</div>}
+      </section>
+
+      {/* Студія */}
+      <div className={styles.sectionLabel}>Студія</div>
+      <section className={styles.detailCard}>
+        <div className={styles.detailRow}>
+          <span className={styles.detailRowMain}>{STUDIO.name}</span>
+        </div>
+        <div className={styles.detailRowSub}>{STUDIO.address}</div>
+        <a className={styles.detailMap} href={STUDIO.mapsUrl} target="_blank" rel="noopener noreferrer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={staticMapUrl(STUDIO.lat, STUDIO.lng)} alt="Карта студії" loading="lazy" />
+        </a>
+      </section>
+
+      {/* Контакти */}
+      <div className={styles.sectionLabel}>Контакти</div>
+      <section className={styles.detailCard}>
+        <a className={styles.contactRow} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
+          <span className={styles.contactLabel}>Telegram</span>
+          <span className={styles.contactValue}>{STUDIO.telegram}</span>
+        </a>
+        <a className={styles.contactRow} href={STUDIO_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+          <span className={styles.contactLabel}>Instagram</span>
+          <span className={styles.contactValue}>{STUDIO.instagram}</span>
+        </a>
+      </section>
+    </>
+  )
+}

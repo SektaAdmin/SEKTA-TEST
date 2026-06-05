@@ -593,6 +593,168 @@
   color: var(--text-3);
 }
 
+/* ── Екран деталей запису (/client/visits/[id]) ─────────────────── */
+.detailHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.detailAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-dim, var(--bg-3));
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.detailTrainerName {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.detailTrainerRole {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.detailWhen {
+  font-size: 15px;
+  color: var(--text);
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.detailAction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 110px;
+  font-size: 13px;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.detailAction:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.detailAction:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.detailActionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  font-size: 18px;
+}
+
+.detailCard {
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.detailRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detailRowMain {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.detailPrice {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.detailRowSub {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+.detailMap {
+  display: block;
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.detailMap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.contactRow + .contactRow {
+  border-top: 1px solid var(--border);
+}
+
+.contactLabel {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.contactValue {
+  font-size: 14px;
+  color: var(--text);
+}
+
 /* ── Мобільна адаптація (єдиний @media-блок у кінці файлу — інакше
    десктопні стилі перебивають, патерн проекту) ─────────────────── */
 @media (max-width: 640px) {

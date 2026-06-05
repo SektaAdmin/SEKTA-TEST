@@ -132,3 +132,43 @@ export async function listMyPastEnrollments(
   const { data, error } = await myPastEnrollmentsQuery(supabase, clientId, beforeISO)
   return { data: data ?? [], error: error?.message ?? null }
 }
+
+// Деталі одного запису (екран /client/visits/[id]). Усі поля заняття + тренер/зал.
+const MY_ENROLLMENT_DETAIL_SELECT =
+  'id, status, sessions_used, hours_attended, client_id, classes!inner(id, ticket_type, title, starts_at, duration_min, is_cancelled, trainers(name), halls(name))' as const
+
+function myEnrollmentDetailQuery(supabase: Db, clientId: string, enrollmentId: string) {
+  return supabase
+    .from('enrollments')
+    .select(MY_ENROLLMENT_DETAIL_SELECT)
+    .eq('id', enrollmentId)
+    .eq('client_id', clientId) // подвійний гейт: RLS + явний фільтр (чужий запис недоступний)
+}
+
+export type MyEnrollmentDetailRow = QueryData<ReturnType<typeof myEnrollmentDetailQuery>>[number]
+
+/** Деталі запису клієнта по id (з перевіркою власності). null = не знайдено/чужий. */
+export async function getMyEnrollmentDetail(
+  supabase: Db,
+  clientId: string,
+  enrollmentId: string
+): Promise<{ data: MyEnrollmentDetailRow | null; error: string | null }> {
+  const { data, error } = await myEnrollmentDetailQuery(supabase, clientId, enrollmentId).maybeSingle()
+  return { data, error: error?.message ?? null }
+}
+
+/** Базова ціна за 1 заняття типу — тікет із sessions=1 (роздрібна). null якщо нема. */
+export async function getBaseTicketPrice(
+  supabase: Db,
+  ticketType: string
+): Promise<{ data: number | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('price')
+    .eq('ticket_type', ticketType)
+    .eq('sessions', 1)
+    .eq('is_active', true)
+    .limit(1)
+    .maybeSingle()
+  return { data: data?.price ?? null, error: error?.message ?? null }
+}
