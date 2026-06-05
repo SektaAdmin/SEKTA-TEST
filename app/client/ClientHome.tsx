@@ -62,10 +62,11 @@ export default function ClientHome({ name, email, contacts }: Props) {
       <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Контакти</div>
       <div className={styles.contactIcons}>
         <a className={styles.contactIcon} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.3">
             <circle cx="22" cy="22" r="19"/>
-            <path d="M12 23 L32 14.5 L27 31.5 L22 26.5 L18 29 L19.5 24 L27 17.5" fill="none" strokeLinejoin="round" strokeLinecap="round"/>
-            <line x1="22" y1="26.5" x2="27" y2="17.5" strokeLinecap="round"/>
+            <path d="M9 21.5 Q9 21.5 28.5 13.5 Q31 12.5 30.5 14.5 L27 30 Q26.7 31.3 25.3 30.7 L20.5 27 L18 29.5 Q17.5 30 17 29 L15.5 24 Z" strokeLinejoin="round" strokeLinecap="round"/>
+            <line x1="17" y1="29" x2="20.5" y2="27" strokeLinecap="round"/>
+            <line x1="20.5" y1="27" x2="28.5" y2="13.5" strokeLinecap="round"/>
           </svg>
           <span className={styles.contactIconLabel}>Telegram</span>
         </a>
