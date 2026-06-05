@@ -738,6 +738,10 @@
   height: 240px;
 }
 
+.sectionLabelCenter {
+  text-align: center;
+}
+
 .contactIcons {
   display: flex;
   justify-content: center;

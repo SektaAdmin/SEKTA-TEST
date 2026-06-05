@@ -177,30 +177,22 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
       </section>
 
       {/* Контакти */}
-      <div className={styles.sectionLabel}>Контакти</div>
+      <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Контакти</div>
       <div className={styles.contactIcons}>
         <a className={styles.contactIcon} href={STUDIO_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <circle cx="22" cy="22" r="22" fill="#229ED9"/>
-            <path d="M10 21.5c6.4-2.8 10.7-4.6 12.9-5.6 6.1-2.6 7.4-3 8.2-3 .2 0 .6 0 .9.3.2.2.3.5.3.7 0 .2 0 .5-.1.7l-2.1 10c-.1.6-.5.8-.8.8-.4 0-.7-.2-1.1-.5l-3-2.3-1.5 1.4c-.2.2-.4.3-.7.3l.3-3.1 6.5-5.9c.3-.3 0-.4-.4-.2l-8 5-3.5-1.1c-.7-.2-.7-.7.2-1.1z" fill="white"/>
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <circle cx="22" cy="22" r="19"/>
+            <path d="M13 22l5 5 13-13" strokeLinecap="round" strokeLinejoin="round" stroke="none"/>
+            <path d="M12 21c5-2.2 8.5-3.6 10.5-4.4 5-2 6-2.3 6.7-2.3.2 0 .5 0 .7.2.2.2.2.4.2.6v.5l-1.7 8c-.1.5-.4.6-.7.6-.3 0-.6-.2-.9-.4l-2.4-1.8-1.2 1.1c-.2.2-.3.2-.6.2l.2-2.5 5.3-4.8c.2-.2 0-.3-.3-.1l-6.5 4.1-2.8-.9c-.6-.2-.6-.6.2-.9z" strokeWidth="0" fill="currentColor"/>
           </svg>
           <span className={styles.contactIconLabel}>Telegram</span>
         </a>
         <a className={styles.contactIcon} href={STUDIO_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <circle cx="22" cy="22" r="22" fill="url(#ig)"/>
-            <defs>
-              <radialGradient id="ig" cx="30%" cy="107%" r="130%">
-                <stop offset="0%" stopColor="#fdf497"/>
-                <stop offset="5%" stopColor="#fdf497"/>
-                <stop offset="45%" stopColor="#fd5949"/>
-                <stop offset="60%" stopColor="#d6249f"/>
-                <stop offset="90%" stopColor="#285AEB"/>
-              </radialGradient>
-            </defs>
-            <rect x="13" y="13" width="18" height="18" rx="5" stroke="white" strokeWidth="1.5" fill="none"/>
-            <circle cx="22" cy="22" r="4.5" stroke="white" strokeWidth="1.5" fill="none"/>
-            <circle cx="27.5" cy="16.5" r="1" fill="white"/>
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <circle cx="22" cy="22" r="19"/>
+            <rect x="14" y="14" width="16" height="16" rx="4.5" strokeWidth="1.4"/>
+            <circle cx="22" cy="22" r="4" strokeWidth="1.4"/>
+            <circle cx="27" cy="17" r="1" fill="currentColor" stroke="none"/>
           </svg>
           <span className={styles.contactIconLabel}>Instagram</span>
         </a>
