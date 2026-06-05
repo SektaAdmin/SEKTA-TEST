@@ -15,7 +15,7 @@
 }
 
 .scroll {
-  padding: 16px 16px 40px;
+  padding: 16px 16px calc(40px + env(safe-area-inset-bottom));
 }
 
 .scroll > :global(*) {

@@ -3,7 +3,10 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 0;
+  /* У standalone PWA (додано на екран) браузерний chrome зникає і система
+     додає safe-area-inset-top (~59px на iPhone з вирізом, ~20px без).
+     padding-top враховує обидва сценарії: браузер (inset=0) і PWA (inset>0). */
+  padding: calc(20px + env(safe-area-inset-top)) 0 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 20px;
 }
