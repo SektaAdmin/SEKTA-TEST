@@ -156,6 +156,32 @@ export async function getMyEnrollmentDetail(
   return { data, error: error?.message ?? null }
 }
 
+/**
+ * Скільки сесій типу вже «зарезервовано» enrolled-записами, що починаються
+ * строго раніше beforeISO (для розрахунку «залишок після» на екрані деталей).
+ */
+export async function countEnrolledSessionsBefore(
+  supabase: Db,
+  clientId: string,
+  ticketType: string,
+  beforeISO: string,
+): Promise<{ data: number; error: string | null }> {
+  const { data, error } = await supabase
+    .from('enrollments')
+    .select('hours_attended, classes!inner(ticket_type, starts_at)')
+    .eq('client_id', clientId)
+    .eq('status', 'enrolled')
+    .eq('sessions_used', 0)
+    .eq('classes.ticket_type', ticketType)
+    .lt('classes.starts_at', beforeISO)
+  if (error) return { data: 0, error: error.message }
+  const total = (data ?? []).reduce((sum, r) => {
+    const h = (r as { hours_attended: number[] | null }).hours_attended
+    return sum + (h && h.length > 0 ? h.length : 1)
+  }, 0)
+  return { data: total, error: null }
+}
+
 /** Базова ціна за 1 заняття типу — тікет із sessions=1 (роздрібна). null якщо нема. */
 export async function getBaseTicketPrice(
   supabase: Db,
