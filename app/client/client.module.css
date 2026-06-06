@@ -627,7 +627,13 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  justify-content: space-between;
+}
+
+.visitTrainerTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .visitChevron {
@@ -659,6 +665,63 @@
 .visitTrainerRole {
   font-size: 13px;
   color: var(--text-2);
+}
+
+/* ── Картка в "Історії" — футер зі статусом і списанням ─────────── */
+.visitHistoryFooter {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.visitHistoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.visitHistoryLabel {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.visitHistoryValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.visitHistoryValue.visitTimerAttended {
+  color: var(--success);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.visitHistoryValue.visitTimerCancelled {
+  color: var(--text-2);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.visitHistoryValue.visitTimerNoshow {
+  color: var(--warning);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.visitLatePenalty {
+  font-weight: 400;
+  color: var(--danger);
 }
 
 /* ── Екран деталей запису (/client/visits/[id]) ─────────────────── */

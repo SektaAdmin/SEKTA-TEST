@@ -111,7 +111,7 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
                 <span>Скасувати запис</span>
               </button>
             )}
-            {!isPast && !c.is_cancelled && (
+            {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && (
               <a
                 className={styles.detailAction}
                 href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}

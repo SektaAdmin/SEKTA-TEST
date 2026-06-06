@@ -145,37 +145,48 @@ export default function ClientVisits({
         </div>
       )}
 
-      <div className={styles.sectionLabel}>Попередні записи</div>
+      <div className={styles.sectionLabel}>Історія</div>
       {pastSorted.length === 0 ? (
         <p className={styles.empty}>{MSG.empty.pastEnrollments}.</p>
       ) : (
         <div className={styles.visitList}>
           {pastSorted.map(e => {
             const c = e.classes!
+            const sessionsUsed = e.sessions_used ?? 0
+            const isLateCancel = e.status === 'cancelled' && sessionsUsed > 0
             return (
-              <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
-                <div className={`${styles.visitTimer} ${pastTimerClass(e.status)}`}>
-                  {enrollmentStatusLabel(e.status)}
-                </div>
+              <div key={e.id} className={styles.visitCard}>
+                {c.trainers?.name && (
+                  <div className={styles.visitTrainerTop}>
+                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
+                    <div>
+                      <div className={styles.visitTrainerName}>{c.trainers.name}</div>
+                      <div className={styles.visitTrainerRole}>Тренер</div>
+                    </div>
+                  </div>
+                )}
                 <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
                 <div className={styles.visitMeta}>
                   {c.title || typeLabel(c.ticket_type)}
                   {c.halls?.name ? ` · ${c.halls.name}` : ''}
                   {` · ${c.duration_min} хв`}
                 </div>
-                {c.trainers?.name ? (
-                  <div className={styles.visitTrainer}>
-                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
-                    <span className={styles.visitTrainerName}>{c.trainers.name}</span>
-                    <span className={styles.visitTrainerRole}>Тренер</span>
-                    <ChevronRight className={styles.visitChevron} size={16} />
+                <div className={styles.visitHistoryFooter}>
+                  <div className={styles.visitHistoryRow}>
+                    <span className={styles.visitHistoryLabel}>Статус</span>
+                    <span className={`${styles.visitHistoryValue} ${pastTimerClass(e.status)}`}>
+                      {enrollmentStatusLabel(e.status)}
+                      {isLateCancel && <span className={styles.visitLatePenalty}> · пізня відміна</span>}
+                    </span>
                   </div>
-                ) : (
-                  <div className={styles.visitTrainer}>
-                    <ChevronRight className={styles.visitChevron} size={16} />
+                  <div className={styles.visitHistoryRow}>
+                    <span className={styles.visitHistoryLabel}>Списання</span>
+                    <span className={styles.visitHistoryValue}>
+                      {sessionsUsed > 0 ? `${sessionsUsed} ${sessionsUsed === 1 ? 'заняття' : 'заняття'}` : 'Не списано'}
+                    </span>
                   </div>
-                )}
-              </Link>
+                </div>
+              </div>
             )
           })}
         </div>
