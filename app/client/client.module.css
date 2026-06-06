@@ -741,6 +741,36 @@
   border-color: var(--danger-border);
 }
 
+.visitHistoryBadge.visitBadgeEnrolled {
+  color: var(--text-2);
+  background: var(--bg-3);
+  border-color: var(--border);
+}
+
+.visitHistoryBadge.visitBadgeWaitlist {
+  color: var(--warning);
+  background: var(--warning-dim);
+  border-color: var(--warning-border);
+}
+
+.visitHistoryBadge.visitBadgeBalancePositive {
+  color: var(--success);
+  background: var(--success-dim);
+  border-color: var(--success-border);
+}
+
+.visitHistoryBadge.visitBadgeBalanceZero {
+  color: var(--warning);
+  background: var(--warning-dim);
+  border-color: var(--warning-border);
+}
+
+.visitHistoryBadge.visitBadgeBalanceNegative {
+  color: var(--danger);
+  background: var(--danger-dim);
+  border-color: var(--danger-border);
+}
+
 /* ── Екран деталей запису (/client/visits/[id]) ─────────────────── */
 .detailHero {
   display: flex;

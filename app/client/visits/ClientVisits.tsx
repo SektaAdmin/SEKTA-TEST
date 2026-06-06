@@ -9,7 +9,7 @@ import {
 } from '@/lib/queries/client-cabinet-data'
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
-import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
@@ -140,14 +140,14 @@ export default function ClientVisits({
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
-                    <span className={`${styles.visitHistoryBadge} ${enrollmentStatusClass(e.status)}`}>
+                    <span className={`${styles.visitHistoryBadge} ${e.status === 'waitlist' ? styles.visitBadgeWaitlist : styles.visitBadgeEnrolled}`}>
                       {enrollmentStatusLabel(e.status)}
                     </span>
                   </div>
                   {!c.is_cancelled && (
                     <div className={styles.visitHistoryRow}>
                       <span className={styles.visitHistoryLabel}>Після тренування</span>
-                      <span className={styles.visitHistoryValue}>
+                      <span className={`${styles.visitHistoryBadge} ${balanceAfter > 0 ? styles.visitBadgeBalancePositive : balanceAfter === 0 ? styles.visitBadgeBalanceZero : styles.visitBadgeBalanceNegative}`}>
                         {balanceAfter} {pluralHours(balanceAfter)}
                       </span>
                     </div>
