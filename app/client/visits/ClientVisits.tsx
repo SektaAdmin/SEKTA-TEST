@@ -35,13 +35,17 @@ function timeUntil(startISO: string, nowMs: number): string {
   return parts.length ? `Через ${parts.join(' ')}` : 'Зараз'
 }
 
-// Колір бейджа минулого візиту за статусом — узгоджено з badge-* проекту
-// (attended→зелений, cancelled→жовтий, noshow→червоний).
-function pastTimerClass(status: string): string {
+function historyBadgeClass(status: string, isLateCancel: boolean): string {
   if (status === 'attended') return styles.visitTimerAttended
   if (status === 'noshow') return styles.visitTimerNoshow
+  if (status === 'cancelled' && isLateCancel) return styles.visitTimerLatePenalty
   if (status === 'cancelled') return styles.visitTimerCancelled
   return styles.visitTimerPast
+}
+
+function historyBadgeLabel(status: string, isLateCancel: boolean): string {
+  if (status === 'cancelled' && isLateCancel) return 'Скасувала · пізня відміна'
+  return enrollmentStatusLabel(status)
 }
 
 type Props = {
@@ -155,7 +159,7 @@ export default function ClientVisits({
             const sessionsUsed = e.sessions_used ?? 0
             const isLateCancel = e.status === 'cancelled' && sessionsUsed > 0
             return (
-              <div key={e.id} className={styles.visitCard}>
+              <div key={e.id} className={styles.visitCardStatic}>
                 {c.trainers?.name && (
                   <div className={styles.visitTrainerTop}>
                     <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
@@ -174,15 +178,14 @@ export default function ClientVisits({
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
-                    <span className={`${styles.visitHistoryValue} ${pastTimerClass(e.status)}`}>
-                      {enrollmentStatusLabel(e.status)}
-                      {isLateCancel && <span className={styles.visitLatePenalty}> · пізня відміна</span>}
+                    <span className={`${styles.visitHistoryBadge} ${historyBadgeClass(e.status, isLateCancel)}`}>
+                      {historyBadgeLabel(e.status, isLateCancel)}
                     </span>
                   </div>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Списання</span>
                     <span className={styles.visitHistoryValue}>
-                      {sessionsUsed > 0 ? `${sessionsUsed} ${sessionsUsed === 1 ? 'заняття' : 'заняття'}` : 'Не списано'}
+                      {sessionsUsed > 0 ? `${sessionsUsed} заняття` : 'Не списано'}
                     </span>
                   </div>
                 </div>

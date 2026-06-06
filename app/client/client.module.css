@@ -558,6 +558,16 @@
   border-color: var(--border-hover);
 }
 
+.visitCardStatic {
+  display: block;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: default;
+}
+
 /* Бейдж-таймер на всю ширину зверху картки (майбутні — зелений). */
 .visitTimer {
   display: block;
@@ -695,33 +705,40 @@
   color: var(--text);
 }
 
-.visitHistoryValue.visitTimerAttended {
+/* Inline-бейдж статусу в Історії */
+.visitHistoryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.visitHistoryBadge.visitTimerAttended {
   color: var(--success);
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
+  background: var(--success-dim);
+  border-color: var(--success-border);
 }
 
-.visitHistoryValue.visitTimerCancelled {
+.visitHistoryBadge.visitTimerCancelled {
   color: var(--text-2);
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
+  background: var(--bg-3);
+  border-color: var(--border);
 }
 
-.visitHistoryValue.visitTimerNoshow {
-  color: var(--warning);
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.visitLatePenalty {
-  font-weight: 400;
+.visitHistoryBadge.visitTimerLatePenalty {
   color: var(--danger);
+  background: var(--danger-dim);
+  border-color: var(--danger-border);
+}
+
+.visitHistoryBadge.visitTimerNoshow {
+  color: var(--danger);
+  background: var(--danger-dim);
+  border-color: var(--danger-border);
 }
 
 /* ── Екран деталей запису (/client/visits/[id]) ─────────────────── */
