@@ -117,32 +117,42 @@ export default function ClientVisits({
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
                   {c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
                 </div>
+                {c.trainers?.name ? (
+                  <div className={styles.visitTrainerTop}>
+                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
+                    <div>
+                      <div className={styles.visitTrainerName}>{c.trainers.name}</div>
+                      <div className={styles.visitTrainerRole}>Тренер</div>
+                    </div>
+                    <ChevronRight className={styles.visitChevron} size={16} />
+                  </div>
+                ) : (
+                  <div className={styles.visitTrainerTop}>
+                    <ChevronRight className={styles.visitChevron} size={16} />
+                  </div>
+                )}
                 <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
                 <div className={styles.visitMeta}>
                   {c.title || typeLabel(c.ticket_type)}
                   {c.halls?.name ? ` · ${c.halls.name}` : ''}
                   {` · ${c.duration_min} хв`}
                 </div>
-                {c.trainers?.name ? (
-                  <div className={styles.visitTrainer}>
-                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
-                    <span className={styles.visitTrainerName}>{c.trainers.name}</span>
-                    <span className={styles.visitTrainerRole}>Тренер</span>
-                    <ChevronRight className={styles.visitChevron} size={16} />
+                <div className={styles.visitHistoryFooter}>
+                  <div className={styles.visitHistoryRow}>
+                    <span className={styles.visitHistoryLabel}>Статус</span>
+                    <span className={`${styles.visitHistoryBadge} ${enrollmentStatusClass(e.status)}`}>
+                      {enrollmentStatusLabel(e.status)}
+                    </span>
                   </div>
-                ) : (
-                  <div className={styles.visitTrainer}>
-                    <ChevronRight className={styles.visitChevron} size={16} />
-                  </div>
-                )}
-                {e.status === 'waitlist' && (
-                  <span className={enrollmentStatusClass('waitlist')}>{enrollmentStatusLabel('waitlist')}</span>
-                )}
-                {!c.is_cancelled && (
-                  <div className={`${styles.visitTimer} ${styles.visitTimerBottom} ${balanceAfter <= 0 ? styles.visitTimerNoshow : styles.visitTimerPast}`}>
-                    Стан абонемента після тренування: {balanceAfter} {pluralHours(balanceAfter)}
-                  </div>
-                )}
+                  {!c.is_cancelled && (
+                    <div className={styles.visitHistoryRow}>
+                      <span className={styles.visitHistoryLabel}>Після тренування</span>
+                      <span className={styles.visitHistoryValue}>
+                        {balanceAfter} {pluralHours(balanceAfter)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </Link>
             )
           })}
