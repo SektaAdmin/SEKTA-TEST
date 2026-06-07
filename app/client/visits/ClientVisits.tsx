@@ -97,6 +97,31 @@ export default function ClientVisits({
     [upcoming]
   )
 
+  // Залишок сесій ПІСЛЯ кожного майбутнього заняття (прогресивно, в хронології).
+  // Майбутні записи ще не списані (enrolled/waitlist), тож поточний balanceByType —
+  // це баланс ДО першого з них; від нього кумулятивно віднімаємо вартість кожного
+  // заняття того ж типу. Скасовані заняття сесій не списують — у суму не йдуть.
+  // Та сама логіка, що в БД get_session_balance_after, але без зайвого RPC: для
+  // майбутніх вистачає клієнтських даних. enrollment.id → залишок після.
+  const balanceAfterById = useMemo(() => {
+    const remaining: Record<string, number> = { ...balanceByType }
+    const map: Record<string, number> = {}
+    for (const e of upcomingSorted) {
+      const c = e.classes!
+      if (c.is_cancelled) {
+        map[e.id] = remaining[c.ticket_type] ?? 0
+        continue
+      }
+      const cost = e.hours_attended?.length ?? 1
+      const next = (remaining[c.ticket_type] ?? 0) - cost
+      remaining[c.ticket_type] = next
+      map[e.id] = next
+    }
+    return map
+    // balanceByType — похідне від sessionBalances (стабільний prop у межах рендера).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upcomingSorted, sessionBalances])
+
   const pastSorted = useMemo(
     () => [...past].sort(
       (a, b) => new Date(b.classes!.starts_at).getTime() - new Date(a.classes!.starts_at).getTime()
@@ -113,9 +138,7 @@ export default function ClientVisits({
         <div className={styles.visitList}>
           {upcomingSorted.map(e => {
             const c = e.classes!
-            const cost = e.hours_attended?.length ?? 1
-            const currentBalance = balanceByType[c.ticket_type] ?? 0
-            const balanceAfter = currentBalance - cost
+            const balanceAfter = balanceAfterById[e.id] ?? 0
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>

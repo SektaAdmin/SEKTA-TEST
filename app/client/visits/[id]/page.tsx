@@ -45,7 +45,7 @@ export default async function VisitDetailPage({ params }: { params: { id: string
     typeLabelsP,
     getSessionBalancesAfter(supabase, [client.id], ticketType, startsAt),
   ])
-  const sessionBalance = balanceMap[client.id] ?? (sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0)
+  const balanceAfter = balanceMap[client.id] ?? (sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0)
   const isPast = new Date(enrollment.classes.starts_at).getTime() <= Date.now()
 
   return (
@@ -55,7 +55,7 @@ export default async function VisitDetailPage({ params }: { params: { id: string
         <VisitDetail
           enrollment={enrollment}
           basePrice={basePrice}
-          sessionBalance={sessionBalance}
+          balanceAfter={balanceAfter}
           typeLabels={typeLabels}
           isPast={isPast}
         />

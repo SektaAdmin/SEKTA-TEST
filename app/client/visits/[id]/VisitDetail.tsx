@@ -34,12 +34,13 @@ function googleCalendarUrl(title: string, startISO: string, durationMin: number,
 type Props = {
   enrollment: MyEnrollmentDetailRow
   basePrice: number | null
-  sessionBalance: number
+  /** Залишок сесій ПІСЛЯ цього заняття (get_session_balance_after — cost уже враховано). */
+  balanceAfter: number
   typeLabels: Record<string, string>
   isPast: boolean
 }
 
-export default function VisitDetail({ enrollment, basePrice, sessionBalance, typeLabels, isPast }: Props) {
+export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeLabels, isPast }: Props) {
   const router = useRouter()
   const [cancelling, setCancelling] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -55,7 +56,9 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
   const cost = isPast
     ? (enrollment.sessions_used || 1)
     : (enrollment.hours_attended?.length ?? 1)
-  const hasBalance = sessionBalance >= cost
+  // balanceAfter — залишок ПІСЛЯ заняття; баланс ДО = balanceAfter + cost.
+  // «Є абонемент» = вистачало сесій на це заняття, тобто баланс після не пішов у мінус.
+  const hasBalance = balanceAfter >= 0
   const canCancel = !isPast && !c.is_cancelled && (enrollment.status === 'enrolled' || enrollment.status === 'waitlist')
 
   // Правило відміни для модалки — копія БД-логіки (cancellation.ts), щоб показати
@@ -153,7 +156,7 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
           {hasBalance ? (
             <>
               {cost === 1 ? '1 заняття' : `${cost} заняття`} з абонемента
-              {!isPast && ` · залишок після: ${sessionBalance - cost} год`}
+              {!isPast && ` · залишок після: ${balanceAfter} ${pluralHours(balanceAfter)}`}
             </>
           ) : (
             'Буде списано з балансу (немає активного абонемента)'
