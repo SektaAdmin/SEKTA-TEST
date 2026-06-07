@@ -186,8 +186,9 @@ export async function calcSessionBalanceAfter(
 
   const cost = (r: Row) => r.sessions_used > 0 ? r.sessions_used : (r.hours_attended && r.hours_attended.length > 0 ? r.hours_attended.length : 1)
 
-  // Відновлюємо початковий баланс (до будь-яких списань)
-  const initialBalance = rawBalance + rows.reduce((sum, r) => sum + cost(r), 0)
+  // Відновлюємо баланс до нуля записів: rawBalance вже відображає фактичні списання
+  // (sessions_used > 0), тому додаємо лише їх, не enrolled (ще не списані).
+  const initialBalance = rawBalance + rows.reduce((sum, r) => sum + r.sessions_used, 0)
 
   // Віднімаємо вартість усіх записів що починаються до atISO включно
   const parseMs = (s: string) => new Date(s.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')).getTime()

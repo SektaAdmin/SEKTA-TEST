@@ -150,7 +150,9 @@ export async function listSessionBalancesAfterClass(
   for (const clientId of clientIds) {
     const clientRows = rows.filter(r => r.client_id === clientId)
     const raw = rawBalanceMap[clientId] ?? 0
-    const initialBalance = raw + clientRows.reduce((sum, r) => sum + cost(r), 0)
+    // Відновлюємо баланс до нуля записів: rawBalance вже відображає фактичні списання
+    // (sessions_used > 0), тому додаємо лише їх, не enrolled (ще не списані).
+    const initialBalance = raw + clientRows.reduce((sum, r) => sum + r.sessions_used, 0)
     const usedUpTo = clientRows.filter(r => parseMs(r.classes.starts_at) <= atMs).reduce((sum, r) => sum + cost(r), 0)
     result[clientId] = initialBalance - usedUpTo
   }
