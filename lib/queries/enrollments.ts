@@ -121,21 +121,6 @@ export async function getSessionBalancesAfter(
   return { data: result, error: null }
 }
 
-// Вживає лише enrollClient нижче (запис у вже-минуле заняття). UI → changeEnrollmentStatus.
-async function markAttendance(
-  supabase: Db,
-  enrollmentId: string,
-  sessionsUsed = 1
-): Promise<{ success: boolean; error: string | null }> {
-  const { success, error } = await callRpc(() =>
-    supabase.rpc('mark_attendance', {
-      p_enrollment_id: enrollmentId,
-      p_sessions_used: sessionsUsed,
-    })
-  )
-  return { success, error }
-}
-
 export type EnrollmentStatus = 'enrolled' | 'attended' | 'noshow' | 'cancelled' | 'waitlist'
 
 /**
@@ -186,7 +171,7 @@ export async function enrollClient(
   classId: string,
   clientId: string,
   hoursAttended?: number[]
-): Promise<{ error: string | null; isDuplicate: boolean }> {
+): Promise<{ error: string | null; isDuplicate: boolean; closeError?: string | null }> {
   // Тягнемо starts_at, щоб запис постфактум (заняття вже почалось) одразу закрити
   // в attended, а не чекати тик cron. Модель «почалось = проведено».
   const { data: cls } = await supabase
@@ -210,13 +195,19 @@ export async function enrollClient(
     return { error: insertError.message, isDuplicate }
   }
 
-  // Заняття вже почалось і тригер не перевів у waitlist → списуємо одразу через RPC.
-  // (sessions_used = к-сть годин для довгих занять, інакше 1 — як у mark_attendance.)
+  // Заняття вже почалось і тригер не перевів у waitlist → закриваємо одразу в attended.
+  // ⚠️ Саме change_enrollment_status, НЕ mark_attendance: остання має EXECUTE лише для
+  // postgres (cron), з браузера (роль authenticated) PostgREST її відхиляє — і запис лишався
+  // enrolled до тику cron (≤60с). change_enrollment_status доступна authenticated, проходить
+  // гейт can_manage_enrollment для owner/admin і так само вирівнює client_session_balances.
+  // sessions_used = к-сть годин для довгих занять, інакше 1.
   const startsAt = cls?.starts_at ? new Date(cls.starts_at) : null
   if (inserted?.status === 'enrolled' && startsAt && startsAt <= new Date()) {
     const sessionsUsed = hoursAttended?.length ?? 1
-    await markAttendance(supabase, inserted.id, sessionsUsed)
+    const { error: closeError } = await changeEnrollmentStatus(supabase, inserted.id, 'attended', { sessionsUsed })
+    // Не валимо запис, якщо закриття не вдалось — cron підхопить як страховку. Лише сигналимо.
+    if (closeError) return { error: null, isDuplicate: false, closeError }
   }
 
-  return { error: null, isDuplicate: false }
+  return { error: null, isDuplicate: false, closeError: null }
 }

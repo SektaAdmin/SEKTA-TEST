@@ -73,13 +73,16 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
 
   async function handleEnroll(classId: string) {
     setEnrollingId(classId)
-    const { error, isDuplicate } = await enrollClient(supabase, classId, client.id)
+    const { error, isDuplicate, closeError } = await enrollClient(supabase, classId, client.id)
     if (error) {
       toast.error(isDuplicate ? 'Клієнт вже записана на це заняття' : error)
       setEnrollingId(null)
       return
     }
-    toast.success('Клієнта записано')
+    // Запис у вже-минуле заняття → enrollClient одразу закриває в attended. Якщо це
+    // не вдалось, запис лишається enrolled (cron підхопить) — попереджаємо адміна.
+    if (closeError) toast.warning(`Записано, але відвідування не зафіксовано: ${closeError}`)
+    else toast.success('Клієнта записано')
     onSaved()
   }
 

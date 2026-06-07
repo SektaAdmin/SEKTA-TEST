@@ -152,12 +152,14 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     }
 
     const hoursArg = isTwoHour(cls) ? selectedHours.slice().sort() : undefined
-    const { error, isDuplicate } = await enrollClientQuery(supabase, cls.id, selectedClient.id, hoursArg)
+    const { error, isDuplicate, closeError } = await enrollClientQuery(supabase, cls.id, selectedClient.id, hoursArg)
     if (error) {
       setEnrollError(isDuplicate ? 'Клієнт вже записана на це заняття' : 'Помилка при записі клієнта')
       setEnrolling(false)
       return
     }
+    // Запис у вже-минуле заняття → одразу attended. Якщо закриття не вдалось — cron підхопить.
+    if (closeError) toast.warning(`Записано, але відвідування не зафіксовано: ${closeError}`)
     setAddingClient(false)
     setSelectedClient(null)
     setClientBalance(null)
