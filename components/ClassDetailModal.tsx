@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
+import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, deleteClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   getSessionBalancesAfter,
@@ -69,6 +69,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [cancellingClass, setCancellingClass] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletingClass, setDeletingClass] = useState(false)
   const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -285,6 +287,26 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       onClassUpdated()
     }
     setCancellingClass(false)
+  }
+
+  // Фізичне видалення помилково створеного заняття разом із записами.
+  // Сесії повертаються в БД (RPC). Заняття зникає → закриваємо модалку.
+  async function handleDeleteClass() {
+    if (!cls) return
+    setDeletingClass(true)
+    const { restoredCount, error } = await deleteClass(supabase, cls.id)
+    if (error) {
+      toast.error(error)
+      setDeletingClass(false)
+      return
+    }
+    setShowDeleteConfirm(false)
+    toast.success(restoredCount > 0
+      ? `Заняття видалено. Повернено сесії ${restoredCount} ${restoredCount === 1 ? 'клієнту' : 'клієнтам'}`
+      : 'Заняття видалено'
+    )
+    onClassUpdated()
+    onClose()
   }
 
   const activeCount = cls ? getActiveCount(enrollments) : 0
@@ -718,6 +740,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     Скасувати заняття
                   </button>
                 )}
+                <button className={styles.btnDeleteClass} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
+                  Видалити
+                </button>
               </div>
 
               {/* Confirm cancel */}
@@ -744,6 +769,24 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                       <button className={styles.btnEdit} onClick={() => setShowRestoreConfirm(false)} disabled={cancellingClass}>Назад</button>
                       <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
                         {cancellingClass ? 'Відновлення…' : 'Відновити'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Confirm delete (фізичне видалення заняття) */}
+              {showDeleteConfirm && (
+                <div className={styles.confirmOverlay} onClick={() => setShowDeleteConfirm(false)}>
+                  <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
+                    <p className={styles.confirmText}>
+                      Видалити заняття назавжди? Усі записи буде видалено, списані сесії повернуто клієнтам. Дію не можна скасувати.
+                      {cls.series_id && ' Увага: заняття з постійного шаблону — може з’явитися знову при повторному «виставити тиждень».'}
+                    </p>
+                    <div className={styles.confirmActions}>
+                      <button className={styles.btnEdit} onClick={() => setShowDeleteConfirm(false)} disabled={deletingClass}>Назад</button>
+                      <button className={styles.btnDeleteClass} onClick={handleDeleteClass} disabled={deletingClass}>
+                        {deletingClass ? 'Видалення…' : 'Видалити заняття'}
                       </button>
                     </div>
                   </div>

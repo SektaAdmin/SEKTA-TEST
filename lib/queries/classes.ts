@@ -124,6 +124,23 @@ export async function restoreClass(
   return { restoredCount: row?.restored_count ?? 0, error: null }
 }
 
+/**
+ * Фізично видалити помилково створене заняття разом із записами (CASCADE).
+ * На відміну від cancelClassAndRestoreSessions (м'яке, лишається в історії) —
+ * для занять, яких не повинно існувати взагалі. Реверс сесій по всіх записах
+ * відбувається в RPC ПЕРЕД DELETE. Свідомий виняток з «м'яких видалень» (інв. #7).
+ */
+export async function deleteClass(
+  supabase: Db,
+  classId: string
+): Promise<{ restoredCount: number; error: string | null }> {
+  const { row, success, error } = await callRpc<{ success: boolean; error_message: string | null; restored_count: number }>(
+    () => supabase.rpc('delete_class', { p_class_id: classId })
+  )
+  if (!success) return { restoredCount: 0, error }
+  return { restoredCount: row?.restored_count ?? 0, error: null }
+}
+
 export async function listDatesWithClasses(
   supabase: Db,
   startISO: string,

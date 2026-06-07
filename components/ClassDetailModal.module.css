@@ -587,6 +587,21 @@
 }
 .btnDelete:hover:not(:disabled) { background: var(--danger-dim); }
 
+/* Видалення заняття (footer + confirm) */
+.btnDeleteClass {
+  background: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--font);
+  transition: opacity 0.12s;
+}
+.btnDeleteClass:hover:not(:disabled) { opacity: 0.85; }
+.btnDeleteClass:disabled { opacity: 0.6; cursor: default; }
+
 /* ── Confirm dialogs ─────────────────────────────────────────── */
 .confirmOverlay {
   position: absolute;

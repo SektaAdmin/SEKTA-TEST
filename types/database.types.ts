@@ -1102,6 +1102,14 @@ export type Database = {
       }
       current_client_id: { Args: never; Returns: string }
       current_trainer_id: { Args: never; Returns: string }
+      delete_class: {
+        Args: { p_class_id: string }
+        Returns: {
+          error_message: string
+          restored_count: number
+          success: boolean
+        }[]
+      }
       delete_enrollment: {
         Args: { p_enrollment_id: string }
         Returns: {
