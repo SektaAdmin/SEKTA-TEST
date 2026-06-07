@@ -190,9 +190,10 @@ export async function calcSessionBalanceAfter(
   const initialBalance = rawBalance + rows.reduce((sum, r) => sum + cost(r), 0)
 
   // Віднімаємо вартість усіх записів що починаються до atISO включно
-  const atMs = new Date(atISO).getTime()
+  const parseMs = (s: string) => new Date(s.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')).getTime()
+  const atMs = parseMs(atISO)
   const usedUpTo = rows
-    .filter(r => new Date(r.classes.starts_at).getTime() <= atMs)
+    .filter(r => parseMs(r.classes.starts_at) <= atMs)
     .reduce((sum, r) => sum + cost(r), 0)
 
   return { data: initialBalance - usedUpTo, error: null }
