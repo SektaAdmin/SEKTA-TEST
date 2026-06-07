@@ -8,7 +8,6 @@ import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, rest
 import {
   listEnrollmentsForClass,
   getSessionBalancesAfter,
-  getClientSessionBalance,
   changeEnrollmentStatus,
   checkClientConflict,
   enrollClient as enrollClientQuery,
@@ -122,8 +121,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setSelectedClient(client)
     setEnrollError(null)
     if (!cls) return
-    const { data: balance } = await getClientSessionBalance(supabase, client.id, cls.ticket_type)
-    setClientBalance(balance)
+    // Баланс, з яким клієнт ВХОДИТЬ у це заняття — з урахуванням усіх його вже
+    // наявних записів того ж типу до цього моменту (get_session_balance_after на
+    // starts_at). Клієнт ще не записаний сюди, тож вартість цього заняття RPC не
+    // враховує — її віднімаємо в прев'ю. Узгоджено з кабінетом клієнта.
+    const { data: map } = await getSessionBalancesAfter(supabase, [client.id], cls.ticket_type, cls.starts_at)
+    setClientBalance(map[client.id] ?? 0)
   }
 
   const isTwoHour = (c: ClassWithJoins | null) => (c?.duration_min ?? 0) >= 120

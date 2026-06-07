@@ -121,20 +121,6 @@ export async function getSessionBalancesAfter(
   return { data: result, error: null }
 }
 
-export async function getClientSessionBalance(
-  supabase: Db,
-  clientId: string,
-  ticketType: string
-): Promise<{ data: number; error: string | null }> {
-  const { data, error } = await supabase
-    .from('client_session_balances')
-    .select('sessions_balance')
-    .eq('client_id', clientId)
-    .eq('ticket_type', ticketType)
-    .maybeSingle()
-  return { data: data?.sessions_balance ?? 0, error: error?.message ?? null }
-}
-
 // Вживає лише enrollClient нижче (запис у вже-минуле заняття). UI → changeEnrollmentStatus.
 async function markAttendance(
   supabase: Db,
