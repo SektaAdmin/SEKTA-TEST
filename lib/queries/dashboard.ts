@@ -1,7 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
-import { effectiveSessionBalance } from '@/lib/scheduleMetrics'
-import { formatClientName, formatTime } from '@/lib/formatters'
-import { groupDebtRows, type DebtRow, type DebtGroup } from '@/lib/dashboardReport'
+import { formatClientName } from '@/lib/formatters'
+import { type DebtGroup } from '@/lib/dashboardReport'
 
 /* Запити, специфічні для операційного дашборду (/dashboard).
    Решта блоків збирається з існуючих queries (enrollments.ts, trainer-rates.ts).
@@ -112,83 +111,30 @@ export async function listHallBusyIntervalsForDate(
   return { data: intervals, error: error?.message ?? null }
 }
 
-/** Боржники по сесіях на сьогодні — агрегатно, БЕЗ N+1.
-   3 запити: класи дня → всі активні enrollments по class_id IN → всі баланси по (client_id, ticket_type).
-   «Боржник» = effectiveSessionBalance(...) < 0. */
+/** Боржники по сесіях на дату — один RPC-запит, групування в БД. */
 export async function listSessionDebtorsForDate(
   supabase: Db,
   date: string
 ): Promise<{ data: DebtGroup[]; error: string | null }> {
-  const dayStart = new Date(`${date}T00:00:00`).toISOString()
-  const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
+  const { data, error } = await supabase.rpc('get_session_debtors_for_date', { p_date: date })
+  if (error) return { data: [], error: error.message }
 
-  type ClassRow = {
-    id: string; ticket_type: string; starts_at: string
-    trainers: { name: string } | null; halls: { name: string } | null
-  }
-  const { data: classes, error: clsErr } = await supabase
-    .from('classes')
-    .select('id, ticket_type, starts_at, trainers(name), halls(name)')
-    .gte('starts_at', dayStart)
-    .lte('starts_at', dayEnd)
-    .eq('is_cancelled', false)
-    .order('starts_at', { ascending: true })
-    .returns<ClassRow[]>()
-
-  if (clsErr) return { data: [], error: clsErr.message }
-  if (!classes || classes.length === 0) return { data: [], error: null }
-
-  const classById = new Map(classes.map(c => [c.id, c]))
-  const classIds = classes.map(c => c.id)
-
-  type EnrRow = {
-    class_id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null
-    clients: { first_name: string | null; last_name: string | null } | null
-  }
-  const { data: enrollments, error: enrErr } = await supabase
-    .from('enrollments')
-    .select('class_id, client_id, status, sessions_used, hours_attended, clients(first_name, last_name)')
-    .in('class_id', classIds)
-    .in('status', ['enrolled', 'attended', 'noshow'])
-    .returns<EnrRow[]>()
-
-  if (enrErr) return { data: [], error: enrErr.message }
-  const active = enrollments ?? []
-  if (active.length === 0) return { data: [], error: null }
-
-  // Унікальні (client_id, ticket_type) → один запит балансів.
-  const clientIds = Array.from(new Set(active.map(e => e.client_id)))
-  const { data: balRows, error: balErr } = await supabase
-    .from('client_session_balances')
-    .select('client_id, ticket_type, sessions_balance')
-    .in('client_id', clientIds)
-
-  if (balErr) return { data: [], error: balErr.message }
-  const balByKey = new Map<string, number>()
-  for (const b of (balRows ?? []) as { client_id: string; ticket_type: string; sessions_balance: number }[]) {
-    balByKey.set(`${b.client_id}||${b.ticket_type}`, b.sessions_balance)
+  type RpcRow = {
+    time_str: string; start_min: number; hall: string; trainer: string
+    short_label: string | null
+    clients: { name: string; balance: number }[]
   }
 
-  const rows: DebtRow[] = []
-  for (const e of active) {
-    const cls = classById.get(e.class_id)
-    if (!cls) continue
-    const raw = balByKey.get(`${e.client_id}||${cls.ticket_type}`) ?? 0
-    const eff = effectiveSessionBalance(raw, e.status, e.sessions_used, e.hours_attended)
-    if (eff >= 0) continue
-    const d = new Date(cls.starts_at)
-    rows.push({
-      time: formatTime(cls.starts_at),
-      startMin: d.getHours() * 60 + d.getMinutes(),
-      hall: cls.halls?.name ?? '—',
-      trainer: cls.trainers?.name ?? '—',
-      ticketType: cls.ticket_type,
-      clientName: e.clients ? formatClientName(e.clients) : '—',
-      balance: eff,
-    })
-  }
+  const groups: DebtGroup[] = ((data ?? []) as RpcRow[]).map(r => ({
+    time: r.time_str,
+    startMin: r.start_min,
+    hall: r.hall,
+    trainer: r.trainer,
+    indivLabel: r.short_label ?? '',
+    clients: r.clients,
+  }))
 
-  return { data: groupDebtRows(rows), error: null }
+  return { data: groups, error: null }
 }
 
 /** Готівка (cash), що надійшла за день, згрупована по cash_holder (trainer.id). */

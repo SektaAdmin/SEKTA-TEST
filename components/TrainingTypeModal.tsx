@@ -14,6 +14,7 @@ import styles from './TrainingTypeModal.module.css'
 interface FormValues {
   code: string
   label: string
+  short_label: string
 }
 
 interface Props {
@@ -28,19 +29,20 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     defaultValues: existing
-      ? { code: existing.code, label: existing.label }
-      : { code: '', label: '' },
+      ? { code: existing.code, label: existing.label, short_label: existing.short_label ?? '' }
+      : { code: '', label: '', short_label: '' },
   })
 
   const onSubmit = async (data: FormValues) => {
     setLoading(true)
     setServerError('')
 
+    const shortLabel = data.short_label.trim() || null
     if (existing) {
-      const { error } = await updateTrainingType(supabase, existing.id, data.label.trim())
+      const { error } = await updateTrainingType(supabase, existing.id, { label: data.label.trim(), short_label: shortLabel })
       if (error) { setServerError(error); setLoading(false); return }
     } else {
-      const { error } = await insertTrainingType(supabase, { code: data.code.trim(), label: data.label.trim() })
+      const { error } = await insertTrainingType(supabase, { code: data.code.trim(), label: data.label.trim(), short_label: shortLabel })
       if (error) { setServerError(error); setLoading(false); return }
     }
 
@@ -89,6 +91,21 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
           type="text"
           {...register('label', { required: VM.required.title })}
           placeholder="Групові"
+          disabled={loading}
+        />
+      </FormField>
+
+      <FormField
+        id="tt-short-label"
+        label="Коротка назва"
+        hint="Для звітів і компактного відображення. Залиште порожнім якщо не потрібно."
+        error={errors.short_label}
+      >
+        <input
+          id="tt-short-label"
+          type="text"
+          {...register('short_label')}
+          placeholder="Індив"
           disabled={loading}
         />
       </FormField>

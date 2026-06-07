@@ -4,7 +4,7 @@ import { refEntityQueries } from './_refEntity'
 
 const q = refEntityQueries<'training_types', TrainingType>(
   'training_types',
-  'id, code, label, is_active, sort_order, created_at',
+  'id, code, label, short_label, is_active, sort_order, created_at',
   { orderBy: 'sort_order' }
 )
 
@@ -25,7 +25,7 @@ export async function listTrainingTypeLabels(
 
 export async function insertTrainingType(
   supabase: Db,
-  payload: { code: string; label: string }
+  payload: { code: string; label: string; short_label?: string | null }
 ): Promise<{ error: string | null }> {
   return q.insert(supabase, payload)
 }
@@ -33,9 +33,9 @@ export async function insertTrainingType(
 export async function updateTrainingType(
   supabase: Db,
   id: string,
-  label: string
+  payload: { label: string; short_label: string | null }
 ): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('training_types').update({ label }).eq('id', id)
+  const { error } = await supabase.from('training_types').update(payload).eq('id', id)
   return { error: error?.message ?? null }
 }
 

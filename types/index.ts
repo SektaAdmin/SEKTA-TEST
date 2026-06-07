@@ -4,6 +4,7 @@ export interface TrainingType {
   id: string
   code: string
   label: string
+  short_label: string | null
   is_active: boolean
   sort_order: number
   created_at: string

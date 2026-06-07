@@ -109,6 +109,7 @@ export default function TrainingTypesPage() {
                     <tr>
                       <th style={{ width: 32 }}></th>
                       <th>Назва</th>
+                      <th>Коротка</th>
                       <th>Код</th>
                       <th>Статус</th>
                       <th></th>
@@ -128,6 +129,7 @@ export default function TrainingTypesPage() {
                       >
                         <td className={dndStyles.handle} title="Перетягнути">⠿</td>
                         <td className={styles.name}>{row.label}</td>
+                        <td>{row.short_label ?? <span style={{ color: 'var(--text-3)' }}>—</span>}</td>
                         <td><span className="badge badge-type">{row.code}</span></td>
                         <td>
                           <div className={styles.toggleBtns}>

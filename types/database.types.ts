@@ -881,6 +881,7 @@ export type Database = {
           id: string
           is_active: boolean
           label: string
+          short_label: string | null
           sort_order: number
         }
         Insert: {
@@ -889,6 +890,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           label: string
+          short_label?: string | null
           sort_order?: number
         }
         Update: {
@@ -897,6 +899,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           label?: string
+          short_label?: string | null
           sort_order?: number
         }
         Relationships: []
@@ -1115,6 +1118,17 @@ export type Database = {
         Returns: {
           balance_after: number
           client_id: string
+        }[]
+      }
+      get_session_debtors_for_date: {
+        Args: { p_date: string }
+        Returns: {
+          clients: Json
+          hall: string
+          short_label: string
+          start_min: number
+          time_str: string
+          trainer: string
         }[]
       }
       mark_attendance: {
