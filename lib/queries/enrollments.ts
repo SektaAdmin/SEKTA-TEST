@@ -144,12 +144,13 @@ export async function listSessionBalancesAfterClass(
 
   const cost = (r: Row) => r.sessions_used > 0 ? r.sessions_used : (r.hours_attended && r.hours_attended.length > 0 ? r.hours_attended.length : 1)
 
+  const atMs = new Date(atISO).getTime()
   const result: Record<string, number> = {}
   for (const clientId of clientIds) {
     const clientRows = rows.filter(r => r.client_id === clientId)
     const raw = rawBalanceMap[clientId] ?? 0
     const initialBalance = raw + clientRows.reduce((sum, r) => sum + cost(r), 0)
-    const usedUpTo = clientRows.filter(r => r.classes.starts_at <= atISO).reduce((sum, r) => sum + cost(r), 0)
+    const usedUpTo = clientRows.filter(r => new Date(r.classes.starts_at).getTime() <= atMs).reduce((sum, r) => sum + cost(r), 0)
     result[clientId] = initialBalance - usedUpTo
   }
   return { data: result, error: null }
