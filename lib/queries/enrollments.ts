@@ -118,6 +118,43 @@ export async function listSessionBalancesForClients(
   return { data: map, error: error?.message ?? null }
 }
 
+/**
+ * Батч-версія для адмінки: для кожного клієнта з clientIds рахує залишок сесій
+ * після заняття atISO — та сама логіка що й calcSessionBalanceAfter, але одним
+ * запитом на всіх клієнтів.
+ */
+export async function listSessionBalancesAfterClass(
+  supabase: Db,
+  clientIds: string[],
+  ticketType: string,
+  rawBalanceMap: Record<string, number>,
+  atISO: string,
+): Promise<{ data: Record<string, number>; error: string | null }> {
+  if (clientIds.length === 0) return { data: {}, error: null }
+  const { data, error } = await supabase
+    .from('enrollments')
+    .select('client_id, sessions_used, hours_attended, status, classes!inner(ticket_type, starts_at)')
+    .in('client_id', clientIds)
+    .eq('classes.ticket_type', ticketType)
+    .in('status', ['enrolled', 'attended', 'noshow', 'waitlist'])
+  if (error) return { data: rawBalanceMap, error: error.message }
+
+  type Row = { client_id: string; sessions_used: number; hours_attended: number[] | null; status: string; classes: { starts_at: string } }
+  const rows = (data ?? []) as Row[]
+
+  const cost = (r: Row) => r.sessions_used > 0 ? r.sessions_used : (r.hours_attended && r.hours_attended.length > 0 ? r.hours_attended.length : 1)
+
+  const result: Record<string, number> = {}
+  for (const clientId of clientIds) {
+    const clientRows = rows.filter(r => r.client_id === clientId)
+    const raw = rawBalanceMap[clientId] ?? 0
+    const initialBalance = raw + clientRows.reduce((sum, r) => sum + cost(r), 0)
+    const usedUpTo = clientRows.filter(r => r.classes.starts_at <= atISO).reduce((sum, r) => sum + cost(r), 0)
+    result[clientId] = initialBalance - usedUpTo
+  }
+  return { data: result, error: null }
+}
+
 export async function getClientSessionBalance(
   supabase: Db,
   clientId: string,

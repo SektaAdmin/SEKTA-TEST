@@ -8,6 +8,7 @@ import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, rest
 import {
   listEnrollmentsForClass,
   listSessionBalancesForClients,
+  listSessionBalancesAfterClass,
   getClientSessionBalance,
   changeEnrollmentStatus,
   checkClientConflict,
@@ -19,7 +20,7 @@ import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
-import { getActiveCount, effectiveSessionBalance } from '@/lib/scheduleMetrics'
+import { getActiveCount } from '@/lib/scheduleMetrics'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import { ActionSelect } from '@/components/ui/ActionSelect'
@@ -91,11 +92,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     return next
   }, [classId])
 
-  const fetchEnrollments = useCallback(async (ticketType: string) => {
+  const fetchEnrollments = useCallback(async (ticketType: string, startsAt: string) => {
     const { data: rows } = await listEnrollmentsForClass(supabase, classId)
     setEnrollments(rows as EnrollmentRow[])
     const clientIds = rows.map(e => e.client_id)
-    const { data: map } = await listSessionBalancesForClients(supabase, clientIds, ticketType)
+    const { data: rawMap } = await listSessionBalancesForClients(supabase, clientIds, ticketType)
+    const { data: map } = await listSessionBalancesAfterClass(supabase, clientIds, ticketType, rawMap, startsAt)
     setBalanceMap(map)
   }, [classId])
 
@@ -105,7 +107,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     if (showSpinner) setLoading(true)
     setFetchError(null)
     const clsData = await fetchClass()
-    if (clsData) await fetchEnrollments(clsData.ticket_type)
+    if (clsData) await fetchEnrollments(clsData.ticket_type, clsData.starts_at)
     if (showSpinner) setLoading(false)
   }, [fetchClass, fetchEnrollments])
 
@@ -158,7 +160,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     setSelectedClient(null)
     setClientBalance(null)
     setSelectedHours([1, 2])
-    await fetchEnrollments(cls.ticket_type)
+    await fetchEnrollments(cls.ticket_type, cls.starts_at)
     setEnrolling(false)
   }
 
@@ -182,7 +184,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       if (status === 'cancelled') {
         toast.success(charged ? 'Скасовано — заняття списано (несвоєчасно)' : 'Скасовано без списання')
       }
-      if (cls) await fetchEnrollments(cls.ticket_type)
+      if (cls) await fetchEnrollments(cls.ticket_type, cls.starts_at)
     }
     setActionLoading(null)
   }
@@ -227,7 +229,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     if (!success) {
       toast.error(error ?? 'Не вдалося скасувати відвідування')
     } else if (cls) {
-      await fetchEnrollments(cls.ticket_type)
+      await fetchEnrollments(cls.ticket_type, cls.starts_at)
     }
     setConfirmReverseId(null)
     setActionLoading(null)
@@ -556,9 +558,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               </td>
                               <td>
                                 {(() => {
-                                  const raw = balanceMap[e.client_id]
-                                  if (raw == null) return <span className="balance-muted">—</span>
-                                  const bal = effectiveSessionBalance(raw, e.status, e.sessions_used, e.hours_attended)
+                                  const bal = balanceMap[e.client_id]
+                                  if (bal == null) return <span className="balance-muted">—</span>
                                   return (
                                     <span className={bal > 0 ? 'balance-ok' : 'balance-warn'}>{bal}</span>
                                   )

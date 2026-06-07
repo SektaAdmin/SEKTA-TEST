@@ -6,7 +6,7 @@ import {
   getMyEnrollmentDetail,
   getBaseTicketPrice,
   listMySessionBalances,
-  countEnrolledSessionsBefore,
+  calcSessionBalanceAfter,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import CabinetHeader from '@/components/CabinetHeader'
@@ -39,17 +39,13 @@ export default async function VisitDetailPage({ params }: { params: { id: string
 
   const ticketType = enrollment.classes.ticket_type
   const startsAt = enrollment.classes.starts_at
-  // basePrice і кількість «зарезервованих» сесій залежать від ticketType/startsAt — паралельно.
-  const [{ data: basePrice }, { data: typeLabels }, { data: reservedBefore }] = await Promise.all([
+  const rawBalance = sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0
+
+  const [{ data: basePrice }, { data: typeLabels }, { data: sessionBalance }] = await Promise.all([
     getBaseTicketPrice(supabase, ticketType),
     typeLabelsP,
-    countEnrolledSessionsBefore(supabase, client.id, ticketType, startsAt),
+    calcSessionBalanceAfter(supabase, client.id, ticketType, rawBalance, startsAt),
   ])
-
-  const rawBalance = sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0
-  // Враховуємо enrolled-записи того самого типу, що починаються раніше цього заняття
-  // і ще не списані (sessions_used=0). Вони вже «займуть» сесії до нашого заняття.
-  const sessionBalance = rawBalance - reservedBefore
   const isPast = new Date(enrollment.classes.starts_at).getTime() <= Date.now()
 
   return (
