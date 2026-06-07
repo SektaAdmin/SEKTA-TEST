@@ -156,50 +156,6 @@ export async function getMyEnrollmentDetail(
   return { data, error: error?.message ?? null }
 }
 
-/**
- * Розраховує залишок сесій клієнта після конкретного заняття (atISO) — однакова
- * логіка для минулих, майбутніх і постфактум записів.
- *
- * Алгоритм:
- * 1. Беремо всі записи клієнта цього типу (будь-який статус крім cancelled без списання).
- * 2. Визначаємо «вартість» кожного: sessions_used якщо вже списано, інакше hours_attended.length ?? 1.
- * 3. initialBalance = rawBalance + sum(вартість усіх записів) — відновлюємо баланс до нуля занять.
- * 4. Повертаємо initialBalance − sum(вартість записів зі starts_at <= atISO).
- */
-export async function calcSessionBalanceAfter(
-  supabase: Db,
-  clientId: string,
-  ticketType: string,
-  rawBalance: number,
-  atISO: string,
-): Promise<{ data: number; error: string | null }> {
-  const { data, error } = await supabase
-    .from('enrollments')
-    .select('sessions_used, hours_attended, status, classes!inner(ticket_type, starts_at)')
-    .eq('client_id', clientId)
-    .eq('classes.ticket_type', ticketType)
-    .in('status', ['enrolled', 'attended', 'noshow', 'waitlist'])
-  if (error) return { data: rawBalance, error: error.message }
-
-  type Row = { sessions_used: number; hours_attended: number[] | null; status: string; classes: { starts_at: string } }
-  const rows = (data ?? []) as Row[]
-
-  const cost = (r: Row) => r.sessions_used > 0 ? r.sessions_used : (r.hours_attended && r.hours_attended.length > 0 ? r.hours_attended.length : 1)
-
-  // Відновлюємо баланс до нуля записів: rawBalance вже відображає фактичні списання
-  // (sessions_used > 0), тому додаємо лише їх, не enrolled (ще не списані).
-  const initialBalance = rawBalance + rows.reduce((sum, r) => sum + r.sessions_used, 0)
-
-  // Віднімаємо вартість усіх записів що починаються до atISO включно
-  const parseMs = (s: string) => new Date(s.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')).getTime()
-  const atMs = parseMs(atISO)
-  const usedUpTo = rows
-    .filter(r => parseMs(r.classes.starts_at) <= atMs)
-    .reduce((sum, r) => sum + cost(r), 0)
-
-  return { data: initialBalance - usedUpTo, error: null }
-}
-
 /** Базова ціна за 1 заняття типу — тікет із sessions=1 (роздрібна). null якщо нема. */
 export async function getBaseTicketPrice(
   supabase: Db,

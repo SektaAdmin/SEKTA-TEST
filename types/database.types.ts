@@ -1013,6 +1013,7 @@ export type Database = {
           trainer_amount: number
         }[]
       }
+      can_manage_enrollment: { Args: never; Returns: boolean }
       cancel_class_and_restore_sessions: {
         Args: { p_class_id: string }
         Returns: {
@@ -1107,6 +1108,13 @@ export type Database = {
         Returns: {
           classes_created: number
           enrollments_created: number
+        }[]
+      }
+      get_session_balance_after: {
+        Args: { p_at: string; p_client_ids: string[]; p_ticket_type: string }
+        Returns: {
+          balance_after: number
+          client_id: string
         }[]
       }
       mark_attendance: {

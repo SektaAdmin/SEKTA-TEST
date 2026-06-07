@@ -6,8 +6,8 @@ import {
   getMyEnrollmentDetail,
   getBaseTicketPrice,
   listMySessionBalances,
-  calcSessionBalanceAfter,
 } from '@/lib/queries/client-cabinet-data'
+import { getSessionBalancesAfter } from '@/lib/queries/enrollments'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import CabinetHeader from '@/components/CabinetHeader'
 import VisitDetail from './VisitDetail'
@@ -39,13 +39,13 @@ export default async function VisitDetailPage({ params }: { params: { id: string
 
   const ticketType = enrollment.classes.ticket_type
   const startsAt = enrollment.classes.starts_at
-  const rawBalance = sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0
 
-  const [{ data: basePrice }, { data: typeLabels }, { data: sessionBalance }] = await Promise.all([
+  const [{ data: basePrice }, { data: typeLabels }, { data: balanceMap }] = await Promise.all([
     getBaseTicketPrice(supabase, ticketType),
     typeLabelsP,
-    calcSessionBalanceAfter(supabase, client.id, ticketType, rawBalance, startsAt),
+    getSessionBalancesAfter(supabase, [client.id], ticketType, startsAt),
   ])
+  const sessionBalance = balanceMap[client.id] ?? (sessionBalances.find(s => s.ticket_type === ticketType)?.sessions_balance ?? 0)
   const isPast = new Date(enrollment.classes.starts_at).getTime() <= Date.now()
 
   return (

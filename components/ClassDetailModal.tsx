@@ -7,8 +7,7 @@ import { ModalShell } from '@/components/ui/ModalShell'
 import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
-  listSessionBalancesForClients,
-  listSessionBalancesAfterClass,
+  getSessionBalancesAfter,
   getClientSessionBalance,
   changeEnrollmentStatus,
   checkClientConflict,
@@ -96,8 +95,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
     const { data: rows } = await listEnrollmentsForClass(supabase, classId)
     setEnrollments(rows as EnrollmentRow[])
     const clientIds = rows.map(e => e.client_id)
-    const { data: rawMap } = await listSessionBalancesForClients(supabase, clientIds, ticketType)
-    const { data: map } = await listSessionBalancesAfterClass(supabase, clientIds, ticketType, rawMap, startsAt)
+    const { data: map } = await getSessionBalancesAfter(supabase, clientIds, ticketType, startsAt)
     setBalanceMap(map)
   }, [classId])
 

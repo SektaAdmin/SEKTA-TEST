@@ -100,61 +100,23 @@ export async function listEnrollmentsForClass(
   return { data: data ?? [], error: error?.message ?? null }
 }
 
-export async function listSessionBalancesForClients(
-  supabase: Db,
-  clientIds: string[],
-  ticketType: string
-): Promise<{ data: Record<string, number>; error: string | null }> {
-  if (clientIds.length === 0) return { data: {}, error: null }
-  const { data, error } = await supabase
-    .from('client_session_balances')
-    .select('client_id, sessions_balance')
-    .in('client_id', clientIds)
-    .eq('ticket_type', ticketType)
-  const map: Record<string, number> = {}
-  for (const b of (data ?? []) as { client_id: string; sessions_balance: number }[]) {
-    map[b.client_id] = b.sessions_balance
-  }
-  return { data: map, error: error?.message ?? null }
-}
-
-/**
- * Батч-версія для адмінки: для кожного клієнта з clientIds рахує залишок сесій
- * після заняття atISO — та сама логіка що й calcSessionBalanceAfter, але одним
- * запитом на всіх клієнтів.
- */
-export async function listSessionBalancesAfterClass(
+/** Залишок сесій після заняття atISO для кожного клієнта (батч). */
+export async function getSessionBalancesAfter(
   supabase: Db,
   clientIds: string[],
   ticketType: string,
-  rawBalanceMap: Record<string, number>,
   atISO: string,
 ): Promise<{ data: Record<string, number>; error: string | null }> {
   if (clientIds.length === 0) return { data: {}, error: null }
-  const { data, error } = await supabase
-    .from('enrollments')
-    .select('client_id, sessions_used, hours_attended, status, classes!inner(ticket_type, starts_at)')
-    .in('client_id', clientIds)
-    .eq('classes.ticket_type', ticketType)
-    .in('status', ['enrolled', 'attended', 'noshow', 'waitlist'])
-  if (error) return { data: rawBalanceMap, error: error.message }
-
-  type Row = { client_id: string; sessions_used: number; hours_attended: number[] | null; status: string; classes: { starts_at: string } }
-  const rows = (data ?? []) as Row[]
-
-  const cost = (r: Row) => r.sessions_used > 0 ? r.sessions_used : (r.hours_attended && r.hours_attended.length > 0 ? r.hours_attended.length : 1)
-
-  const parseMs = (s: string) => new Date(s.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')).getTime()
-  const atMs = parseMs(atISO)
+  const { data, error } = await supabase.rpc('get_session_balance_after', {
+    p_client_ids: clientIds,
+    p_ticket_type: ticketType,
+    p_at: atISO,
+  })
+  if (error) return { data: {}, error: error.message }
   const result: Record<string, number> = {}
-  for (const clientId of clientIds) {
-    const clientRows = rows.filter(r => r.client_id === clientId)
-    const raw = rawBalanceMap[clientId] ?? 0
-    // Відновлюємо баланс до нуля записів: rawBalance вже відображає фактичні списання
-    // (sessions_used > 0), тому додаємо лише їх, не enrolled (ще не списані).
-    const initialBalance = raw + clientRows.reduce((sum, r) => sum + r.sessions_used, 0)
-    const usedUpTo = clientRows.filter(r => parseMs(r.classes.starts_at) <= atMs).reduce((sum, r) => sum + cost(r), 0)
-    result[clientId] = initialBalance - usedUpTo
+  for (const row of (data ?? []) as { client_id: string; balance_after: number }[]) {
+    result[row.client_id] = row.balance_after
   }
   return { data: result, error: null }
 }
