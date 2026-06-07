@@ -89,7 +89,13 @@ export default function VisitDetail({ enrollment, basePrice, sessionBalance, typ
         <div className={styles.detailTrainerRole}>Тренер</div>
         <div className={styles.detailWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
         {isPast && (
-          <span className={enrollmentStatusClass(enrollment.status)}>{enrollmentStatusLabel(enrollment.status)}</span>
+          <span className={enrollmentStatusClass(enrollment.status)}>
+            {enrollment.status === 'cancelled' && enrollment.cancellation_source === 'class_cancelled'
+              ? 'Заняття скасовано студією'
+              : enrollment.status === 'cancelled' && enrollment.cancellation_source === 'staff_manual'
+              ? 'Скасовано адміністратором'
+              : enrollmentStatusLabel(enrollment.status)}
+          </span>
         )}
         {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
 

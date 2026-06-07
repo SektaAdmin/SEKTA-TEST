@@ -80,19 +80,19 @@ export async function listEnrollmentsForClass(
   classId: string
 ): Promise<{
   data: {
-    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
+    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string; cancellation_source: string | null;
     clients: { first_name: string | null; last_name: string | null } | null
   }[];
   error: string | null
 }> {
   type EnrollmentForClass = {
-    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string;
+    id: string; client_id: string; status: string; sessions_used: number; hours_attended: number[] | null; created_at: string; cancellation_source: string | null;
     clients: { first_name: string | null; last_name: string | null } | null
   }
 
   const { data, error } = await supabase
     .from('enrollments')
-    .select('id, client_id, status, sessions_used, hours_attended, created_at, clients(first_name, last_name)')
+    .select('id, client_id, status, sessions_used, hours_attended, created_at, cancellation_source, clients(first_name, last_name)')
     .eq('class_id', classId)
     .order('created_at')
     .returns<EnrollmentForClass[]>()

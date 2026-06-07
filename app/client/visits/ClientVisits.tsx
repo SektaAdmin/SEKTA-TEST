@@ -43,8 +43,12 @@ function historyBadgeClass(status: string, isLateCancel: boolean): string {
   return styles.visitTimerPast
 }
 
-function historyBadgeLabel(status: string, isLateCancel: boolean): string {
-  if (status === 'cancelled' && isLateCancel) return 'Скасувала · пізня відміна'
+function historyBadgeLabel(status: string, isLateCancel: boolean, cancellationSource: string | null): string {
+  if (status === 'cancelled') {
+    if (cancellationSource === 'class_cancelled') return 'Заняття скасовано студією'
+    if (cancellationSource === 'staff_manual') return 'Скасовано адміністратором'
+    if (isLateCancel) return 'Скасувала · пізня відміна'
+  }
   return enrollmentStatusLabel(status)
 }
 
@@ -189,7 +193,7 @@ export default function ClientVisits({
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
                     <span className={`${styles.visitHistoryBadge} ${historyBadgeClass(e.status, isLateCancel)}`}>
-                      {historyBadgeLabel(e.status, isLateCancel)}
+                      {historyBadgeLabel(e.status, isLateCancel, e.cancellation_source)}
                     </span>
                   </div>
                   <div className={styles.visitHistoryRow}>

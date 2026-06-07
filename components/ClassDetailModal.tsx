@@ -37,6 +37,7 @@ type EnrollmentRow = {
   sessions_used: number
   hours_attended: number[] | null
   created_at: string
+  cancellation_source: string | null
   clients: { first_name: string | null; last_name: string | null } | null
 }
 
@@ -546,10 +547,17 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               <td>
                                 {(() => {
                                   const Icon = enrollmentStatusIcon(e.status)
+                                  const sourceHint =
+                                    e.status === 'cancelled' && e.cancellation_source === 'class_cancelled'
+                                      ? 'студія'
+                                      : e.status === 'cancelled' && e.cancellation_source === 'self'
+                                      ? 'клієнт'
+                                      : null
                                   return (
                                     <span className={enrollmentStatusClass(e.status)}>
                                       {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                       {enrollmentStatusLabel(e.status)}
+                                      {sourceHint && <span style={{ opacity: 0.65, marginLeft: 4 }}>· {sourceHint}</span>}
                                     </span>
                                   )
                                 })()}

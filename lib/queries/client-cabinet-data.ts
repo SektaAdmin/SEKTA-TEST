@@ -109,7 +109,7 @@ export async function listMyPurchases(
 
 // Архів записів: минулі заняття за статусами attended/noshow/cancelled.
 const MY_PAST_SELECT =
-  'id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))' as const
+  'id, status, sessions_used, cancellation_source, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))' as const
 
 function myPastEnrollmentsQuery(supabase: Db, clientId: string) {
   return supabase
@@ -134,7 +134,7 @@ export async function listMyPastEnrollments(
 
 // Деталі одного запису (екран /client/visits/[id]). Усі поля заняття + тренер/зал.
 const MY_ENROLLMENT_DETAIL_SELECT =
-  'id, status, sessions_used, hours_attended, client_id, classes!inner(id, ticket_type, title, starts_at, duration_min, is_cancelled, trainers(name), halls(name))' as const
+  'id, status, sessions_used, hours_attended, client_id, cancellation_source, classes!inner(id, ticket_type, title, starts_at, duration_min, is_cancelled, trainers(name), halls(name))' as const
 
 function myEnrollmentDetailQuery(supabase: Db, clientId: string, enrollmentId: string) {
   return supabase
