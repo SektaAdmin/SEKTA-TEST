@@ -10,6 +10,7 @@ import {
   getSessionBalancesAfter,
   changeEnrollmentStatus,
   checkClientConflict,
+  deleteEnrollment,
   enrollClient as enrollClientQuery,
 } from '@/lib/queries/enrollments'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
@@ -69,6 +70,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
   const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   const [choreoDraft, setChoreoDraft] = useState('')
@@ -236,6 +238,20 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
       await fetchEnrollments(cls.ticket_type, cls.starts_at)
     }
     setConfirmReverseId(null)
+    setActionLoading(null)
+  }
+
+  // Фізичне видалення помилкового запису. Сесії повертаються в БД (RPC).
+  async function handleDeleteEnrollment(enrollment: EnrollmentRow) {
+    setActionLoading(enrollment.id)
+    const { success, error } = await deleteEnrollment(supabase, enrollment.id)
+    if (!success) {
+      toast.error(error ?? 'Не вдалося видалити запис')
+    } else {
+      toast.success('Запис видалено')
+      if (cls) await fetchEnrollments(cls.ticket_type, cls.starts_at)
+    }
+    setConfirmDeleteId(null)
     setActionLoading(null)
   }
 
@@ -582,6 +598,14 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                     <button className={styles.btnEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
                                     <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
                                   </div>
+                                ) : confirmDeleteId === e.id ? (
+                                  <div className={styles.deleteConfirm}>
+                                    <span className={styles.deleteHint}>Видалити назавжди?{e.sessions_used > 0 ? ' Сесію буде повернуто.' : ''}</span>
+                                    <div className={styles.actions}>
+                                      <button className={styles.btnDelete} onClick={() => handleDeleteEnrollment(e)} disabled={isLoading}>Видалити</button>
+                                      <button className={styles.btnCancelAdd} onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>Ні</button>
+                                    </div>
+                                  </div>
                                 ) : (
                                   <ActionSelect
                                     disabled={isLoading}
@@ -591,6 +615,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       else if (val === 'cancelled') { await handleStatusChange(e, 'cancelled') }
                                       else if (val === 'reverse') { setConfirmReverseId(e.id) }
                                       else if (val === 'reenroll') { await handleStatusChange(e, 'enrolled') }
+                                      else if (val === 'delete') { setConfirmDeleteId(e.id) }
                                     }}
                                     options={[
                                       ...(e.status === 'enrolled' ? [
@@ -604,6 +629,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       ...((e.status === 'cancelled' || e.status === 'noshow') ? [
                                         { value: 'reenroll', label: 'Повернути' },
                                       ] : []),
+                                      { value: 'delete', label: 'Видалити запис' },
                                     ]}
                                   />
                                 )}

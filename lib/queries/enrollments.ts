@@ -148,6 +148,22 @@ export async function changeEnrollmentStatus(
   return { success: true, charged: row?.charged ?? false, error: null }
 }
 
+/**
+ * Фізично видалити помилковий запис (реверс сесій у БД).
+ * Свідомий виняток з «м'яких видалень» (інв. #7): «випадкового» запису не повинно
+ * існувати взагалі. Тільки через RPC — гейт can_manage_enrollment() + реверс сесій
+ * у тій самій транзакції. Прямий DELETE enrollments з UI заборонено.
+ */
+export async function deleteEnrollment(
+  supabase: Db,
+  enrollmentId: string
+): Promise<{ success: boolean; error: string | null }> {
+  const { success, error } = await callRpc<{ success: boolean; error_message: string | null }>(
+    () => supabase.rpc('delete_enrollment', { p_enrollment_id: enrollmentId })
+  )
+  return { success, error }
+}
+
 export async function checkClientConflict(
   supabase: Db,
   clientId: string,
