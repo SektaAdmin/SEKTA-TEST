@@ -991,6 +991,11 @@
   color: var(--text-2);
 }
 
+.confirmStageEmpty {
+  color: var(--text-3);
+  font-style: italic;
+}
+
 /* ── Розклад самозапису (/client/schedule) ─────────────────────── */
 /* Заголовок дня — sticky, щоб при скролі було видно, який це день. */
 .dayHeader {

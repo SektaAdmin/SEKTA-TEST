@@ -216,12 +216,10 @@ export default function ClientSchedule({
               {confirm.trainers?.name ? ` · ${confirm.trainers.name}` : ''}
               {confirm.halls?.name ? ` · ${confirm.halls.name}` : ''}
             </div>
-            {confirm.choreo_stage && (
-              <div className={styles.confirmStage}>
-                <span className={styles.confirmStageLabel}>Етап хореографії:</span>{' '}
-                {confirm.choreo_stage}
-              </div>
-            )}
+            <div className={styles.confirmStage}>
+              <span className={styles.confirmStageLabel}>Етап хореографії:</span>{' '}
+              {confirm.choreo_stage || <span className={styles.confirmStageEmpty}>не вказано</span>}
+            </div>
             <p className={styles.confirmRule}>
               {toWaitlist
                 ? 'Зал заповнений — вас додамо в резерв (чергу). Місце не гарантоване; адміністрація повідомить, якщо звільниться.'
