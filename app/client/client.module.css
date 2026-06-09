@@ -1019,6 +1019,19 @@
   cursor: not-allowed;
 }
 
+/* «Записатись у резерв» — бурштиновий, щоб клієнт бачив: піде в чергу, а не в зал. */
+.bookBtnWaitlist {
+  color: var(--warning);
+  background: var(--warning-dim);
+  border-color: var(--warning-border);
+}
+
+.bookBtnWaitlist:disabled {
+  color: var(--text-3);
+  background: var(--bg-3);
+  border-color: var(--border);
+}
+
 /* Підказка під заблокованою кнопкою (немає оплачених занять типу). */
 .bookHint {
   margin-top: 8px;

@@ -1066,6 +1066,15 @@ export type Database = {
           ticket_type: string
         }[]
       }
+      class_availability: {
+        Args: { p_class_ids: string[] }
+        Returns: {
+          active_count: number
+          capacity: number
+          class_id: string
+          waitlist_count: number
+        }[]
+      }
       client_cancel: {
         Args: { p_enrollment_id: string }
         Returns: {

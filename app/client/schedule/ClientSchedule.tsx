@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses } from '@/lib/queries/client-cabinet-data'
-import type { BookableClassRow } from '@/lib/queries/client-cabinet-data'
+import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-cabinet-data'
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { ticketTypeShortLabel } from '@/lib/badges'
@@ -38,9 +38,19 @@ type Props = {
   typeLabels: Record<string, string>
   /** ticket_type → залишок сесій (для блокування запису без оплати). */
   balanceByType: Record<string, number>
+  /** class_id → заповненість (active/waitlist/capacity) для тексту «у резерв». */
+  availability: Record<string, ClassAvailability>
   /** class_id → статус активного запису клієнта (вже записаний — без дубля). */
   initialEnrolled: Record<string, EnrolledState>
   initialClasses: BookableClassRow[]
+}
+
+// Чи піде запис у резерв: місць немає АБО в черзі вже хтось є (дзеркало логіки
+// client_enroll — новий не перестрибує тих, хто чекає). Має лишатися синхронним з RPC.
+function goesToWaitlist(a: ClassAvailability | undefined): boolean {
+  if (!a) return false
+  if (a.waitlist_count > 0) return true
+  return a.capacity != null && a.active_count >= a.capacity
 }
 
 export default function ClientSchedule({
@@ -48,6 +58,7 @@ export default function ClientSchedule({
   toISO,
   typeLabels,
   balanceByType,
+  availability,
   initialEnrolled,
   initialClasses,
 }: Props) {
@@ -110,7 +121,7 @@ export default function ClientSchedule({
     // інакше 'enrolled'. Показуємо точний бейдж і тост (без оптимістичного припущення).
     const finalStatus: EnrolledState = status === 'waitlist' ? 'waitlist' : 'enrolled'
     setEnrolled(prev => ({ ...prev, [classId]: finalStatus }))
-    if (finalStatus === 'waitlist') toast.info('Зал повний — вас додано в чергу')
+    if (finalStatus === 'waitlist') toast.info('Вас додано в резерв')
     else toast.success('Ви записані')
   }
 
@@ -128,6 +139,7 @@ export default function ClientSchedule({
               const state = enrolled[c.id]
               const hasSessions = availableByType(c.ticket_type) > 0
               const busy = enrolling === c.id
+              const toWaitlist = goesToWaitlist(availability[c.id])
               return (
                 <div key={c.id} className={styles.visitCardStatic}>
                   <div className={styles.bookTime}>
@@ -143,17 +155,17 @@ export default function ClientSchedule({
 
                   {state ? (
                     <span className={`${styles.bookEnrolled} ${state === 'waitlist' ? styles.bookWaitlist : ''}`}>
-                      {state === 'waitlist' ? 'Ви у черзі' : 'Ви записані'}
+                      {state === 'waitlist' ? 'Ви в резерві' : 'Ви записані'}
                     </span>
                   ) : (
                     <>
                       <button
                         type="button"
-                        className={styles.bookBtn}
+                        className={`${styles.bookBtn} ${toWaitlist ? styles.bookBtnWaitlist : ''}`}
                         disabled={!hasSessions || busy}
                         onClick={() => handleEnroll(c.id)}
                       >
-                        {busy ? 'Записуємо…' : 'Записатись'}
+                        {busy ? 'Записуємо…' : toWaitlist ? 'Записатись у резерв' : 'Записатись'}
                       </button>
                       {!hasSessions && (
                         <p className={styles.bookHint}>

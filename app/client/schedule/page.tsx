@@ -5,6 +5,7 @@ import {
   getMyClient,
   listMySessionBalances,
   listBookableClasses,
+  getClassAvailability,
   listMyUpcomingEnrollments,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
@@ -39,6 +40,9 @@ export default async function ClientSchedulePage() {
       listMyUpcomingEnrollments(supabase, client.id, fromISO),
     ])
 
+  // Заповненість — окремим запитом по вже отриманих class_id (для тексту «у резерв»).
+  const { data: availability } = await getClassAvailability(supabase, classes.map(c => c.id))
+
   const balanceByType = Object.fromEntries(
     sessionBalances.map(b => [b.ticket_type, b.sessions_balance])
   )
@@ -61,6 +65,7 @@ export default async function ClientSchedulePage() {
           toISO={toISO}
           typeLabels={typeLabels}
           balanceByType={balanceByType}
+          availability={availability}
           initialEnrolled={initialEnrolled}
           initialClasses={classes}
         />

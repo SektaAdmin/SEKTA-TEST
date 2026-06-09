@@ -157,10 +157,9 @@ export async function getMyEnrollmentDetail(
 }
 
 // Розклад для самозапису клієнта (екран /client/schedule). Майбутні незаскасовані
-// заняття у вікні [fromISO, toISO]. RLS пускає client на читання classes/trainers/halls
-// (client_select / trainer_client_select / staff_ref_select). Заповненість клієнту НЕ
-// показуємо: enrollments під RLS client_select_own (бачить лише свої), а повний зал
-// коректно обробляє сам client_enroll (тригер → waitlist), бейдж «Черга» — постфактум.
+// group-заняття у вікні [fromISO, toISO] (інші типи клієнту не показуємо — бізнес-вимога).
+// RLS пускає client на читання classes/trainers/halls. Заповненість — окремим агрегатом
+// class_availability (SECURITY DEFINER, бо enrollments під client_select_own).
 const BOOKABLE_CLASS_SELECT =
   'id, ticket_type, title, starts_at, duration_min, trainers(name), halls(name)' as const
 
@@ -169,6 +168,7 @@ function bookableClassesQuery(supabase: Db, fromISO: string, toISO: string) {
     .from('classes')
     .select(BOOKABLE_CLASS_SELECT)
     .eq('is_cancelled', false)
+    .eq('ticket_type', 'group')
     .gte('starts_at', fromISO)
     .lte('starts_at', toISO)
     .order('starts_at', { ascending: true })
@@ -176,7 +176,7 @@ function bookableClassesQuery(supabase: Db, fromISO: string, toISO: string) {
 
 export type BookableClassRow = QueryData<ReturnType<typeof bookableClassesQuery>>[number]
 
-/** Майбутні заняття у вікні [fromISO, toISO] для самозапису клієнта (хронологічно). */
+/** Майбутні group-заняття у вікні [fromISO, toISO] для самозапису клієнта (хронологічно). */
 export async function listBookableClasses(
   supabase: Db,
   fromISO: string,
@@ -184,6 +184,32 @@ export async function listBookableClasses(
 ): Promise<{ data: BookableClassRow[]; error: string | null }> {
   const { data, error } = await bookableClassesQuery(supabase, fromISO, toISO)
   return { data: data ?? [], error: error?.message ?? null }
+}
+
+export type ClassAvailability = {
+  active_count: number
+  waitlist_count: number
+  capacity: number | null
+}
+
+/** Заповненість занять (active/waitlist/capacity) для тексту кнопки «у резерв».
+ *  RPC class_availability — лише числа, без персональних даних (IDOR-безпечно). */
+export async function getClassAvailability(
+  supabase: Db,
+  classIds: string[]
+): Promise<{ data: Record<string, ClassAvailability>; error: string | null }> {
+  if (classIds.length === 0) return { data: {}, error: null }
+  const { data, error } = await supabase.rpc('class_availability', { p_class_ids: classIds })
+  if (error) return { data: {}, error: error.message }
+  const map: Record<string, ClassAvailability> = {}
+  for (const r of data ?? []) {
+    map[r.class_id] = {
+      active_count: r.active_count,
+      waitlist_count: r.waitlist_count,
+      capacity: r.capacity,
+    }
+  }
+  return { data: map, error: null }
 }
 
 /** Базова ціна за 1 заняття типу — тікет із sessions=1 (роздрібна). null якщо нема. */
