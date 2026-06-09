@@ -156,6 +156,36 @@ export async function getMyEnrollmentDetail(
   return { data, error: error?.message ?? null }
 }
 
+// Розклад для самозапису клієнта (екран /client/schedule). Майбутні незаскасовані
+// заняття у вікні [fromISO, toISO]. RLS пускає client на читання classes/trainers/halls
+// (client_select / trainer_client_select / staff_ref_select). Заповненість клієнту НЕ
+// показуємо: enrollments під RLS client_select_own (бачить лише свої), а повний зал
+// коректно обробляє сам client_enroll (тригер → waitlist), бейдж «Черга» — постфактум.
+const BOOKABLE_CLASS_SELECT =
+  'id, ticket_type, title, starts_at, duration_min, trainers(name), halls(name)' as const
+
+function bookableClassesQuery(supabase: Db, fromISO: string, toISO: string) {
+  return supabase
+    .from('classes')
+    .select(BOOKABLE_CLASS_SELECT)
+    .eq('is_cancelled', false)
+    .gte('starts_at', fromISO)
+    .lte('starts_at', toISO)
+    .order('starts_at', { ascending: true })
+}
+
+export type BookableClassRow = QueryData<ReturnType<typeof bookableClassesQuery>>[number]
+
+/** Майбутні заняття у вікні [fromISO, toISO] для самозапису клієнта (хронологічно). */
+export async function listBookableClasses(
+  supabase: Db,
+  fromISO: string,
+  toISO: string
+): Promise<{ data: BookableClassRow[]; error: string | null }> {
+  const { data, error } = await bookableClassesQuery(supabase, fromISO, toISO)
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
 /** Базова ціна за 1 заняття типу — тікет із sessions=1 (роздрібна). null якщо нема. */
 export async function getBaseTicketPrice(
   supabase: Db,

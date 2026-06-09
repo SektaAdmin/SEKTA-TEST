@@ -7,6 +7,7 @@ export const MSG = {
     activeEnrollments:  'Немає активних занять',
     permanentRecords:   'Немає постійних записів',
     futureEnrollments:  'Немає майбутніх записів',
+    bookableClasses:    'Немає занять на найближчий тиждень',
     transactions:       'Транзакцій немає',
     purchases:          'Покупок ще немає',
     pastEnrollments:    'Минулих записів немає',

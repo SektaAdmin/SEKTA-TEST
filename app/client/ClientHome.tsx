@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
-import { ScheduleIcon, SalesIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
+import { ScheduleIcon, SalesIcon, JournalIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
 import StudioContactIcons from '@/components/StudioContactIcons'
 import styles from './client.module.css'
 
@@ -37,8 +37,13 @@ export default function ClientHome({ name, email, contacts }: Props) {
 
       <nav className={styles.menu}>
         {/* prefetch — Next тягне роут заздалегідь, тап відкривається миттєво. */}
-        <Link href="/client/visits" prefetch className={styles.menuItem}>
+        <Link href="/client/schedule" prefetch className={styles.menuItem}>
           <span className={styles.menuIcon}><ScheduleIcon /></span>
+          <span className={styles.menuLabel}>Розклад</span>
+          <ArrowRightIcon className={styles.menuArrow} />
+        </Link>
+        <Link href="/client/visits" prefetch className={styles.menuItem}>
+          <span className={styles.menuIcon}><JournalIcon /></span>
           <span className={styles.menuLabel}>Мої візити</span>
           <ArrowRightIcon className={styles.menuArrow} />
         </Link>
