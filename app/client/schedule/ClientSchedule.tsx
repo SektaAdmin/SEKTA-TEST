@@ -145,7 +145,8 @@ export default function ClientSchedule({
               const state = enrolled[c.id]
               const hasSessions = availableByType(c.ticket_type) > 0
               const busy = enrolling === c.id
-              const toWaitlist = goesToWaitlist(availability[c.id])
+              const av = availability[c.id]
+              const toWaitlist = goesToWaitlist(av)
               return (
                 <div key={c.id} className={styles.visitCardStatic}>
                   <div className={styles.bookTime}>
@@ -158,6 +159,15 @@ export default function ClientSchedule({
                     {c.halls?.name ? ` · ${c.halls.name}` : ''}
                     {` · ${c.duration_min} хв`}
                   </div>
+                  {c.choreo_stage && (
+                    <div className={styles.bookStage}>{c.choreo_stage}</div>
+                  )}
+                  {av?.capacity != null && (
+                    <div className={styles.bookSeats}>
+                      Місця: {Math.min(av.active_count, av.capacity)}/{av.capacity}
+                      {av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}
+                    </div>
+                  )}
 
                   {state ? (
                     <span className={`${styles.bookEnrolled} ${state === 'waitlist' ? styles.bookWaitlist : ''}`}>
@@ -208,23 +218,53 @@ export default function ClientSchedule({
               />
             }
           >
+            {/* Блок 1 — про заняття: що / коли / тренер-зал / етап. */}
+            <div className={styles.confirmSectionLabel}>Заняття</div>
             <div className={styles.confirmTitle}>
               {confirm.title || typeLabel(confirm.ticket_type)}
             </div>
-            <div className={styles.confirmMeta}>
-              {fullWhen(confirm.starts_at, confirm.duration_min)}
-              {confirm.trainers?.name ? ` · ${confirm.trainers.name}` : ''}
-              {confirm.halls?.name ? ` · ${confirm.halls.name}` : ''}
+            <div className={styles.confirmRow}>
+              <span className={styles.confirmRowLabel}>Коли</span>
+              <span className={styles.confirmRowValue}>{fullWhen(confirm.starts_at, confirm.duration_min)}</span>
             </div>
-            <div className={styles.confirmStage}>
-              <span className={styles.confirmStageLabel}>Етап хореографії:</span>{' '}
-              {confirm.choreo_stage || <span className={styles.confirmStageEmpty}>не вказано</span>}
+            {confirm.trainers?.name && (
+              <div className={styles.confirmRow}>
+                <span className={styles.confirmRowLabel}>Тренер</span>
+                <span className={styles.confirmRowValue}>{confirm.trainers.name}</span>
+              </div>
+            )}
+            {confirm.halls?.name && (
+              <div className={styles.confirmRow}>
+                <span className={styles.confirmRowLabel}>Зал</span>
+                <span className={styles.confirmRowValue}>{confirm.halls.name}</span>
+              </div>
+            )}
+            <div className={styles.confirmRow}>
+              <span className={styles.confirmRowLabel}>Етап хореографії</span>
+              <span className={styles.confirmRowValue}>
+                {confirm.choreo_stage || <span className={styles.confirmStageEmpty}>не вказано</span>}
+              </span>
             </div>
-            <p className={styles.confirmRule}>
-              {toWaitlist
-                ? 'Зал заповнений — вас додамо в резерв (чергу). Місце не гарантоване; адміністрація повідомить, якщо звільниться.'
-                : <>Після заняття спишеться {cost} {pluralHours(cost)}. Залишок стане {after} {pluralHours(after)}.</>}
-            </p>
+
+            {/* Блок 2 — про запис: списання/залишок або резерв. */}
+            <div className={styles.confirmSectionLabel}>Запис</div>
+            {toWaitlist ? (
+              <p className={styles.confirmReserve}>
+                Зал заповнений — вас додамо в <b>резерв</b> (чергу). Місце не гарантоване;
+                адміністрація повідомить, якщо звільниться.
+              </p>
+            ) : (
+              <>
+                <div className={styles.confirmRow}>
+                  <span className={styles.confirmRowLabel}>Спишеться</span>
+                  <span className={styles.confirmRowValue}>{cost} {pluralHours(cost)}</span>
+                </div>
+                <div className={styles.confirmRow}>
+                  <span className={styles.confirmRowLabel}>Залишок стане</span>
+                  <span className={styles.confirmRowValue}>{after} {pluralHours(after)}</span>
+                </div>
+              </>
+            )}
           </ModalShell>
         )
       })()}
