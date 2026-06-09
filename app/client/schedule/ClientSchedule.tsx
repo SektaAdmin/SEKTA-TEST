@@ -202,7 +202,10 @@ export default function ClientSchedule({
       {confirm && (() => {
         const toWaitlist = goesToWaitlist(availability[confirm.id])
         const cost = 1 // group-заняття = 1 сесія
-        const after = availableByType(confirm.ticket_type) - cost
+        // «Залишок стане» = реальний баланс сесій (client_session_balances) − cost.
+        // НЕ availableByType (там віднято інші майбутні записи вікна) — списання за
+        // кожен запис іде окремо в auto_close, тож «було N → стане N−1» від балансу.
+        const after = (balanceByType[confirm.ticket_type] ?? 0) - cost
         const busy = enrolling === confirm.id
         return (
           <ModalShell
