@@ -97,20 +97,21 @@ export default function ClientSchedule({
 
   async function handleEnroll(classId: string) {
     setEnrolling(classId)
-    const { success, error } = await clientEnroll(supabase, classId)
+    const { success, status, error } = await clientEnroll(supabase, classId)
     setEnrolling(null)
     if (!success) {
       const msg = (error && ENROLL_ERROR_LABEL[error]) || 'Не вдалося записатись'
       toast.error(msg)
-      // Дубль/конфлікт — підтягнемо реальний стан із сервера.
+      // Дубль — клієнт уже в списку; підтягнемо реальний стан із сервера.
       if (error === 'duplicate') setEnrolled(prev => ({ ...prev, [classId]: 'enrolled' }))
       return
     }
-    // client_enroll вставляє 'enrolled'; тригер міг перевести в waitlist при повному
-    // залі. Точний статус знатимемо після refetch; оптимістично ставимо enrolled,
-    // refetchOnVisible/наступний рендер вирівняють.
-    setEnrolled(prev => ({ ...prev, [classId]: 'enrolled' }))
-    toast.success('Ви записані')
+    // status — реальний результат ПІСЛЯ тригера capacity: 'waitlist' якщо зал повний,
+    // інакше 'enrolled'. Показуємо точний бейдж і тост (без оптимістичного припущення).
+    const finalStatus: EnrolledState = status === 'waitlist' ? 'waitlist' : 'enrolled'
+    setEnrolled(prev => ({ ...prev, [classId]: finalStatus }))
+    if (finalStatus === 'waitlist') toast.info('Зал повний — вас додано в чергу')
+    else toast.success('Ви записані')
   }
 
   if (days.length === 0) {

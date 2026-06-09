@@ -10,12 +10,15 @@ import { callRpc } from '@/lib/rpc'
 export async function clientEnroll(
   supabase: Db,
   classId: string
-): Promise<{ success: boolean; enrollmentId: string | null; error: string | null }> {
+): Promise<{ success: boolean; enrollmentId: string | null; status: 'enrolled' | 'waitlist' | null; error: string | null }> {
   const { row, success, error } = await callRpc<{
-    success: boolean; error_message: string | null; enrollment_id: string | null
+    success: boolean; error_message: string | null; enrollment_id: string | null; enrolled_status: string | null
   }>(() => supabase.rpc('client_enroll', { p_class_id: classId }))
-  if (!success) return { success: false, enrollmentId: null, error }
-  return { success: true, enrollmentId: row?.enrollment_id ?? null, error: null }
+  if (!success) return { success: false, enrollmentId: null, status: null, error }
+  // enrolled_status — реальний статус ПІСЛЯ тригера capacity (enrolled | waitlist),
+  // щоб кабінет показав «Ви записані» чи «Ви у черзі» точно, а не оптимістично.
+  const status = row?.enrolled_status === 'waitlist' ? 'waitlist' : 'enrolled'
+  return { success: true, enrollmentId: row?.enrollment_id ?? null, status, error: null }
 }
 
 /**

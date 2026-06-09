@@ -1077,6 +1077,7 @@ export type Database = {
       client_enroll: {
         Args: { p_class_id: string }
         Returns: {
+          enrolled_status: string
           enrollment_id: string
           error_message: string
           success: boolean
