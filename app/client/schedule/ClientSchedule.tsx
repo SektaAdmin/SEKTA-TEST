@@ -149,25 +149,23 @@ export default function ClientSchedule({
               const toWaitlist = goesToWaitlist(av)
               return (
                 <div key={c.id} className={styles.visitCardStatic}>
-                  <div className={styles.bookTime}>
+                  {/* Головне (велике): час + тренер. Другорядне (мале сіре): тип/зал/тривалість. */}
+                  <div className={styles.bookHead}>
                     <span className={styles.bookTypeDot} style={{ background: typeColor(c.ticket_type) }} />
-                    {hhmm(new Date(c.starts_at))}
-                  </div>
-                  <div className={styles.visitMeta}>
-                    {c.title || typeLabel(c.ticket_type)}
-                    {c.trainers?.name ? ` · ${c.trainers.name}` : ''}
-                    {c.halls?.name ? ` · ${c.halls.name}` : ''}
-                    {` · ${c.duration_min} хв`}
+                    <span className={styles.bookTime}>{hhmm(new Date(c.starts_at))}</span>
+                    {c.trainers?.name && <span className={styles.bookTrainer}>{c.trainers.name}</span>}
                   </div>
                   {c.choreo_stage && (
                     <div className={styles.bookStage}>{c.choreo_stage}</div>
                   )}
-                  {av?.capacity != null && (
-                    <div className={styles.bookSeats}>
-                      Місця: {Math.min(av.active_count, av.capacity)}/{av.capacity}
-                      {av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}
-                    </div>
-                  )}
+                  <div className={styles.bookSub}>
+                    {c.title || typeLabel(c.ticket_type)}
+                    {c.halls?.name ? ` · ${c.halls.name}` : ''}
+                    {` · ${c.duration_min} хв`}
+                    {av?.capacity != null
+                      ? ` · місця ${Math.min(av.active_count, av.capacity)}/${av.capacity}${av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}`
+                      : ''}
+                  </div>
 
                   {state ? (
                     <span className={`${styles.bookEnrolled} ${state === 'waitlist' ? styles.bookWaitlist : ''}`}>
@@ -221,52 +219,55 @@ export default function ClientSchedule({
               />
             }
           >
-            {/* Блок 1 — про заняття: що / коли / тренер-зал / етап. */}
-            <div className={styles.confirmSectionLabel}>Заняття</div>
-            <div className={styles.confirmTitle}>
-              {confirm.title || typeLabel(confirm.ticket_type)}
+            {/* Шапка — найважливіше для клієнта великим: назва + час + тренер. */}
+            <div className={styles.confirmHero}>
+              <div className={styles.confirmHeroName}>{confirm.title || typeLabel(confirm.ticket_type)}</div>
+              <div className={styles.confirmHeroWhen}>{fullWhen(confirm.starts_at, confirm.duration_min)}</div>
+              {confirm.trainers?.name && (
+                <div className={styles.confirmHeroTrainer}>Тренер: {confirm.trainers.name}</div>
+              )}
             </div>
-            <div className={styles.confirmRow}>
-              <span className={styles.confirmRowLabel}>Коли</span>
-              <span className={styles.confirmRowValue}>{fullWhen(confirm.starts_at, confirm.duration_min)}</span>
-            </div>
-            {confirm.trainers?.name && (
-              <div className={styles.confirmRow}>
-                <span className={styles.confirmRowLabel}>Тренер</span>
-                <span className={styles.confirmRowValue}>{confirm.trainers.name}</span>
-              </div>
-            )}
-            {confirm.halls?.name && (
-              <div className={styles.confirmRow}>
-                <span className={styles.confirmRowLabel}>Зал</span>
-                <span className={styles.confirmRowValue}>{confirm.halls.name}</span>
-              </div>
-            )}
-            <div className={styles.confirmRow}>
-              <span className={styles.confirmRowLabel}>Етап хореографії</span>
-              <span className={styles.confirmRowValue}>
+
+            {/* Етап хореографії — окремий виділений блок (ключове для клієнта). */}
+            <div className={styles.confirmStageBox}>
+              <span className={styles.confirmStageBoxLabel}>Етап хореографії</span>
+              <span className={styles.confirmStageBoxValue}>
                 {confirm.choreo_stage || <span className={styles.confirmStageEmpty}>не вказано</span>}
               </span>
             </div>
 
-            {/* Блок 2 — про запис: списання/залишок або резерв. */}
-            <div className={styles.confirmSectionLabel}>Запис</div>
-            {toWaitlist ? (
+            {/* Деталі запису — окрема картка з рядками-роздільниками. */}
+            <div className={styles.confirmCard}>
+              {confirm.halls?.name && (
+                <div className={styles.confirmRow}>
+                  <span className={styles.confirmRowLabel}>Зал</span>
+                  <span className={styles.confirmRowValue}>{confirm.halls.name}</span>
+                </div>
+              )}
+              {toWaitlist ? (
+                <div className={styles.confirmRow}>
+                  <span className={styles.confirmRowLabel}>Статус</span>
+                  <span className={styles.confirmRowValue}>У резерв (черга)</span>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.confirmRow}>
+                    <span className={styles.confirmRowLabel}>Спишеться</span>
+                    <span className={styles.confirmRowValue}>{cost} {pluralHours(cost)}</span>
+                  </div>
+                  <div className={styles.confirmRow}>
+                    <span className={styles.confirmRowLabel}>Залишок стане</span>
+                    <span className={styles.confirmRowValue}>{after} {pluralHours(after)}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {toWaitlist && (
               <p className={styles.confirmReserve}>
-                Зал заповнений — вас додамо в <b>резерв</b> (чергу). Місце не гарантоване;
+                Зал заповнений — вас додамо в <b>резерв</b>. Місце не гарантоване;
                 адміністрація повідомить, якщо звільниться.
               </p>
-            ) : (
-              <>
-                <div className={styles.confirmRow}>
-                  <span className={styles.confirmRowLabel}>Спишеться</span>
-                  <span className={styles.confirmRowValue}>{cost} {pluralHours(cost)}</span>
-                </div>
-                <div className={styles.confirmRow}>
-                  <span className={styles.confirmRowLabel}>Залишок стане</span>
-                  <span className={styles.confirmRowValue}>{after} {pluralHours(after)}</span>
-                </div>
-              </>
             )}
           </ModalShell>
         )

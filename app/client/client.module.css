@@ -964,33 +964,69 @@
   font-weight: 500;
 }
 
-/* Модалка підтвердження запису (/client/schedule) — секції «Заняття» / «Запис». */
-.confirmSectionLabel {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-3);
-  margin: 16px 0 8px;
-}
-.confirmSectionLabel:first-child {
-  margin-top: 0;
+/* Модалка підтвердження запису (/client/schedule). */
+/* Шапка — найважливіше великим: назва → час → тренер. */
+.confirmHero {
+  margin-bottom: 16px;
 }
 
-.confirmTitle {
-  font-size: 16px;
+.confirmHeroName {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.confirmHeroWhen {
+  font-size: 14px;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.confirmHeroTrainer {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+/* Етап хореографії — окремий виділений блок (ключове для клієнта). */
+.confirmStageBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  background: var(--accent-dim, var(--bg-3));
+  border-radius: var(--radius);
+}
+
+.confirmStageBoxLabel {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.confirmStageBoxValue {
+  font-size: 15px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 8px;
 }
 
-/* Рядок «лейбл — значення» (коли/тренер/зал/етап, спишеться/залишок). */
+/* Картка деталей запису — рядки з роздільниками, щоб значення не зливались. */
+.confirmCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px;
+}
+
 .confirmRow {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 5px 0;
+  padding: 11px 0;
   font-size: 14px;
+  border-top: 1px solid var(--border);
+}
+.confirmRow:first-child {
+  border-top: none;
 }
 
 .confirmRowLabel {
@@ -1000,6 +1036,7 @@
 
 .confirmRowValue {
   color: var(--text);
+  font-weight: 500;
   text-align: right;
 }
 
@@ -1013,6 +1050,7 @@
   font-size: 14px;
   line-height: 1.5;
   color: var(--warning);
+  margin-top: 12px;
   padding: 10px 12px;
   background: var(--warning-dim);
   border: 1px solid var(--warning-border);
@@ -1036,36 +1074,47 @@
 /* Кольорова крапка-тип ліворуч від часу заняття. */
 .bookTypeDot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
+  align-self: center;
+}
+
+/* Головний рядок картки: час + тренер (для клієнта це найважливіше). */
+.bookHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .bookTime {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text);
 }
 
-/* Етап хореографії на картці — головний різнитель занять, тому виділений тегом. */
+.bookTrainer {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Етап хореографії — головний різнитель занять, виділений тегом одразу під часом. */
 .bookStage {
   display: inline-block;
   margin-top: 8px;
-  padding: 3px 8px;
-  font-size: 12px;
+  padding: 3px 9px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--text);
-  background: var(--bg-3);
+  color: var(--accent, var(--text));
+  background: var(--accent-dim, var(--bg-3));
   border-radius: var(--radius-sm);
 }
 
-/* Заповненість залу (8/10 · у резерві N) — приглушено. */
-.bookSeats {
-  margin-top: 6px;
+/* Другорядне (тип · зал · тривалість · місця) — мале, приглушене, під усім. */
+.bookSub {
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-2);
 }
