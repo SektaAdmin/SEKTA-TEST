@@ -8,8 +8,10 @@ import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
-import { hhmm } from '@/lib/formatters'
+import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { ModalShell } from '@/components/ui/ModalShell'
+import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
@@ -66,6 +68,8 @@ export default function ClientSchedule({
   // з initialEnrolled зі сервера. enrolling — id заняття у процесі запиту.
   const [enrolled, setEnrolled] = useState<Record<string, EnrolledState>>(initialEnrolled)
   const [enrolling, setEnrolling] = useState<string | null>(null)
+  // Заняття, для якого відкрита модалка підтвердження (деталі + етап хореографії).
+  const [confirm, setConfirm] = useState<BookableClassRow | null>(null)
 
   const { data: classes } = useListQuery(
     () => listBookableClasses(supabase, fromISO, toISO),
@@ -115,6 +119,7 @@ export default function ClientSchedule({
       toast.error(msg)
       // Дубль — клієнт уже в списку; підтягнемо реальний стан із сервера.
       if (error === 'duplicate') setEnrolled(prev => ({ ...prev, [classId]: 'enrolled' }))
+      setConfirm(null)
       return
     }
     // status — реальний результат ПІСЛЯ тригера capacity: 'waitlist' якщо зал повний,
@@ -123,6 +128,7 @@ export default function ClientSchedule({
     setEnrolled(prev => ({ ...prev, [classId]: finalStatus }))
     if (finalStatus === 'waitlist') toast.info('Вас додано в резерв')
     else toast.success('Ви записані')
+    setConfirm(null)
   }
 
   if (days.length === 0) {
@@ -163,7 +169,7 @@ export default function ClientSchedule({
                         type="button"
                         className={`${styles.bookBtn} ${toWaitlist ? styles.bookBtnWaitlist : ''}`}
                         disabled={!hasSessions || busy}
-                        onClick={() => handleEnroll(c.id)}
+                        onClick={() => setConfirm(c)}
                       >
                         {busy ? 'Записуємо…' : toWaitlist ? 'Записатись у резерв' : 'Записатись'}
                       </button>
@@ -182,6 +188,48 @@ export default function ClientSchedule({
           </div>
         </div>
       ))}
+
+      {confirm && (() => {
+        const toWaitlist = goesToWaitlist(availability[confirm.id])
+        const cost = 1 // group-заняття = 1 сесія
+        const after = availableByType(confirm.ticket_type) - cost
+        const busy = enrolling === confirm.id
+        return (
+          <ModalShell
+            title={toWaitlist ? 'Записатись у резерв?' : 'Підтвердити запис?'}
+            onClose={() => !busy && setConfirm(null)}
+            footer={
+              <ModalFooter
+                onCancel={() => setConfirm(null)}
+                onSave={() => handleEnroll(confirm.id)}
+                saveLabel={toWaitlist ? 'У резерв' : 'Записатись'}
+                cancelLabel="Назад"
+                loading={busy}
+              />
+            }
+          >
+            <div className={styles.confirmTitle}>
+              {confirm.title || typeLabel(confirm.ticket_type)}
+            </div>
+            <div className={styles.confirmMeta}>
+              {fullWhen(confirm.starts_at, confirm.duration_min)}
+              {confirm.trainers?.name ? ` · ${confirm.trainers.name}` : ''}
+              {confirm.halls?.name ? ` · ${confirm.halls.name}` : ''}
+            </div>
+            {confirm.choreo_stage && (
+              <div className={styles.confirmStage}>
+                <span className={styles.confirmStageLabel}>Етап хореографії:</span>{' '}
+                {confirm.choreo_stage}
+              </div>
+            )}
+            <p className={styles.confirmRule}>
+              {toWaitlist
+                ? 'Зал заповнений — вас додамо в резерв (чергу). Місце не гарантоване; адміністрація повідомить, якщо звільниться.'
+                : <>Після заняття спишеться {cost} {pluralHours(cost)}. Залишок стане {after} {pluralHours(after)}.</>}
+            </p>
+          </ModalShell>
+        )
+      })()}
     </>
   )
 }

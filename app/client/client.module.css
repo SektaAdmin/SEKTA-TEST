@@ -964,6 +964,33 @@
   font-weight: 500;
 }
 
+/* Деталі заняття в модалці підтвердження запису (/client/schedule). */
+.confirmTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.confirmMeta {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+
+.confirmStage {
+  font-size: 14px;
+  color: var(--text);
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+}
+
+.confirmStageLabel {
+  color: var(--text-2);
+}
+
 /* ── Розклад самозапису (/client/schedule) ─────────────────────── */
 /* Заголовок дня — sticky, щоб при скролі було видно, який це день. */
 .dayHeader {

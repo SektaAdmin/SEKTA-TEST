@@ -161,7 +161,7 @@ export async function getMyEnrollmentDetail(
 // RLS пускає client на читання classes/trainers/halls. Заповненість — окремим агрегатом
 // class_availability (SECURITY DEFINER, бо enrollments під client_select_own).
 const BOOKABLE_CLASS_SELECT =
-  'id, ticket_type, title, starts_at, duration_min, trainers(name), halls(name)' as const
+  'id, ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name)' as const
 
 function bookableClassesQuery(supabase: Db, fromISO: string, toISO: string) {
   return supabase
