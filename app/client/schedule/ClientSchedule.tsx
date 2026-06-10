@@ -6,7 +6,7 @@ import { listBookableClasses } from '@/lib/queries/client-cabinet-data'
 import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-cabinet-data'
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
-import { ticketTypeShortLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
@@ -126,8 +126,8 @@ export default function ClientSchedule({
     // інакше 'enrolled'. Показуємо точний бейдж і тост (без оптимістичного припущення).
     const finalStatus: EnrolledState = status === 'waitlist' ? 'waitlist' : 'enrolled'
     setEnrolled(prev => ({ ...prev, [classId]: finalStatus }))
-    if (finalStatus === 'waitlist') toast.info('Вас додано в резерв')
-    else toast.success('Ви записані')
+    if (finalStatus === 'waitlist') toast.info(enrollmentStatusLabel('waitlist'))
+    else toast.success(enrollmentStatusLabel('enrolled'))
     setConfirm(null)
   }
 
@@ -169,7 +169,7 @@ export default function ClientSchedule({
 
                   {state ? (
                     <span className={`${styles.bookEnrolled} ${state === 'waitlist' ? styles.bookWaitlist : ''}`}>
-                      {state === 'waitlist' ? 'Ви в резерві' : 'Ви записані'}
+                      {enrollmentStatusLabel(state)}
                     </span>
                   ) : (
                     <>
@@ -247,7 +247,7 @@ export default function ClientSchedule({
               {toWaitlist ? (
                 <div className={styles.confirmRow}>
                   <span className={styles.confirmRowLabel}>Статус</span>
-                  <span className={styles.confirmRowValue}>У резерв (черга)</span>
+                  <span className={styles.confirmRowValue}>{enrollmentStatusLabel('waitlist')}</span>
                 </div>
               ) : (
                 <>

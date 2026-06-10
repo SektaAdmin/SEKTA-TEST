@@ -11,7 +11,9 @@ import type { LucideIcon } from 'lucide-react'
 import type { PaymentMethod } from '@/types'
 
 /* ── Статус запису клієнта на заняття ───────────────────────────── */
-// Дієслова: описують дію клієнта. waitlist = «Черга» (зал повний).
+// Безособові форми (узгоджено): однаковий тон в адмінці і кабінеті, без роду
+// (як «Клієнт записаний» у Altegio/YClients, не «Записалась»). Для розшифровки
+// cancelled (рано/пізно, хто скасував) — `enrollmentBadge` нижче.
 
 type EnrollmentStatus =
   | 'enrolled'
@@ -21,11 +23,11 @@ type EnrollmentStatus =
   | 'waitlist'
 
 const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
-  enrolled:  'Записалась',
-  attended:  'Відвідала',
-  cancelled: 'Скасувала',
-  noshow:    'Не прийшла',
-  waitlist:  'Черга',
+  enrolled:  'Заброньовано',
+  attended:  'Відвідано',
+  cancelled: 'Скасовано',
+  noshow:    'Не відвідано',
+  waitlist:  'У резерві',
 }
 
 const ENROLLMENT_STATUS_CLASS: Record<EnrollmentStatus, string> = {
@@ -54,6 +56,87 @@ export function enrollmentStatusClass(status: string): string {
 
 export function enrollmentStatusIcon(status: string): LucideIcon | null {
   return ENROLLMENT_STATUS_ICON[status as EnrollmentStatus] ?? null
+}
+
+/* ── Зведений бейдж запису (label + tone) ───────────────────────────
+ * Єдина точка розшифровки `cancelled` (раніше 3 розкидані версії з різними
+ * наборами джерел). Текст статусу — єдиний безособовий словник вище; різниця
+ * між перспективами лише в ДЖЕРЕЛІ скасування (хто скасував):
+ *  - admin (журнал, ClassDetailModal): суфікс «· студія/адмін/клієнт/авто».
+ *  - client (кабінет): без джерела (клієнту не показуємо хто саме).
+ * «Рано/пізно» — похідне від sessions_used (поле БД, інв.#2): >0 → «Скасовано
+ * (пізно)» (клієнт бачить факт штрафу). `tone` — нейтральний візуальний ключ;
+ * місце виклику мапить його на свій клас (глобальний `badge badge-*` через
+ * `enrollmentBadgeClass`, або власний CSS-Module — кабінет клієнта).
+ * НЕ зливати з cancellation.ts: тут факт (sessions_used>0), там прогноз. */
+
+export type EnrollmentBadgeTone =
+  | 'enrolled'
+  | 'attended'
+  | 'cancelled'
+  | 'late'
+  | 'noshow'
+  | 'waitlist'
+
+export type EnrollmentBadgeInput = {
+  status: string
+  cancellation_source?: string | null
+  sessions_used?: number | null
+}
+
+const CANCEL_SOURCE_SUFFIX_ADMIN: Record<string, string> = {
+  class_cancelled: 'студія',
+  self:            'клієнт',
+  staff_manual:    'адмін',
+  auto_close:      'авто',
+}
+
+// Короткий суфікс джерела скасування для admin-перспективи (без «· »).
+// Дає змогу місцю рендерити суфікс окремим приглушеним span (ClassDetailModal).
+export function cancelSourceSuffix(source: string | null | undefined): string | null {
+  return source ? (CANCEL_SOURCE_SUFFIX_ADMIN[source] ?? null) : null
+}
+
+export function enrollmentBadge(
+  e: EnrollmentBadgeInput,
+  perspective: 'admin' | 'client',
+): { label: string; tone: EnrollmentBadgeTone } {
+  const { status } = e
+  const isLate = (e.sessions_used ?? 0) > 0
+
+  if (status === 'cancelled') {
+    const tone: EnrollmentBadgeTone = isLate ? 'late' : 'cancelled'
+    const base = isLate
+      ? `${ENROLLMENT_STATUS_LABELS.cancelled} (пізно)`
+      : ENROLLMENT_STATUS_LABELS.cancelled
+    if (perspective === 'admin') {
+      const suffix = cancelSourceSuffix(e.cancellation_source)
+      return { label: suffix ? `${base} · ${suffix}` : base, tone }
+    }
+    return { label: base, tone } // client — без джерела
+  }
+
+  const tone: EnrollmentBadgeTone =
+    status === 'enrolled'  ? 'enrolled'  :
+    status === 'waitlist'  ? 'waitlist'  :
+    status === 'attended'  ? 'attended'  :
+    status === 'noshow'    ? 'noshow'    : 'cancelled'
+  return { label: enrollmentStatusLabel(status), tone }
+}
+
+// Tone → глобальний `badge badge-*` (admin-місця, глобальна CSS-система).
+// `late` ділить колір зі `cancelled` (попередження-штраф).
+const ENROLLMENT_TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
+  enrolled:  'badge badge-enrolled',
+  attended:  'badge badge-attended',
+  cancelled: 'badge badge-cancelled',
+  late:      'badge badge-cancelled',
+  noshow:    'badge badge-noshow',
+  waitlist:  'badge badge-waitlist',
+}
+
+export function enrollmentBadgeClass(tone: EnrollmentBadgeTone): string {
+  return ENROLLMENT_TONE_CLASS[tone]
 }
 
 /* ── Метод оплати ───────────────────────────────────────────────── */

@@ -20,7 +20,7 @@ import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusIcon, enrollmentBadge, enrollmentBadgeClass, cancelSourceSuffix } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import { ActionSelect } from '@/components/ui/ActionSelect'
 import styles from './ClassDetailModal.module.css'
@@ -590,16 +590,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               <td>
                                 {(() => {
                                   const Icon = enrollmentStatusIcon(e.status)
+                                  // База (з «(пізно)», без джерела) — client-варіант; джерело
+                                  // рендеримо окремим приглушеним span поряд.
+                                  const badge = enrollmentBadge(e, 'client')
                                   const sourceHint =
-                                    e.status === 'cancelled' && e.cancellation_source === 'class_cancelled'
-                                      ? 'студія'
-                                      : e.status === 'cancelled' && e.cancellation_source === 'self'
-                                      ? 'клієнт'
-                                      : null
+                                    e.status === 'cancelled' ? cancelSourceSuffix(e.cancellation_source) : null
                                   return (
-                                    <span className={enrollmentStatusClass(e.status)}>
+                                    <span className={enrollmentBadgeClass(badge.tone)}>
                                       {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
-                                      {enrollmentStatusLabel(e.status)}
+                                      {badge.label}
                                       {sourceHint && <span style={{ opacity: 0.65, marginLeft: 4 }}>· {sourceHint}</span>}
                                     </span>
                                   )

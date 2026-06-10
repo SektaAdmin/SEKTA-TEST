@@ -27,14 +27,16 @@
 **НЕ чіпати** a11y-словесні дати (`{day:'numeric',month:'long'}` → «5 червня») — інший формат навмисно (DatePicker/templates aria-label).
 Місця: [app/clients/[id]/ClientDetailClient.tsx](../app/clients/[id]/ClientDetailClient.tsx) ×5, ClassModal, templates.
 
-### 🟠 2. Бейджі enrollment — РІШЕННЯ: enrollmentBadge(enrollment)
-Словник `lib/badges.ts` покриває лише `status → label/class`. Поверх — 3 розкидані осі:
-CSS-клас (ClientVisits ігнорує словник, має власні `styles.visit*`), розшифровка `cancelled`
-(3 версії: `isLateCancel`/`cancellation_source` з різними наборами), waitlist-мова (адмін «Черга» vs клієнт «Ви в резерві»).
-**Рішення: `enrollmentBadge({status,cancellation_source,sessions_used}, {perspective:'admin'|'client'}) → {label,className}`** у lib/badges.ts.
-Мігрувати 5 місць (ClientVisits, VisitDetail, ClassDetailModal, ClientDetailClient, calculations).
-**Не зливати** з cancellation.ts: `isLateCancel=sessions_used>0` (факт штрафу) ≠ `isFreeCancellation` (прогноз).
-Таймер «Через N годин» у ClientVisits — НЕ статус, лишається свій.
+### ✅ 2. Бейджі enrollment — ЗРОБЛЕНО: enrollmentBadge + єдиний словник
+Єдиний безособовий словник статусів (Заброньовано/У резерві/Відвідано/Не відвідано/Скасовано/
+Скасовано (пізно)) — один тон в адмінці і кабінеті (норма Altegio/YClients: «Клієнт записаний»).
+`enrollmentBadge({status,cancellation_source,sessions_used}, 'admin'|'client') → {label,tone}` —
+єдина точка розшифровки cancelled. Текст єдиний; перспективи різняться лише джерелом: admin —
+суфікс «· студія/адмін/клієнт/авто», client — без. «Пізно»=sessions_used>0. `tone`→клас:
+`enrollmentBadgeClass` (глобал) / `VISIT_TONE_CLASS` (CSS-Module кабінету).
+Явна схема відміни: додано `cancelled_at` (хто=cancellation_source, коли=cancelled_at, що=sessions_used);
+status НЕ розділено на early/late (єдине джерело правди зі sessions_used, інв.#2).
+**Не злито** з cancellation.ts: факт (sessions_used>0) ≠ прогноз (isFreeCancellation).
 
 ### 🟠 3. Черга goesToWaitlist — РІШЕННЯ: винести в lib + дзеркало
 [app/client/schedule/ClientSchedule.tsx](../app/client/schedule/ClientSchedule.tsx) дзеркалить `client_enroll` RPC.
@@ -69,7 +71,7 @@ CSS-клас (ClientVisits ігнорує словник, має власні `s
 ## Порядок виконання (кожен пункт = окремий коміт)
 
 - **Етап 1** (🔴, без міграцій): 1.1 noshow з ACTIVE_STATUSES · 1.2 formatDate-копії — ✅ ЗРОБЛЕНО
-- **Етап 2** (🟠, без міграцій): 2.1 enrollmentBadge · 2.2 goesToWaitlist у lib · 2.3 ClassCard
+- **Етап 2**: 2.1 enrollmentBadge — ✅ ЗРОБЛЕНО (+ єдиний безособовий словник статусів + явна схема відміни `cancelled_at`, міграція; status НЕ розділено на early/late) · 2.2 goesToWaitlist у lib · 2.3 ClassCard
 - **Етап 3** (🟠, міграція БД): 3.1 пагінація+серверний баланс на масив · 3.2 хардкод cost=1
 
 ## Яку модель запускати на кожен крок

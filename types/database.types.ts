@@ -370,6 +370,7 @@ export type Database = {
       enrollments: {
         Row: {
           cancellation_source: string | null
+          cancelled_at: string | null
           cancelled_from_status: string | null
           class_id: string
           client_id: string
@@ -384,6 +385,7 @@ export type Database = {
         }
         Insert: {
           cancellation_source?: string | null
+          cancelled_at?: string | null
           cancelled_from_status?: string | null
           class_id: string
           client_id: string
@@ -398,6 +400,7 @@ export type Database = {
         }
         Update: {
           cancellation_source?: string | null
+          cancelled_at?: string | null
           cancelled_from_status?: string | null
           class_id?: string
           client_id?: string

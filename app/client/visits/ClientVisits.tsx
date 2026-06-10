@@ -9,7 +9,7 @@ import {
 } from '@/lib/queries/client-cabinet-data'
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
-import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
@@ -35,21 +35,14 @@ function timeUntil(startISO: string, nowMs: number): string {
   return parts.length ? `Через ${parts.join(' ')}` : 'Зараз'
 }
 
-function historyBadgeClass(status: string, isLateCancel: boolean): string {
-  if (status === 'attended') return styles.visitTimerAttended
-  if (status === 'noshow') return styles.visitTimerNoshow
-  if (status === 'cancelled' && isLateCancel) return styles.visitTimerLatePenalty
-  if (status === 'cancelled') return styles.visitTimerCancelled
-  return styles.visitTimerPast
-}
-
-function historyBadgeLabel(status: string, isLateCancel: boolean, cancellationSource: string | null): string {
-  if (status === 'cancelled') {
-    if (cancellationSource === 'class_cancelled') return 'Заняття скасовано студією'
-    if (cancellationSource === 'staff_manual') return 'Скасовано адміністратором'
-    if (isLateCancel) return 'Скасувала · пізня відміна'
-  }
-  return enrollmentStatusLabel(status)
+// Tone із enrollmentBadge → локальний CSS-Module клас кабінету.
+const VISIT_TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
+  attended:  styles.visitTimerAttended,
+  noshow:    styles.visitTimerNoshow,
+  late:      styles.visitTimerLatePenalty,
+  cancelled: styles.visitTimerCancelled,
+  enrolled:  styles.visitBadgeEnrolled,
+  waitlist:  styles.visitBadgeWaitlist,
 }
 
 type Props = {
@@ -167,9 +160,14 @@ export default function ClientVisits({
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
-                    <span className={`${styles.visitHistoryBadge} ${e.status === 'waitlist' ? styles.visitBadgeWaitlist : styles.visitBadgeEnrolled}`}>
-                      {enrollmentStatusLabel(e.status)}
-                    </span>
+                    {(() => {
+                      const badge = enrollmentBadge(e, 'client')
+                      return (
+                        <span className={`${styles.visitHistoryBadge} ${VISIT_TONE_CLASS[badge.tone]}`}>
+                          {badge.label}
+                        </span>
+                      )
+                    })()}
                   </div>
                   {!c.is_cancelled && (
                     <div className={styles.visitHistoryRow}>
@@ -194,7 +192,7 @@ export default function ClientVisits({
           {pastSorted.map(e => {
             const c = e.classes!
             const sessionsUsed = e.sessions_used ?? 0
-            const isLateCancel = e.status === 'cancelled' && sessionsUsed > 0
+            const badge = enrollmentBadge(e, 'client')
             return (
               <div key={e.id} className={styles.visitCardStatic}>
                 {c.trainers?.name && (
@@ -215,8 +213,8 @@ export default function ClientVisits({
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
-                    <span className={`${styles.visitHistoryBadge} ${historyBadgeClass(e.status, isLateCancel)}`}>
-                      {historyBadgeLabel(e.status, isLateCancel, e.cancellation_source)}
+                    <span className={`${styles.visitHistoryBadge} ${VISIT_TONE_CLASS[badge.tone]}`}>
+                      {badge.label}
                     </span>
                   </div>
                   <div className={styles.visitHistoryRow}>

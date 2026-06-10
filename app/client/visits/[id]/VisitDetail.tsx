@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
 import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
 import { formatMoney, fullWhen, hhmm, pluralHours } from '@/lib/formatters'
-import { ticketTypeShortLabel, enrollmentStatusLabel, enrollmentStatusClass } from '@/lib/badges'
+import { ticketTypeShortLabel, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import { MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { cancellationDeadline, isFreeCancellation } from '@/lib/cancellation'
 import { STUDIO } from '@/lib/studio'
@@ -91,15 +91,12 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         <div className={styles.detailTrainerName}>{trainerName || 'Тренер'}</div>
         <div className={styles.detailTrainerRole}>Тренер</div>
         <div className={styles.detailWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
-        {isPast && (
-          <span className={enrollmentStatusClass(enrollment.status)}>
-            {enrollment.status === 'cancelled' && enrollment.cancellation_source === 'class_cancelled'
-              ? 'Заняття скасовано студією'
-              : enrollment.status === 'cancelled' && enrollment.cancellation_source === 'staff_manual'
-              ? 'Скасовано адміністратором'
-              : enrollmentStatusLabel(enrollment.status)}
-          </span>
-        )}
+        {isPast && (() => {
+          const badge = enrollmentBadge(enrollment, 'client')
+          return (
+            <span className={enrollmentBadgeClass(badge.tone)}>{badge.label}</span>
+          )
+        })()}
         {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
 
         {(canCancel || !isPast) && (
