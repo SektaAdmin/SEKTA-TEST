@@ -71,7 +71,7 @@ status НЕ розділено на early/late (єдине джерело пра
 ## Порядок виконання (кожен пункт = окремий коміт)
 
 - **Етап 1** (🔴, без міграцій): 1.1 noshow з ACTIVE_STATUSES · 1.2 formatDate-копії — ✅ ЗРОБЛЕНО
-- **Етап 2**: 2.1 enrollmentBadge — ✅ ЗРОБЛЕНО (+ єдиний безособовий словник статусів + явна схема відміни `cancelled_at`, міграція; status НЕ розділено на early/late) · 2.2 goesToWaitlist у lib · 2.3 ClassCard
+- **Етап 2**: 2.1 enrollmentBadge — ✅ · 2.2 goesToWaitlist у lib — ✅ ЗРОБЛЕНО (перенесено в `lib/scheduleMetrics.ts`) · 2.3 ClassCard
 - **Етап 3** (🟠, міграція БД): 3.1 пагінація+серверний баланс на масив · 3.2 хардкод cost=1
 
 ## Яку модель запускати на кожен крок

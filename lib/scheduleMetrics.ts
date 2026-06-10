@@ -32,6 +32,15 @@ export function isClientCountAlmost(clientCount: number, capacity: number | null
   return clientCount < capacity && clientCount >= capacity * 0.8
 }
 
+// Чи піде запис у резерв за даними class_availability RPC.
+// Дзеркало логіки RPC client_enroll: місць немає АБО черга вже є → waitlist
+// (новий клієнт не перестрибує тих, хто вже чекає). Тримати синхронно з RPC.
+export function goesToWaitlist(a: { active_count: number; waitlist_count: number; capacity: number | null } | undefined): boolean {
+  if (!a) return false
+  if (a.waitlist_count > 0) return true
+  return a.capacity != null && a.active_count >= a.capacity
+}
+
 export function clientFillPct(clientCount: number, capacity: number | null | undefined): string {
   if (capacity == null) return '0%'
   return `${Math.min((clientCount / capacity) * 100, 100)}%`

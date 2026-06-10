@@ -10,6 +10,7 @@ import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { goesToWaitlist } from '@/lib/scheduleMetrics'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
@@ -47,13 +48,7 @@ type Props = {
   initialClasses: BookableClassRow[]
 }
 
-// Чи піде запис у резерв: місць немає АБО в черзі вже хтось є (дзеркало логіки
-// client_enroll — новий не перестрибує тих, хто чекає). Має лишатися синхронним з RPC.
-function goesToWaitlist(a: ClassAvailability | undefined): boolean {
-  if (!a) return false
-  if (a.waitlist_count > 0) return true
-  return a.capacity != null && a.active_count >= a.capacity
-}
+
 
 export default function ClientSchedule({
   fromISO,
