@@ -45,6 +45,47 @@ const VISIT_TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
   waitlist:  styles.visitBadgeWaitlist,
 }
 
+// Спільні шматки картки візиту (повторюються в «Майбутні» і «Історія»).
+// Семантично однакові; різні картки (таймер/списання) лишаються своїми —
+// зливати їх у єдиний <ClassCard> не варто (хибна абстракція).
+
+function TrainerRow({ name, chevron }: { name: string | null | undefined; chevron?: boolean }) {
+  // Без імені тренера, але з chevron — лишаємо порожній рядок-носій для стрілки.
+  if (!name) {
+    return chevron ? (
+      <div className={styles.visitTrainerTop}>
+        <ChevronRight className={styles.visitChevron} size={16} />
+      </div>
+    ) : null
+  }
+  return (
+    <div className={styles.visitTrainerTop}>
+      <span className={styles.visitTrainerAvatar}>{name.trim()[0]?.toUpperCase() || '?'}</span>
+      <div>
+        <div className={styles.visitTrainerName}>{name}</div>
+        <div className={styles.visitTrainerRole}>Тренер</div>
+      </div>
+      {chevron && <ChevronRight className={styles.visitChevron} size={16} />}
+    </div>
+  )
+}
+
+function WhenMeta({ c, typeLabel }: {
+  c: { starts_at: string; duration_min: number; title: string | null; ticket_type: string; halls: { name: string } | null }
+  typeLabel: (t: string) => string
+}) {
+  return (
+    <>
+      <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
+      <div className={styles.visitMeta}>
+        {c.title || typeLabel(c.ticket_type)}
+        {c.halls?.name ? ` · ${c.halls.name}` : ''}
+        {` · ${c.duration_min} хв`}
+      </div>
+    </>
+  )
+}
+
 type Props = {
   clientId: string
   typeLabels: Record<string, string>
@@ -137,26 +178,8 @@ export default function ClientVisits({
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
                   {c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
                 </div>
-                {c.trainers?.name ? (
-                  <div className={styles.visitTrainerTop}>
-                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
-                    <div>
-                      <div className={styles.visitTrainerName}>{c.trainers.name}</div>
-                      <div className={styles.visitTrainerRole}>Тренер</div>
-                    </div>
-                    <ChevronRight className={styles.visitChevron} size={16} />
-                  </div>
-                ) : (
-                  <div className={styles.visitTrainerTop}>
-                    <ChevronRight className={styles.visitChevron} size={16} />
-                  </div>
-                )}
-                <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
-                <div className={styles.visitMeta}>
-                  {c.title || typeLabel(c.ticket_type)}
-                  {c.halls?.name ? ` · ${c.halls.name}` : ''}
-                  {` · ${c.duration_min} хв`}
-                </div>
+                <TrainerRow name={c.trainers?.name} chevron />
+                <WhenMeta c={c} typeLabel={typeLabel} />
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>
@@ -195,21 +218,8 @@ export default function ClientVisits({
             const badge = enrollmentBadge(e, 'client')
             return (
               <div key={e.id} className={styles.visitCardStatic}>
-                {c.trainers?.name && (
-                  <div className={styles.visitTrainerTop}>
-                    <span className={styles.visitTrainerAvatar}>{c.trainers.name.trim()[0]?.toUpperCase() || '?'}</span>
-                    <div>
-                      <div className={styles.visitTrainerName}>{c.trainers.name}</div>
-                      <div className={styles.visitTrainerRole}>Тренер</div>
-                    </div>
-                  </div>
-                )}
-                <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
-                <div className={styles.visitMeta}>
-                  {c.title || typeLabel(c.ticket_type)}
-                  {c.halls?.name ? ` · ${c.halls.name}` : ''}
-                  {` · ${c.duration_min} хв`}
-                </div>
+                <TrainerRow name={c.trainers?.name} />
+                <WhenMeta c={c} typeLabel={typeLabel} />
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>

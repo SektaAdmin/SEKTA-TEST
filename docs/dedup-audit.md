@@ -55,11 +55,14 @@ status НЕ розділено на early/late (єдине джерело пра
 - Модалка ClientSchedule: прибрати хардкод `cost=1` → hours-aware.
 - VisitDetail, ClassDetailModal — вже RPC, не чіпати.
 
-### 🟠 5. Картка заняття — РІШЕННЯ: <ClassCard> для легких, важкі не чіпати
-9 ручних рендерів, але дуже різні за вагою (6–47 полів-згадок):
-- **Робити ClassCard:** ClientSchedule(25), ClientVisits(20), VisitDetail(9), journal(11), FreeSpacesBlock(7), trainer(6).
-- **НЕ чіпати** (повноцінні екрани з діями/inline-edit): ClassDetailModal(47), ClientDetailClient(42), schedule/page(34).
-Форму (єдиний компонент vs view-model+локальний layout) обрати на місці після звірки layout — не вгадувати наперед.
+### ✅ 5. Картка заняття — ЗРОБЛЕНО: під-компоненти, НЕ монолітний <ClassCard>
+Звірка 7 кандидатів показала: всі семантично/візуально різні з різними CSS-джерелами
+(trainer date-блок `trainer.module.css`; FreeSpacesBlock free-chip `dashboard.module.css`;
+journal «N записів»+Проведено/Скасовано `journal.module.css`; ClientSchedule dot+time+кнопка;
+ClientVisits таймер/списання; VisitDetail — hero-екран, не картка-список). Єдиний `<ClassCard>`
+з пропсами-флагами під усі = монстр, гірший за дубль (хибна абстракція).
+**Реальний дубль — лише всередині ClientVisits** (×3: блок тренера, ×2: when+meta).
+**Зроблено:** під-компоненти `TrainerRow`/`WhenMeta` локально в ClientVisits. Решту НЕ чіпано.
 
 ### 🟢 Не чіпати (перевірено — справді ок)
 - cancellation.ts — дедлайн централізований; прогноз vs факт розведені свідомо.
@@ -71,7 +74,7 @@ status НЕ розділено на early/late (єдине джерело пра
 ## Порядок виконання (кожен пункт = окремий коміт)
 
 - **Етап 1** (🔴, без міграцій): 1.1 noshow з ACTIVE_STATUSES · 1.2 formatDate-копії — ✅ ЗРОБЛЕНО
-- **Етап 2**: 2.1 enrollmentBadge — ✅ · 2.2 goesToWaitlist у lib — ✅ ЗРОБЛЕНО (перенесено в `lib/scheduleMetrics.ts`) · 2.3 ClassCard
+- **Етап 2**: 2.1 enrollmentBadge — ✅ · 2.2 goesToWaitlist у lib — ✅ · 2.3 ClassCard — ✅ ЗРОБЛЕНО (рішення на місці: НЕ єдиний монолітний `<ClassCard>` — 7 карток семантично/візуально різні з різними CSS-джерелами = хибна абстракція; натомість під-компоненти `TrainerRow`/`WhenMeta` у ClientVisits, де був реальний дубль ×3)
 - **Етап 3** (🟠, міграція БД): 3.1 пагінація+серверний баланс на масив · 3.2 хардкод cost=1
 
 ## Яку модель запускати на кожен крок
