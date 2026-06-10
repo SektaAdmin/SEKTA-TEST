@@ -1151,6 +1151,13 @@ export type Database = {
           client_id: string
         }[]
       }
+      get_session_balances_running: {
+        Args: { p_client_id: string; p_from: string }
+        Returns: {
+          balance_after: number
+          enrollment_id: string
+        }[]
+      }
       get_session_debtors_for_date: {
         Args: { p_date: string }
         Returns: {

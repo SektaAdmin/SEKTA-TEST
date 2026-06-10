@@ -543,6 +543,22 @@
   gap: 12px;
 }
 
+.showMore {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.showMore:hover {
+  border-color: var(--border-hover);
+}
+
 .visitCard {
   display: block;
   padding: 14px;

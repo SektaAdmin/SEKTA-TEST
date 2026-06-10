@@ -69,6 +69,29 @@ function myUpcomingEnrollmentsQuery(supabase: Db, clientId: string, fromISO: str
 
 export type MyEnrollmentRow = QueryData<ReturnType<typeof myUpcomingEnrollmentsQuery>>[number]
 
+/**
+ * Наростаючий залишок сесій ПІСЛЯ кожного майбутнього запису клієнта
+ * (enrollment.id → balance_after). Серверний RPC рахує кумулятив по ВСІХ
+ * майбутніх записах (не по видимому slice), тож пагінація в UI не ламає
+ * хронологію. Дзеркало семантики get_session_balance_after, але running.
+ */
+export async function listMyRunningBalances(
+  supabase: Db,
+  clientId: string,
+  fromISO: string
+): Promise<{ data: Record<string, number>; error: string | null }> {
+  const { data, error } = await supabase.rpc('get_session_balances_running', {
+    p_client_id: clientId,
+    p_from: fromISO,
+  })
+  if (error) return { data: {}, error: error.message }
+  const result: Record<string, number> = {}
+  for (const row of (data ?? []) as { enrollment_id: string; balance_after: number }[]) {
+    result[row.enrollment_id] = row.balance_after
+  }
+  return { data: result, error: null }
+}
+
 /** Майбутні активні записи клієнта (enrolled/waitlist від початку дня). */
 export async function listMyUpcomingEnrollments(
   supabase: Db,

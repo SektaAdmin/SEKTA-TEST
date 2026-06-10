@@ -3,7 +3,7 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
 import {
   getMyClient,
-  listMySessionBalances,
+  listMyRunningBalances,
   listMyUpcomingEnrollments,
   listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
@@ -27,10 +27,10 @@ export default async function ClientVisitsPage() {
 
   const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
 
-  const [{ data: typeLabels }, { data: sessionBalances }, { data: upcoming }, { data: past }] =
+  const [{ data: typeLabels }, { data: balanceAfter }, { data: upcoming }, { data: past }] =
     await Promise.all([
       listTrainingTypeLabels(supabase),
-      listMySessionBalances(supabase, client.id),
+      listMyRunningBalances(supabase, client.id, fromISO),
       listMyUpcomingEnrollments(supabase, client.id, fromISO),
       listMyPastEnrollments(supabase, client.id),
     ])
@@ -42,7 +42,7 @@ export default async function ClientVisitsPage() {
         <ClientVisits
           clientId={client.id}
           typeLabels={typeLabels}
-          sessionBalances={sessionBalances}
+          initialBalanceAfter={balanceAfter}
           initialUpcoming={upcoming}
           initialPast={past}
         />

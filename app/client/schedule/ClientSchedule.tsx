@@ -33,6 +33,12 @@ function dayKey(startISO: string): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
+// Скільки сесій спише auto_close за self-запис: двогодинне (>=120 хв) → 2
+// (client_enroll проставляє hours_attended=[1,2]), годинне → 1. Дзеркало БД.
+function sessionCost(durationMin: number): number {
+  return durationMin >= 120 ? 2 : 1
+}
+
 type EnrolledState = 'enrolled' | 'waitlist'
 
 type Props = {
@@ -82,7 +88,7 @@ export default function ClientSchedule({
   const reservedByType = useMemo(() => {
     const m: Record<string, number> = {}
     for (const c of classes) {
-      if (enrolled[c.id]) m[c.ticket_type] = (m[c.ticket_type] ?? 0) + 1
+      if (enrolled[c.id]) m[c.ticket_type] = (m[c.ticket_type] ?? 0) + sessionCost(c.duration_min)
     }
     return m
   }, [classes, enrolled])
@@ -138,7 +144,9 @@ export default function ClientSchedule({
           <div className={styles.visitList}>
             {day.items.map(c => {
               const state = enrolled[c.id]
-              const hasSessions = availableByType(c.ticket_type) > 0
+              // Вистачає сесій на повну вартість заняття (2h → 2). Сервер — остання
+              // інстанція, але оптимістично не даємо записатись у мінус по типу.
+              const hasSessions = availableByType(c.ticket_type) >= sessionCost(c.duration_min)
               const busy = enrolling === c.id
               const av = availability[c.id]
               const toWaitlist = goesToWaitlist(av)
@@ -194,7 +202,7 @@ export default function ClientSchedule({
 
       {confirm && (() => {
         const toWaitlist = goesToWaitlist(availability[confirm.id])
-        const cost = 1 // group-заняття = 1 сесія
+        const cost = sessionCost(confirm.duration_min)
         // «Залишок стане» = реальний баланс сесій (client_session_balances) − cost.
         // НЕ availableByType (там віднято інші майбутні записи вікна) — списання за
         // кожен запис іде окремо в auto_close, тож «було N → стане N−1» від балансу.

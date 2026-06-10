@@ -1,14 +1,16 @@
 'use client'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
   listMyUpcomingEnrollments,
   listMyPastEnrollments,
+  listMyRunningBalances,
 } from '@/lib/queries/client-cabinet-data'
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
+import { useAsync } from '@/hooks/useAsync'
 import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
@@ -86,10 +88,15 @@ function WhenMeta({ c, typeLabel }: {
   )
 }
 
+// Скільки карток показуємо до «показати ще». Майбутні: max нині 11, але запис
+// розширюється на тижні наперед (постійники × N) → пагінуємо, щоб список не ріс.
+const PAGE_SIZE = 8
+
 type Props = {
   clientId: string
   typeLabels: Record<string, string>
-  sessionBalances: { ticket_type: string; sessions_balance: number }[]
+  /** enrollment.id → залишок сесій після заняття (server-prefetch, RPC). */
+  initialBalanceAfter: Record<string, number>
   initialUpcoming: MyEnrollmentRow[]
   initialPast: MyPastEnrollmentRow[]
 }
@@ -97,11 +104,12 @@ type Props = {
 export default function ClientVisits({
   clientId,
   typeLabels,
-  sessionBalances,
+  initialBalanceAfter,
   initialUpcoming,
   initialPast,
 }: Props) {
-  const balanceByType = Object.fromEntries(sessionBalances.map(b => [b.ticket_type, b.sessions_balance]))
+  const [upcomingShown, setUpcomingShown] = useState(PAGE_SIZE)
+  const [pastShown, setPastShown] = useState(PAGE_SIZE)
   const { fromISO, nowMs } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
     nowMs: Date.now(),
@@ -131,30 +139,14 @@ export default function ClientVisits({
     [upcoming]
   )
 
-  // Залишок сесій ПІСЛЯ кожного майбутнього заняття (прогресивно, в хронології).
-  // Майбутні записи ще не списані (enrolled/waitlist), тож поточний balanceByType —
-  // це баланс ДО першого з них; від нього кумулятивно віднімаємо вартість кожного
-  // заняття того ж типу. Скасовані заняття сесій не списують — у суму не йдуть.
-  // Та сама логіка, що в БД get_session_balance_after, але без зайвого RPC: для
-  // майбутніх вистачає клієнтських даних. enrollment.id → залишок після.
-  const balanceAfterById = useMemo(() => {
-    const remaining: Record<string, number> = { ...balanceByType }
-    const map: Record<string, number> = {}
-    for (const e of upcomingSorted) {
-      const c = e.classes!
-      if (c.is_cancelled) {
-        map[e.id] = remaining[c.ticket_type] ?? 0
-        continue
-      }
-      const cost = e.hours_attended?.length ?? 1
-      const next = (remaining[c.ticket_type] ?? 0) - cost
-      remaining[c.ticket_type] = next
-      map[e.id] = next
-    }
-    return map
-    // balanceByType — похідне від sessionBalances (стабільний prop у межах рендера).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [upcomingSorted, sessionBalances])
+  // Залишок сесій ПІСЛЯ кожного майбутнього заняття (наростаюче, в хронології) —
+  // серверний RPC get_session_balances_running. Рахує по ВСІХ майбутніх записах,
+  // тож пагінація списку нижче не ламає кумулятив. enrollment.id → залишок після.
+  const { data: balanceAfterById } = useAsync(
+    () => listMyRunningBalances(supabase, clientId, fromISO),
+    [clientId, fromISO],
+    { refetchOnVisible: true, initialData: initialBalanceAfter }
+  )
 
   const pastSorted = useMemo(
     () => [...past].sort(
@@ -170,9 +162,9 @@ export default function ClientVisits({
         <p className={styles.empty}>{MSG.empty.futureEnrollments}.</p>
       ) : (
         <div className={styles.visitList}>
-          {upcomingSorted.map(e => {
+          {upcomingSorted.slice(0, upcomingShown).map(e => {
             const c = e.classes!
-            const balanceAfter = balanceAfterById[e.id] ?? 0
+            const balanceAfter = balanceAfterById?.[e.id] ?? 0
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
                 <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
@@ -204,6 +196,11 @@ export default function ClientVisits({
               </Link>
             )
           })}
+          {upcomingShown < upcomingSorted.length && (
+            <button type="button" className={styles.showMore} onClick={() => setUpcomingShown(n => n + PAGE_SIZE)}>
+              Показати ще
+            </button>
+          )}
         </div>
       )}
 
@@ -212,7 +209,7 @@ export default function ClientVisits({
         <p className={styles.empty}>{MSG.empty.pastEnrollments}.</p>
       ) : (
         <div className={styles.visitList}>
-          {pastSorted.map(e => {
+          {pastSorted.slice(0, pastShown).map(e => {
             const c = e.classes!
             const sessionsUsed = e.sessions_used ?? 0
             const badge = enrollmentBadge(e, 'client')
@@ -237,6 +234,11 @@ export default function ClientVisits({
               </div>
             )
           })}
+          {pastShown < pastSorted.length && (
+            <button type="button" className={styles.showMore} onClick={() => setPastShown(n => n + PAGE_SIZE)}>
+              Показати ще
+            </button>
+          )}
         </div>
       )}
     </>
