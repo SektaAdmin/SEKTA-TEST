@@ -1,6 +1,9 @@
 type EnrollmentStatus = 'enrolled' | 'attended' | 'cancelled' | 'noshow' | 'waitlist'
 
-const ACTIVE_STATUSES: EnrollmentStatus[] = ['enrolled', 'attended', 'noshow']
+// «Займає місце для нового запису» — узгоджено з тригером capacity (20260506),
+// RPC class_availability і listEnrolledCountsForDate (усі рахують enrolled+attended).
+// noshow НЕ рахується: заняття минуло / клієнт не прийде, місце для запису вільне.
+const ACTIVE_STATUSES: EnrollmentStatus[] = ['enrolled', 'attended']
 
 export function getActiveCount(enrollments: { status: string }[]): number {
   return enrollments.filter(e => (ACTIVE_STATUSES as string[]).includes(e.status)).length

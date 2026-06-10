@@ -19,7 +19,7 @@ import {
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
-import { isoToDatetimeLocal } from '@/lib/formatters'
+import { isoToDatetimeLocal, formatDateShort } from '@/lib/formatters'
 import DateTimeInput from '@/components/DateTimeInput'
 import { VM } from '@/lib/validation-messages'
 import type { Class, Trainer, Hall, TrainingType } from '@/types'
@@ -200,7 +200,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           fc.id,
         )
         if (conflict) {
-          const dateStr = startsAtForClass.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' })
+          const dateStr = formatDateShort(startsAtForClass)
           setServerError(`${dateStr}: ${conflict}`)
           setLoading(false)
           return
@@ -274,7 +274,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       const conflict = await checkConflicts(cls.starts_at, cls.duration_min, cls.hall_id, cls.trainer_id)
       if (conflict) {
         await deleteSeries(supabase, seriesId)
-        const dateStr = new Date(cls.starts_at).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' })
+        const dateStr = formatDateShort(cls.starts_at)
         setServerError(`${dateStr}: ${conflict}`)
         setLoading(false)
         return

@@ -16,7 +16,7 @@ import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
-import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
+import { formatClientName, formatSaleDatetime, formatMoney, formatDate, hhmm } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
@@ -366,7 +366,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               </div>
               {client.balance_updated_at && (
                 <div className={styles.fieldMeta}>
-                  Оновлено {new Date(client.balance_updated_at).toLocaleDateString('uk-UA')}
+                  Оновлено {formatDate(client.balance_updated_at)}
                 </div>
               )}
             </section>
@@ -466,11 +466,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         const cls = e.classes!
                         const start = new Date(cls.starts_at)
                         const end = new Date(start.getTime() + cls.duration_min * 60000)
-                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                        const timeStr = `${hhmm(start)}–${hhmm(end)}`
                         return (
                           <tr key={e.id}>
                             <td className={styles.dateCell}>
-                              {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                              {formatDate(start)} {timeStr}
                             </td>
                             <td>
                               {typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}
@@ -498,8 +498,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     const cls = e.classes!
                     const start = new Date(cls.starts_at)
                     const end = new Date(start.getTime() + cls.duration_min * 60000)
-                    const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                    const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    const timeStr = `${hhmm(start)}–${hhmm(end)}`
+                    const dateStr = formatDate(start)
                     return (
                       <div key={e.id} className={styles.itemCard}>
                         <div className={styles.itemCardRow}>
@@ -628,12 +628,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               const cls = e.classes!
                               const start = new Date(cls.starts_at)
                               const end = new Date(start.getTime() + cls.duration_min * 60000)
-                              const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                              const timeStr = `${hhmm(start)}–${hhmm(end)}`
                               const bal = item.runningBalance[cls.ticket_type]
                               return (
                                 <tr key={`e-${e.id}`}>
                                   <td className={styles.dateCell}>
-                                    {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                                    {formatDate(start)} {timeStr}
                                   </td>
                                   <td>
                                     {(() => {
@@ -705,8 +705,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                           const cls = e.classes!
                           const start = new Date(cls.starts_at)
                           const end = new Date(start.getTime() + cls.duration_min * 60000)
-                          const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                          const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                          const timeStr = `${hhmm(start)}–${hhmm(end)}`
+                          const dateStr = formatDate(start)
                           const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
                           const bal = item.runningBalance[cls.ticket_type]
                           const Icon = enrollmentStatusIcon(e.status)
@@ -806,11 +806,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             const cls = e.classes!
                             const start = new Date(cls.starts_at)
                             const end = new Date(start.getTime() + cls.duration_min * 60000)
-                            const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+                            const timeStr = `${hhmm(start)}–${hhmm(end)}`
                             return (
                               <tr key={e.id}>
                                 <td className={styles.dateCell}>
-                                  {start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })} {timeStr}
+                                  {formatDate(start)} {timeStr}
                                 </td>
                                 <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
                                 <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
@@ -830,8 +830,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         const cls = e.classes!
                         const start = new Date(cls.starts_at)
                         const end = new Date(start.getTime() + cls.duration_min * 60000)
-                        const timeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
-                        const dateStr = start.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        const timeStr = `${hhmm(start)}–${hhmm(end)}`
+                        const dateStr = formatDate(start)
                         const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
                         const Icon = enrollmentStatusIcon(e.status)
                         return (
