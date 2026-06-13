@@ -104,7 +104,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
             {canCancel && (
               <button
                 type="button"
-                className={styles.detailAction}
+                className={`${styles.detailAction} ${styles.detailActionDanger}`}
                 onClick={() => setConfirmOpen(true)}
                 disabled={cancelling}
               >

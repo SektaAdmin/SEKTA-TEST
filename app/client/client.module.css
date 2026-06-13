@@ -862,6 +862,15 @@
   font-size: 18px;
 }
 
+.detailActionDanger .detailActionIcon {
+  color: var(--danger);
+  border-color: var(--danger-border, var(--danger));
+}
+
+.detailActionDanger span {
+  color: var(--danger);
+}
+
 .detailCard {
   padding: 14px 16px;
   background: var(--bg-2);
