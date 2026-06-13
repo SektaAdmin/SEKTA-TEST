@@ -572,13 +572,6 @@
   cursor: default;
 }
 
-/* Inline-суфікс таймера після дати («· через 2 дні»). */
-.visitTimerSuffix {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-3);
-}
-
 /* Минулі візити — колір за статусом (узгоджено з badge-* у globals.css). */
 .visitTimerPast {
   color: var(--text-2);

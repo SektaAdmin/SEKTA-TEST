@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -15,27 +15,6 @@ import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from 
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
-
-// «Через 3 години 43 хвилини» / «Через 12 хвилин» / «Зараз».
-function timeUntil(startISO: string, nowMs: number): string {
-  const diffMs = new Date(startISO).getTime() - nowMs
-  if (diffMs <= 0) return 'Зараз'
-  const totalMin = Math.floor(diffMs / 60000)
-  const days = Math.floor(totalMin / 1440)
-  const hours = Math.floor((totalMin % 1440) / 60)
-  const mins = totalMin % 60
-  const plural = (n: number, one: string, few: string, many: string) => {
-    const m10 = n % 10, m100 = n % 100
-    if (m10 === 1 && m100 !== 11) return one
-    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few
-    return many
-  }
-  const parts: string[] = []
-  if (days > 0) parts.push(`${days} ${plural(days, 'день', 'дні', 'днів')}`)
-  if (hours > 0) parts.push(`${hours} ${plural(hours, 'годину', 'години', 'годин')}`)
-  if (mins > 0 && days === 0) parts.push(`${mins} ${plural(mins, 'хвилину', 'хвилини', 'хвилин')}`)
-  return parts.length ? `Через ${parts.join(' ')}` : 'Зараз'
-}
 
 // Tone із enrollmentBadge → локальний CSS-Module клас кабінету.
 const VISIT_TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
@@ -72,18 +51,14 @@ function TrainerRow({ name, chevron }: { name: string | null | undefined; chevro
   )
 }
 
-function WhenMeta({ c, typeLabel, timerSuffix }: {
+function WhenMeta({ c, typeLabel }: {
   c: { starts_at: string; duration_min: number; title: string | null; ticket_type: string; halls: { name: string } | null }
   typeLabel: (t: string) => string
-  timerSuffix?: string
 }) {
   return (
     <>
       <div className={styles.visitWhen}>
         {fullWhen(c.starts_at, c.duration_min)}
-        {timerSuffix && (
-          <span className={styles.visitTimerSuffix}>{'  ·  '}{timerSuffix}</span>
-        )}
       </div>
       <div className={styles.visitMeta}>
         {c.title || typeLabel(c.ticket_type)}
@@ -118,15 +93,9 @@ export default function ClientVisits({
 }: Props) {
   const [upcomingShown, setUpcomingShown] = useState(PAGE_SIZE)
   const [pastShown, setPastShown] = useState(PAGE_SIZE)
-  const [nowMs, setNowMs] = useState(Date.now())
   const { fromISO } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
   }), [])
-
-  useEffect(() => {
-    const id = setInterval(() => setNowMs(Date.now()), 60_000)
-    return () => clearInterval(id)
-  }, [])
 
   // Дані прийшли зі сервера (initialData) — без realtime, без дубль-запиту при
   // монтуванні. Свіжість — через refetchOnVisible (повернення до екрана після
@@ -194,7 +163,6 @@ export default function ClientVisits({
                 <WhenMeta
                   c={c}
                   typeLabel={typeLabel}
-                  timerSuffix={c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
                 />
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
