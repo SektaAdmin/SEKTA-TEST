@@ -22,6 +22,6 @@ playwright-report/
 
 # External agent artifacts
 .codex/
-AGENTS.md
-RECOMMENDATIONS.md
+/AGENTS.md
+/RECOMMENDATIONS.md
 CLAUDE.md.bak

@@ -43,7 +43,16 @@ npm run start    # production server
 
 ## Документація
 
-Детальна документація: [CLAUDE.md](./CLAUDE.md)
+Канон бізнес-логіки й інваріантів — [CLAUDE.md](./CLAUDE.md). Тематичні живі документи в [docs/](./docs/):
+
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — карта коду, стек, осі централізації
+- [docs/DATABASE.md](./docs/DATABASE.md) — схема, RPC, інваріанти даних
+- [docs/SECURITY.md](./docs/SECURITY.md) — ролі, RLS, гранти, RPC-гейти
+- [docs/FRONTEND.md](./docs/FRONTEND.md) — модалки, CSS-система, layout, mobile
+- [docs/CHANGELOG.md](./docs/CHANGELOG.md) — помітні віхи (повна історія — `git log`)
+- [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) — правило синхронізації docs↔код
+- [docs/DRIFT_CHECK_PROMPT.md](./docs/DRIFT_CHECK_PROMPT.md) — переіспользуваний чек дрейфу
+- [docs/archive/](./docs/archive/) — заморожені звіти · [docs/legacy/](./docs/legacy/) — старі робочі документи
 
 ## Деплой на Vercel
 

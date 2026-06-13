@@ -255,6 +255,11 @@ components:
     padding: 64px 32px
 ---
 
+> ⚠️ **LEGACY (заморожено, не редагувати).** Aspirational дизайн-токени «Linear» (темна near-black тема).
+> Це **не** поточна тема застосунку (студія йде у світлий Vercel-щільний напрямок — див. memory/живі обговорення).
+> Лишено як референс палітри/типографіки; не описує реальний `globals.css`. Актуальна CSS-система — у
+> [../FRONTEND.md](../FRONTEND.md).
+
 ## Overview
 
 Linear's marketing canvas is the deepest dark surface in this collection — `{colors.canvas}` is #010102, essentially pure black with a faint blue tint. On top sits a four-step surface ladder (`{colors.surface-1}` through `{colors.surface-4}`) for cards, panels, and lifted tiles, with hairline borders running from `{colors.hairline}` (#23252a) up through `{colors.hairline-strong}` and `{colors.hairline-tertiary}`. Light gray text (`{colors.ink}` #f7f8f8) carries the body and headlines.
