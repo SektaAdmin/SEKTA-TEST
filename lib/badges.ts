@@ -163,6 +163,16 @@ export function paymentClass(method: string): string {
   return PAYMENT_CLASS[method as PaymentMethod] ?? ''
 }
 
+export function clientPaymentLabel(method: string): string {
+  const map: Record<string, string> = {
+    fop: 'Безготівкова',
+    personal_card: 'Картка',
+    cash: 'Готівка',
+    deposit: 'З депозиту',
+  }
+  return map[method] ?? method
+}
+
 /* ── Баланс (грошовий) ──────────────────────────────────────────── */
 // Клас для числового депозиту або залишку: >0 (green), <0 (red), =0 (yellow).
 

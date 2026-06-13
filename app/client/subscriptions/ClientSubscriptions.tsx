@@ -9,7 +9,7 @@ import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, balanceClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, clientPaymentLabel, balanceClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
@@ -146,7 +146,7 @@ export default function ClientSubscriptions({
                       {formatDate(p.created_at)}
                       {p.payment_method && (
                         <span className={paymentClass(p.payment_method)}>
-                          {paymentLabel(p.payment_method)}
+                          {clientPaymentLabel(p.payment_method)}
                         </span>
                       )}
                     </div>
