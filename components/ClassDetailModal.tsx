@@ -616,14 +616,14 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                               <td className={styles.actionsCell}>
                                 {confirmReverseId === e.id ? (
                                   <div className={styles.actions}>
-                                    <button className={styles.btnEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
+                                    <button autoFocus className={styles.btnEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
                                     <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
                                   </div>
                                 ) : confirmDeleteId === e.id ? (
                                   <div className={styles.deleteConfirm}>
                                     <span className={styles.deleteHint}>Видалити назавжди?{e.sessions_used > 0 ? ' Сесію буде повернуто.' : ''}</span>
                                     <div className={styles.actions}>
-                                      <button className={styles.btnDelete} onClick={() => handleDeleteEnrollment(e)} disabled={isLoading}>Видалити</button>
+                                      <button autoFocus className={styles.btnDelete} onClick={() => handleDeleteEnrollment(e)} disabled={isLoading}>Видалити</button>
                                       <button className={styles.btnCancelAdd} onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>Ні</button>
                                     </div>
                                   </div>
@@ -751,7 +751,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     <p className={styles.confirmText}>Скасувати заняття? Сесії повернуться клієнтам, які відвідали.</p>
                     <div className={styles.confirmActions}>
                       <button className={styles.btnEdit} onClick={() => setShowCancelConfirm(false)} disabled={cancellingClass}>Назад</button>
-                      <button className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                      <button autoFocus className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
                         {cancellingClass ? 'Скасування…' : 'Скасувати заняття'}
                       </button>
                     </div>
@@ -766,7 +766,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     <p className={styles.confirmText}>Відновити заняття? Статуси клієнтів повернуться як були.</p>
                     <div className={styles.confirmActions}>
                       <button className={styles.btnEdit} onClick={() => setShowRestoreConfirm(false)} disabled={cancellingClass}>Назад</button>
-                      <button className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                      <button autoFocus className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
                         {cancellingClass ? 'Відновлення…' : 'Відновити'}
                       </button>
                     </div>
@@ -784,7 +784,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                     </p>
                     <div className={styles.confirmActions}>
                       <button className={styles.btnEdit} onClick={() => setShowDeleteConfirm(false)} disabled={deletingClass}>Назад</button>
-                      <button className={styles.btnDeleteClass} onClick={handleDeleteClass} disabled={deletingClass}>
+                      <button autoFocus className={styles.btnDeleteClass} onClick={handleDeleteClass} disabled={deletingClass}>
                         {deletingClass ? 'Видалення…' : 'Видалити заняття'}
                       </button>
                     </div>
