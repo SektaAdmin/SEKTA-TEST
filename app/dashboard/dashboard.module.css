@@ -26,11 +26,10 @@
   padding: 20px var(--topbar-px) 32px;
 }
 
-/* Усі KPI-картки (гроші + алерти) в один ряд рівними колонками. */
+/* Усі KPI-картки (гроші + алерти) з адаптивною обіткою при 6+ картках. */
 .statRow {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
 }
 
