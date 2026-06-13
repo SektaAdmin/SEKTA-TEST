@@ -203,7 +203,7 @@ export default function ClientVisits({
                   </div>
                   {!c.is_cancelled && (
                     <div className={styles.visitHistoryRow}>
-                      <span className={styles.visitHistoryLabel}>Після тренування</span>
+                      <span className={styles.visitHistoryLabel}>Залишок після</span>
                       <span className={`${styles.visitHistoryBadge} ${balanceAfter > 0 ? styles.visitBadgeBalancePositive : balanceAfter === 0 ? styles.visitBadgeBalanceZero : styles.visitBadgeBalanceNegative}`}>
                         {balanceAfter} {pluralHours(balanceAfter)}
                       </span>
