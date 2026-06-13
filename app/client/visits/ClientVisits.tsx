@@ -72,13 +72,19 @@ function TrainerRow({ name, chevron }: { name: string | null | undefined; chevro
   )
 }
 
-function WhenMeta({ c, typeLabel }: {
+function WhenMeta({ c, typeLabel, timerSuffix }: {
   c: { starts_at: string; duration_min: number; title: string | null; ticket_type: string; halls: { name: string } | null }
   typeLabel: (t: string) => string
+  timerSuffix?: string
 }) {
   return (
     <>
-      <div className={styles.visitWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
+      <div className={styles.visitWhen}>
+        {fullWhen(c.starts_at, c.duration_min)}
+        {timerSuffix && (
+          <span className={styles.visitTimerSuffix}>{'  ·  '}{timerSuffix}</span>
+        )}
+      </div>
       <div className={styles.visitMeta}>
         {c.title || typeLabel(c.ticket_type)}
         {c.halls?.name ? ` · ${c.halls.name}` : ''}
@@ -184,11 +190,12 @@ export default function ClientVisits({
             const balanceAfter = balanceAfterById?.[e.id] ?? 0
             return (
               <Link key={e.id} href={`/client/visits/${e.id}`} prefetch className={styles.visitCard}>
-                <div className={`${styles.visitTimer} ${c.is_cancelled ? styles.visitTimerClassCancelled : ''}`}>
-                  {c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
-                </div>
                 <TrainerRow name={c.trainers?.name} chevron />
-                <WhenMeta c={c} typeLabel={typeLabel} />
+                <WhenMeta
+                  c={c}
+                  typeLabel={typeLabel}
+                  timerSuffix={c.is_cancelled ? 'Заняття скасовано' : timeUntil(c.starts_at, nowMs)}
+                />
                 <div className={styles.visitHistoryFooter}>
                   <div className={styles.visitHistoryRow}>
                     <span className={styles.visitHistoryLabel}>Статус</span>

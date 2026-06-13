@@ -569,18 +569,11 @@
   cursor: default;
 }
 
-/* Бейдж-таймер на всю ширину зверху картки (майбутні — зелений). */
-.visitTimer {
-  display: block;
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
-  border-radius: var(--radius-sm);
-  color: var(--success);
-  background: var(--success-dim);
-  border: 1px solid var(--success-border);
+/* Inline-суфікс таймера після дати («· через 2 дні»). */
+.visitTimerSuffix {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-3);
 }
 
 /* Минулі візити — колір за статусом (узгоджено з badge-* у globals.css). */
