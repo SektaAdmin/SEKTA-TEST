@@ -501,12 +501,14 @@
 }
 
 .menuLogout {
-  color: var(--danger);
+  color: var(--text-2);
   margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
 }
 
 .menuLogout .menuIcon {
-  color: var(--danger);
+  color: var(--text-2);
 }
 
 /* ── Екран «Мої візити» (картки візитів) ────────────────────────── */
