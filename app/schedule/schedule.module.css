@@ -523,7 +523,7 @@
     border: none;
     cursor: pointer;
     z-index: 150;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    box-shadow: var(--shadow-overlay);
     line-height: 1;
   }
 }
@@ -868,7 +868,7 @@
 .card:hover {
   background: color-mix(in srgb, var(--card-color, var(--bg-3)) 22%, var(--bg-2));
   border-color: color-mix(in srgb, var(--card-color, var(--border)) 60%, var(--bg-2));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   z-index: 2;
 }
 
@@ -1033,7 +1033,7 @@
   background: var(--bg-2);
   border: 1px solid var(--border-hover);
   border-radius: var(--radius);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-lg);
   padding: 10px 0;
   width: 220px;
   max-height: 320px;

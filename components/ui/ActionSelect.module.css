@@ -32,7 +32,7 @@
   background: var(--bg-2);
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   z-index: 500;
   min-width: var(--radix-select-trigger-width);
   overflow: hidden;

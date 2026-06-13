@@ -50,7 +50,7 @@
   background: var(--bg-2);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md), var(--shadow-sm);
   overflow: hidden;
   animation: popoverIn var(--motion-fast) both;
 }

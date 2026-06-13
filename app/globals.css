@@ -43,6 +43,12 @@ html, body { overscroll-behavior: none; }
   --overlay-bg: rgba(0,0,0,0.35);
   --white: #ffffff;
 
+  /* Тіні */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --shadow-overlay: 0 16px 48px rgba(0,0,0,0.18);
+
   /* Кольори методів оплати */
   --fop: #2d78d6;
   --fop-dim: rgba(45,120,214,0.10);
