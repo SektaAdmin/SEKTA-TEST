@@ -226,7 +226,7 @@ export const TICKET_TYPE_NOMINATIVE_LABELS: Record<string, string> = {
   individualduo:   'Індивідуальне Duo',
   individualtrio:  'Індивідуальне Trio',
   hallrental:      'Оренда залу',
-  smallhallrental: 'Оренда залу (Малий)',
+  smallhallrental: 'Оренда малого залу',
   pylonrental:     'Оренда пілону',
   selftraining:    'Самостійне тренування',
 }
