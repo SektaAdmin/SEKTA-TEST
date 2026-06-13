@@ -2,10 +2,11 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { listBookableClasses } from '@/lib/queries/client-cabinet-data'
+import { listBookableClasses, listMySessionBalances } from '@/lib/queries/client-cabinet-data'
 import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-cabinet-data'
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
+import { useAsync } from '@/hooks/useAsync'
 import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
@@ -42,11 +43,12 @@ function sessionCost(durationMin: number): number {
 type EnrolledState = 'enrolled' | 'waitlist'
 
 type Props = {
+  clientId: string
   fromISO: string
   toISO: string
   typeLabels: Record<string, string>
-  /** ticket_type → залишок сесій (для блокування запису без оплати). */
-  balanceByType: Record<string, number>
+  /** ticket_type → залишок сесій (server-prefetch; живе значення — useAsync нижче). */
+  initialBalanceByType: Record<string, number>
   /** class_id → заповненість (active/waitlist/capacity) для тексту «у резерв». */
   availability: Record<string, ClassAvailability>
   /** class_id → статус активного запису клієнта (вже записаний — без дубля). */
@@ -57,10 +59,11 @@ type Props = {
 
 
 export default function ClientSchedule({
+  clientId,
   fromISO,
   toISO,
   typeLabels,
-  balanceByType,
+  initialBalanceByType,
   availability,
   initialEnrolled,
   initialClasses,
@@ -71,6 +74,20 @@ export default function ClientSchedule({
   const [enrolling, setEnrolling] = useState<string | null>(null)
   // Заняття, для якого відкрита модалка підтвердження (деталі + етап хореографії).
   const [confirm, setConfirm] = useState<BookableClassRow | null>(null)
+
+  const { data: liveBalance } = useAsync(
+    async () => {
+      const { data, error } = await listMySessionBalances(supabase, clientId)
+      if (error) return { data: initialBalanceByType, error }
+      return {
+        data: Object.fromEntries(data.map(b => [b.ticket_type, b.sessions_balance])) as Record<string, number>,
+        error: null,
+      }
+    },
+    [clientId],
+    { refetchOnVisible: true, initialData: initialBalanceByType }
+  )
+  const balanceByType = liveBalance ?? initialBalanceByType
 
   const { data: classes, error: classesError } = useListQuery(
     () => listBookableClasses(supabase, fromISO, toISO),

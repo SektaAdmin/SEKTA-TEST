@@ -61,10 +61,11 @@ export default async function ClientSchedulePage() {
       <CabinetHeader title="Розклад" backHref="/client" hideLogout />
       <div className={styles.scroll}>
         <ClientSchedule
+          clientId={client.id}
           fromISO={fromISO}
           toISO={toISO}
           typeLabels={typeLabels}
-          balanceByType={balanceByType}
+          initialBalanceByType={balanceByType}
           availability={availability}
           initialEnrolled={initialEnrolled}
           initialClasses={classes}
