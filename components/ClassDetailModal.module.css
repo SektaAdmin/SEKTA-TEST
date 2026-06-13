@@ -38,7 +38,7 @@
   align-items: flex-start;
   gap: 10px;
   background: var(--warning-dim);
-  border: 1px solid rgba(224,160,64,0.35);
+  border: 1px solid var(--warning-border);
   border-radius: var(--radius);
   padding: 12px 16px;
   font-size: 14px;
@@ -209,7 +209,7 @@
   align-self: flex-end;
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: var(--white);
   background: var(--accent);
   border: none;
   border-radius: 8px;
@@ -486,7 +486,7 @@
 
 .btnReEnroll:hover:not(:disabled) {
   background: var(--fop-dim);
-  border-color: rgba(100,160,255,0.3);
+  border-color: var(--fop-border);
   color: var(--fop);
 }
 
@@ -593,7 +593,7 @@
   border: 1px solid var(--danger);
   border-radius: var(--radius-sm);
   padding: 7px 14px;
-  color: #fff;
+  color: var(--white);
   cursor: pointer;
   font-size: 14px;
   font-family: var(--font);

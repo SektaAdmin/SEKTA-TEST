@@ -25,7 +25,7 @@
 
 .dirBtnExpense {
   background: var(--danger-dim) !important;
-  border-color: rgba(255, 92, 92, 0.4) !important;
+  border-color: var(--danger-border) !important;
   color: var(--danger) !important;
 }
 
@@ -47,6 +47,6 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--danger-dim);
-  border: 1px solid rgba(255, 92, 92, 0.25);
+  border: 1px solid var(--danger-border);
   margin-top: 4px;
 }

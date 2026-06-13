@@ -2,7 +2,7 @@
 .modal {
   max-width: 440px;
   margin: 16px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  box-shadow: 0 24px 64px var(--overlay-bg);
 }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -52,6 +52,6 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--danger-dim);
-  border: 1px solid rgba(255,92,92,0.25);
+  border: 1px solid var(--danger-border);
 }
 

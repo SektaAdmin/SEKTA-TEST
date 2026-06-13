@@ -517,7 +517,7 @@
     height: 52px;
     border-radius: 50%;
     background: var(--accent);
-    color: #fff;
+    color: var(--white);
     font-size: 28px;
     font-weight: 300;
     border: none;
@@ -697,7 +697,7 @@
 }
 
 .weekDayToday {
-  color: #fff;
+  color: var(--white);
   font-weight: 600;
   background: var(--accent);
   border-radius: var(--radius-sm);

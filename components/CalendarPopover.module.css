@@ -139,7 +139,7 @@
 }
 
 .dayInWeek:hover .dayNum {
-  background: rgba(200, 240, 96, 0.15);
+  background: var(--accent-dim);
 }
 
 .dayWeekStart {
