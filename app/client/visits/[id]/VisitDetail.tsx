@@ -154,7 +154,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
             'Не списано'
           ) : hasBalance ? (
             <>
-              {cost === 1 ? '1 заняття' : `${cost} заняття`} з абонемента
+              {cost} {pluralHours(cost)} з {typeLabel(c.ticket_type)} абонемента
               {!isPast && ` · залишок після: ${balanceAfter} ${pluralHours(balanceAfter)}`}
             </>
           ) : (
