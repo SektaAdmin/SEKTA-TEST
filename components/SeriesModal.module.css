@@ -47,6 +47,12 @@
   cursor: pointer;
 }
 
+.hoursError {
+  font-size: 12px;
+  color: var(--error, #e53e3e);
+  align-self: center;
+}
+
 .addClientRow {
   display: flex;
   align-items: center;

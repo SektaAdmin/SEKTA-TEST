@@ -120,6 +120,10 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
 
   const addClient = async (client: Client) => {
     if (!activeSeries?.id) return
+    if (Number(durationMin) >= 120 && selectedHours.length === 0) {
+      toast.error('Оберіть хоча б одну годину для 2-годинного заняття')
+      return
+    }
     const hours = Number(durationMin) >= 120 ? selectedHours.slice().sort() : undefined
     const { error } = await addSeriesClient(supabase, activeSeries.id, client.id, hours)
     if (error) { toast.error(error); return }
@@ -292,6 +296,9 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
                     </label>
                   )
                 })}
+                {selectedHours.length === 0 && (
+                  <span className={styles.hoursError}>Оберіть хоча б одну годину</span>
+                )}
               </div>
             )}
 
