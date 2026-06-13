@@ -255,28 +255,6 @@
   white-space: nowrap;
 }
 
-.cancelBtn {
-  height: var(--control-h);
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--text-2);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.cancelBtn:hover:not(:disabled) {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-.cancelBtn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
 /* ── Списки історії (покупки, рух депозиту) ─────────────────────── */
 .txList {
   display: flex;
