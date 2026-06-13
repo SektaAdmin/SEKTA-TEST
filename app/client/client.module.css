@@ -385,9 +385,14 @@
 .hint {
   font-size: 12px;
   color: var(--text-3);
-  margin-top: 4px;
+  margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 0;
 }
 
 .listFooterNote {
@@ -425,6 +430,8 @@
 .profileInfo {
   min-width: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .profileName {
@@ -446,12 +453,6 @@
   text-decoration: none;
 }
 
-.profileHintHome {
-  font-size: 12px;
-  color: var(--text-2);
-  margin-top: 8px;
-  padding: 0 4px;
-}
 
 .menu {
   display: flex;

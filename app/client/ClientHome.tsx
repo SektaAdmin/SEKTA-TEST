@@ -32,9 +32,9 @@ export default function ClientHome({ name, email, contacts }: Props) {
           <div className={styles.profileName}>{name || 'Клієнт'}</div>
           {email && <div className={styles.profileContact}>{email}</div>}
           {contacts?.phone && <div className={styles.profileContact}>{contacts.phone}</div>}
+          <p className={styles.hint}>Щоб змінити дані, зверніться до адміністрації студії.</p>
         </div>
       </section>
-      <p className={styles.profileHintHome}>Щоб змінити дані, зверніться до адміністрації студії.</p>
 
       <nav className={styles.menu}>
         {/* prefetch — Next тягне роут заздалегідь, тап відкривається миттєво. */}
