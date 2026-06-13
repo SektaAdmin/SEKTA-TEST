@@ -54,7 +54,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
   // hours_attended.length ?? 1 (як спише mark_attendance / auto_close, і як
   // спише штраф при пізньому скасуванні — change_enrollment_status).
   const cost = isPast
-    ? (enrollment.sessions_used || 1)
+    ? (enrollment.sessions_used ?? 0)
     : (enrollment.hours_attended?.length ?? 1)
   // balanceAfter — залишок ПІСЛЯ заняття; баланс ДО = balanceAfter + cost.
   // «Є абонемент» = вистачало сесій на це заняття, тобто баланс після не пішов у мінус.
@@ -150,7 +150,9 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
           )}
         </div>
         <div className={styles.detailRowSub}>
-          {hasBalance ? (
+          {cost === 0 ? (
+            'Не списано'
+          ) : hasBalance ? (
             <>
               {cost === 1 ? '1 заняття' : `${cost} заняття`} з абонемента
               {!isPast && ` · залишок після: ${balanceAfter} ${pluralHours(balanceAfter)}`}
