@@ -393,6 +393,9 @@
   padding-left: 82px;
   padding-right: 16px;
   padding-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .listFooterNote {
