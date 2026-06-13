@@ -390,7 +390,7 @@
   border-top: 1px solid var(--border);
   margin-left: -16px;
   margin-right: -16px;
-  padding-left: 82px;
+  padding-left: calc(16px + 52px + 14px);
   padding-right: 16px;
   padding-bottom: 0;
   white-space: nowrap;
