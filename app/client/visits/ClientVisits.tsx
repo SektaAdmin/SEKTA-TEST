@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -110,10 +110,15 @@ export default function ClientVisits({
 }: Props) {
   const [upcomingShown, setUpcomingShown] = useState(PAGE_SIZE)
   const [pastShown, setPastShown] = useState(PAGE_SIZE)
-  const { fromISO, nowMs } = useMemo(() => ({
+  const [nowMs, setNowMs] = useState(Date.now())
+  const { fromISO } = useMemo(() => ({
     fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-    nowMs: Date.now(),
   }), [])
+
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   // Дані прийшли зі сервера (initialData) — без realtime, без дубль-запиту при
   // монтуванні. Свіжість — через refetchOnVisible (повернення до екрана після
