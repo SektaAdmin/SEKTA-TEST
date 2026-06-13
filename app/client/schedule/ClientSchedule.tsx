@@ -72,7 +72,7 @@ export default function ClientSchedule({
   // Заняття, для якого відкрита модалка підтвердження (деталі + етап хореографії).
   const [confirm, setConfirm] = useState<BookableClassRow | null>(null)
 
-  const { data: classes } = useListQuery(
+  const { data: classes, error: classesError } = useListQuery(
     () => listBookableClasses(supabase, fromISO, toISO),
     [fromISO, toISO],
     { refetchOnVisible: true, initialData: initialClasses }
@@ -130,6 +130,14 @@ export default function ClientSchedule({
     if (finalStatus === 'waitlist') toast.info(enrollmentStatusLabel('waitlist'))
     else toast.success(enrollmentStatusLabel('enrolled'))
     setConfirm(null)
+  }
+
+  if (classesError) {
+    return (
+      <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+        Помилка завантаження. Спробуйте оновити сторінку.
+      </p>
+    )
   }
 
   if (days.length === 0) {

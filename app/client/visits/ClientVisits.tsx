@@ -118,13 +118,13 @@ export default function ClientVisits({
   // Дані прийшли зі сервера (initialData) — без realtime, без дубль-запиту при
   // монтуванні. Свіжість — через refetchOnVisible (повернення до екрана після
   // чату з адміном). Клієнт кабінету бачить лише свої дані, що змінює адмін.
-  const { data: upcoming } = useListQuery(
+  const { data: upcoming, error: upcomingError } = useListQuery(
     () => listMyUpcomingEnrollments(supabase, clientId, fromISO),
     [clientId, fromISO],
     { refetchOnVisible: true, initialData: initialUpcoming }
   )
 
-  const { data: past } = useListQuery(
+  const { data: past, error: pastError } = useListQuery(
     () => listMyPastEnrollments(supabase, clientId),
     [clientId],
     { refetchOnVisible: true, initialData: initialPast }
@@ -158,7 +158,11 @@ export default function ClientVisits({
   return (
     <>
       <div className={styles.sectionLabel}>Майбутні записи</div>
-      {upcomingSorted.length === 0 ? (
+      {upcomingError ? (
+        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+          Помилка завантаження. Спробуйте оновити сторінку.
+        </p>
+      ) : upcomingSorted.length === 0 ? (
         <p className={styles.empty}>{MSG.empty.futureEnrollments}.</p>
       ) : (
         <div className={styles.visitList}>
@@ -205,7 +209,11 @@ export default function ClientVisits({
       )}
 
       <div className={styles.sectionLabel}>Історія</div>
-      {pastSorted.length === 0 ? (
+      {pastError ? (
+        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+          Помилка завантаження. Спробуйте оновити сторінку.
+        </p>
+      ) : pastSorted.length === 0 ? (
         <p className={styles.empty}>{MSG.empty.pastEnrollments}.</p>
       ) : (
         <div className={styles.visitList}>

@@ -73,7 +73,7 @@ export default function ClientSubscriptions({
   // Усе прийшло зі сервера (initialData) — без realtime, без дубль-запиту.
   // Свіжість балансу/покупок — через refetchOnVisible (повернення з чату з
   // адміном, який списав заняття / провів продаж).
-  const { data: balanceData } = useAsync(
+  const { data: balanceData, error: balanceError } = useAsync(
     async () => {
       const { data, error } = await getMyClient(supabase, userId)
       return { data: data ? { balance: data.balance } : null, error }
@@ -83,13 +83,13 @@ export default function ClientSubscriptions({
   )
   const balance = balanceData?.balance ?? initialBalance
 
-  const { data: sessions } = useListQuery(
+  const { data: sessions, error: sessionsError } = useListQuery(
     () => listMySessionBalances(supabase, clientId),
     [clientId],
     { refetchOnVisible: true, initialData: initialSessions }
   )
 
-  const { data: purchases } = useListQuery(
+  const { data: purchases, error: purchasesError } = useListQuery(
     () => listMyPurchases(supabase, clientId),
     [clientId],
     { refetchOnVisible: true, initialData: initialPurchases }
@@ -100,21 +100,31 @@ export default function ClientSubscriptions({
   return (
     <>
       <div className={styles.sectionLabel}>Баланс</div>
-      <section className={styles.balanceBlock}>
-        <div className={styles.depositRow}>
-          <span className={styles.depositLabel}>Депозит</span>
-          <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
-        </div>
-        {sessions.map(s => (
-          <div key={s.ticket_type} className={styles.balanceRow}>
-            <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
-            <span className={balanceClass(s.sessions_balance)}>{s.sessions_balance} год</span>
+      {(balanceError || sessionsError) ? (
+        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+          Помилка завантаження. Спробуйте оновити сторінку.
+        </p>
+      ) : (
+        <section className={styles.balanceBlock}>
+          <div className={styles.depositRow}>
+            <span className={styles.depositLabel}>Депозит</span>
+            <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
           </div>
-        ))}
-      </section>
+          {sessions.map(s => (
+            <div key={s.ticket_type} className={styles.balanceRow}>
+              <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
+              <span className={balanceClass(s.sessions_balance)}>{s.sessions_balance} год</span>
+            </div>
+          ))}
+        </section>
+      )}
 
       <div className={styles.sectionLabel}>Історія покупок</div>
-      {purchases.length === 0 ? (
+      {purchasesError ? (
+        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+          Помилка завантаження. Спробуйте оновити сторінку.
+        </p>
+      ) : purchases.length === 0 ? (
         <p className={styles.empty}>{MSG.empty.purchases}.</p>
       ) : (
         <ul className={styles.txList}>
