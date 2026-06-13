@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
+import { avatarColor } from '@/lib/avatarColor'
 import { ScheduleIcon, SalesIcon, JournalIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
 import StudioContactIcons from '@/components/StudioContactIcons'
 import styles from './client.module.css'
@@ -26,7 +27,7 @@ export default function ClientHome({ name, email, contacts }: Props) {
   return (
     <>
       <section className={styles.profileCard}>
-        <div className={styles.avatar}>{initial}</div>
+        <div className={styles.avatar} style={{ background: avatarColor(name) }}>{initial}</div>
         <div className={styles.profileInfo}>
           <div className={styles.profileName}>{name || 'Клієнт'}</div>
           {email && <div className={styles.profileContact}>{email}</div>}

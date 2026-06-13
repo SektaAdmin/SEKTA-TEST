@@ -417,7 +417,7 @@
   height: 52px;
   border-radius: 50%;
   background: var(--accent-dim, var(--bg-3));
-  color: var(--text);
+  color: #fff;
   font-size: 22px;
   font-weight: 600;
 }
