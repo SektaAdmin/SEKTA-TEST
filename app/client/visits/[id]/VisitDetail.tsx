@@ -12,7 +12,6 @@ import { cancellationDeadline, isFreeCancellation } from '@/lib/cancellation'
 import { STUDIO } from '@/lib/studio'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
-import StudioContactIcons from '@/components/StudioContactIcons'
 import { MSG } from '@/lib/messages'
 import styles from '../../client.module.css'
 
@@ -185,10 +184,6 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
           Показати на карті
         </a>
       </section>
-
-      {/* Контакти */}
-      <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Контакти</div>
-      <StudioContactIcons styles={styles} />
 
       {confirmOpen && (
         <ModalShell
