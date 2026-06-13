@@ -1,0 +1,4 @@
+# Supabase CLI local state — не комітити
+.branches
+.temp
+.env
