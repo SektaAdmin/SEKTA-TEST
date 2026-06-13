@@ -1083,7 +1083,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
-  background: var(--bg-1);
+  background: var(--bg);
   text-transform: capitalize;
 }
 
