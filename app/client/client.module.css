@@ -388,7 +388,7 @@
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
-  margin-left: calc(52px + 14px - 16px);
+  margin-left: 0;
   margin-right: 0;
   padding-left: 0;
   padding-right: 8px;
@@ -506,8 +506,6 @@
 .menuLogout {
   color: var(--text-2);
   margin-top: 8px;
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
 }
 
 .menuLogout .menuIcon {
