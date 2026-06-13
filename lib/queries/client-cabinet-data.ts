@@ -113,7 +113,7 @@ const MY_PURCHASES_SELECT =
 function myPurchasesQuery(supabase: Db, clientId: string) {
   return supabase
     .from('sales')
-    .select(MY_PURCHASES_SELECT)
+    .select(MY_PURCHASES_SELECT, { count: 'exact' })
     .eq('client_id', clientId)
     .order('created_at', { ascending: false })
     .limit(100)
@@ -125,9 +125,9 @@ export type MyPurchaseRow = QueryData<ReturnType<typeof myPurchasesQuery>>[numbe
 export async function listMyPurchases(
   supabase: Db,
   clientId: string
-): Promise<{ data: MyPurchaseRow[]; error: string | null }> {
-  const { data, error } = await myPurchasesQuery(supabase, clientId)
-  return { data: data ?? [], error: error?.message ?? null }
+): Promise<{ data: MyPurchaseRow[]; totalCount: number; error: string | null }> {
+  const { data, count, error } = await myPurchasesQuery(supabase, clientId)
+  return { data: data ?? [], totalCount: count ?? 0, error: error?.message ?? null }
 }
 
 // Архів записів: минулі заняття за статусами attended/noshow/cancelled.
@@ -137,7 +137,7 @@ const MY_PAST_SELECT =
 function myPastEnrollmentsQuery(supabase: Db, clientId: string) {
   return supabase
     .from('enrollments')
-    .select(MY_PAST_SELECT)
+    .select(MY_PAST_SELECT, { count: 'exact' })
     .eq('client_id', clientId)
     .in('status', ['attended', 'noshow', 'cancelled'])
     .order('starts_at', { referencedTable: 'classes', ascending: false })
@@ -150,9 +150,9 @@ export type MyPastEnrollmentRow = QueryData<ReturnType<typeof myPastEnrollmentsQ
 export async function listMyPastEnrollments(
   supabase: Db,
   clientId: string
-): Promise<{ data: MyPastEnrollmentRow[]; error: string | null }> {
-  const { data, error } = await myPastEnrollmentsQuery(supabase, clientId)
-  return { data: data ?? [], error: error?.message ?? null }
+): Promise<{ data: MyPastEnrollmentRow[]; totalCount: number; error: string | null }> {
+  const { data, count, error } = await myPastEnrollmentsQuery(supabase, clientId)
+  return { data: data ?? [], totalCount: count ?? 0, error: error?.message ?? null }
 }
 
 // Деталі одного запису (екран /client/visits/[id]). Усі поля заняття + тренер/зал.

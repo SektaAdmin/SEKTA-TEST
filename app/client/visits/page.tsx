@@ -27,13 +27,17 @@ export default async function ClientVisitsPage() {
 
   const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
 
-  const [{ data: typeLabels }, { data: balanceAfter }, { data: upcoming }, { data: past }] =
-    await Promise.all([
-      listTrainingTypeLabels(supabase),
-      listMyRunningBalances(supabase, client.id, fromISO),
-      listMyUpcomingEnrollments(supabase, client.id, fromISO),
-      listMyPastEnrollments(supabase, client.id),
-    ])
+  const [
+    { data: typeLabels },
+    { data: balanceAfter },
+    { data: upcoming },
+    { data: past, totalCount: pastTotal },
+  ] = await Promise.all([
+    listTrainingTypeLabels(supabase),
+    listMyRunningBalances(supabase, client.id, fromISO),
+    listMyUpcomingEnrollments(supabase, client.id, fromISO),
+    listMyPastEnrollments(supabase, client.id),
+  ])
 
   return (
     <>
@@ -45,6 +49,7 @@ export default async function ClientVisitsPage() {
           initialBalanceAfter={balanceAfter}
           initialUpcoming={upcoming}
           initialPast={past}
+          initialPastTotal={pastTotal}
         />
       </div>
     </>

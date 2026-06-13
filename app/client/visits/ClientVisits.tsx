@@ -99,6 +99,7 @@ type Props = {
   initialBalanceAfter: Record<string, number>
   initialUpcoming: MyEnrollmentRow[]
   initialPast: MyPastEnrollmentRow[]
+  initialPastTotal: number
 }
 
 export default function ClientVisits({
@@ -107,6 +108,7 @@ export default function ClientVisits({
   initialBalanceAfter,
   initialUpcoming,
   initialPast,
+  initialPastTotal,
 }: Props) {
   const [upcomingShown, setUpcomingShown] = useState(PAGE_SIZE)
   const [pastShown, setPastShown] = useState(PAGE_SIZE)
@@ -129,11 +131,17 @@ export default function ClientVisits({
     { refetchOnVisible: true, initialData: initialUpcoming }
   )
 
-  const { data: past, error: pastError } = useListQuery(
-    () => listMyPastEnrollments(supabase, clientId),
+  const { data: past, total: pastFetchedTotal, error: pastError } = useListQuery(
+    async () => {
+      const { data, totalCount, error } = await listMyPastEnrollments(supabase, clientId)
+      return { data, count: totalCount, error }
+    },
     [clientId],
     { refetchOnVisible: true, initialData: initialPast }
   )
+  // pastFetchedTotal is 0 until first refetch (initialData skips first fetch).
+  // Fall back to server-prefetched total on initial render.
+  const pastTotal = pastFetchedTotal || initialPastTotal
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -251,6 +259,9 @@ export default function ClientVisits({
             <button type="button" className={styles.showMore} onClick={() => setPastShown(n => n + PAGE_SIZE)}>
               Показати ще
             </button>
+          )}
+          {pastSorted.length < pastTotal && (
+            <p className={styles.listFooterNote}>Показано {pastSorted.length} з {pastTotal}</p>
           )}
         </div>
       )}

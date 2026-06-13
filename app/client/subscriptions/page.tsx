@@ -24,7 +24,11 @@ export default async function ClientSubscriptionsPage() {
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  const [{ data: typeLabels }, { data: sessions }, { data: purchases }] = await Promise.all([
+  const [
+    { data: typeLabels },
+    { data: sessions },
+    { data: purchases, totalCount: purchasesTotal },
+  ] = await Promise.all([
     listTrainingTypeLabels(supabase),
     listMySessionBalances(supabase, client.id),
     listMyPurchases(supabase, client.id),
@@ -41,6 +45,7 @@ export default async function ClientSubscriptionsPage() {
           typeLabels={typeLabels}
           initialSessions={sessions}
           initialPurchases={purchases}
+          initialPurchasesTotal={purchasesTotal}
         />
       </div>
     </>

@@ -60,6 +60,7 @@ type Props = {
   typeLabels: Record<string, string>
   initialSessions: { ticket_type: string; sessions_balance: number }[]
   initialPurchases: MyPurchaseRow[]
+  initialPurchasesTotal: number
 }
 
 export default function ClientSubscriptions({
@@ -69,6 +70,7 @@ export default function ClientSubscriptions({
   typeLabels,
   initialSessions,
   initialPurchases,
+  initialPurchasesTotal,
 }: Props) {
   // Усе прийшло зі сервера (initialData) — без realtime, без дубль-запиту.
   // Свіжість балансу/покупок — через refetchOnVisible (повернення з чату з
@@ -89,11 +91,15 @@ export default function ClientSubscriptions({
     { refetchOnVisible: true, initialData: initialSessions }
   )
 
-  const { data: purchases, error: purchasesError } = useListQuery(
-    () => listMyPurchases(supabase, clientId),
+  const { data: purchases, total: purchasesFetchedTotal, error: purchasesError } = useListQuery(
+    async () => {
+      const { data, totalCount, error } = await listMyPurchases(supabase, clientId)
+      return { data, count: totalCount, error }
+    },
     [clientId],
     { refetchOnVisible: true, initialData: initialPurchases }
   )
+  const purchasesTotal = purchasesFetchedTotal || initialPurchasesTotal
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -127,6 +133,7 @@ export default function ClientSubscriptions({
       ) : purchases.length === 0 ? (
         <p className={styles.empty}>{MSG.empty.purchases}.</p>
       ) : (
+        <>
         <ul className={styles.txList}>
           {purchases.map(p => {
             const { title, amount, sign, deposit, total } = describeSale(p, typeLabel)
@@ -170,6 +177,10 @@ export default function ClientSubscriptions({
             )
           })}
         </ul>
+        {purchases.length < purchasesTotal && (
+          <p className={styles.listFooterNote}>Показано {purchases.length} з {purchasesTotal}</p>
+        )}
+        </>
       )}
     </>
   )
