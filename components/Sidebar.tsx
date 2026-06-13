@@ -9,7 +9,7 @@ import styles from './Sidebar.module.css'
 
 const nav = [
   { href: '/dashboard', label: 'Дашборд', icon: <DashboardIcon /> },
-  { href: '/sales', label: 'Продажи', icon: <SalesIcon /> },
+  { href: '/sales', label: 'Продажі', icon: <SalesIcon /> },
   { href: '/clients', label: 'Клієнти', icon: <ClientsIcon /> },
   { href: '/schedule', label: 'Розклад', icon: <ScheduleIcon /> },
   { href: '/schedule/templates', label: 'Шаблони', icon: <TemplatesIcon /> },
