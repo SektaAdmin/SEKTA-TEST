@@ -20,7 +20,7 @@ import { CopyIcon } from '@/components/icons/navigation'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
-import { enrollmentStatusLabel, enrollmentStatusIcon, enrollmentBadge, enrollmentBadgeClass, cancelSourceSuffix } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusIcon, enrollmentBadge, enrollmentBadgeClass, cancelSourceSuffix, balanceClass } from '@/lib/badges'
 import type { Class, Client } from '@/types'
 import { ActionSelect } from '@/components/ui/ActionSelect'
 import styles from './ClassDetailModal.module.css'
@@ -512,7 +512,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                           const cost = isTwoHour(cls) ? Math.max(selectedHours.length, 1) : 1
                           const after = clientBalance - cost
                           return (
-                            <span className={after > 0 ? 'balance-ok' : 'balance-warn'}>
+                            <span className={balanceClass(after)}>
                               Баланс після запису: {after}
                             </span>
                           )
@@ -609,7 +609,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   const bal = balanceMap[e.client_id]
                                   if (bal == null) return <span className="balance-muted">—</span>
                                   return (
-                                    <span className={bal > 0 ? 'balance-ok' : 'balance-warn'}>{bal}</span>
+                                    <span className={balanceClass(bal)}>{bal}</span>
                                   )
                                 })()}
                               </td>

@@ -10,6 +10,7 @@ import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import { formatClientName, formatMoney } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
+import { balanceClass } from '@/lib/badges'
 import type { Client } from '@/types'
 import Pagination, { type PageSize } from '@/components/ui/Pagination'
 import styles from './clients.module.css'
@@ -161,13 +162,7 @@ export default function ClientsPage() {
                           }
                         </td>
                         <td>
-                          <span className={
-                            (c.balance ?? 0) > 0
-                              ? styles.balancePos
-                              : (c.balance ?? 0) < 0
-                                ? styles.balanceNeg
-                                : styles.balanceZero
-                          }>
+                          <span className={balanceClass(c.balance ?? 0)}>
                             {formatMoney(c.balance ?? 0)}
                           </span>
                         </td>
@@ -190,13 +185,7 @@ export default function ClientsPage() {
                   >
                     <div className={styles.cardRow1}>
                       <span className={styles.cardName}>{formatClientName(c)}</span>
-                      <span className={
-                        (c.balance ?? 0) > 0
-                          ? styles.balancePos
-                          : (c.balance ?? 0) < 0
-                            ? styles.balanceNeg
-                            : styles.balanceZero
-                      }>
+                      <span className={balanceClass(c.balance ?? 0)}>
                         {formatMoney(c.balance ?? 0)}
                       </span>
                     </div>

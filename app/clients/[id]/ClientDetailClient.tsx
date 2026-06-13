@@ -17,7 +17,7 @@ import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime, formatMoney, formatDate, hhmm } from '@/lib/formatters'
-import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
@@ -651,7 +651,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
-                                      ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>{bal}</span>
+                                      ? <span className={balanceClass(bal)}>{bal}</span>
                                       : <span className={styles.empty2}>—</span>
                                     }
                                   </td>
@@ -684,7 +684,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   </td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
-                                      ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>{bal}</span>
+                                      ? <span className={balanceClass(bal)}>{bal}</span>
                                       : <span className={styles.empty2}>—</span>
                                     }
                                   </td>

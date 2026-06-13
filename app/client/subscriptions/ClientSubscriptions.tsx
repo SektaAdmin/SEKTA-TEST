@@ -9,7 +9,7 @@ import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, balanceClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
@@ -51,13 +51,6 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
   }
   // Звичайна покупка
   return { title, amount: p.price_paid, sign: '', deposit: null, total: null }
-}
-
-// Клас бейджа балансу: >0 зелений, =0 жовтий, <0 червоний.
-function balanceClass(n: number) {
-  if (n > 0) return 'balance-ok'
-  if (n === 0) return 'balance-zero'
-  return 'balance-warn'
 }
 
 type Props = {

@@ -163,6 +163,15 @@ export function paymentClass(method: string): string {
   return PAYMENT_CLASS[method as PaymentMethod] ?? ''
 }
 
+/* ── Баланс (грошовий) ──────────────────────────────────────────── */
+// Клас для числового депозиту або залишку: >0 (green), <0 (red), =0 (yellow).
+
+export function balanceClass(n: number): string {
+  if (n > 0) return 'balance-ok'
+  if (n < 0) return 'balance-warn'
+  return 'balance-zero'
+}
+
 /* ── Типи транзакцій балансу (balance_transactions.transaction_type) ── */
 // Відомі типи: purchase / deposit_topup / admin_adjustment (+ історичні
 // deduction / refund / adjustment). Невідомий → код як є.
