@@ -12,6 +12,7 @@ import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
+import { kyivParts } from '@/lib/cancellation'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
@@ -25,13 +26,19 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
 }
 
 // Заголовок дня: «Понеділок, 9 червня». capitalize у CSS робить першу велику.
-function dayHeading(d: Date): string {
-  return `${DOW_LABELS_FULL[d.getDay()]}, ${d.getDate()} ${MONTHS_UK_GENITIVE[d.getMonth()]}`
+// Обчислює день тижня у київському часовому поясі (не UTC браузера).
+function dayHeading(startISO: string): string {
+  const k = kyivParts(new Date(startISO))
+  // Створюємо UTC дату для полудня дня в Київі, щоб отримати правильний день тижня.
+  // (День тижня залежить від того, як UTC дата розподіляється по днях у різних часових поясах.)
+  const utcDate = new Date(Date.UTC(k.year, k.month - 1, k.day, 12, 0, 0))
+  const dowIndex = utcDate.getUTCDay()
+  return `${DOW_LABELS_FULL[dowIndex]}, ${k.day} ${MONTHS_UK_GENITIVE[k.month - 1]}`
 }
 
 function dayKey(startISO: string): string {
-  const d = new Date(startISO)
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+  const k = kyivParts(new Date(startISO))
+  return `${k.year}-${k.month}-${k.day}`
 }
 
 // Скільки сесій спише auto_close за self-запис: двогодинне (>=120 хв) → 2
@@ -115,12 +122,12 @@ export default function ClientSchedule({
 
   // Групування по днях у хронології (classes уже відсортовані запитом).
   const days = useMemo(() => {
-    const groups: { key: string; date: Date; items: BookableClassRow[] }[] = []
-    let cur: { key: string; date: Date; items: BookableClassRow[] } | null = null
+    const groups: { key: string; startsAtISO: string; items: BookableClassRow[] }[] = []
+    let cur: { key: string; startsAtISO: string; items: BookableClassRow[] } | null = null
     for (const c of classes) {
       const k = dayKey(c.starts_at)
       if (!cur || cur.key !== k) {
-        cur = { key: k, date: new Date(c.starts_at), items: [] }
+        cur = { key: k, startsAtISO: c.starts_at, items: [] }
         groups.push(cur)
       }
       cur.items.push(c)
@@ -165,7 +172,7 @@ export default function ClientSchedule({
     <>
       {days.map(day => (
         <div key={day.key}>
-          <div className={styles.dayHeader}>{dayHeading(day.date)}</div>
+          <div className={styles.dayHeader}>{dayHeading(day.startsAtISO)}</div>
           <div className={styles.visitList}>
             {day.items.map(c => {
               const state = enrolled[c.id]

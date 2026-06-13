@@ -16,7 +16,7 @@
 const KYIV_TZ = 'Europe/Kyiv'
 
 /** Частини київського локального часу для UTC-інстанта (через Intl, з урахуванням DST). */
-function kyivParts(d: Date): { year: number; month: number; day: number; hour: number; minute: number } {
+export function kyivParts(d: Date): { year: number; month: number; day: number; hour: number; minute: number } {
   const f = new Intl.DateTimeFormat('en-US', {
     timeZone: KYIV_TZ,
     year: 'numeric',
