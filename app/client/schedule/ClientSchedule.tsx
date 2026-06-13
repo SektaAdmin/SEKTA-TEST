@@ -171,7 +171,7 @@ export default function ClientSchedule({
   return (
     <>
       {days.map(day => (
-        <div key={day.key}>
+        <div key={day.key} className={styles.dayGroup}>
           <div className={styles.dayHeader}>{dayHeading(day.startsAtISO)}</div>
           <div className={styles.visitList}>
             {day.items.map(c => {

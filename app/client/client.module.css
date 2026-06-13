@@ -1063,11 +1063,19 @@
 
 /* ── Розклад самозапису (/client/schedule) ─────────────────────── */
 /* Заголовок дня — sticky, щоб при скролі було видно, який це день. */
+.dayGroup {
+  margin-top: 10px;
+}
+
+.dayGroup:first-child {
+  margin-top: 0;
+}
+
 .dayHeader {
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 10px 2px 6px;
+  padding: 0 2px 6px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
