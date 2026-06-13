@@ -198,7 +198,11 @@ export default function ClientSchedule({
                     {c.halls?.name ? ` · ${c.halls.name}` : ''}
                     {` · ${c.duration_min} хв`}
                     {av?.capacity != null
-                      ? ` · місця ${Math.min(av.active_count, av.capacity)}/${av.capacity}${av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}`
+                      ? ` · ${
+                          av.capacity - Math.min(av.active_count, av.capacity) > 0
+                            ? `Вільно: ${av.capacity - Math.min(av.active_count, av.capacity)}`
+                            : 'Немає місць'
+                        }${av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}`
                       : ''}
                   </div>
 
