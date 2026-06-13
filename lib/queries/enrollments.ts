@@ -188,13 +188,20 @@ export async function enrollClient(
   clientId: string,
   hoursAttended?: number[]
 ): Promise<{ error: string | null; isDuplicate: boolean; closeError?: string | null }> {
-  // Тягнемо starts_at, щоб запис постфактум (заняття вже почалось) одразу закрити
-  // в attended, а не чекати тик cron. Модель «почалось = проведено».
+  // Тягнемо starts_at + duration_min для двох цілей:
+  // 1. Запис постфактум → одразу закрити в attended (не чекати cron).
+  // 2. duration_min >= 120 → hours_attended=[1,2] (дзеркало client_enroll RPC),
+  //    щоб auto_close списав 2 сесії і тренер отримав оплату за 2 год.
+  //    Без цього auto_close списував 1 (hours IS NULL → COALESCE→1),
+  //    а calc_trainer_salary_v2 нараховував 2 год — розрив «клієнт/студія/тренер».
   const { data: cls } = await supabase
     .from('classes')
-    .select('starts_at')
+    .select('starts_at, duration_min')
     .eq('id', classId)
     .maybeSingle()
+
+  // Якщо адмін не передав hours явно і заняття 2-год — проставляємо обидві години.
+  const resolvedHours = hoursAttended ?? ((cls?.duration_min ?? 0) >= 120 ? [1, 2] : undefined)
 
   const { data: inserted, error: insertError } = await supabase
     .from('enrollments')
@@ -202,7 +209,7 @@ export async function enrollClient(
       class_id: classId,
       client_id: clientId,
       status: 'enrolled',
-      ...(hoursAttended !== undefined ? { hours_attended: hoursAttended } : {}),
+      ...(resolvedHours !== undefined ? { hours_attended: resolvedHours } : {}),
     })
     .select('id, status')
     .single()
@@ -216,10 +223,9 @@ export async function enrollClient(
   // postgres (cron), з браузера (роль authenticated) PostgREST її відхиляє — і запис лишався
   // enrolled до тику cron (≤60с). change_enrollment_status доступна authenticated, проходить
   // гейт can_manage_enrollment для owner/admin і так само вирівнює client_session_balances.
-  // sessions_used = к-сть годин для довгих занять, інакше 1.
   const startsAt = cls?.starts_at ? new Date(cls.starts_at) : null
   if (inserted?.status === 'enrolled' && startsAt && startsAt <= new Date()) {
-    const sessionsUsed = hoursAttended?.length ?? 1
+    const sessionsUsed = resolvedHours?.length ?? 1
     const { error: closeError } = await changeEnrollmentStatus(supabase, inserted.id, 'attended', { sessionsUsed })
     // Не валимо запис, якщо закриття не вдалось — cron підхопить як страховку. Лише сигналимо.
     if (closeError) return { error: null, isDuplicate: false, closeError }
