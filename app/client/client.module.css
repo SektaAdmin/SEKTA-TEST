@@ -1077,16 +1077,6 @@
   text-transform: capitalize;
 }
 
-/* Кольорова крапка-тип ліворуч від часу заняття. */
-.bookTypeDot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  align-self: center;
-}
-
 /* Головний рядок картки: час + тренер (для клієнта це найважливіше). */
 .bookHead {
   display: flex;

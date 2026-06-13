@@ -186,7 +186,6 @@ export default function ClientSchedule({
                 <div key={c.id} className={styles.visitCardStatic}>
                   {/* Головне (велике): час + тренер. Другорядне (мале сіре): тип/зал/тривалість. */}
                   <div className={styles.bookHead}>
-                    <span className={styles.bookTypeDot} style={{ background: typeColor(c.ticket_type) }} />
                     <span className={styles.bookTime}>{hhmm(new Date(c.starts_at))}</span>
                     {c.trainers?.name && <span className={styles.bookTrainer}>{c.trainers.name}</span>}
                   </div>
