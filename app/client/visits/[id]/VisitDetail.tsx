@@ -9,7 +9,7 @@ import { formatMoney, fullWhen, hhmm, pluralHours } from '@/lib/formatters'
 import { ticketTypeShortLabel, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import { MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { cancellationDeadline, isFreeCancellation } from '@/lib/cancellation'
-import { STUDIO } from '@/lib/studio'
+import { STUDIO, STUDIO_TELEGRAM_URL, STUDIO_INSTAGRAM_URL } from '@/lib/studio'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
@@ -182,6 +182,37 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
             <circle cx="10" cy="8" r="2.2"/>
           </svg>
           Показати на карті
+        </a>
+      </section>
+
+      {/* Контакти */}
+      <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Контакти</div>
+      <section className={`${styles.detailCard} ${styles.contactIcons}`}>
+        <a
+          className={styles.contactIcon}
+          href={STUDIO_TELEGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Telegram"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.24 14.028l-2.95-.924c-.64-.203-.652-.64.136-.948l11.526-4.445c.535-.194 1.002.13.61.537z"/>
+          </svg>
+          <span className={styles.contactIconLabel}>Telegram</span>
+        </a>
+        <a
+          className={styles.contactIcon}
+          href={STUDIO_INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5"/>
+            <circle cx="12" cy="12" r="4.5"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          <span className={styles.contactIconLabel}>Instagram</span>
         </a>
       </section>
 
