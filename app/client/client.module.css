@@ -818,6 +818,7 @@
   gap: 28px;
   margin-top: 16px;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .detailAction {
