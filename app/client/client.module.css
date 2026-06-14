@@ -1465,7 +1465,7 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
   position: sticky;
-  top: var(--cabinet-header-h, 57px);
+  top: 0;
   background: var(--bg);
   z-index: 5;
 }
