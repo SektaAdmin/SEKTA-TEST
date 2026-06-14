@@ -1280,6 +1280,11 @@
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
   margin-bottom: 16px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.bookDays::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Android */
 }
 
 .bookDay {
