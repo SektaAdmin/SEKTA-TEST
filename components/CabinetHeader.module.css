@@ -9,6 +9,8 @@
   padding: calc(20px + env(safe-area-inset-top)) 0 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 20px;
+  /* CSS-змінна для залипання табів під шапкою */
+  --cabinet-header-h: calc(20px + env(safe-area-inset-top) + 20px + 1px);
 }
 
 .left {
