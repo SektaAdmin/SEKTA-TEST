@@ -1068,10 +1068,11 @@
 /* Прогрес-індикатор — sticky, лишається при скролі списків/слотів. */
 .bookStepper {
   position: sticky;
-  top: 0;
+  top: -16px;
   z-index: 2;
   background: var(--bg);
-  padding: 2px 0 14px;
+  padding: 18px 0 14px;
+  margin-top: -16px;
 }
 
 .bookSegs {
@@ -1465,7 +1466,9 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
   position: sticky;
-  top: 0;
+  top: -16px;
+  padding-top: 16px;
+  margin-top: -16px;
   background: var(--bg);
   z-index: 5;
 }
