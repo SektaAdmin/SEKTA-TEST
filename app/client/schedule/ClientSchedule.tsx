@@ -7,10 +7,10 @@ import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-c
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
-import { ticketTypeShortLabel, enrollmentStatusLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel, balanceClass } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
-import { DOW_LABELS_FULL, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { DOW_LABELS_FULL, DOW_LABELS_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
 import { kyivParts } from '@/lib/cancellation'
 import { ModalShell } from '@/components/ui/ModalShell'
@@ -28,12 +28,17 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
 // Заголовок дня: «Понеділок, 9 червня». capitalize у CSS робить першу велику.
 // Обчислює день тижня у київському часовому поясі (не UTC браузера).
 function dayHeading(startISO: string): string {
+  const { dow, day, month } = dayParts(startISO)
+  return `${DOW_LABELS_FULL[dow]}, ${day} ${MONTHS_UK_GENITIVE[month - 1]}`
+}
+
+// Частини дня у київському поясі: день тижня (0=Нд), число, місяць.
+// Для дня тижня — UTC-полудень київської дати (день тижня залежить від того, як
+// UTC-інстант розкладається по днях у різних поясах).
+function dayParts(startISO: string): { dow: number; day: number; month: number } {
   const k = kyivParts(new Date(startISO))
-  // Створюємо UTC дату для полудня дня в Київі, щоб отримати правильний день тижня.
-  // (День тижня залежить від того, як UTC дата розподіляється по днях у різних часових поясах.)
   const utcDate = new Date(Date.UTC(k.year, k.month - 1, k.day, 12, 0, 0))
-  const dowIndex = utcDate.getUTCDay()
-  return `${DOW_LABELS_FULL[dowIndex]}, ${k.day} ${MONTHS_UK_GENITIVE[k.month - 1]}`
+  return { dow: utcDate.getUTCDay(), day: k.day, month: k.month }
 }
 
 function dayKey(startISO: string): string {
@@ -47,7 +52,33 @@ function sessionCost(durationMin: number): number {
   return durationMin >= 120 ? 2 : 1
 }
 
+// Ключ «послуги» = тип + тривалість. Тип у клієнта завжди group, тож реальний
+// різнитель — тривалість (60 хв → 1 год списання, 120 хв → 2 год). Це дає
+// крок «Заняття» осмислений вибір там, де тренер веде і годинні, і двогодинні.
+function serviceKey(ticketType: string, durationMin: number): string {
+  return `${ticketType}|${durationMin}`
+}
+
+// Ініціали для аватарки тренера (фото в БД немає): «Оля Пономаренко» → «ОП», «Олена» → «О».
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return (parts[0]?.[0] ?? '?').toUpperCase()
+}
+
+// Відмінювання «заняття» за числом: 1/2-4 → заняття, 5+/11 → занять.
+function pluralClasses(n: number): string {
+  const m10 = n % 10, m100 = n % 100
+  if (m10 === 1 && m100 !== 11) return 'заняття'
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'заняття'
+  return 'занять'
+}
+
 type EnrolledState = 'enrolled' | 'waitlist'
+
+type TrainerOption = { id: string; name: string; count: number }
+type ServiceOption = { key: string; ticketType: string; durationMin: number; count: number }
+type DayGroup = { key: string; startsAtISO: string; dow: number; day: number; items: BookableClassRow[] }
 
 type Props = {
   clientId: string
@@ -62,8 +93,6 @@ type Props = {
   initialEnrolled: Record<string, EnrolledState>
   initialClasses: BookableClassRow[]
 }
-
-
 
 export default function ClientSchedule({
   clientId,
@@ -82,6 +111,13 @@ export default function ClientSchedule({
   // Заняття, для якого відкрита модалка підтвердження (деталі + етап хореографії).
   const [confirm, setConfirm] = useState<BookableClassRow | null>(null)
 
+  // Вибір кроків Altegio-флоу: тренер → послуга (тип+тривалість) → день.
+  // Тримаємо «сирі» id; крок виводимо з провалідованих значень нижче, тож
+  // застарілий вибір (після refetch) сам відкочується на попередній крок.
+  const [trainerSel, setTrainerSel] = useState<string | null>(null)
+  const [serviceSel, setServiceSel] = useState<string | null>(null)
+  const [daySel, setDaySel] = useState<string | null>(null)
+
   const { data: liveBalance } = useAsync(
     async () => {
       const { data, error } = await listMySessionBalances(supabase, clientId)
@@ -96,13 +132,15 @@ export default function ClientSchedule({
   )
   const balanceByType = liveBalance ?? initialBalanceByType
 
-  const { data: classes, error: classesError } = useListQuery(
+  const { data: classes, loading, error: classesError } = useListQuery(
     () => listBookableClasses(supabase, fromISO, toISO),
     [fromISO, toISO],
     { refetchOnVisible: true, initialData: initialClasses }
   )
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
+  // Клієнтська назва типу заняття (нейтральна, не бренд-лейбл training_types).
+  const serviceName = (t: string) => ticketTypeNominativeLabel(t) || typeLabel(t)
 
   // client_enroll НЕ списує сесію одразу (списання — в auto_close), тож БД пропустила
   // б кілька записів на 1 сесію. Щоб клієнт не «записався на 5 занять маючи 1»,
@@ -120,20 +158,67 @@ export default function ClientSchedule({
   // Доступно по типу = куплено − активні записи у вікні.
   const availableByType = (t: string) => (balanceByType[t] ?? 0) - (reservedByType[t] ?? 0)
 
-  // Групування по днях у хронології (classes уже відсортовані запитом).
-  const days = useMemo(() => {
-    const groups: { key: string; startsAtISO: string; items: BookableClassRow[] }[] = []
-    let cur: { key: string; startsAtISO: string; items: BookableClassRow[] } | null = null
+  // ── Крок 1: тренери з майбутніми заняттями (стабільний ключ — trainer_id). ──
+  const trainers = useMemo<TrainerOption[]>(() => {
+    const map = new Map<string, TrainerOption>()
     for (const c of classes) {
+      if (!c.trainer_id) continue // заняття без тренера у trainer-first флоу не показуємо
+      const ex = map.get(c.trainer_id)
+      if (ex) ex.count++
+      else map.set(c.trainer_id, { id: c.trainer_id, name: c.trainers?.name ?? 'Тренер', count: 1 })
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+  }, [classes])
+
+  const activeTrainer = trainerSel ? trainers.find(t => t.id === trainerSel) ?? null : null
+
+  // ── Крок 2: послуги обраного тренера (тип + тривалість). ──
+  const services = useMemo<ServiceOption[]>(() => {
+    if (!activeTrainer) return []
+    const map = new Map<string, ServiceOption>()
+    for (const c of classes) {
+      if (c.trainer_id !== activeTrainer.id) continue
+      const key = serviceKey(c.ticket_type, c.duration_min)
+      const ex = map.get(key)
+      if (ex) ex.count++
+      else map.set(key, { key, ticketType: c.ticket_type, durationMin: c.duration_min, count: 1 })
+    }
+    return Array.from(map.values()).sort((a, b) => a.durationMin - b.durationMin)
+  }, [classes, activeTrainer])
+
+  const activeService = activeTrainer && serviceSel ? services.find(s => s.key === serviceSel) ?? null : null
+
+  // ── Крок 3: дні обраної послуги (групування по київських днях). ──
+  const days = useMemo<DayGroup[]>(() => {
+    if (!activeTrainer || !activeService) return []
+    const groups: DayGroup[] = []
+    let cur: DayGroup | null = null
+    for (const c of classes) {
+      if (c.trainer_id !== activeTrainer.id) continue
+      if (serviceKey(c.ticket_type, c.duration_min) !== activeService.key) continue
       const k = dayKey(c.starts_at)
       if (!cur || cur.key !== k) {
-        cur = { key: k, startsAtISO: c.starts_at, items: [] }
+        const dp = dayParts(c.starts_at)
+        cur = { key: k, startsAtISO: c.starts_at, dow: dp.dow, day: dp.day, items: [] }
         groups.push(cur)
       }
       cur.items.push(c)
     }
     return groups
-  }, [classes])
+  }, [classes, activeTrainer, activeService])
+
+  // Обраний день (або перший доступний за замовчуванням — слоти видно одразу).
+  const shownDay = (daySel ? days.find(d => d.key === daySel) : null) ?? days[0] ?? null
+
+  // Поточний крок виводимо з провалідованих значень (1 → тренер, 2 → послуга, 3 → час).
+  const step: 1 | 2 | 3 = !activeTrainer ? 1 : !activeService ? 2 : 3
+
+  function pickTrainer(id: string) { setTrainerSel(id); setServiceSel(null); setDaySel(null) }
+  function pickService(key: string) { setServiceSel(key); setDaySel(null) }
+  function goBack() {
+    if (step === 3) { setServiceSel(null); setDaySel(null) }
+    else if (step === 2) { setTrainerSel(null); setServiceSel(null); setDaySel(null) }
+  }
 
   async function handleEnroll(classId: string) {
     setEnrolling(classId)
@@ -156,6 +241,7 @@ export default function ClientSchedule({
     setConfirm(null)
   }
 
+  // ── Стани завантаження / помилки / порожнечі ──
   if (classesError) {
     return (
       <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
@@ -163,77 +249,187 @@ export default function ClientSchedule({
       </p>
     )
   }
-
-  if (days.length === 0) {
+  if (loading && classes.length === 0) {
+    return <div className="loading-dots"><span /><span /><span /></div>
+  }
+  if (trainers.length === 0) {
     return <p className={styles.empty}>{MSG.empty.bookableClasses}.</p>
   }
 
+  const STEP_LABELS = ['Тренер', 'Заняття', 'Час'] as const
+
   return (
     <>
-      {days.map(day => (
-        <div key={day.key} className={styles.dayGroup}>
-          <div className={styles.dayHeader}>{dayHeading(day.startsAtISO)}</div>
-          <div className={styles.visitList}>
-            {day.items.map(c => {
-              const state = enrolled[c.id]
-              // Вистачає сесій на повну вартість заняття (2h → 2). Сервер — остання
-              // інстанція, але оптимістично не даємо записатись у мінус по типу.
-              const hasSessions = availableByType(c.ticket_type) >= sessionCost(c.duration_min)
-              const busy = enrolling === c.id
-              const av = availability[c.id]
-              const toWaitlist = goesToWaitlist(av)
-              return (
-                <div key={c.id} className={styles.visitCardStatic}>
-                  {/* Головне (велике): час + тренер. Другорядне (мале сіре): тип/зал/тривалість. */}
-                  <div className={styles.bookHead}>
-                    <span className={styles.bookTime}>{hhmm(new Date(c.starts_at))}</span>
-                    {c.trainers?.name && <span className={styles.bookTrainer}>{c.trainers.name}</span>}
-                  </div>
-                  {c.choreo_stage && (
-                    <div className={styles.bookStage}>{c.choreo_stage}</div>
-                  )}
-                  <div className={styles.bookSub}>
-                    {c.title || typeLabel(c.ticket_type)}
-                    {c.halls?.name ? ` · ${c.halls.name}` : ''}
-                    {` · ${c.duration_min} хв`}
-                    {av?.capacity != null
-                      ? ` · ${
-                          av.capacity - Math.min(av.active_count, av.capacity) > 0
-                            ? `Вільно: ${av.capacity - Math.min(av.active_count, av.capacity)}`
-                            : 'Немає місць'
-                        }${av.waitlist_count > 0 ? ` · у резерві ${av.waitlist_count}` : ''}`
-                      : ''}
-                  </div>
+      {/* Прогрес-індикатор кроків (sticky — лишається при скролі списків). */}
+      <div className={styles.bookStepper}>
+        <div className={styles.bookSegs}>
+          {[1, 2, 3].map(n => (
+            <span key={n} className={`${styles.bookSeg} ${step >= n ? styles.bookSegOn : ''}`} />
+          ))}
+        </div>
+        <div className={styles.bookStepLabels}>
+          {STEP_LABELS.map((label, i) => (
+            <span key={label} className={`${styles.bookStepLabel} ${step === i + 1 ? styles.bookStepLabelOn : ''}`}>
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
 
-                  {state ? (
-                    <span className={`${styles.bookEnrolled} ${state === 'waitlist' ? styles.bookWaitlist : ''}`}>
-                      {enrollmentStatusLabel(state)}
-                    </span>
-                  ) : (
-                    <>
+      {/* Заголовок кроку + кнопка «назад». */}
+      <div className={styles.bookHead2}>
+        {step > 1 && (
+          <button type="button" className={styles.bookBack} onClick={goBack} aria-label="Назад">‹</button>
+        )}
+        <h2 className={styles.bookTitle}>
+          {step === 1 ? 'Оберіть тренера' : step === 2 ? 'Оберіть заняття' : 'Оберіть час'}
+        </h2>
+      </div>
+
+      {/* Хлібні крихти зробленого вибору — тапом повертають на відповідний крок. */}
+      {step > 1 && activeTrainer && (
+        <div className={styles.bookCrumbs}>
+          <button type="button" className={styles.bookCrumb} onClick={() => { setTrainerSel(null); setServiceSel(null); setDaySel(null) }}>
+            <span className={styles.bookCrumbDot}>{initials(activeTrainer.name)}</span>
+            {activeTrainer.name}
+          </button>
+          {step > 2 && activeService && (
+            <button type="button" className={styles.bookCrumb} onClick={() => { setServiceSel(null); setDaySel(null) }}>
+              {serviceName(activeService.ticketType)} · {activeService.durationMin} хв
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Крок 1: тренери ── */}
+      {step === 1 && (
+        <div className={styles.bookOptions}>
+          {trainers.map(t => (
+            <button key={t.id} type="button" className={styles.bookOption} onClick={() => pickTrainer(t.id)}>
+              <span className={styles.bookAvatar}>{initials(t.name)}</span>
+              <span className={styles.bookOptionMain}>
+                <span className={styles.bookOptionName}>{t.name}</span>
+                <span className={styles.bookOptionSub}>{t.count} {pluralClasses(t.count)} на тижні</span>
+              </span>
+              <span className={styles.bookChevron}>›</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Крок 2: послуги (тип + тривалість) ── */}
+      {step === 2 && (
+        <div className={styles.bookOptions}>
+          {services.map(s => {
+            const cost = sessionCost(s.durationMin)
+            return (
+              <button key={s.key} type="button" className={styles.bookOption} onClick={() => pickService(s.key)}>
+                <span className={styles.bookServiceIcon}>
+                  <span className={styles.bookServiceDot} style={{ background: typeColor(s.ticketType) }} />
+                </span>
+                <span className={styles.bookOptionMain}>
+                  <span className={styles.bookOptionName}>{serviceName(s.ticketType)}</span>
+                  <span className={styles.bookOptionSub}>
+                    {s.durationMin} хв · спишеться {cost} {pluralHours(cost)}
+                  </span>
+                </span>
+                <span className={styles.bookChevron}>›</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── Крок 3: день + час ── */}
+      {step === 3 && activeService && (() => {
+        const balance = balanceByType[activeService.ticketType] ?? 0
+        return (
+          <>
+            <div className={styles.bookBalanceBar}>
+              <span>Залишок занять</span>
+              <span className={balanceClass(balance)}>{balance} {pluralHours(balance)}</span>
+            </div>
+
+            {/* Дні (горизонтальний скрол), перший — обраний за замовчуванням. */}
+            <div className={styles.bookDays}>
+              {days.map(d => (
+                <button
+                  key={d.key}
+                  type="button"
+                  className={`${styles.bookDay} ${shownDay?.key === d.key ? styles.bookDayOn : ''}`}
+                  aria-pressed={shownDay?.key === d.key}
+                  onClick={() => setDaySel(d.key)}
+                >
+                  <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
+                  <span className={styles.bookDayNum}>{d.day}</span>
+                </button>
+              ))}
+            </div>
+
+            {shownDay && (
+              <>
+                <div className={styles.bookDayHeading}>{dayHeading(shownDay.startsAtISO)}</div>
+                <div className={styles.bookSlots}>
+                  {shownDay.items.map(c => {
+                    const state = enrolled[c.id]
+                    const cost = sessionCost(c.duration_min)
+                    const hasSessions = availableByType(c.ticket_type) >= cost
+                    const av = availability[c.id]
+                    const toWaitlist = goesToWaitlist(av)
+                    const free = av?.capacity != null ? av.capacity - Math.min(av.active_count, av.capacity) : null
+                    const busy = enrolling === c.id
+
+                    // Вже записаний — слот заблокований (не дублюємо запис), статус міткою.
+                    if (state) {
+                      return (
+                        <div
+                          key={c.id}
+                          className={`${styles.bookSlot} ${styles.bookSlotEnrolled} ${state === 'waitlist' ? styles.bookSlotEnrolledWaitlist : ''}`}
+                        >
+                          <span className={styles.bookSlotTime}>{hhmm(new Date(c.starts_at))}</span>
+                          <span className={styles.bookSlotInfo}>
+                            {c.halls?.name ? `${c.halls.name} · ` : ''}{c.duration_min} хв
+                          </span>
+                          <span className={styles.bookSlotTag}>{enrollmentStatusLabel(state)}</span>
+                        </div>
+                      )
+                    }
+
+                    // Немає оплачених занять цього типу (з урахуванням інших записів вікна) →
+                    // слот заблокований; пояснення під списком. Повний зал → бурштинова мітка
+                    // «Немає місць», але слот лишається активним (зберігаємо запис у резерв).
+                    return (
                       <button
+                        key={c.id}
                         type="button"
-                        className={`${styles.bookBtn} ${toWaitlist ? styles.bookBtnWaitlist : ''}`}
+                        className={`${styles.bookSlot} ${toWaitlist ? styles.bookSlotReserve : ''}`}
                         disabled={!hasSessions || busy}
                         onClick={() => setConfirm(c)}
                       >
-                        {busy ? 'Записуємо…' : toWaitlist ? 'Записатись у резерв' : 'Записатись'}
+                        <span className={styles.bookSlotTime}>{hhmm(new Date(c.starts_at))}</span>
+                        <span className={styles.bookSlotInfo}>
+                          {c.halls?.name ? `${c.halls.name} · ` : ''}{c.duration_min} хв
+                        </span>
+                        <span className={styles.bookSlotTag}>
+                          {toWaitlist ? 'Немає місць' : free != null ? `Вільно: ${free}` : 'Записатись'}
+                        </span>
                       </button>
-                      {!hasSessions && (
-                        <p className={styles.bookHint}>
-                          {(balanceByType[c.ticket_type] ?? 0) > 0
-                            ? 'Залишок занять цього типу вичерпано записами'
-                            : 'Немає оплачених занять цього типу — зверніться до адміністрації'}
-                        </p>
-                      )}
-                    </>
-                  )}
+                    )
+                  })}
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      ))}
+
+                {availableByType(activeService.ticketType) < sessionCost(activeService.durationMin) && (
+                  <p className={styles.bookNoSessions}>
+                    {balance > 0
+                      ? 'Залишок занять цього типу вже зайнятий іншими записами на тиждень.'
+                      : 'Немає оплачених занять цього типу — зверніться до адміністрації, щоб придбати абонемент.'}
+                  </p>
+                )}
+              </>
+            )}
+          </>
+        )
+      })()}
 
       {confirm && (() => {
         const toWaitlist = goesToWaitlist(availability[confirm.id])
