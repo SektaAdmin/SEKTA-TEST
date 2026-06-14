@@ -26,9 +26,9 @@ export default async function ClientSchedulePage() {
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  // Вікно «сьогодні + 7 днів»: від початку сьогоднішнього дня до кінця 7-го.
+  // Вікно «сьогодні + 30 днів»: від початку сьогоднішнього дня до кінця 30-го.
   const from = new Date(); from.setHours(0, 0, 0, 0)
-  const to = new Date(from); to.setDate(to.getDate() + 8) // +8 щоб включити весь 7-й день
+  const to = new Date(from); to.setDate(to.getDate() + 31) // +31 щоб включити весь 30-й день
   const fromISO = from.toISOString()
   const toISO = to.toISOString()
 

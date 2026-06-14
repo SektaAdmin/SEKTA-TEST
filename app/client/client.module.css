@@ -1303,7 +1303,8 @@
   border-color: var(--accent);
 }
 .bookDayOn .bookDayDow,
-.bookDayOn .bookDayNum { color: var(--accent-text); }
+.bookDayOn .bookDayNum,
+.bookDayOn .bookDayMonth { color: var(--accent-text); }
 
 .bookDayDow {
   font-size: 11px;
@@ -1316,6 +1317,18 @@
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+/* Місяць — показуємо на першому чипі й при зміні місяця (вікно 30 днів перетинає
+   межу). Порожній рядок резервує висоту (min-height), щоб чипи лишались рівні. */
+.bookDayMonth {
+  min-height: 13px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  white-space: nowrap;
 }
 
 /* Заголовок обраного дня над списком слотів. */

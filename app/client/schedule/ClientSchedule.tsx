@@ -10,7 +10,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel, balanceClass } from '@/lib/badges'
 import { typeColor } from '@/lib/typeColor'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
-import { DOW_LABELS_FULL, DOW_LABELS_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { DOW_LABELS_FULL, DOW_LABELS_SHORT, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
 import { kyivParts } from '@/lib/cancellation'
 import { ModalShell } from '@/components/ui/ModalShell'
@@ -78,7 +78,7 @@ type EnrolledState = 'enrolled' | 'waitlist'
 
 type TrainerOption = { id: string; name: string; count: number }
 type ServiceOption = { key: string; ticketType: string; durationMin: number; count: number }
-type DayGroup = { key: string; startsAtISO: string; dow: number; day: number; items: BookableClassRow[] }
+type DayGroup = { key: string; startsAtISO: string; dow: number; day: number; month: number; items: BookableClassRow[] }
 
 type Props = {
   clientId: string
@@ -199,7 +199,7 @@ export default function ClientSchedule({
       const k = dayKey(c.starts_at)
       if (!cur || cur.key !== k) {
         const dp = dayParts(c.starts_at)
-        cur = { key: k, startsAtISO: c.starts_at, dow: dp.dow, day: dp.day, items: [] }
+        cur = { key: k, startsAtISO: c.starts_at, dow: dp.dow, day: dp.day, month: dp.month, items: [] }
         groups.push(cur)
       }
       cur.items.push(c)
@@ -309,7 +309,7 @@ export default function ClientSchedule({
               <span className={styles.bookAvatar}>{initials(t.name)}</span>
               <span className={styles.bookOptionMain}>
                 <span className={styles.bookOptionName}>{t.name}</span>
-                <span className={styles.bookOptionSub}>{t.count} {pluralClasses(t.count)} на тижні</span>
+                <span className={styles.bookOptionSub}>{t.count} {pluralClasses(t.count)} у розкладі</span>
               </span>
               <span className={styles.bookChevron}>›</span>
             </button>
@@ -350,20 +350,25 @@ export default function ClientSchedule({
               <span className={balanceClass(balance)}>{balance} {pluralHours(balance)}</span>
             </div>
 
-            {/* Дні (горизонтальний скрол), перший — обраний за замовчуванням. */}
+            {/* Дні (горизонтальний скрол), перший — обраний за замовчуванням. Місяць —
+                на першому чипі та коли змінюється (вікно 30 днів перетинає межу місяця). */}
             <div className={styles.bookDays}>
-              {days.map(d => (
-                <button
-                  key={d.key}
-                  type="button"
-                  className={`${styles.bookDay} ${shownDay?.key === d.key ? styles.bookDayOn : ''}`}
-                  aria-pressed={shownDay?.key === d.key}
-                  onClick={() => setDaySel(d.key)}
-                >
-                  <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
-                  <span className={styles.bookDayNum}>{d.day}</span>
-                </button>
-              ))}
+              {days.map((d, i) => {
+                const showMonth = i === 0 || d.month !== days[i - 1].month
+                return (
+                  <button
+                    key={d.key}
+                    type="button"
+                    className={`${styles.bookDay} ${shownDay?.key === d.key ? styles.bookDayOn : ''}`}
+                    aria-pressed={shownDay?.key === d.key}
+                    onClick={() => setDaySel(d.key)}
+                  >
+                    <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
+                    <span className={styles.bookDayNum}>{d.day}</span>
+                    <span className={styles.bookDayMonth}>{showMonth ? MONTHS_UK_SHORT[d.month - 1] : ''}</span>
+                  </button>
+                )
+              })}
             </div>
 
             {shownDay && (
