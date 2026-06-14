@@ -12,6 +12,7 @@
   flex-shrink: 0;
   padding-left: 16px;
   padding-right: 16px;
+  margin-bottom: 0; /* override CabinetHeader.module.css margin-bottom:20px — .scroll починається впритул */
 }
 
 .scroll {
