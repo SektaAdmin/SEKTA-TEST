@@ -2,16 +2,23 @@ import { chromium, type FullConfig } from '@playwright/test'
 import { mkdirSync } from 'fs'
 
 const AUTH_FILE = 'e2e/.auth/state.json'
+const CLIENT_AUTH_FILE = 'e2e/.auth/client-state.json'
 
 /**
- * Логіниться один раз через UI (/login) і зберігає сесію (cookies @supabase/ssr)
- * у AUTH_FILE. Усі тести потім стартують залогіненими через storageState.
+ * Логіниться двічі і зберігає окремі сесії:
+ * 1. staff (email) → AUTH_FILE  (default storageState у playwright.config.ts)
+ * 2. client (phone) → CLIENT_AUTH_FILE  (використовують тести, що явно передають storageState)
  *
- * Креди беруться з .env.local: E2E_EMAIL / E2E_PASSWORD (НЕ комітяться).
+ * Креди з .env.local:
+ *   E2E_EMAIL / E2E_PASSWORD           — staff
+ *   E2E_CLIENT_PHONE / E2E_CLIENT_PASSWORD — client (+380…)
  */
 export default async function globalSetup(config: FullConfig) {
   const email = process.env.E2E_EMAIL
   const password = process.env.E2E_PASSWORD
+  const clientPhone = process.env.E2E_CLIENT_PHONE
+  const clientPassword = process.env.E2E_CLIENT_PASSWORD
+
   if (!email || !password) {
     throw new Error(
       'E2E_EMAIL / E2E_PASSWORD не задані. Додай тестового юзера в .env.local:\n' +
@@ -23,16 +30,30 @@ export default async function globalSetup(config: FullConfig) {
   mkdirSync('e2e/.auth', { recursive: true })
 
   const browser = await chromium.launch()
-  const page = await browser.newPage({ baseURL })
 
-  await page.goto('/login')
-  await page.getByPlaceholder('admin@sekta.com').fill(email)
-  await page.locator('input[type="password"]').fill(password)
-  await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
+  // --- Staff login ---
+  {
+    const page = await browser.newPage({ baseURL })
+    await page.goto('/login')
+    await page.locator('input').first().fill(email)
+    await page.locator('input[type="password"]').fill(password)
+    await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
+    await page.waitForURL('**/{dashboard,sales,client}', { timeout: 15_000 })
+    await page.context().storageState({ path: AUTH_FILE })
+    await page.close()
+  }
 
-  // Логін редіректить на /sales — чекаємо, щоб впевнитись що сесія встановилась
-  await page.waitForURL('**/sales', { timeout: 15_000 })
+  // --- Client login (optional) ---
+  if (clientPhone && clientPassword) {
+    const page = await browser.newPage({ baseURL })
+    await page.goto('/login')
+    await page.getByPlaceholder('+380…').fill(clientPhone)
+    await page.locator('input[type="password"]').fill(clientPassword)
+    await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
+    await page.waitForURL('**/client', { timeout: 15_000 })
+    await page.context().storageState({ path: CLIENT_AUTH_FILE })
+    await page.close()
+  }
 
-  await page.context().storageState({ path: AUTH_FILE })
   await browser.close()
 }
