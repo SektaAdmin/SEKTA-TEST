@@ -309,7 +309,6 @@ export default function ClientSchedule({
               <span className={styles.bookAvatar}>{initials(t.name)}</span>
               <span className={styles.bookOptionMain}>
                 <span className={styles.bookOptionName}>{t.name}</span>
-                <span className={styles.bookOptionSub}>{t.count} {pluralClasses(t.count)} у розкладі</span>
               </span>
               <span className={styles.bookChevron}>›</span>
             </button>
@@ -416,7 +415,7 @@ export default function ClientSchedule({
                           {c.halls?.name ? `${c.halls.name} · ` : ''}{c.duration_min} хв
                         </span>
                         <span className={styles.bookSlotTag}>
-                          {toWaitlist ? 'Немає місць' : free != null ? `Вільно: ${free}` : 'Записатись'}
+                          {toWaitlist ? 'У резерв' : free != null ? `Вільно: ${free}` : 'Записатись'}
                         </span>
                       </button>
                     )

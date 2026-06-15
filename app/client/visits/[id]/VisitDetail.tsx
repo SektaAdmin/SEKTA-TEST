@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
 import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
 import { formatMoney, fullWhen, hhmm, pluralHours } from '@/lib/formatters'
+import { avatarColor } from '@/lib/avatarColor'
 import { ticketTypeShortLabel, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import { MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { cancellationDeadline, isFreeCancellation } from '@/lib/cancellation'
@@ -86,7 +87,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
     <>
       {/* Тренер */}
       <section className={styles.detailHero}>
-        <div className={styles.detailAvatar}>{initial}</div>
+        <div className={styles.detailAvatar} style={{ background: avatarColor(trainerName || ''), color: '#fff' }}>{initial}</div>
         <div className={styles.detailTrainerName}>{trainerName || 'Тренер'}</div>
         <div className={styles.detailTrainerRole}>Тренер</div>
         <div className={styles.detailWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
@@ -98,43 +99,25 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         })()}
         {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
 
-        {(canCancel || !isPast) && (
+        {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && (
           <div className={styles.detailActions}>
-            {canCancel && (
-              <button
-                type="button"
-                className={`${styles.detailAction} ${styles.detailActionDanger}`}
-                onClick={() => setConfirmOpen(true)}
-                disabled={cancelling}
-              >
-                <span className={styles.detailActionIcon}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true" focusable="false">
-                    <line x1="5" y1="5" x2="15" y2="15"/>
-                    <line x1="15" y1="5" x2="5" y2="15"/>
-                  </svg>
-                </span>
-                <span>Скасувати запис</span>
-              </button>
-            )}
-            {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && (
-              <a
-                className={styles.detailAction}
-                href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className={styles.detailActionIcon}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true" focusable="false">
-                    <rect x="3" y="4" width="14" height="13" rx="2"/>
-                    <line x1="3" y1="8" x2="17" y2="8"/>
-                    <line x1="7" y1="2" x2="7" y2="5.5"/>
-                    <line x1="13" y1="2" x2="13" y2="5.5"/>
-                    <line x1="7" y1="12" x2="13" y2="12"/>
-                  </svg>
-                </span>
-                <span>Додати до Google-календаря</span>
-              </a>
-            )}
+            <a
+              className={styles.detailAction}
+              href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className={styles.detailActionIcon}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true" focusable="false">
+                  <rect x="3" y="4" width="14" height="13" rx="2"/>
+                  <line x1="3" y1="8" x2="17" y2="8"/>
+                  <line x1="7" y1="2" x2="7" y2="5.5"/>
+                  <line x1="13" y1="2" x2="13" y2="5.5"/>
+                  <line x1="7" y1="12" x2="13" y2="12"/>
+                </svg>
+              </span>
+              <span>Додати до Google-календаря</span>
+            </a>
           </div>
         )}
       </section>
@@ -162,6 +145,18 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         </div>
         {c.halls?.name && <div className={styles.detailRowSub}>{c.halls.name} · {c.duration_min} хв</div>}
       </section>
+
+      {/* Скасування — окрема зона, розділена від дій Google Calendar */}
+      {canCancel && (
+        <button
+          type="button"
+          className={styles.cancelBtn}
+          onClick={() => setConfirmOpen(true)}
+          disabled={cancelling}
+        >
+          Скасувати запис
+        </button>
+      )}
 
       {/* Студія. Без вбудованої карти — щоб не тягнути сторонній трекінг (Google
           iframe) у кабінет. Адреса + кнопка «Показати на карті» на всю ширину. */}

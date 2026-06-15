@@ -165,7 +165,7 @@ export function paymentClass(method: string): string {
 
 export function clientPaymentLabel(method: string): string {
   const map: Record<string, string> = {
-    fop: 'Безготівкова',
+    fop: 'ФОП',
     personal_card: 'Картка',
     cash: 'Готівка',
     deposit: 'З депозиту',

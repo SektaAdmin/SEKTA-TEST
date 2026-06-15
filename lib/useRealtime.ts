@@ -16,12 +16,16 @@ export function useRealtime(tables: string[], onChange: () => void) {
     let channel: ReturnType<typeof supabase.channel>
     let debounceTimer: ReturnType<typeof setTimeout>
 
+    let cancelled = false
+
     async function subscribe() {
       // Realtime postgres_changes with RLS requires the JWT access token
       // to be set on the realtime socket before subscribing, otherwise Supabase
       // silently drops all events for RLS-protected tables.
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
+      // React Strict Mode подвійний ефект: cleanup може прийти до await-у.
+      if (cancelled) return
       if (token) supabase.realtime.setAuth(token)
 
       channel = supabase.channel(channelNameRef.current)
@@ -43,6 +47,7 @@ export function useRealtime(tables: string[], onChange: () => void) {
     subscribe()
 
     return () => {
+      cancelled = true
       clearTimeout(debounceTimer)
       if (channel) supabase.removeChannel(channel)
     }
