@@ -100,25 +100,21 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
 
         {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && (
-          <div className={styles.detailActions}>
-            <a
-              className={styles.detailAction}
-              href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span className={styles.detailActionIcon}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true" focusable="false">
-                  <rect x="3" y="4" width="14" height="13" rx="2"/>
-                  <line x1="3" y1="8" x2="17" y2="8"/>
-                  <line x1="7" y1="2" x2="7" y2="5.5"/>
-                  <line x1="13" y1="2" x2="13" y2="5.5"/>
-                  <line x1="7" y1="12" x2="13" y2="12"/>
-                </svg>
-              </span>
-              <span>Додати до Google-календаря</span>
-            </a>
-          </div>
+          <a
+            className={styles.mapBtn}
+            href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" focusable="false">
+              <rect x="3" y="4" width="14" height="13" rx="2"/>
+              <line x1="3" y1="8" x2="17" y2="8"/>
+              <line x1="7" y1="2" x2="7" y2="5.5"/>
+              <line x1="13" y1="2" x2="13" y2="5.5"/>
+              <line x1="7" y1="12" x2="13" y2="12"/>
+            </svg>
+            Додати до Google-календаря
+          </a>
         )}
       </section>
 

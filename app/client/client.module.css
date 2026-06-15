@@ -811,64 +811,11 @@
 .detailWhen {
   font-size: 15px;
   color: var(--text);
-  margin-top: 12px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
   width: 100%;
 }
 
-.detailActions {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 16px;
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.detailAction {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  max-width: 110px;
-  font-size: 13px;
-  color: var(--text-2);
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  text-align: center;
-}
-
-.detailAction:hover:not(:disabled) {
-  color: var(--text);
-}
-
-.detailAction:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.detailActionIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  font-size: 18px;
-}
-
-.detailActionDanger .detailActionIcon {
-  color: var(--danger);
-  border-color: var(--danger-border, var(--danger));
-}
-
-.detailActionDanger span {
-  color: var(--danger);
-}
 
 .detailCard {
   padding: 14px 16px;
@@ -934,7 +881,7 @@
   display: flex;
   justify-content: center;
   gap: 32px;
-  padding: 8px 0;
+  padding: 8px 16px;
 }
 
 .contactIcon {
@@ -961,6 +908,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin-top: 16px;
+  margin-bottom: 4px;
   padding: 13px 16px;
   border: 1px solid var(--danger-border, var(--danger));
   border-radius: var(--radius);
