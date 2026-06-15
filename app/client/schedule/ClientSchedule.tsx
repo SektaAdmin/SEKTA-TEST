@@ -501,6 +501,15 @@ export default function ClientSchedule({
               )}
             </div>
 
+            {!toWaitlist && (reservedByType[confirm.ticket_type] ?? 0) > 0 && (() => {
+              const afterAll = availableByType(confirm.ticket_type) - cost
+              return (
+                <p className={styles.confirmInfo}>
+                  Після всіх запланованих занять залишиться {afterAll} {pluralHours(afterAll)}.
+                </p>
+              )
+            })()}
+
             {toWaitlist && (
               <p className={styles.confirmReserve}>
                 Зал заповнений — вас додамо в <b>резерв</b>. Місце не гарантоване;

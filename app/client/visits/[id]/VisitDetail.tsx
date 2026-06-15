@@ -222,6 +222,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
               saveLabel="Скасувати запис"
               cancelLabel="Назад"
               loading={cancelling}
+              danger
             />
           }
         >

@@ -8,6 +8,7 @@ interface ModalFooterProps {
   loading?: boolean
   saveType?: 'button' | 'submit'
   disabled?: boolean
+  danger?: boolean
 }
 
 export function ModalFooter({
@@ -18,6 +19,7 @@ export function ModalFooter({
   loading = false,
   saveType = 'button',
   disabled = false,
+  danger = false,
 }: ModalFooterProps) {
   return (
     <>
@@ -32,7 +34,7 @@ export function ModalFooter({
       {onSave && (
         <button
           type={saveType}
-          className={styles.btnSave}
+          className={danger ? styles.btnDanger : styles.btnSave}
           onClick={saveType === 'button' ? onSave : undefined}
           disabled={loading || disabled}
         >

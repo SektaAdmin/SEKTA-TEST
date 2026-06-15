@@ -284,7 +284,10 @@ export default function ClientVisits({
       {activeTab === 'history' && (
         pastError ? errorBanner
         : pastSorted.length === 0 ? (
-          <p className={styles.empty}>Ще не було занять.</p>
+          <div className={styles.visitEmptyState}>
+            <p className={styles.visitEmptyTitle}>Ще немає відвіданих занять</p>
+            <p className={styles.visitEmptySubtitle}>Тут зʼявляться ваші минулі візити</p>
+          </div>
         ) : (
           <>
             <DayChips
@@ -311,7 +314,7 @@ export default function ClientVisits({
                       <div className={styles.visitHistoryRow}>
                         <span className={styles.visitHistoryLabel}>Списання</span>
                         <span className={styles.visitHistoryValue}>
-                          {sessionsUsed > 0 ? `${sessionsUsed} заняття` : 'Не списано'}
+                          {sessionsUsed > 0 ? `${sessionsUsed} ${pluralHours(sessionsUsed)}` : 'Не списано'}
                         </span>
                       </div>
                     </div>

@@ -116,10 +116,12 @@ export default function ClientSubscriptions({
             <span className={styles.depositLabel}>Депозит</span>
             <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
           </div>
-          {sessions.filter(s => s.sessions_balance > 0).map(s => (
+          {sessions.map(s => (
             <div key={s.ticket_type} className={styles.balanceRow}>
               <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
-              <span className={balanceClass(s.sessions_balance)}>{s.sessions_balance} год</span>
+              <span className={s.sessions_balance > 0 ? balanceClass(s.sessions_balance) : styles.balanceZero}>
+                {s.sessions_balance > 0 ? `${s.sessions_balance} год` : 'Вичерпано'}
+              </span>
             </div>
           ))}
         </section>

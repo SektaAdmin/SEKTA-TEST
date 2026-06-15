@@ -118,6 +118,11 @@
   color: var(--text-2);
 }
 
+.balanceZero {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
 /* Депозит — гроші (₴), акцент над заняттями (год). Крупніший рядок + розділювач. */
 .depositRow {
   display: flex;
@@ -1085,6 +1090,16 @@
   border-radius: var(--radius-sm);
 }
 
+.confirmInfo {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--bg-3);
+  border-radius: var(--radius-sm);
+}
+
 /* ── 3-кроковий запис (Altegio-стиль): тренер → заняття → час ────
    Дані з listBookableClasses (group-заняття вікна). «Послуга» = тип+тривалість
    (тип у клієнта завжди group, тож різнитель — 60/120 хв = 1/2 год списання). */
@@ -1147,9 +1162,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-left: -6px;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
   border: none;
   background: none;
   color: var(--text-2);
