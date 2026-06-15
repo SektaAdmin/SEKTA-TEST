@@ -67,7 +67,7 @@ type DayKey = string // 'YYYY-M-D'
 
 function toDayKey(isoStr: string): DayKey {
   const d = new Date(isoStr)
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 type DayMeta = { key: DayKey; dow: number; day: number; month: number }
