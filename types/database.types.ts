@@ -380,6 +380,7 @@ export type Database = {
           notes: string | null
           sale_id: string | null
           sessions_used: number
+          staff_note: string | null
           status: string
           updated_at: string
         }
@@ -395,6 +396,7 @@ export type Database = {
           notes?: string | null
           sale_id?: string | null
           sessions_used?: number
+          staff_note?: string | null
           status?: string
           updated_at?: string
         }
@@ -410,6 +412,7 @@ export type Database = {
           notes?: string | null
           sale_id?: string | null
           sessions_used?: number
+          staff_note?: string | null
           status?: string
           updated_at?: string
         }
@@ -495,6 +498,9 @@ export type Database = {
           notes: string | null
           payment_method: string
           price_paid: number
+          receipt_number: number | null
+          receipt_url: string | null
+          session_balance_snapshot: Json | null
           sessions: number | null
           ticket_id: string | null
           ticket_name: string | null
@@ -512,6 +518,9 @@ export type Database = {
           notes?: string | null
           payment_method: string
           price_paid: number
+          receipt_number?: number | null
+          receipt_url?: string | null
+          session_balance_snapshot?: Json | null
           sessions?: number | null
           ticket_id?: string | null
           ticket_name?: string | null
@@ -529,6 +538,9 @@ export type Database = {
           notes?: string | null
           payment_method?: string
           price_paid?: number
+          receipt_number?: number | null
+          receipt_url?: string | null
+          session_balance_snapshot?: Json | null
           sessions?: number | null
           ticket_id?: string | null
           ticket_name?: string | null
@@ -956,6 +968,17 @@ export type Database = {
         }
         Relationships: []
       }
+      session_balance_reconcile: {
+        Row: {
+          actual_balance: number | null
+          client_id: string | null
+          client_name: string | null
+          drift: number | null
+          expected_balance: number | null
+          ticket_type: string | null
+        }
+        Relationships: []
+      }
       v_client_balance_summary: {
         Row: {
           available_credit: number | null
@@ -998,15 +1021,6 @@ export type Database = {
           closed_count: number
         }[]
       }
-      calc_trainer_salary: {
-        Args: { p_end: string; p_start: string; p_trainer_id: string }
-        Returns: {
-          amount: number
-          rate: number
-          sessions_total: number
-          ticket_type: string
-        }[]
-      }
       calc_trainer_salary_v2: {
         Args: { p_end: string; p_start: string; p_trainer_id: string }
         Returns: {
@@ -1038,6 +1052,7 @@ export type Database = {
           p_force_no_charge?: boolean
           p_new_status: string
           p_sessions_used?: number
+          p_staff_note?: string
         }
         Returns: {
           charged: boolean

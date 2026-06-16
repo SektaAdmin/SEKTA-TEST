@@ -144,7 +144,7 @@
 
 .actions { display: flex; gap: 6px; }
 
-.btnEdit, .btnDel {
+.btnEdit, .btnDel, .btnReceipt {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -155,8 +155,10 @@
   transition: border-color 0.12s, color 0.12s, background 0.12s;
   white-space: nowrap;
 }
-.btnEdit:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.btnDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnEdit:hover    { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
+.btnDel:hover     { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnReceipt:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.btnReceipt:disabled { opacity: 0.5; cursor: wait; }
 
 /* ── Confirm dialog ──────────────────────────────────────────── */
 .confirmOverlay {
@@ -365,7 +367,7 @@
 
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
-  .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
+  .btnEdit, .btnDel, .btnReceipt { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
 
   .fsTrigger { height: 44px; }
   .feedTabGroup { margin-left: 0; width: 100%; }

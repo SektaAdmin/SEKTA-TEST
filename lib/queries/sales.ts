@@ -19,6 +19,7 @@ const SALE_SELECT = `
   id, created_at, client_id, ticket_id, trainer_id, cash_holder,
   ticket_name, ticket_price, ticket_type, sessions, price_paid, amount_given,
   payment_method, notes,
+  receipt_number, receipt_url, session_balance_snapshot,
   clients(first_name, last_name),
   tickets(name),
   trainers!sales_trainer_id_fkey(name)
@@ -214,4 +215,32 @@ export async function getTicketById(
     .eq('id', ticketId)
     .maybeSingle()
   return { data: data ?? null, error: error?.message ?? null }
+}
+
+export type SessionBalance = { ticket_type: string; sessions_balance: number }
+
+/** Залишки сесій по типах для клієнта (для snapshot у квитанції). */
+export async function getClientSessionBalances(
+  supabase: Db,
+  clientId: string
+): Promise<{ data: SessionBalance[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('client_session_balances')
+    .select('ticket_type, sessions_balance')
+    .eq('client_id', clientId)
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
+/** Зберігає URL квитанції та snapshot балансу у sales. */
+export async function saveReceiptToSale(
+  supabase: Db,
+  saleId: string,
+  receiptUrl: string,
+  balanceSnapshot: SessionBalance[]
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('sales')
+    .update({ receipt_url: receiptUrl, session_balance_snapshot: balanceSnapshot })
+    .eq('id', saleId)
+  return { error: error?.message ?? null }
 }
