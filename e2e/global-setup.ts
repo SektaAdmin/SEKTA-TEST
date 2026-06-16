@@ -47,10 +47,14 @@ export default async function globalSetup(config: FullConfig) {
   if (clientPhone && clientPassword) {
     const page = await browser.newPage({ baseURL })
     await page.goto('/login')
-    await page.getByPlaceholder('+380…').fill(clientPhone)
+    // phone field has placeholder "+380…" — use CSS selector as fallback
+    const phoneInput = page.getByPlaceholder('+380…')
+      .or(page.locator('input:not([type="password"])').first())
+    await phoneInput.fill(clientPhone)
     await page.locator('input[type="password"]').fill(clientPassword)
     await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
-    await page.waitForURL('**/client', { timeout: 15_000 })
+    // middleware redirects / → /client (possibly /client/... variants)
+    await page.waitForURL(/\/client/, { timeout: 15_000 })
     await page.context().storageState({ path: CLIENT_AUTH_FILE })
     await page.close()
   }
