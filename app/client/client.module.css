@@ -1049,206 +1049,9 @@
   border-radius: var(--radius-sm);
 }
 
-/* ── 3-кроковий запис (Altegio-стиль): тренер → заняття → час ────
-   Дані з listBookableClasses (group-заняття вікна). «Послуга» = тип+тривалість
-   (тип у клієнта завжди group, тож різнитель — 60/120 хв = 1/2 год списання). */
+/* ── Запис на заняття: дати → фільтр тренера → список занять дня ─── */
 
-/* Прогрес-індикатор — sticky, лишається при скролі списків/слотів. */
-.bookStepper {
-  position: sticky;
-  top: -16px;
-  z-index: 2;
-  background: var(--bg);
-  padding: 18px 0 14px;
-  margin-top: -16px;
-}
-
-.bookSegs {
-  display: flex;
-  gap: 6px;
-}
-
-.bookSeg {
-  flex: 1;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--bg-3);
-  transition: background var(--motion-standard);
-}
-
-.bookSegOn {
-  background: var(--accent);
-}
-
-.bookStepLabels {
-  display: flex;
-  margin-top: 8px;
-}
-
-.bookStepLabel {
-  flex: 1;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.bookStepLabel:nth-child(2) { text-align: center; }
-.bookStepLabel:last-child { text-align: right; }
-
-.bookStepLabelOn { color: var(--text); }
-
-/* Заголовок кроку + кнопка «назад». */
-.bookHead2 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.bookBack {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-left: -10px;
-  border: none;
-  background: none;
-  color: var(--text-2);
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-}
-.bookBack:hover { color: var(--text); background: var(--bg-3); }
-
-.bookTitle {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-/* Хлібні крихти вибору — тапом повертають на свій крок. */
-.bookCrumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.bookCrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 11px 4px 5px;
-  font-size: 13px;
-  color: var(--text-2);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-}
-.bookCrumb:hover { border-color: var(--border-hover); color: var(--text); }
-
-/* Без аватарки-ініціалів у крихті послуги — лишаємо тільки текст. */
-.bookCrumb:not(:first-child) { padding-left: 11px; }
-
-.bookCrumbDot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent-dim, var(--bg-3));
-  color: var(--text);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-/* Список варіантів (тренери / послуги). */
-.bookOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 24px;
-}
-
-.bookOption {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color var(--motion-fast);
-}
-.bookOption:hover { border-color: var(--border-hover); }
-
-.bookAvatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent-dim, var(--bg-3));
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.bookServiceIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-}
-
-.bookServiceDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.bookOptionMain {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.bookOptionName {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.bookOptionSub {
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.bookChevron {
-  flex-shrink: 0;
-  color: var(--text-3);
-  font-size: 22px;
-  line-height: 1;
-}
-
-/* Залишок занять (банер над днями кроку «Час»). */
+/* Залишок занять (банер під списком занять). */
 .bookBalanceBar {
   display: flex;
   align-items: center;
@@ -1336,13 +1139,70 @@
   margin-bottom: 10px;
 }
 
-/* Слоти часу обраного дня. */
+/* Фільтр тренерів — горизонтальний скрол pill-чипів. */
+.bookTrainerFilter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.bookTrainerFilter::-webkit-scrollbar { display: none; }
+
+.bookTrainerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
+}
+.bookTrainerChip:hover { border-color: var(--border-hover); color: var(--text); }
+
+.bookTrainerChipOn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.bookTrainerChipOn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+/* Аватарка-ініціали у чипі тренера. */
+.bookChipAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.bookTrainerChipOn .bookChipAvatar {
+  background: color-mix(in srgb, var(--accent-text) 20%, transparent);
+  color: var(--accent-text);
+}
+
+/* Картки занять дня. */
 .bookSlots {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Картка заняття: час зліва, деталі по центру, мітка-статус справа. */
 .bookSlot {
   display: flex;
   align-items: center;
@@ -1361,18 +1221,37 @@
 
 .bookSlotTime {
   flex-shrink: 0;
-  min-width: 50px;
+  min-width: 46px;
   font-size: 17px;
   font-weight: 600;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
+/* Основний блок картки: назва + рядок з тренером/залом/тривалістю. */
 .bookSlotInfo {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bookSlotName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bookSlotMeta {
+  font-size: 12px;
   color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bookSlotTag {
@@ -1387,22 +1266,23 @@
   border: 1px solid var(--success-border);
 }
 
-/* Повний зал — бурштинова мітка, слот лишається активним (запис у резерв). */
+/* Повний зал — бурштинова мітка, картка лишається активною (запис у резерв). */
 .bookSlotReserve .bookSlotTag {
   color: var(--warning);
   background: var(--warning-dim);
   border-color: var(--warning-border);
 }
 
-/* Немає сесій → слот disabled, нейтральні кольори. */
+/* Немає сесій → disabled, нейтральні кольори. */
 .bookSlot:disabled .bookSlotTime { color: var(--text-3); }
+.bookSlot:disabled .bookSlotName { color: var(--text-3); }
 .bookSlot:disabled .bookSlotTag {
   color: var(--text-3);
   background: var(--bg-3);
   border-color: var(--border);
 }
 
-/* Вже записаний — слот неактивний, час закреслено, статус міткою. */
+/* Вже записаний — картка неактивна, час закреслено. */
 .bookSlotEnrolled { opacity: 0.75; cursor: default; }
 .bookSlotEnrolled:hover { border-color: var(--border); }
 .bookSlotEnrolled .bookSlotTime {
