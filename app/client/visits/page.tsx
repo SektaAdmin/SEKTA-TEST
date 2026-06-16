@@ -25,7 +25,7 @@ export default async function ClientVisitsPage() {
   const { data: client } = await getMyClient(supabase, user.id)
   if (!client) redirect('/client')
 
-  const fromISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+  const fromISO = new Date().toISOString()
 
   const [
     { data: typeLabels },

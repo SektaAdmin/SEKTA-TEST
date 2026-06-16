@@ -147,7 +147,7 @@ export default function ClientVisits({
   const [pastShown, setPastShown] = useState(PAGE_SIZE)
 
   const { fromISO } = useMemo(() => ({
-    fromISO: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+    fromISO: new Date().toISOString(),
   }), [])
 
   const { data: upcoming, error: upcomingError } = useListQuery(

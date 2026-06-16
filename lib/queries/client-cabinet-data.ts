@@ -130,7 +130,7 @@ export async function listMyPurchases(
   return { data: data ?? [], totalCount: count ?? 0, error: error?.message ?? null }
 }
 
-// Архів записів: минулі заняття за статусами attended/noshow/cancelled.
+// Архів записів: минулі заняття (starts_at < now) за статусами attended/noshow/cancelled/waitlist.
 const MY_PAST_SELECT =
   'id, status, sessions_used, cancellation_source, classes!inner(ticket_type, title, starts_at, duration_min, trainers(name), halls(name))' as const
 
@@ -139,7 +139,8 @@ function myPastEnrollmentsQuery(supabase: Db, clientId: string) {
     .from('enrollments')
     .select(MY_PAST_SELECT, { count: 'exact' })
     .eq('client_id', clientId)
-    .in('status', ['attended', 'noshow', 'cancelled'])
+    .in('status', ['attended', 'noshow', 'cancelled', 'waitlist'])
+    .lt('classes.starts_at', new Date().toISOString())
     .order('starts_at', { referencedTable: 'classes', ascending: false })
     .limit(50)
 }

@@ -7,7 +7,7 @@ import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-c
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel, balanceClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
@@ -342,17 +342,6 @@ export default function ClientSchedule({
         })}
       </div>
 
-      {/* ── Залишок сесій під списком ── */}
-      {(() => {
-        const balance = balanceByType['group'] ?? 0
-        return (
-          <div className={styles.bookBalanceBar} style={{ marginTop: 16 }}>
-            <span>Залишок занять</span>
-            <span className={balanceClass(balance)}>{balance} {pluralHours(balance)}</span>
-          </div>
-        )
-      })()}
-
       {/* ── Модалка підтвердження (без змін) ── */}
       {confirm && (() => {
         const toWaitlist = goesToWaitlist(avMap[confirm.id])
@@ -413,15 +402,6 @@ export default function ClientSchedule({
                 </>
               )}
             </div>
-
-            {!toWaitlist && (reservedByType[confirm.ticket_type] ?? 0) > 0 && (() => {
-              const afterAll = availableByType(confirm.ticket_type) - cost
-              return (
-                <p className={styles.confirmInfo}>
-                  Після всіх запланованих занять залишиться {afterAll} {pluralHours(afterAll)}.
-                </p>
-              )
-            })()}
 
             {toWaitlist && (
               <p className={styles.confirmReserve}>
