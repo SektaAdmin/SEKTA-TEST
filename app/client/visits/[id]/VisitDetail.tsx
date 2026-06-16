@@ -5,9 +5,9 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
 import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
-import { formatMoney, fullWhen, hhmm, pluralHours } from '@/lib/formatters'
+import { fullWhen, hhmm, pluralHours } from '@/lib/formatters'
 import { avatarColor } from '@/lib/avatarColor'
-import { ticketTypeShortLabel, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
+import { enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import { MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
 import { cancellationDeadline, isFreeCancellation } from '@/lib/cancellation'
 import { STUDIO, STUDIO_TELEGRAM_URL, STUDIO_INSTAGRAM_URL } from '@/lib/studio'
@@ -33,32 +33,22 @@ function googleCalendarUrl(title: string, startISO: string, durationMin: number,
 
 type Props = {
   enrollment: MyEnrollmentDetailRow
-  basePrice: number | null
-  /** Залишок сесій ПІСЛЯ цього заняття (get_session_balance_after — cost уже враховано). */
-  balanceAfter: number
   typeLabels: Record<string, string>
   isPast: boolean
 }
 
-export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeLabels, isPast }: Props) {
+export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
   const router = useRouter()
   const [cancelling, setCancelling] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const c = enrollment.classes
-  const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
-  const className = c.title || typeLabel(c.ticket_type)
+  const className = c.title || (typeLabels[c.ticket_type] ?? c.ticket_type)
   const trainerName = c.trainers?.name ?? null
 
-  // Скільки сесій коштує заняття: минуле — фактичне sessions_used; майбутнє —
-  // hours_attended.length ?? 1 (як спише mark_attendance / auto_close, і як
-  // спише штраф при пізньому скасуванні — change_enrollment_status).
-  const cost = isPast
-    ? (enrollment.sessions_used ?? 0)
-    : (enrollment.hours_attended?.length ?? 1)
-  // balanceAfter — залишок ПІСЛЯ заняття; баланс ДО = balanceAfter + cost.
-  // «Є абонемент» = вистачало сесій на це заняття, тобто баланс після не пішов у мінус.
-  const hasBalance = balanceAfter >= 0
+  // cost потрібен лише для модалки скасування (штраф = N годин).
+  // Майбутнє: hours_attended.length ?? 1 (як спише auto_close/change_enrollment_status).
+  const cost = enrollment.hours_attended?.length ?? 1
   const canCancel = !isPast && !c.is_cancelled && (enrollment.status === 'enrolled' || enrollment.status === 'waitlist')
 
   // Правило відміни для модалки — копія БД-логіки (cancellation.ts), щоб показати
@@ -83,14 +73,17 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
   }
 
   const initial = trainerName?.trim()[0]?.toUpperCase() || '?'
+  const hallName = c.halls?.name ?? null
 
   return (
     <>
-      {/* Тренер */}
+      {/* Hero: назва тренування + зал, потім час */}
       <section className={styles.detailHero}>
         <div className={styles.detailAvatar} style={{ background: avatarColor(trainerName || ''), color: '#fff' }}>{initial}</div>
-        <div className={styles.detailTrainerName}>{trainerName || 'Тренер'}</div>
-        <div className={styles.detailTrainerRole}>Тренер</div>
+        <div className={styles.detailTrainerName}>{className}</div>
+        <div className={styles.detailTrainerRole}>
+          {trainerName || 'Тренер'}{hallName ? ` · ${hallName}` : ''}
+        </div>
         <div className={styles.detailWhen}>{fullWhen(c.starts_at, c.duration_min)}</div>
         {isPast && (() => {
           const badge = enrollmentBadge(enrollment, 'client')
@@ -119,31 +112,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         )}
       </section>
 
-      {/* Заняття */}
-      <div className={styles.sectionLabel}>Заняття</div>
-      <section className={styles.detailCard}>
-        <div className={styles.detailRow}>
-          <span className={styles.detailRowMain}>{className}</span>
-          {!hasBalance && basePrice != null && (
-            <span className={styles.detailPrice}>{formatMoney(basePrice * cost)}</span>
-          )}
-        </div>
-        <div className={styles.detailRowSub}>
-          {cost === 0 ? (
-            'Не списано'
-          ) : hasBalance ? (
-            <>
-              {cost} {pluralHours(cost)} з {typeLabel(c.ticket_type)} абонемента
-              {!isPast && ` · залишок після: ${balanceAfter} ${pluralHours(balanceAfter)}`}
-            </>
-          ) : (
-            'Буде списано з балансу (немає активного абонемента)'
-          )}
-        </div>
-        {c.halls?.name && <div className={styles.detailRowSub}>{c.halls.name} · {c.duration_min} хв</div>}
-      </section>
-
-      {/* Скасування — окрема зона, розділена від дій Google Calendar */}
+      {/* Кнопка скасування — між hero і адресою */}
       {canCancel && (
         <button
           type="button"
@@ -155,9 +124,8 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         </button>
       )}
 
-      {/* Студія. Без вбудованої карти — щоб не тягнути сторонній трекінг (Google
-          iframe) у кабінет. Адреса + кнопка «Показати на карті» на всю ширину. */}
-      <div className={styles.sectionLabel}>Студія</div>
+      {/* Адреса */}
+      <div className={styles.sectionLabel}>Адреса</div>
       <section className={styles.detailCard}>
         <div className={styles.detailRow}>
           <span className={styles.detailRowMain}>{STUDIO.name}</span>
