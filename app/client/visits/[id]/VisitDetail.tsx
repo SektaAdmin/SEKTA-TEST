@@ -125,8 +125,8 @@ export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
       )}
 
       {/* Адреса */}
-      <div className={styles.sectionLabel}>Адреса</div>
-      <section className={styles.detailCard}>
+      <div className={`${styles.sectionLabel} ${styles.sectionLabelCenter}`}>Адреса</div>
+      <section className={`${styles.detailCard} ${styles.detailCardCenter}`}>
         <div className={styles.detailRow}>
           <span className={styles.detailRowMain}>{STUDIO.name}</span>
         </div>

@@ -824,6 +824,10 @@
   border-radius: var(--radius);
 }
 
+.detailCardCenter {
+  text-align: center;
+}
+
 /* Кнопка «Показати на карті» — на всю ширину картки, під адресою. */
 .mapBtn {
   display: flex;
