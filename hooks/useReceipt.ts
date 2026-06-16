@@ -7,6 +7,7 @@ import {
   type Sale,
   type SessionBalance,
 } from '@/lib/queries/sales'
+import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 
 type ReceiptState = 'idle' | 'generating' | 'copying' | 'done' | 'error'
 
@@ -17,6 +18,7 @@ interface UseReceiptOptions {
 export interface ReceiptRenderData {
   sale: Sale
   balances: SessionBalance[]
+  labelMap: Record<string, string>
 }
 
 export function useReceipt({ onGenerated }: UseReceiptOptions = {}) {
@@ -40,10 +42,13 @@ export function useReceipt({ onGenerated }: UseReceiptOptions = {}) {
     setRenderData(null)
 
     try {
-      const { data: balances } = await getClientSessionBalances(supabase, sale.client_id)
+      const [{ data: balances }, { data: labelMap }] = await Promise.all([
+        getClientSessionBalances(supabase, sale.client_id),
+        listTrainingTypeLabels(supabase),
+      ])
 
       // Ставимо дані — React рендерить ReceiptCard в DOM
-      setRenderData({ sale, balances })
+      setRenderData({ sale, balances, labelMap })
 
       // Чекаємо два rAF щоб браузер завершив paint
       await new Promise<void>(resolve => {

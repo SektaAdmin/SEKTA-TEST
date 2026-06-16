@@ -8,11 +8,12 @@ import type { Sale, SessionBalance } from '@/lib/queries/sales'
 interface ReceiptCardProps {
   sale: Sale
   balances: SessionBalance[]
+  labelMap: Record<string, string>
 }
 
 /** Рендериться поза viewport — html2canvas захоплює для PNG. */
 const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
-  ({ sale, balances }, ref) => {
+  ({ sale, balances, labelMap }, ref) => {
     const clientName = formatClientName(sale.clients)
     const depDelta = sale.amount_given - sale.price_paid
     const isDeposit = !sale.ticket_id
@@ -29,7 +30,6 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
       timeZone: 'Europe/Kyiv',
     })
 
-    // Відфільтровуємо нульові баланси — не показуємо у квитанції
     const nonZeroBalances = balances.filter(b => b.sessions_balance !== 0)
 
     return (
@@ -49,36 +49,18 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
         }}
       >
         {/* Шапка */}
-        <div style={{
-          background: '#000000',
-          padding: '28px 32px 24px',
-        }}>
+        <div style={{ background: '#000000', padding: '28px 32px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{
-              fontSize: 24,
-              fontWeight: 800,
-              letterSpacing: '0.12em',
-              color: '#ffffff',
-            }}>
+            <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '0.12em', color: '#ffffff' }}>
               {STUDIO.name}
             </span>
             {sale.receipt_number != null && (
-              <span style={{
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.55)',
-                fontWeight: 500,
-                letterSpacing: '0.04em',
-              }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 500, letterSpacing: '0.04em' }}>
                 № {String(sale.receipt_number).padStart(5, '0')}
               </span>
             )}
           </div>
-          <div style={{
-            marginTop: 6,
-            fontSize: 12,
-            color: 'rgba(255,255,255,0.5)',
-            letterSpacing: '0.02em',
-          }}>
+          <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em' }}>
             {STUDIO.address}
           </div>
         </div>
@@ -92,12 +74,7 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
           gap: 8,
         }}>
           <span style={{ fontSize: 16, color: '#ffffff' }}>✓</span>
-          <span style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: '#ffffff',
-            letterSpacing: '0.03em',
-          }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#ffffff', letterSpacing: '0.03em' }}>
             Оплату підтверджено
           </span>
         </div>
@@ -105,12 +82,7 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
         {/* Тіло */}
         <div style={{ padding: '24px 32px' }}>
           {/* Клієнт + дата */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: 20,
-            gap: 12,
-          }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, gap: 12 }}>
             <div>
               <div style={{ fontSize: 11, color: '#888', fontWeight: 500, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Клієнт</div>
               <div style={{ fontSize: 16, fontWeight: 600 }}>{clientName}</div>
@@ -121,18 +93,12 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
             </div>
           </div>
 
-          {/* Роздільник */}
           <div style={{ borderTop: '1px solid #f0f0f0', marginBottom: 20 }} />
 
-          {/* Операція */}
+          {/* Операція — тільки назва, без кількості занять */}
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 11, color: '#888', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Операція</div>
             <div style={{ fontSize: 15, fontWeight: 600 }}>{operationLabel}</div>
-            {sale.sessions != null && sale.sessions > 0 && (
-              <div style={{ fontSize: 13, color: '#555', marginTop: 3 }}>
-                {sale.sessions} занять
-              </div>
-            )}
           </div>
 
           {/* Сума */}
@@ -146,14 +112,10 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
             alignItems: 'center',
           }}>
             <span style={{ fontSize: 13, color: '#555', fontWeight: 500 }}>
-              {isDeposit
-                ? (depDelta >= 0 ? 'Сума поповнення' : 'Сума списання')
-                : 'Сума оплати'}
+              {isDeposit ? (depDelta >= 0 ? 'Сума поповнення' : 'Сума списання') : 'Сума оплати'}
             </span>
             <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>
-              {isDeposit
-                ? formatMoney(Math.abs(depDelta))
-                : formatMoney(sale.price_paid)}
+              {isDeposit ? formatMoney(Math.abs(depDelta)) : formatMoney(sale.price_paid)}
             </span>
           </div>
 
@@ -165,20 +127,17 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
             </div>
           )}
 
-          {/* Δ депозит якщо є */}
+          {/* Δ депозит */}
           {depDelta !== 0 && !isDeposit && (
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontSize: 13, color: '#888' }}>Зміна депозиту</span>
-              <span style={{
-                fontSize: 13, fontWeight: 600,
-                color: depDelta > 0 ? '#16a34a' : '#dc2626',
-              }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: depDelta > 0 ? '#16a34a' : '#dc2626' }}>
                 {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
               </span>
             </div>
           )}
 
-          {/* Баланс занять */}
+          {/* Залишок занять — людська назва типу з labelMap */}
           {nonZeroBalances.length > 0 && (
             <>
               <div style={{ borderTop: '1px solid #f0f0f0', margin: '16px 0 14px' }} />
@@ -186,39 +145,16 @@ const ReceiptCard = forwardRef<HTMLDivElement, ReceiptCardProps>(
                 Залишок занять
               </div>
               {nonZeroBalances.map(b => (
-                <div
-                  key={b.ticket_type}
-                  style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}
-                >
-                  <span style={{ fontSize: 13, color: '#555' }}>{b.ticket_type}</span>
-                  <span style={{
-                    fontSize: 13, fontWeight: 600,
-                    color: b.sessions_balance > 0 ? '#16a34a' : '#dc2626',
-                  }}>
-                    {b.sessions_balance > 0 ? b.sessions_balance : b.sessions_balance} год
+                <div key={b.ticket_type} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: '#555' }}>
+                    {labelMap[b.ticket_type] ?? b.ticket_type}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: b.sessions_balance > 0 ? '#16a34a' : '#dc2626' }}>
+                    {b.sessions_balance} год
                   </span>
                 </div>
               ))}
             </>
-          )}
-        </div>
-
-        {/* Підвал */}
-        <div style={{
-          background: '#fafafa',
-          borderTop: '1px solid #f0f0f0',
-          padding: '14px 32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.04em' }}>
-            {STUDIO.name} · Студія танцю
-          </span>
-          {sale.receipt_number != null && (
-            <span style={{ fontSize: 11, color: '#bbb' }}>
-              Квитанція № {String(sale.receipt_number).padStart(5, '0')}
-            </span>
           )}
         </div>
       </div>

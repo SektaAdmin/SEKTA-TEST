@@ -551,6 +551,7 @@ export default function SalesPage() {
           ref={cardRef}
           sale={renderData.sale}
           balances={renderData.balances}
+          labelMap={renderData.labelMap}
         />
       )}
 
