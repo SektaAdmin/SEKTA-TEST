@@ -63,7 +63,8 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
 
   // Правило відміни для модалки — копія БД-логіки (cancellation.ts), щоб показати
   // клієнту дедлайн і можливий штраф ДО підтвердження (без зайвого запиту).
-  const free = isFreeCancellation(c.starts_at)
+  const isWaitlist = enrollment.status === 'waitlist'
+  const free = isWaitlist || isFreeCancellation(c.starts_at)
   const deadline = cancellationDeadline(c.starts_at)
   const deadlineText = `${deadline.getDate()} ${MONTHS_UK_GENITIVE[deadline.getMonth()]}, ${hhmm(deadline)}`
 
@@ -99,7 +100,7 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
         })()}
         {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
 
-        {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && (
+        {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && enrollment.status !== 'waitlist' && (
           <a
             className={styles.mapBtn}
             href={googleCalendarUrl(className, c.starts_at, c.duration_min, STUDIO.address)}
@@ -223,7 +224,11 @@ export default function VisitDetail({ enrollment, basePrice, balanceAfter, typeL
           }
         >
           <p className={styles.confirmText}>{className} · {fullWhen(c.starts_at, c.duration_min)}</p>
-          {free ? (
+          {isWaitlist ? (
+            <p className={styles.confirmRule}>
+              Ви в резерві — скасування безкоштовне.
+            </p>
+          ) : free ? (
             <p className={styles.confirmRule}>
               Скасування безкоштовне до <b>{deadlineText}</b>. Після цього часу
               спишеться {cost} {pluralHours(cost)}.

@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { listBookableClasses, listMySessionBalances } from '@/lib/queries/client-cabinet-data'
+import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
 import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-cabinet-data'
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
@@ -21,6 +21,8 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
   no_sessions: 'Немає оплачених занять цього типу',
   conflict: 'У вас уже є запис на цей час',
   duplicate: 'Ви вже записані на це заняття',
+  'Заняття вже почалось': 'Заняття вже розпочалось',
+  'Заняття скасовано': 'Заняття скасовано',
 }
 
 function dayParts(startISO: string): { dow: number; day: number; month: number } {
@@ -101,6 +103,24 @@ export default function ClientSchedule({
     [fromISO, toISO],
     { refetchOnVisible: true, initialData: initialClasses }
   )
+
+  // Stable dep string: changes only when actual class IDs change (after a refetch
+  // that added or removed classes), which in turn triggers availability refresh.
+  const classIdStr = useMemo(
+    () => classes.map(c => c.id).sort().join(','),
+    [classes]
+  )
+
+  const { data: currentAvailability } = useAsync(
+    async () => {
+      const ids = classes.map(c => c.id)
+      if (!ids.length) return { data: availability, error: null }
+      return getClassAvailability(supabase, ids)
+    },
+    [classIdStr],
+    { refetchOnVisible: true, initialData: availability }
+  )
+  const avMap = currentAvailability ?? availability
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
   const serviceName = (t: string) => ticketTypeNominativeLabel(t) || typeLabel(t)
@@ -267,7 +287,7 @@ export default function ClientSchedule({
           const state = enrolled[c.id]
           const cost = sessionCost(c.duration_min)
           const hasSessions = availableByType(c.ticket_type) >= cost
-          const av = availability[c.id]
+          const av = avMap[c.id]
           const toWaitlist = goesToWaitlist(av)
           const free = av?.capacity != null ? av.capacity - Math.min(av.active_count, av.capacity) : null
           const busy = enrolling === c.id
@@ -335,7 +355,7 @@ export default function ClientSchedule({
 
       {/* ── Модалка підтвердження (без змін) ── */}
       {confirm && (() => {
-        const toWaitlist = goesToWaitlist(availability[confirm.id])
+        const toWaitlist = goesToWaitlist(avMap[confirm.id])
         const cost = sessionCost(confirm.duration_min)
         const after = (balanceByType[confirm.ticket_type] ?? 0) - cost
         const busy = enrolling === confirm.id
