@@ -357,7 +357,7 @@ export default function ClientSchedule({
                 onCancel={() => setConfirm(null)}
                 onSave={() => handleEnroll(confirm.id)}
                 saveLabel={toWaitlist ? 'У резерв' : 'Записатись'}
-                cancelLabel="Назад"
+                cancelLabel="Скасувати"
                 loading={busy}
               />
             }

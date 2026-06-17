@@ -15,6 +15,7 @@ import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from 
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
 import { DOW_LABELS_SHORT, MONTHS_UK_SHORT } from '@/lib/dateUtils'
+import { kyivParts } from '@/lib/cancellation'
 import styles from '../client.module.css'
 
 const VISIT_TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
@@ -66,8 +67,8 @@ function WhenMeta({ c, typeLabel }: {
 type DayKey = string // 'YYYY-M-D'
 
 function toDayKey(isoStr: string): DayKey {
-  const d = new Date(isoStr)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const { year, month, day } = kyivParts(new Date(isoStr))
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 type DayMeta = { key: DayKey; dow: number; day: number; month: number }
@@ -84,8 +85,9 @@ function buildDayMetas<T extends { classes: { starts_at: string } | null }>(
     const k = toDayKey(iso)
     if (seen.has(k)) continue
     seen.add(k)
-    const d = new Date(iso)
-    arr.push({ key: k, dow: d.getDay(), day: d.getDate(), month: d.getMonth() + 1 })
+    const { year, month, day } = kyivParts(new Date(iso))
+    const dow = new Date(`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T12:00:00+03:00`).getDay()
+    arr.push({ key: k, dow, day, month })
   }
   arr.sort((a, b) => {
     const cmp = a.key.localeCompare(b.key)
