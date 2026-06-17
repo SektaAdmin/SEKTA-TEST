@@ -46,7 +46,7 @@ export default function TrainerMyClasses({ upcoming, past }: Props) {
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
 
   return (
-    <div style={{ padding: '0 16px 40px', maxWidth: 640, margin: '0 auto' }}>
+    <div className={styles.scroll}>
       <div className={styles.tabBar}>
         <button
           className={`${styles.tab} ${tab === 'upcoming' ? styles.tabActive : ''}`}
