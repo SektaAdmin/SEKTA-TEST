@@ -96,16 +96,17 @@ function getCardLabel(
 }
 
 interface WeekStripProps {
-  selectedDate: Date
+  selectedDate: Date | null
+  anchorDate: Date
   onSelect: (d: Date) => void
   today: Date
   slideDir: 'left' | 'right' | null
   weekKey: number
 }
 
-function WeekStrip({ selectedDate, onSelect, today, slideDir, weekKey }: WeekStripProps) {
-  const week = weekOf(selectedDate)
-  const monthLabel = MONTHS_UK_CAP[selectedDate.getMonth()] + ' ' + selectedDate.getFullYear()
+function WeekStrip({ selectedDate, anchorDate, onSelect, today, slideDir, weekKey }: WeekStripProps) {
+  const week = weekOf(anchorDate)
+  const monthLabel = MONTHS_UK_CAP[anchorDate.getMonth()] + ' ' + anchorDate.getFullYear()
 
   const animClass = slideDir === 'left'
     ? styles.slideLeft
@@ -122,7 +123,7 @@ function WeekStrip({ selectedDate, onSelect, today, slideDir, weekKey }: WeekStr
       >
         {week.map((day, i) => {
           const isToday = isSameDay(day, today)
-          const isSelected = isSameDay(day, selectedDate)
+          const isSelected = selectedDate !== null && isSameDay(day, selectedDate)
           return (
             <button
               key={i}
@@ -145,14 +146,14 @@ function WeekStrip({ selectedDate, onSelect, today, slideDir, weekKey }: WeekStr
 
 interface TimelineProps {
   classes: ClassRow[]
-  selectedDate: Date
+  selectedDate: Date | null
   onClassClick: (id: string) => void
   nowTop: number | null
   typeLabel: (code: string) => string
 }
 
 function Timeline({ classes, selectedDate, onClassClick, nowTop, typeLabel }: TimelineProps) {
-  const dayClasses = classes
+  const dayClasses = selectedDate == null ? [] : classes
     .filter(c => isSameDay(new Date(c.starts_at), selectedDate))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
 
@@ -167,7 +168,7 @@ function Timeline({ classes, selectedDate, onClassClick, nowTop, typeLabel }: Ti
       ))}
 
       {/* Лінія «зараз» */}
-      {nowTop !== null && isSameDay(selectedDate, new Date()) && (
+      {nowTop !== null && selectedDate !== null && isSameDay(selectedDate, new Date()) && (
         <div className={styles.nowLine} style={{ top: nowTop }}>
           <div className={styles.nowDot} />
           <div className={styles.nowLineLine} />
@@ -246,7 +247,8 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
   const router = useRouter()
   const { trainingTypes } = useRefs()
   const today = useRef(startOfDay(new Date())).current
-  const [selectedDate, setSelectedDate] = useState(today)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(today)
+  const [anchorDate, setAnchorDate] = useState(today)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
   const [weekKey, setWeekKey] = useState(0)
   const [nowTop, setNowTop] = useState<number | null>(null)
@@ -283,12 +285,14 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
 
   const handleDateSelect = useCallback((d: Date) => {
     setSelectedDate(d)
+    setAnchorDate(d)
   }, [])
 
   const handlePrevWeek = () => {
     setSlideDir('right')
     setWeekKey(k => k - 1)
-    setSelectedDate(d => {
+    setSelectedDate(null)
+    setAnchorDate(d => {
       const n = new Date(d); n.setDate(d.getDate() - 7); return n
     })
   }
@@ -296,7 +300,8 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
   const handleNextWeek = () => {
     setSlideDir('left')
     setWeekKey(k => k + 1)
-    setSelectedDate(d => {
+    setSelectedDate(null)
+    setAnchorDate(d => {
       const n = new Date(d); n.setDate(d.getDate() + 7); return n
     })
   }
@@ -349,7 +354,7 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           <span>Меню</span>
         </button>
         <span className={styles.topbarTitle}>Мої заняття</span>
-        <button className={styles.todayBtn} onClick={() => setSelectedDate(today)}>
+        <button className={styles.todayBtn} onClick={() => { setSelectedDate(today); setAnchorDate(today) }}>
           Сьогодні
         </button>
       </div>
@@ -358,6 +363,7 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
       <div ref={stripRef}>
         <WeekStrip
           selectedDate={selectedDate}
+          anchorDate={anchorDate}
           onSelect={handleDateSelect}
           today={today}
           slideDir={slideDir}
@@ -403,7 +409,7 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           onClose={() => setShowClassModal(false)}
           onSaved={() => { setShowClassModal(false); router.refresh() }}
           forcedTrainerId={trainerId}
-          prefill={{ starts_at: selectedDate.toISOString() }}
+          prefill={{ starts_at: (selectedDate ?? anchorDate).toISOString() }}
         />
       )}
     </div>
