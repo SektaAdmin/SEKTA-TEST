@@ -6,21 +6,18 @@ import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { listEnrollmentsForClass } from '@/lib/queries/enrollments'
 import { typeColor } from '@/lib/typeColor'
 import { useRealtime } from '@/lib/useRealtime'
-import Sidebar from '@/components/Sidebar'
-import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
-import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { MONTHS_UK_FULL, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import FilterSelect from '@/components/ui/FilterSelect'
-import styles from './schedule.module.css'
+import styles from '../../schedule/schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import Link from 'next/link'
 
 const MIN_HOUR = 8
 const MAX_HOUR = 22
@@ -44,11 +41,6 @@ function isSameDay(a: Date, b: Date) {
 
 function formatTime(iso: string) {
   const d = new Date(iso)
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
-function formatEndTime(iso: string, durationMin: number) {
-  const d = new Date(new Date(iso).getTime() + durationMin * 60000)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
@@ -96,13 +88,11 @@ function computeLanes(classes: ClassWithJoins[]): Map<string, LaneInfo> {
   return result
 }
 
-
 function formatDayFull(d: Date) {
   const dayName = WEEKDAYS_FULL[dowMondayIndex(d)]
   return `${dayName}, ${formatDate(d)}`
 }
 
-// ── Slot click → time calculation ────────────────────────────────
 function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date, hourHeight: number): string {
   const rect = e.currentTarget.getBoundingClientRect()
   const relY = e.clientY - rect.top
@@ -114,7 +104,6 @@ function slotTimeFromClick(e: React.MouseEvent<HTMLDivElement>, day: Date, hourH
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(clampedH)}:00`
 }
 
-// ── Card hover tooltip ────────────────────────────────────────────
 type TooltipEnrollment = {
   id: string
   status: string
@@ -149,17 +138,12 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
     const winW = window.innerWidth
     const winH = window.innerHeight
     const GAP = 8
-
-    // horizontal: prefer right, fall back to left
     const fitsRight = rect.right + GAP + TOOLTIP_W <= winW
     const leftVal = fitsRight ? rect.right + GAP : undefined
     const rightVal = fitsRight ? undefined : winW - rect.left + GAP
-
-    // vertical: prefer top-aligned with card, flip up if overflows bottom
     const fitsDown = rect.top + TOOLTIP_MAX_H <= winH - 8
     const topVal = fitsDown ? rect.top : undefined
     const bottomVal = fitsDown ? undefined : winH - rect.bottom
-
     setPos({ top: topVal ?? 0, left: leftVal, right: rightVal, bottom: bottomVal })
   }, [anchorRef])
 
@@ -212,9 +196,7 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
         <>
           {active.length > 0 && (
             <div className={styles.tooltipSection}>
-              <div className={styles.tooltipSectionHead}>
-                Записані ({active.length})
-              </div>
+              <div className={styles.tooltipSectionHead}>Записані ({active.length})</div>
               {active.map((e, i) => (
                 <div key={e.id} className={styles.tooltipRow}>
                   <span className={styles.tooltipNum}>{i + 1}</span>
@@ -226,9 +208,7 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
           )}
           {waitlist.length > 0 && (
             <div className={styles.tooltipSection}>
-              <div className={styles.tooltipSectionHead}>
-                Резерв ({waitlist.length})
-              </div>
+              <div className={styles.tooltipSectionHead}>Резерв ({waitlist.length})</div>
               {waitlist.map((e, i) => (
                 <div key={e.id} className={styles.tooltipRow}>
                   <span className={styles.tooltipNum}>{i + 1}</span>
@@ -245,7 +225,6 @@ function CardTooltip({ classId, anchorRef, onClose, onMouseEnter }: CardTooltipP
   )
 }
 
-// ── Card component ────────────────────────────────────────────────
 interface CardProps {
   cls: ClassWithJoins
   typeLabels: Record<string, string>
@@ -253,12 +232,11 @@ interface CardProps {
   laneIndex?: number
   laneCount?: number
   onClick: () => void
-  // overview: усі зали одночасно у вузьких колонках (мобільний day-view, чип «Всі»).
-  // Карточка показує лише абревіатуру типу + тренера, без часу/місць — час уже в гутері.
   overview?: boolean
+  isOwn?: boolean
 }
 
-function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick, overview = false }: CardProps) {
+function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, onClick, overview = false, isOwn = false }: CardProps) {
   const activeCount = getActiveCount(cls.enrollments)
   const waitlistCount = getWaitlistCount(cls.enrollments)
   const color = typeColor(cls.ticket_type)
@@ -298,7 +276,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     <button
       ref={cardRef}
       data-card
-      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
+      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''} ${isOwn ? styles.cardOwn : ''}`}
       style={{
         top: `${getCardTop(cls.starts_at, hourHeight) + CARD_GAP}px`,
         height: `${Math.max(cardHeight - CARD_GAP * 2, 20)}px`,
@@ -354,11 +332,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
               </>
             )
             if (free <= 0) {
-              return (
-                <div className={styles.cardSlotsEmpty}>
-                  Немає місць{reserve}
-                </div>
-              )
+              return <div className={styles.cardSlotsEmpty}>Немає місць{reserve}</div>
             }
             const freeText = free === 1 ? 'місце' : free >= 2 && free <= 4 ? 'місця' : 'місць'
             return (
@@ -377,7 +351,6 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   )
 }
 
-// ── Hall sub-column with lane fallback ────────────────────────────
 interface HallColProps {
   classes: ClassWithJoins[]
   typeLabels: Record<string, string>
@@ -386,9 +359,10 @@ interface HallColProps {
   onCardClick: (id: string) => void
   onSlotClick: (startsAt: string) => void
   overview?: boolean
+  viewerTrainerId?: string | null
 }
 
-function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick, overview = false }: HallColProps) {
+function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotClick, overview = false, viewerTrainerId }: HallColProps) {
   const lanes = computeLanes(classes)
 
   function relYOverlapsCard(relY: number): boolean {
@@ -434,6 +408,7 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
       ))}
       {classes.map(cls => {
         const { laneIndex, laneCount } = lanes.get(cls.id) ?? { laneIndex: 0, laneCount: 1 }
+        const isOwn = !!viewerTrainerId && cls.trainer_id === viewerTrainerId
         return (
           <ClassCard
             key={cls.id}
@@ -444,6 +419,7 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
             laneCount={laneCount}
             onClick={() => onCardClick(cls.id)}
             overview={overview}
+            isOwn={isOwn}
           />
         )
       })}
@@ -451,19 +427,25 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
   )
 }
 
-// ── Main page ─────────────────────────────────────────────────────
-export default function SchedulePage() {
-  const { trainers, halls, trainingTypes } = useRefs()
+// ── Main component ────────────────────────────────────────────────────────────
+interface Props {
+  /** ID тренера-власника кабінету; null для owner/admin */
+  viewerTrainerId: string | null
+}
+
+export default function TrainerSchedule({ viewerTrainerId }: Props) {
+  const { halls, trainingTypes } = useRefs()
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
+  const isStaff = viewerTrainerId === null
 
   const ARCHIVE_CUTOFF_DAYS = 30
   const isMobile = useIsMobile()
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
 
-  // Force day view on mobile (week view causes horizontal overflow on small screens)
   useEffect(() => {
     if (isMobile && viewMode === 'week') setViewMode('day')
   }, [isMobile, viewMode])
+
   const [baseDate, setBaseDate] = useState(() => new Date())
   const [classes, setClasses] = useState<ClassWithJoins[]>([])
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
@@ -473,7 +455,6 @@ export default function SchedulePage() {
   const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [filterHall, setFilterHall] = useState('')
-  const [filterTrainer, setFilterTrainer] = useState('')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
@@ -490,12 +471,10 @@ export default function SchedulePage() {
 
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
     const d = new Date(baseDate); d.setHours(0, 0, 0, 0)
-
     let days: Date[]
     if (viewMode === 'day') {
       days = [d]
     } else {
-      // Week view: Monday to Sunday
       const dayOfWeek = d.getDay()
       const daysBack = dayOfWeek === 0 ? 6 : dayOfWeek - 1
       const mon = new Date(d); mon.setDate(d.getDate() - daysBack)
@@ -504,10 +483,8 @@ export default function SchedulePage() {
         return date
       })
     }
-
     const start = new Date(days[0]); start.setHours(0, 0, 0, 0)
     const end = new Date(days[days.length - 1]); end.setHours(23, 59, 59, 999)
-
     return { weekDays: days, weekStartISO: start.toISOString(), weekEndISO: end.toISOString() }
   }, [baseDate, viewMode])
 
@@ -519,7 +496,6 @@ export default function SchedulePage() {
   }, [weekStartISO, weekEndISO])
 
   useEffect(() => { fetchClasses() }, [fetchClasses])
-
   useRealtime(['classes', 'enrollments'], fetchClasses)
 
   useEffect(() => {
@@ -562,21 +538,17 @@ export default function SchedulePage() {
     return () => obs.disconnect()
   }, [])
 
-  // Apply filters
   const filteredClasses = useMemo(() => {
-    let result = classes
-    if (filterHall) result = result.filter(c => c.hall_id === filterHall)
-    if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
-    return result
-  }, [classes, filterHall, filterTrainer])
+    if (filterHall) return classes.filter(c => c.hall_id === filterHall)
+    return classes
+  }, [classes, filterHall])
 
-  // Halls that appear in the current view (filtered)
   const visibleHalls = useMemo(() => {
     const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
     const visHalls = filterHall
       ? activeHalls.filter(h => h.id === filterHall)
       : viewMode === 'day'
-        ? activeHalls  // day view: always show all active halls so slot clicks carry hall_id
+        ? activeHalls
         : activeHalls.filter(h => hallIds.has(h.id))
     const hasNoHall = filteredClasses.some(c => !c.hall_id)
     return { halls: visHalls, hasNoHall }
@@ -587,14 +559,10 @@ export default function SchedulePage() {
     ...(visibleHalls.hasNoHall ? [null as null] : []),
   ], [visibleHalls])
 
-  // Overview = всі зали одночасно у вузьких колонках (мобільний day-view без вибраного
-  // залу). Картки переходять у компактний вигляд «абревіатура + тренер».
   const isOverview = isMobile && viewMode === 'day' && hallColumns.length > 1
 
-  // Navigation with slide animation
   const navigateDay = useCallback((dir: 'left' | 'right') => {
     if (!isMobile) {
-      // Desktop — no animation, just change date
       if (dir === 'left') {
         const step = viewMode === 'week' ? 7 : 1
         setBaseDate(d => { const n = new Date(d); n.setDate(d.getDate() + step); return n })
@@ -609,7 +577,6 @@ export default function SchedulePage() {
       }
       return
     }
-    // Mobile — slide out, swap date, slide in
     setSlideDir(dir)
     setTimeout(() => {
       if (dir === 'left') {
@@ -629,7 +596,6 @@ export default function SchedulePage() {
   const goNext = useCallback(() => navigateDay('left'),  [navigateDay])
   const goPrev = useCallback(() => navigateDay('right'), [navigateDay])
 
-  // Swipe to change day (mobile)
   useEffect(() => {
     const el = wrapperRef.current
     if (!el) return
@@ -637,7 +603,6 @@ export default function SchedulePage() {
     function onTouchStart(e: TouchEvent) {
       swipeRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, decided: false }
     }
-
     function onTouchMove(e: TouchEvent) {
       const s = swipeRef.current
       if (!s) return
@@ -650,7 +615,6 @@ export default function SchedulePage() {
       }
       e.preventDefault()
     }
-
     function onTouchEnd(e: TouchEvent) {
       const s = swipeRef.current
       swipeRef.current = null
@@ -672,41 +636,33 @@ export default function SchedulePage() {
   }, [goNext, goPrev])
 
   const isPrevDisabled = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const cutoff = new Date(today)
-    cutoff.setDate(today.getDate() - ARCHIVE_CUTOFF_DAYS)
-    const checkDate = new Date(baseDate)
-    checkDate.setHours(0, 0, 0, 0)
+    const t = new Date(); t.setHours(0, 0, 0, 0)
+    const cutoff = new Date(t); cutoff.setDate(t.getDate() - ARCHIVE_CUTOFF_DAYS)
+    const checkDate = new Date(baseDate); checkDate.setHours(0, 0, 0, 0)
     return checkDate <= cutoff
   }, [baseDate])
 
   function handleSetWeekMode() {
     setViewMode('week')
-    if (!filterHall && !filterTrainer && activeHalls.length > 0) {
+    if (!filterHall && activeHalls.length > 0) {
       setFilterHall(activeHalls[0].id)
     }
   }
 
   const navLabel = useMemo(() => {
-    if (viewMode === 'day') {
-      return formatDayFull(weekDays[0])
-    }
+    if (viewMode === 'day') return formatDayFull(weekDays[0])
     const start = weekDays[0]
     const end = weekDays[6]
     return `${formatDateShort(start)} – ${formatDate(end)}`
   }, [weekDays, viewMode])
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className={styles.layout}>
-      <Sidebar />
-      <BottomNav />
-      <main className={styles.main}>
+    <div className={styles.layout} style={{ '--sidebar-w': '0px' } as React.CSSProperties}>
+      <main className={styles.main} style={{ marginLeft: 0, paddingBottom: 0 }}>
 
         {/* Topbar row 1 */}
         <div className={styles.topbar}>
-          {/* Mobile nav — date + today icon + calendar icon */}
           <div className={styles.mobileTopNav}>
             <div className={styles.mobileDateText}>
               <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
@@ -729,7 +685,6 @@ export default function SchedulePage() {
             <div className={styles.dateChip}>
               <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
             </div>
-
             <div className={styles.titleBlock}>
               <div className={styles.titleRow}>
                 <span className={styles.monthTitle}>{navLabel}</span>
@@ -742,35 +697,34 @@ export default function SchedulePage() {
 
           <div className={styles.topbarRight}>
             <div className={styles.desktopNav}>
-            <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 2L4 7l5 5"/>
-              </svg>
-            </button>
-            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
-              Сьогодні
-            </button>
-            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M5 2l5 5-5 5"/>
-              </svg>
-            </button>
+              <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 2L4 7l5 5"/>
+                </svg>
+              </button>
+              <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>Сьогодні</button>
+              <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M5 2l5 5-5 5"/>
+                </svg>
+              </button>
             </div>
             <div className={styles.viewToggle}>
-                <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
-                  День
-                </button>
-                <button className={`${styles.viewBtn} ${styles.viewBtnWeek} ${viewMode === 'week' ? styles.viewBtnActive : ''}`} onClick={handleSetWeekMode}>
-                  Тиждень
-                </button>
-              </div>
-            <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
-                + Заняття
+              <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
+                День
               </button>
+              <button className={`${styles.viewBtn} ${styles.viewBtnWeek} ${viewMode === 'week' ? styles.viewBtnActive : ''}`} onClick={handleSetWeekMode}>
+                Тиждень
+              </button>
+            </div>
+            {/* "+ Заняття" — тренер може додавати */}
+            <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
+              + Заняття
+            </button>
           </div>
         </div>
 
-        {/* Filter bar */}
+        {/* Filter bar — лише зали (без фільтра тренерів) */}
         <div className={styles.filterBar}>
           <FilterSelect
             value={filterHall}
@@ -781,24 +735,11 @@ export default function SchedulePage() {
               ...activeHalls.map(h => ({ value: h.id, label: h.name })),
             ]}
           />
-          <FilterSelect
-            value={filterTrainer}
-            onChange={setFilterTrainer}
-            placeholder="Всі тренери"
-            options={[
-              { value: '', label: 'Всі тренери' },
-              ...(trainers as { id: string; name: string; is_active: boolean }[])
-                .filter(t => t.is_active)
-                .map(t => ({ value: t.id, label: t.name })),
-            ]}
-          />
         </div>
-
 
         {/* Content row — grid area + right panel */}
         <div className={styles.contentRow}>
           <div className={styles.gridArea}>
-            {/* Schedule grid */}
             <div
               ref={gridCardRef}
               className={[
@@ -807,147 +748,129 @@ export default function SchedulePage() {
                 slideDir === 'right' ? styles.slideOutRight : '',
               ].filter(Boolean).join(' ')}
             >
-            {/* Body grid wrapper — scrolls both axes; stickyHeaders pins inside */}
-            <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
-            {/* Sticky header group — inside scroll container so x-scroll stays in sync */}
-            <div className={styles.stickyHeaders}>
-            {/* Week day names — only in week mode */}
-            {viewMode === 'week' && (
-              <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
-                <div />
-                {weekDays.map((day, di) => {
-                  const isToday = isSameDay(day, today)
-                  return (
-                    <div key={di} className={`${styles.weekDayLabel} ${isToday ? styles.weekDayToday : ''}`}>
-                      {WEEKDAYS_SHORT[dowMondayIndex(day)]} {String(day.getDate()).padStart(2, '0')}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Week filter label */}
-            {viewMode === 'week' && (filterHall || filterTrainer) && (
-              <div className={styles.weekFilterLabel}>
-                {filterHall
-                  ? activeHalls.find(h => h.id === filterHall)?.name
-                  : (trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}
-              </div>
-            )}
-
-            {/* Day header */}
-            <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
-              <div className={styles.gutterCorner} />
-              {weekDays.map((day, di) => {
-                const isToday = isSameDay(day, today)
-                return (
-                  <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                    {hallColumns.length > 1 && (
-                      <div className={styles.dayHallsRow}>
-                        {hallColumns.map(h => (
-                          <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
-                            {h ? h.name : '—'}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            </div>{/* /stickyHeaders */}
-
-            {/* Body grid */}
-            <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
-              {/* Now line overlay — day view only */}
-              {viewMode === 'day' && nowTop !== null && (
-                <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
-                  <span className={styles.nowLineTime}>
-                    {(() => { const n = new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}` })()}
-                  </span>
-                  <div className={styles.nowLineDot} />
-                  <div className={styles.nowLineLine} />
-                </div>
-              )}
-
-              {/* Time gutter */}
-              <div className={styles.timeGutter}>
-                {HOURS.map(h => (
-                  <div key={h} className={styles.timeRow} style={{ height: `${hourHeight}px` }}>
-                    <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
-                  </div>
-                ))}
-                {HOURS.slice(1).map(h => (
-                  <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
-                ))}
-              </div>
-
-              {/* Day columns */}
-              {weekDays.map((day, di) => {
-                const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
-
-                const dayHallCols = hallColumns
-
-                const showHallCols = dayHallCols.length > 0
-
-                return (
-                  <div key={di} className={styles.dayCol} style={{ height: `${(MAX_HOUR - MIN_HOUR) * hourHeight}px` }}>
-                    {/* Now line — week mode, only in today's column */}
-                    {viewMode === 'week' && isSameDay(day, today) && nowTop !== null && (
-                      <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
-                        <span className={styles.nowLineTime}>
-                          {(() => { const n = new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}` })()}
-                        </span>
-                        <div className={styles.nowLineDot} />
-                        <div className={styles.nowLineLine} />
-                      </div>
-                    )}
-                    {showHallCols ? (
-                      // Hall sub-columns
-                      dayHallCols.map(hall => {
-                        const hallClasses = hall === null
-                          ? dayClasses.filter(c => !c.hall_id)
-                          : dayClasses.filter(c => c.hall_id === hall.id)
+              <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
+                <div className={styles.stickyHeaders}>
+                  {viewMode === 'week' && (
+                    <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
+                      <div />
+                      {weekDays.map((day, di) => {
+                        const isToday = isSameDay(day, today)
                         return (
+                          <div key={di} className={`${styles.weekDayLabel} ${isToday ? styles.weekDayToday : ''}`}>
+                            {WEEKDAYS_SHORT[dowMondayIndex(day)]} {String(day.getDate()).padStart(2, '0')}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {viewMode === 'week' && filterHall && (
+                    <div className={styles.weekFilterLabel}>
+                      {activeHalls.find(h => h.id === filterHall)?.name}
+                    </div>
+                  )}
+
+                  <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+                    <div className={styles.gutterCorner} />
+                    {weekDays.map((day, di) => {
+                      const isToday = isSameDay(day, today)
+                      return (
+                        <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
+                          {hallColumns.length > 1 && (
+                            <div className={styles.dayHallsRow}>
+                              {hallColumns.map(h => (
+                                <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                                  {h ? h.name : '—'}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+                  {viewMode === 'day' && nowTop !== null && (
+                    <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
+                      <span className={styles.nowLineTime}>
+                        {(() => { const n = new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}` })()}
+                      </span>
+                      <div className={styles.nowLineDot} />
+                      <div className={styles.nowLineLine} />
+                    </div>
+                  )}
+
+                  <div className={styles.timeGutter}>
+                    {HOURS.map(h => (
+                      <div key={h} className={styles.timeRow} style={{ height: `${hourHeight}px` }}>
+                        <span className={styles.timeLabel}>{String(h).padStart(2, '0')}:00</span>
+                      </div>
+                    ))}
+                    {HOURS.slice(1).map(h => (
+                      <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
+                    ))}
+                  </div>
+
+                  {weekDays.map((day, di) => {
+                    const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
+                    return (
+                      <div key={di} className={styles.dayCol} style={{ height: `${(MAX_HOUR - MIN_HOUR) * hourHeight}px` }}>
+                        {viewMode === 'week' && isSameDay(day, today) && nowTop !== null && (
+                          <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
+                            <span className={styles.nowLineTime}>
+                              {(() => { const n = new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}` })()}
+                            </span>
+                            <div className={styles.nowLineDot} />
+                            <div className={styles.nowLineLine} />
+                          </div>
+                        )}
+                        {hallColumns.length > 0 ? (
+                          hallColumns.map(hall => {
+                            const hallClasses = hall === null
+                              ? dayClasses.filter(c => !c.hall_id)
+                              : dayClasses.filter(c => c.hall_id === hall.id)
+                            return (
+                              <HallSubCol
+                                key={hall?.id ?? 'no-hall'}
+                                classes={hallClasses}
+                                typeLabels={typeLabels}
+                                hourHeight={hourHeight}
+                                day={day}
+                                onCardClick={id => setEditClassId(id)}
+                                onSlotClick={startsAt => {
+                                  setPrefill({ starts_at: startsAt, hall_id: hall?.id })
+                                  setShowModal(true)
+                                }}
+                                overview={isOverview}
+                                viewerTrainerId={viewerTrainerId}
+                              />
+                            )
+                          })
+                        ) : (
                           <HallSubCol
-                            key={hall?.id ?? 'no-hall'}
-                            classes={hallClasses}
+                            key="empty"
+                            classes={[]}
                             typeLabels={typeLabels}
                             hourHeight={hourHeight}
                             day={day}
-                            onCardClick={id => setEditClassId(id)}
+                            onCardClick={() => {}}
                             onSlotClick={startsAt => {
-                              setPrefill({ starts_at: startsAt, hall_id: hall?.id })
+                              setPrefill({ starts_at: startsAt })
                               setShowModal(true)
                             }}
-                            overview={isOverview}
+                            viewerTrainerId={viewerTrainerId}
                           />
-                        )
-                      })
-                    ) : (
-                      // Empty day — single sub-col for hour lines
-                      <HallSubCol
-                        key="empty"
-                        classes={[]}
-                        typeLabels={typeLabels}
-                        hourHeight={hourHeight}
-                        day={day}
-                        onCardClick={() => {}}
-                        onSlotClick={startsAt => {
-                          setPrefill({ starts_at: startsAt })
-                          setShowModal(true)
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              })}
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right panel — day view only */}
           {viewMode === 'day' && (
             <ScheduleRightPanel
               viewYear={calViewMonth.year}
@@ -969,7 +892,6 @@ export default function SchedulePage() {
           )}
         </div>
 
-        {/* Mobile calendar bottom sheet */}
         {showMobileCal && (
           <div className={styles.mobileCalOverlay} onClick={() => setShowMobileCal(false)}>
             <div className={styles.mobileCalSheet} onClick={e => e.stopPropagation()}>
@@ -994,7 +916,6 @@ export default function SchedulePage() {
           </div>
         )}
 
-        {/* FAB — mobile only, creates new class */}
         <button
           className={styles.fab}
           onClick={() => { setPrefill(undefined); setShowModal(true) }}
@@ -1009,7 +930,8 @@ export default function SchedulePage() {
           classId={editClassId}
           onClose={() => setEditClassId(null)}
           onClassUpdated={() => { fetchClasses(); setEditClassId(null) }}
-          isStaff={true}
+          viewerTrainerId={viewerTrainerId ?? undefined}
+          isStaff={isStaff}
         />
       )}
 
@@ -1018,9 +940,10 @@ export default function SchedulePage() {
           onClose={() => { setShowModal(false); setPrefill(undefined) }}
           onSaved={() => {
             setShowModal(false); setPrefill(undefined); fetchClasses()
-            setCalViewMonth(m => ({ ...m })) // re-trigger active dates fetch
+            setCalViewMonth(m => ({ ...m }))
           }}
           prefill={prefill}
+          forcedTrainerId={viewerTrainerId ?? undefined}
         />
       )}
     </div>

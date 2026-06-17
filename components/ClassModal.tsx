@@ -57,6 +57,8 @@ interface Props {
   onSaved: () => void
   existing?: Class | null
   prefill?: { starts_at: string; hall_id?: string }
+  /** Якщо передано — тренер фіксований (кабінет тренера), dropdown приховується */
+  forcedTrainerId?: string
 }
 
 type EditScope = 'this' | 'future'
@@ -74,7 +76,7 @@ function isoToTimeLocal(iso: string): string {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export default function ClassModal({ onClose, onSaved, existing, prefill }: Props) {
+export default function ClassModal({ onClose, onSaved, existing, prefill, forcedTrainerId }: Props) {
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [halls, setHalls] = useState<Hall[]>([])
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
@@ -121,7 +123,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
       time_of_day: defaultTimeOfDay,
     } : {
       ticket_type: '',
-      trainer_id: '',
+      trainer_id: forcedTrainerId ?? '',
       hall_id: prefill?.hall_id ?? '',
       starts_at: prefill?.starts_at ?? todayAt10(),
       duration_min: 60,
@@ -375,12 +377,14 @@ export default function ClassModal({ onClose, onSaved, existing, prefill }: Prop
           </select>
         </FormField>
 
-        <FormField id="cm-trainer" label="Тренер">
-          <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
-            <option value="">— без тренера —</option>
-            {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-        </FormField>
+        {!forcedTrainerId && (
+          <FormField id="cm-trainer" label="Тренер">
+            <select id="cm-trainer" {...register('trainer_id')} disabled={loading}>
+              <option value="">— без тренера —</option>
+              {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </FormField>
+        )}
 
         <FormField id="cm-hall" label="Зал">
           <Controller

@@ -45,9 +45,13 @@ interface Props {
   classId: string
   onClose: () => void
   onClassUpdated: () => void
+  /** ID тренера що переглядає модалку (передавати коли роль = trainer) */
+  viewerTrainerId?: string
+  /** true для owner/admin; якщо false і viewerTrainerId не збігається з trainer_id — read-only */
+  isStaff?: boolean
 }
 
-export default function ClassDetailModal({ classId, onClose, onClassUpdated }: Props) {
+export default function ClassDetailModal({ classId, onClose, onClassUpdated, viewerTrainerId, isStaff = true }: Props) {
 
   const [cls, setCls] = useState<ClassWithJoins | null>(null)
   const [enrollments, setEnrollments] = useState<EnrollmentRow[]>([])
@@ -81,6 +85,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
   // (інакше кожна буква → новий loadAll → useEffect → перезавантаження модалки).
   const choreoDraftRef = useRef('')
   useEffect(() => { choreoDraftRef.current = choreoDraft }, [choreoDraft])
+
+  // true = глядач може редагувати (staff або тренер цього заняття)
+  const canManage = isStaff || (!!viewerTrainerId && !!cls && cls.trainer_id === viewerTrainerId)
 
   const fetchClass = useCallback(async () => {
     const { data } = await getClassById(supabase, classId)
@@ -470,11 +477,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                   <textarea
                     className={styles.choreoInput}
                     value={choreoDraft}
-                    onChange={e => setChoreoDraft(e.target.value)}
+                    onChange={e => canManage && setChoreoDraft(e.target.value)}
+                    readOnly={!canManage}
                     placeholder="На якому етапі вивчення хореографії…"
                     rows={2}
                   />
-                  {choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
+                  {canManage && choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
                     <button
                       className={styles.choreoSave}
                       onClick={handleSaveChoreo}
@@ -490,7 +498,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
               <div className={styles.enrollmentSection}>
                 <div className={styles.enrollmentHeader}>
                   <h2 className={styles.enrollmentTitle}>Записані клієнти</h2>
-                  {!addingClient && cls?.ticket_type !== 'self_training' && (
+                  {!addingClient && cls?.ticket_type !== 'self_training' && canManage && (
                     <button className={styles.btnAdd} onClick={() => { setAddingClient(true); setEnrollError(null) }}>
                       + Записати
                     </button>
@@ -627,7 +635,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       <button className={styles.btnCancelAdd} onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>Ні</button>
                                     </div>
                                   </div>
-                                ) : (
+                                ) : canManage ? (
                                   <ActionSelect
                                     disabled={isLoading}
                                     onChange={async val => {
@@ -653,7 +661,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                       { value: 'delete', label: 'Видалити запис' },
                                     ]}
                                   />
-                                )}
+                                ) : null}
                                 {actionError[e.id] && (
                                   <span className={styles.rowError}>{actionError[e.id]}</span>
                                 )}
@@ -693,24 +701,26 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                                   </a>
                                 </td>
                                 <td className={styles.actionsCell}>
-                                  <ActionSelect
-                                    disabled={isLoading}
-                                    onChange={async val => {
-                                      if (val === 'confirm') {
-                                        if (cls?.capacity != null && activeCount >= cls.capacity) {
-                                          setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений' }))
-                                          return
+                                  {canManage && (
+                                    <ActionSelect
+                                      disabled={isLoading}
+                                      onChange={async val => {
+                                        if (val === 'confirm') {
+                                          if (cls?.capacity != null && activeCount >= cls.capacity) {
+                                            setActionError(prev => ({ ...prev, [e.id]: 'Зал заповнений' }))
+                                            return
+                                          }
+                                          await handleStatusChange(e, 'enrolled')
+                                        } else if (val === 'cancelled') {
+                                          await handleStatusChange(e, 'cancelled')
                                         }
-                                        await handleStatusChange(e, 'enrolled')
-                                      } else if (val === 'cancelled') {
-                                        await handleStatusChange(e, 'cancelled')
-                                      }
-                                    }}
-                                    options={[
-                                      { value: 'confirm', label: 'Підтвердити' },
-                                      { value: 'cancelled', label: enrollmentStatusLabel('cancelled') },
-                                    ]}
-                                  />
+                                      }}
+                                      options={[
+                                        { value: 'confirm', label: 'Підтвердити' },
+                                        { value: 'cancelled', label: enrollmentStatusLabel('cancelled') },
+                                      ]}
+                                    />
+                                  )}
                                   {actionError[e.id] && (
                                     <span className={styles.rowError}>{actionError[e.id]}</span>
                                   )}
@@ -725,24 +735,26 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated }: P
                 )}
               </div>
 
-              {/* Footer actions */}
-              <div className={styles.footerActions}>
-                <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
-                  Редагувати
-                </button>
-                {cls.is_cancelled ? (
-                  <button className={styles.btnRestore} onClick={() => setShowRestoreConfirm(true)} disabled={cancellingClass}>
-                    Відновити
+              {/* Footer actions — лише для тренера цього заняття або staff */}
+              {canManage && (
+                <div className={styles.footerActions}>
+                  <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
+                    Редагувати
                   </button>
-                ) : (
-                  <button className={styles.btnCancel} onClick={() => setShowCancelConfirm(true)} disabled={cancellingClass}>
-                    Скасувати заняття
+                  {cls.is_cancelled ? (
+                    <button className={styles.btnRestore} onClick={() => setShowRestoreConfirm(true)} disabled={cancellingClass}>
+                      Відновити
+                    </button>
+                  ) : (
+                    <button className={styles.btnCancel} onClick={() => setShowCancelConfirm(true)} disabled={cancellingClass}>
+                      Скасувати заняття
+                    </button>
+                  )}
+                  <button className={styles.btnDeleteClass} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
+                    Видалити
                   </button>
-                )}
-                <button className={styles.btnDeleteClass} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
-                  Видалити
-                </button>
-              </div>
+                </div>
+              )}
 
               {/* Confirm cancel */}
               {showCancelConfirm && (

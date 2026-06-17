@@ -37,3 +37,19 @@ export async function listMyUpcomingClasses(
   const { data, error } = await trainerUpcomingQuery(supabase, trainerId, fromISO)
   return { data: data ?? [], error: error?.message ?? null }
 }
+
+/** Минулі заняття тренера (до початку поточного дня), сортування від нових. */
+export async function listMyPastClasses(
+  supabase: Db,
+  trainerId: string,
+  beforeISO: string
+): Promise<{ data: TrainerClassRow[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('classes')
+    .select(TRAINER_CLASSES_SELECT)
+    .eq('trainer_id', trainerId)
+    .lt('starts_at', beforeISO)
+    .order('starts_at', { ascending: false })
+    .limit(50)
+  return { data: (data as TrainerClassRow[]) ?? [], error: error?.message ?? null }
+}
