@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { roleFromUser } from '@/lib/auth/role'
 import { getMyTrainer } from '@/lib/queries/trainer-cabinet'
-import CabinetHeader from '@/components/CabinetHeader'
 import TrainerSchedule from './TrainerSchedule'
 
 export const dynamic = 'force-dynamic'
@@ -23,10 +22,5 @@ export default async function TrainerSchedulePage() {
     viewerTrainerId = trainer.id
   }
 
-  return (
-    <>
-      <CabinetHeader title="Розклад" backHref="/trainer" hideLogout />
-      <TrainerSchedule viewerTrainerId={viewerTrainerId} />
-    </>
-  )
+  return <TrainerSchedule viewerTrainerId={viewerTrainerId} />
 }

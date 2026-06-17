@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
 import { listEnrollmentsForClass } from '@/lib/queries/enrollments'
@@ -437,6 +438,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   const { halls, trainingTypes } = useRefs()
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
   const isStaff = viewerTrainerId === null
+  const router = useRouter()
 
   const ARCHIVE_CUTOFF_DAYS = 30
   const isMobile = useIsMobile()
@@ -661,9 +663,21 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
     <div className={styles.layout} style={{ '--sidebar-w': '0px' } as React.CSSProperties}>
       <main className={styles.main} style={{ marginLeft: 0, paddingBottom: 0 }}>
 
-        {/* Topbar — combined with hall filter */}
+        {/* Topbar — ‹ Меню | дата + навігація | controls */}
         <div className={styles.topbar} style={{ height: '48px' }}>
+
+          {/* Mobile: дата + іконки */}
           <div className={styles.mobileTopNav}>
+            <button
+              className={styles.navBtn}
+              onClick={() => router.back()}
+              aria-label="Меню"
+              style={{ marginRight: 4 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 2L4 7l5 5"/>
+              </svg>
+            </button>
             <div className={styles.mobileDateText}>
               <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
               <span className={styles.mobileDateVal}>{formatDate(baseDate)}</span>
@@ -681,34 +695,49 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
             </div>
           </div>
 
-          <div className={styles.topbarLeft}>
-            <div className={styles.dateChip}>
-              <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
-            </div>
-            <div className={styles.titleBlock}>
-              <div className={styles.titleRow}>
-                <span className={styles.monthTitle}>{navLabel}</span>
-              </div>
-              {viewMode === 'day' && (
-                <span className={styles.dayLabel}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
-              )}
-            </div>
+          {/* Desktop: ‹ Меню */}
+          <div className={styles.topbarLeft} style={{ flex: 'none', gap: 0 }}>
+            <button className={styles.navBtn} onClick={() => router.push('/trainer')} aria-label="Меню">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 2L4 7l5 5"/>
+              </svg>
+            </button>
+            <span style={{ fontSize: 13, color: 'var(--text-3)', marginLeft: 6, whiteSpace: 'nowrap' }}>Меню</span>
           </div>
 
-          <div className={styles.topbarRight}>
+          {/* Desktop: дата + навігація (центр) */}
+          <div className={styles.topbarLeft} style={{ flex: 1, justifyContent: 'center' }}>
             <div className={styles.desktopNav}>
               <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M9 2L4 7l5 5"/>
                 </svg>
               </button>
-              <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>Сьогодні</button>
+              <div className={styles.titleBlock}>
+                <div className={styles.titleRow}>
+                  <span className={styles.monthTitle}>{navLabel}</span>
+                </div>
+                {viewMode === 'day' && (
+                  <span className={styles.dayLabel}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
+                )}
+              </div>
               <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 2l5 5-5 5"/>
                 </svg>
               </button>
+              <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>Сьогодні</button>
+              <button className={styles.navIconBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1" y="2" width="12" height="11" rx="1.5"/>
+                  <path d="M1 6h12M4 1v2M10 1v2"/>
+                </svg>
+              </button>
             </div>
+          </div>
+
+          {/* Desktop: controls справа */}
+          <div className={styles.topbarRight}>
             <div className={styles.viewToggle}>
               <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
                 День
@@ -726,7 +755,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 ...activeHalls.map(h => ({ value: h.id, label: h.name })),
               ]}
             />
-            {/* "+ Заняття" — тренер може додавати */}
             <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
               + Заняття
             </button>
