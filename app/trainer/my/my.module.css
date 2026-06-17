@@ -1,0 +1,352 @@
+/* ── Shell ───────────────────────────────────────────────────────────────── */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── Topbar ──────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.backBtn:hover { color: var(--text); }
+
+.topbarTitle {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.todayBtn {
+  font-size: 13px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  font-weight: 500;
+}
+
+.todayBtn:hover { opacity: 0.75; }
+
+/* ── Week strip ──────────────────────────────────────────────────────────── */
+.weekStrip {
+  flex-shrink: 0;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.weekMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 2px;
+  border-radius: var(--radius);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.weekDay:hover { background: var(--bg-2); }
+
+.weekDayLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.weekDayNum {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Сьогодні — червоний кружок (як iOS) */
+.weekDayToday .weekDayNum {
+  background: var(--danger, #e03050);
+  color: #fff;
+  font-weight: 600;
+}
+
+.weekDayToday .weekDayLabel {
+  color: var(--danger, #e03050);
+}
+
+/* Вибраний день — акцентний кружок */
+.weekDaySelected:not(.weekDayToday) .weekDayNum {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.weekDaySelected:not(.weekDayToday) .weekDayLabel {
+  color: var(--accent);
+}
+
+/* ── Tab bar ─────────────────────────────────────────────────────────────── */
+.tabBar {
+  display: flex;
+  gap: 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.tab:hover { color: var(--text); }
+
+.tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Scroll area ─────────────────────────────────────────────────────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* ── Timeline ────────────────────────────────────────────────────────────── */
+.timeline {
+  position: relative;
+  /* 48px відступ зліва під мітки годин */
+  padding-left: 48px;
+  /* висота = кількість годин × висота рядка */
+  height: calc(var(--timeline-hours, 14) * 64px);
+  min-height: 100%;
+}
+
+/* Рядок години */
+.hourRow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.hourLabel {
+  width: 44px;
+  text-align: right;
+  padding-right: 8px;
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1;
+  margin-top: -6px;
+  flex-shrink: 0;
+}
+
+.hourLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Лінія «зараз» */
+.nowLine {
+  position: absolute;
+  left: 44px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.nowDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger, #e03050);
+  margin-left: -4px;
+  flex-shrink: 0;
+}
+
+.nowLineLine {
+  flex: 1;
+  height: 2px;
+  background: var(--danger, #e03050);
+}
+
+/* ── Картка заняття ──────────────────────────────────────────────────────── */
+.card {
+  position: absolute;
+  left: 52px;
+  right: 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--card-color) 12%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.12s, transform 0.1s;
+  z-index: 2;
+}
+
+.card:hover {
+  opacity: 0.85;
+  transform: translateX(1px);
+}
+
+.card:active { transform: scale(0.99); }
+
+/* Лівий кольоровий бордер — як в iOS Calendar */
+.cardBorder {
+  width: 4px;
+  flex-shrink: 0;
+  background: var(--card-color);
+  border-radius: 4px 0 0 4px;
+}
+
+.cardBody {
+  flex: 1;
+  padding: 5px 8px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardCount {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.cardChoreo {
+  font-size: 11px;
+  color: var(--text-3);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Компактний режим (< 56px висота) */
+.cardCompact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.cardCompact .cardTitle {
+  flex: 1;
+}
+
+.cardTimeline {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Скасоване заняття */
+.cardCancelled {
+  opacity: 0.45;
+}
+
+.cardCancelledBadge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* ── Empty day ───────────────────────────────────────────────────────────── */
+.emptyDay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: var(--text-3);
+  pointer-events: none;
+}
