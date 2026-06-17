@@ -128,7 +128,9 @@
   appearance: none;
 }
 
-.weekDay:hover { background: var(--bg-2); }
+@media (hover: hover) {
+  .weekDay:hover { background: var(--bg-2); }
+}
 .weekDay:focus-visible { outline: none; }
 
 .weekDayLabel {
