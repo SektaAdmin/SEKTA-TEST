@@ -124,6 +124,8 @@
   cursor: pointer;
   transition: background 0.1s;
   -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .weekDay:hover { background: var(--bg-2); }
