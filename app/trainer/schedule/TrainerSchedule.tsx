@@ -661,8 +661,8 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
     <div className={styles.layout} style={{ '--sidebar-w': '0px' } as React.CSSProperties}>
       <main className={styles.main} style={{ marginLeft: 0, paddingBottom: 0 }}>
 
-        {/* Topbar row 1 */}
-        <div className={styles.topbar}>
+        {/* Topbar — combined with hall filter */}
+        <div className={styles.topbar} style={{ height: '48px' }}>
           <div className={styles.mobileTopNav}>
             <div className={styles.mobileDateText}>
               <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
@@ -717,24 +717,20 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 Тиждень
               </button>
             </div>
+            <FilterSelect
+              value={filterHall}
+              onChange={setFilterHall}
+              placeholder="Всі зали"
+              options={[
+                { value: '', label: 'Всі зали' },
+                ...activeHalls.map(h => ({ value: h.id, label: h.name })),
+              ]}
+            />
             {/* "+ Заняття" — тренер може додавати */}
             <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
               + Заняття
             </button>
           </div>
-        </div>
-
-        {/* Filter bar — лише зали (без фільтра тренерів) */}
-        <div className={styles.filterBar}>
-          <FilterSelect
-            value={filterHall}
-            onChange={setFilterHall}
-            placeholder="Всі зали"
-            options={[
-              { value: '', label: 'Всі зали' },
-              ...activeHalls.map(h => ({ value: h.id, label: h.name })),
-            ]}
-          />
         </div>
 
         {/* Content row — grid area + right panel */}
