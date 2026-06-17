@@ -41,9 +41,9 @@ owner/admin → `/dashboard`, trainer → `/trainer`, client → `/client`). Н�
 
 ## Привілейовані RPC і гейт `can_manage_enrollment()`
 
-Шість enrollment-RPC — `SECURITY DEFINER`, оминають RLS:
+Сім enrollment-RPC — `SECURITY DEFINER`, оминають RLS:
 `change_enrollment_status` · `mark_attendance` · `cancel_class_and_restore_sessions` ·
-`reverse_attendance` · `delete_enrollment` · `delete_class`.
+`reverse_attendance` · `delete_enrollment` · `delete_class` · `restore_class`.
 
 Гейт `can_manage_enrollment() → boolean` пропускає, якщо:
 - owner/admin (staff-UI, роль `authenticated`); **АБО**
@@ -52,7 +52,7 @@ owner/admin → `/dashboard`, trainer → `/trainer`, client → `/client`). Н�
 - немає JWT І `current_user ∉ {anon, authenticated}` (cron під роллю `postgres`).
 
 Інакше залогінений client/trainer і anon → відмова. **Завжди boolean** (COALESCE — інакше
-`NOT NULL = NULL` обходить гейт). EXECUTE на ці RPC — лише `authenticated` + `postgres`.
+`NOT NULL = NULL` обходить гейт). EXECUTE на ці RPC — `authenticated` + `postgres`; частина має PUBLIC grant (дефолт PostgREST), але гейт відсікає при виклику.
 
 `mark_attendance` — EXECUTE лише `postgres` (з PostgREST недоступна; UI завжди йде через
 `change_enrollment_status`).
@@ -81,10 +81,7 @@ Security advisor підіймає наведене нижче. Це **очіку
 Перш ніж «виправляти» такий сигнал, звір із цим списком.
 
 - **`anon`-доступ до `change_enrollment_status` / `restore_sessions_before_class_delete`
-  (lint 0028)** — **хибне спрацювання**. Прямий `aclexplode` на цих функціях показує EXECUTE лише
-  `authenticated`+`postgres` — **гранту `anon` немає**. Advisor флагає за PostgREST-евристикою
-  (функція в exposed API-схемі). Навіть якби виклик дійшов — гейт `can_manage_enrollment()`
-  відсікає не-staff. Не чіпати.
+  (lint 0028)** — **очікуваний сигнал, не дірка**. PUBLIC grant є (дефолт PostgREST для exposed-функцій), тому advisor флагає коректно. Але гейт `can_manage_enrollment()` відсікає будь-який виклик не від staff/cron — anon отримає відмову на рівні гейту. Не чіпати (REVOKE PUBLIC зламає PostgREST-routing).
 
 - **`session_balance_reconcile` — SECURITY DEFINER view (lint 0010, рівень ERROR)** — **by design**.
   Це детектор звірки залишку сесій (відповідь на аудит-знахідку про сесії без журналу). DEFINER
@@ -94,6 +91,14 @@ Security advisor підіймає наведене нижче. Це **очіку
   `generate_week`, `set_updated_at`** — **старе живе**. Інваріант #10 (`SET search_path`) діє на
   **нові** RPC; ці — старі / тригерні. Свідомо не чіпаємо (старе робоче легасі не переписуємо).
   Нові RPC мусять мати `search_path` — це не індульгенція для нового коду.
+
+- **`public_bucket_allows_listing` (WARN) — bucket `receipts`** — Storage-політика `receipts_public_select`
+  дозволяє listing усіх об'єктів через `/storage/v1/object/list/receipts`. Назви файлів містять
+  receipt-UUID і client-id → потенційний information leak. Прийнято тимчасово (публічний bucket потрібен
+  для `getPublicUrl`); при нагоді варто звузити до object-level SELECT без listing.
+
+- **`auth_leaked_password_protection` (WARN)** — HaveIBeenPwned-перевірка при реєстрації вимкнена.
+  Прийнято: студія використовує генеровані паролі (адмін передає в директ), не самостійну реєстрацію.
 
 > Реєстр свідомо прийнятих сигналів. Новий ERROR/WARN, якого тут немає, — потенційна дірка:
 > розбирати, а не ігнорувати.
