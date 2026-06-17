@@ -52,23 +52,28 @@
 
 .todayBtn:hover { opacity: 0.75; }
 
-.addBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
+/* ── FAB ─────────────────────────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 28px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
   border: none;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+  z-index: 100;
+  transition: opacity 0.12s, transform 0.1s;
 }
 
-.addBtn:hover { opacity: 0.85; }
-.addBtn:active { transform: scale(0.95); }
+.fab:hover { opacity: 0.88; }
+.fab:active { transform: scale(0.93); }
 
 /* ── Week strip ──────────────────────────────────────────────────────────── */
 .weekStrip {

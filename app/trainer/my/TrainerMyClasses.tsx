@@ -10,6 +10,7 @@ import {
   MONTHS_UK_CAP,
   dowMondayIndex,
 } from '@/lib/dateUtils'
+import { useRefs } from '@/contexts/RefsContext'
 import type { TrainerClassRow } from '@/lib/queries/trainer-cabinet'
 import styles from './my.module.css'
 
@@ -71,7 +72,10 @@ type ClassRow = TrainerClassRow & { enrollments: EnrollmentWithClient[] }
 
 const INDIVIDUAL_TYPES = ['individual', 'individualduo', 'individualtrio']
 
-function getCardLabel(cls: ClassRow): string {
+function getCardLabel(
+  cls: ClassRow,
+  typeLabel: (code: string) => string
+): string {
   if (cls.title) return cls.title
   if (INDIVIDUAL_TYPES.includes(cls.ticket_type)) {
     const active = (cls.enrollments ?? []).filter(
@@ -85,10 +89,10 @@ function getCardLabel(cls: ClassRow): string {
           return [c.first_name, c.last_name].filter(Boolean).join(' ')
         })
         .filter(Boolean)
-        .join(', ') || cls.ticket_type
+        .join(', ') || typeLabel(cls.ticket_type)
     }
   }
-  return cls.ticket_type
+  return typeLabel(cls.ticket_type)
 }
 
 interface WeekStripProps {
@@ -144,9 +148,10 @@ interface TimelineProps {
   selectedDate: Date
   onClassClick: (id: string) => void
   nowTop: number | null
+  typeLabel: (code: string) => string
 }
 
-function Timeline({ classes, selectedDate, onClassClick, nowTop }: TimelineProps) {
+function Timeline({ classes, selectedDate, onClassClick, nowTop, typeLabel }: TimelineProps) {
   const dayClasses = classes
     .filter(c => isSameDay(new Date(c.starts_at), selectedDate))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
@@ -176,7 +181,7 @@ function Timeline({ classes, selectedDate, onClassClick, nowTop }: TimelineProps
         const top = cardTop(cls.starts_at)
         const height = cardHeight(cls.duration_min)
         const timeStr = `${hhmm(cls.starts_at)} – ${endTime(cls.starts_at, cls.duration_min)}`
-        const label = getCardLabel(cls)
+        const label = getCardLabel(cls, typeLabel)
         const compact = height < 56
 
         return (
@@ -239,6 +244,7 @@ type Props = {
 
 export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
   const router = useRouter()
+  const { trainingTypes } = useRefs()
   const today = useRef(startOfDay(new Date())).current
   const [selectedDate, setSelectedDate] = useState(today)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
@@ -250,6 +256,10 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
 
   // Об'єднуємо upcoming + past у один масив
   const classes = [...upcoming, ...past] as ClassRow[]
+
+  const typeLabel = useCallback((code: string): string => {
+    return trainingTypes.find(t => t.code === code)?.label ?? code
+  }, [trainingTypes])
 
   // Лінія «зараз»
   useEffect(() => {
@@ -342,16 +352,6 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
         <button className={styles.todayBtn} onClick={() => setSelectedDate(today)}>
           Сьогодні
         </button>
-        <button
-          className={styles.addBtn}
-          onClick={() => setShowClassModal(true)}
-          aria-label="Додати заняття"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <line x1="9" y1="3" x2="9" y2="15"/>
-            <line x1="3" y1="9" x2="15" y2="9"/>
-          </svg>
-        </button>
       </div>
 
       {/* Тижнева смужка зі свайпом */}
@@ -372,8 +372,21 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           selectedDate={selectedDate}
           onClassClick={setDetailId}
           nowTop={nowTop}
+          typeLabel={typeLabel}
         />
       </div>
+
+      {/* FAB — додати заняття */}
+      <button
+        className={styles.fab}
+        onClick={() => setShowClassModal(true)}
+        aria-label="Додати заняття"
+      >
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="11" y1="4" x2="11" y2="18"/>
+          <line x1="4" y1="11" x2="18" y2="11"/>
+        </svg>
+      </button>
 
       {detailId && (
         <ClassDetailModal
