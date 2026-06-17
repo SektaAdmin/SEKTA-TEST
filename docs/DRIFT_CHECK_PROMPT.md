@@ -24,8 +24,7 @@
 ЖИВІ ДОКУМЕНТИ ДЛЯ ЗВІРКИ
 - CLAUDE.md (корінь) — §Залізні правила, §Схема БД, §RPC, §Карта коду, §Сторінки.
 - docs/DATABASE.md, docs/SECURITY.md, docs/ARCHITECTURE.md, docs/FRONTEND.md, docs/ROLES_PLAN.md.
-(docs/archive/** і docs/legacy/** НЕ звіряти — заморожені/легасі; лише відзначити, якщо легасі-поведінка
-вже зникла з коду.)
+(docs/archive/** НЕ звіряти — заморожені звіти.)
 
 ЩО ПЕРЕВІРИТИ (мінімум)
 

@@ -8,8 +8,7 @@
 
 - Введено структуру `docs/`: живі тематичні документи (`ARCHITECTURE`, `DATABASE`, `SECURITY`,
   `CHANGELOG`, + наявні `FRONTEND`, `ROLES_PLAN`) — тонкі указівники на канон (`CLAUDE.md`,
-  `types/database.types.ts`, міграції); `docs/archive/` для заморожених звітів; `docs/legacy/` для
-  старих робочих документів (помічені `⚠️ LEGACY`).
+  `types/database.types.ts`, міграції); `docs/archive/` для заморожених звітів.
 - Правило синхронізації docs↔код → [CONTRIBUTING.md](CONTRIBUTING.md); чек дрейфу →
   [DRIFT_CHECK_PROMPT.md](DRIFT_CHECK_PROMPT.md).
 
