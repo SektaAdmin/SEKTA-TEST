@@ -15,7 +15,6 @@ import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
 import { MONTHS_UK_FULL, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
-import FilterSelect from '@/components/ui/FilterSelect'
 import styles from '../../schedule/schedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -456,7 +455,8 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
   const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
-  const [filterHall, setFilterHall] = useState('')
+  // 'all' = всі зали, hall-uuid = конкретний зал, 'mine' = тільки свої
+  const [filterChip, setFilterChip] = useState<'all' | string>('all')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
@@ -541,20 +541,24 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   }, [])
 
   const filteredClasses = useMemo(() => {
-    if (filterHall) return classes.filter(c => c.hall_id === filterHall)
+    if (filterChip === 'mine' && viewerTrainerId) return classes.filter(c => c.trainer_id === viewerTrainerId)
+    if (filterChip !== 'all') return classes.filter(c => c.hall_id === filterChip)
     return classes
-  }, [classes, filterHall])
+  }, [classes, filterChip, viewerTrainerId])
 
   const visibleHalls = useMemo(() => {
     const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
-    const visHalls = filterHall
-      ? activeHalls.filter(h => h.id === filterHall)
-      : viewMode === 'day'
-        ? activeHalls
-        : activeHalls.filter(h => hallIds.has(h.id))
+    const isSingleHall = filterChip !== 'all' && filterChip !== 'mine'
+    const visHalls = isSingleHall
+      ? activeHalls.filter(h => h.id === filterChip)
+      : filterChip === 'mine'
+        ? activeHalls.filter(h => hallIds.has(h.id))
+        : viewMode === 'day'
+          ? activeHalls
+          : activeHalls.filter(h => hallIds.has(h.id))
     const hasNoHall = filteredClasses.some(c => !c.hall_id)
     return { halls: visHalls, hasNoHall }
-  }, [filteredClasses, activeHalls, filterHall, viewMode])
+  }, [filteredClasses, activeHalls, filterChip, viewMode])
 
   const hallColumns = useMemo(() => [
     ...visibleHalls.halls,
@@ -646,8 +650,8 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
 
   function handleSetWeekMode() {
     setViewMode('week')
-    if (!filterHall && activeHalls.length > 0) {
-      setFilterHall(activeHalls[0].id)
+    if (filterChip === 'all' && activeHalls.length > 0) {
+      setFilterChip(activeHalls[0].id)
     }
   }
 
@@ -746,19 +750,68 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 Тиждень
               </button>
             </div>
-            <FilterSelect
-              value={filterHall}
-              onChange={setFilterHall}
-              placeholder="Всі зали"
-              options={[
-                { value: '', label: 'Всі зали' },
+            {/* Чипи фільтрів: Всі · Зал 1 · … · Мої */}
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'nowrap' }}>
+              {[
+                { value: 'all', label: 'Всі' },
                 ...activeHalls.map(h => ({ value: h.id, label: h.name })),
-              ]}
-            />
+                ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
+              ].map(chip => (
+                <button
+                  key={chip.value}
+                  onClick={() => setFilterChip(chip.value)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid',
+                    borderColor: filterChip === chip.value ? 'var(--accent)' : 'var(--border)',
+                    background: filterChip === chip.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+                    color: filterChip === chip.value ? 'var(--accent)' : 'var(--text-2)',
+                    fontSize: 13,
+                    fontWeight: filterChip === chip.value ? 600 : 400,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
             <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
               + Заняття
             </button>
           </div>
+        </div>
+
+        {/* Mobile chip bar — видно тільки на мобільному */}
+        <div className={styles.filterBar} style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '6px var(--topbar-px)' }}>
+          {[
+            { value: 'all', label: 'Всі' },
+            ...activeHalls.map(h => ({ value: h.id, label: h.name })),
+            ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
+          ].map(chip => (
+            <button
+              key={chip.value}
+              onClick={() => setFilterChip(chip.value)}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid',
+                borderColor: filterChip === chip.value ? 'var(--accent)' : 'var(--border)',
+                background: filterChip === chip.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-2)',
+                color: filterChip === chip.value ? 'var(--accent)' : 'var(--text-2)',
+                fontSize: 13,
+                fontWeight: filterChip === chip.value ? 600 : 400,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'all 0.12s',
+              }}
+            >
+              {chip.label}
+            </button>
+          ))}
         </div>
 
         {/* Content row — grid area + right panel */}
@@ -788,9 +841,9 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                     </div>
                   )}
 
-                  {viewMode === 'week' && filterHall && (
+                  {viewMode === 'week' && filterChip !== 'all' && filterChip !== 'mine' && (
                     <div className={styles.weekFilterLabel}>
-                      {activeHalls.find(h => h.id === filterHall)?.name}
+                      {activeHalls.find(h => h.id === filterChip)?.name}
                     </div>
                   )}
 
