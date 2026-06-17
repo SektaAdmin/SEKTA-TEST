@@ -123,9 +123,11 @@
   border: none;
   cursor: pointer;
   transition: background 0.1s;
+  outline: none;
 }
 
 .weekDay:hover { background: var(--bg-2); }
+.weekDay:focus-visible { outline: none; }
 
 .weekDayLabel {
   font-size: 10px;
