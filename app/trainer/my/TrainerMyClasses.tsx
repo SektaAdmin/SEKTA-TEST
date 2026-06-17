@@ -2,13 +2,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import ClassDetailModal from '@/components/ClassDetailModal'
-import { supabase } from '@/lib/supabase'
-import { listMyUpcomingClasses, listMyPastClasses } from '@/lib/queries/trainer-cabinet'
+import ClassModal from '@/components/ClassModal'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
 import {
   WEEKDAYS_SHORT,
-  MONTHS_UK_GENITIVE,
   MONTHS_UK_CAP,
   dowMondayIndex,
 } from '@/lib/dateUtils'
@@ -40,9 +38,11 @@ function endTime(iso: string, durationMin: number) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+const TIMELINE_PAD_TOP = 10
+
 function cardTop(iso: string): number {
   const d = new Date(iso)
-  return (d.getHours() - MIN_HOUR + d.getMinutes() / 60) * HOUR_HEIGHT
+  return TIMELINE_PAD_TOP + (d.getHours() - MIN_HOUR + d.getMinutes() / 60) * HOUR_HEIGHT
 }
 
 function cardHeight(durationMin: number): number {
@@ -61,22 +61,61 @@ function weekOf(d: Date): Date[] {
   })
 }
 
-type ClassRow = TrainerClassRow & { enrollments: { id: string; status: string }[] }
+type EnrollmentWithClient = {
+  id: string
+  status: string
+  clients: { first_name: string | null; last_name: string | null } | null
+}
+
+type ClassRow = TrainerClassRow & { enrollments: EnrollmentWithClient[] }
+
+const INDIVIDUAL_TYPES = ['individual', 'individualduo', 'individualtrio']
+
+function getCardLabel(cls: ClassRow): string {
+  if (cls.title) return cls.title
+  if (INDIVIDUAL_TYPES.includes(cls.ticket_type)) {
+    const active = (cls.enrollments ?? []).filter(
+      e => e.status === 'enrolled' || e.status === 'attended' || e.status === 'waitlist'
+    )
+    if (active.length > 0) {
+      return active
+        .map(e => {
+          const c = e.clients
+          if (!c) return ''
+          return [c.first_name, c.last_name].filter(Boolean).join(' ')
+        })
+        .filter(Boolean)
+        .join(', ') || cls.ticket_type
+    }
+  }
+  return cls.ticket_type
+}
 
 interface WeekStripProps {
   selectedDate: Date
   onSelect: (d: Date) => void
   today: Date
+  slideDir: 'left' | 'right' | null
+  weekKey: number
 }
 
-function WeekStrip({ selectedDate, onSelect, today }: WeekStripProps) {
+function WeekStrip({ selectedDate, onSelect, today, slideDir, weekKey }: WeekStripProps) {
   const week = weekOf(selectedDate)
   const monthLabel = MONTHS_UK_CAP[selectedDate.getMonth()] + ' ' + selectedDate.getFullYear()
+
+  const animClass = slideDir === 'left'
+    ? styles.slideLeft
+    : slideDir === 'right'
+      ? styles.slideRight
+      : ''
 
   return (
     <div className={styles.weekStrip}>
       <div className={styles.weekMonth}>{monthLabel}</div>
-      <div className={styles.weekDays}>
+      <div
+        key={weekKey}
+        className={[styles.weekDays, animClass].filter(Boolean).join(' ')}
+      >
         {week.map((day, i) => {
           const isToday = isSameDay(day, today)
           const isSelected = isSameDay(day, selectedDate)
@@ -103,12 +142,11 @@ function WeekStrip({ selectedDate, onSelect, today }: WeekStripProps) {
 interface TimelineProps {
   classes: ClassRow[]
   selectedDate: Date
-  trainerId: string
   onClassClick: (id: string) => void
   nowTop: number | null
 }
 
-function Timeline({ classes, selectedDate, trainerId, onClassClick, nowTop }: TimelineProps) {
+function Timeline({ classes, selectedDate, onClassClick, nowTop }: TimelineProps) {
   const dayClasses = classes
     .filter(c => isSameDay(new Date(c.starts_at), selectedDate))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
@@ -117,7 +155,7 @@ function Timeline({ classes, selectedDate, trainerId, onClassClick, nowTop }: Ti
     <div className={styles.timeline}>
       {/* Рядки годин */}
       {HOURS.map(h => (
-        <div key={h} className={styles.hourRow} style={{ top: (h - MIN_HOUR) * HOUR_HEIGHT }}>
+        <div key={h} className={styles.hourRow} style={{ top: TIMELINE_PAD_TOP + (h - MIN_HOUR) * HOUR_HEIGHT }}>
           <span className={styles.hourLabel}>{String(h).padStart(2, '0')}:00</span>
           <div className={styles.hourLine} />
         </div>
@@ -138,7 +176,7 @@ function Timeline({ classes, selectedDate, trainerId, onClassClick, nowTop }: Ti
         const top = cardTop(cls.starts_at)
         const height = cardHeight(cls.duration_min)
         const timeStr = `${hhmm(cls.starts_at)} – ${endTime(cls.starts_at, cls.duration_min)}`
-        const label = cls.title || cls.ticket_type
+        const label = getCardLabel(cls)
         const compact = height < 56
 
         return (
@@ -203,25 +241,22 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
   const router = useRouter()
   const today = useRef(startOfDay(new Date())).current
   const [selectedDate, setSelectedDate] = useState(today)
-  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
-  const [classes, setClasses] = useState<ClassRow[]>([])
-  const [loading, setLoading] = useState(false)
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const [weekKey, setWeekKey] = useState(0)
   const [nowTop, setNowTop] = useState<number | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [showClassModal, setShowClassModal] = useState(false)
   const timelineRef = useRef<HTMLDivElement>(null)
 
-  // Об'єднуємо upcoming + past у один масив при зміні таба
-  useEffect(() => {
-    const src = tab === 'upcoming' ? upcoming : past
-    setClasses(src as ClassRow[])
-  }, [tab, upcoming, past])
+  // Об'єднуємо upcoming + past у один масив
+  const classes = [...upcoming, ...past] as ClassRow[]
 
   // Лінія «зараз»
   useEffect(() => {
     function update() {
       const now = new Date()
       const h = now.getHours() + now.getMinutes() / 60
-      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? (h - MIN_HOUR) * HOUR_HEIGHT : null)
+      setNowTop(h >= MIN_HOUR && h < MAX_HOUR ? TIMELINE_PAD_TOP + (h - MIN_HOUR) * HOUR_HEIGHT : null)
     }
     update()
     const id = setInterval(update, 60000)
@@ -238,18 +273,19 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
 
   const handleDateSelect = useCallback((d: Date) => {
     setSelectedDate(d)
-    // Якщо вибрали минулий день — переключаємось на таб «Минулі»
-    if (d < today) setTab('past')
-    else setTab('upcoming')
-  }, [today])
+  }, [])
 
   const handlePrevWeek = () => {
+    setSlideDir('right')
+    setWeekKey(k => k - 1)
     setSelectedDate(d => {
       const n = new Date(d); n.setDate(d.getDate() - 7); return n
     })
   }
 
   const handleNextWeek = () => {
+    setSlideDir('left')
+    setWeekKey(k => k + 1)
     setSelectedDate(d => {
       const n = new Date(d); n.setDate(d.getDate() + 7); return n
     })
@@ -303,8 +339,18 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           <span>Меню</span>
         </button>
         <span className={styles.topbarTitle}>Мої заняття</span>
-        <button className={styles.todayBtn} onClick={() => { setSelectedDate(today); setTab('upcoming') }}>
+        <button className={styles.todayBtn} onClick={() => setSelectedDate(today)}>
           Сьогодні
+        </button>
+        <button
+          className={styles.addBtn}
+          onClick={() => setShowClassModal(true)}
+          aria-label="Додати заняття"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="9" y1="3" x2="9" y2="15"/>
+            <line x1="3" y1="9" x2="15" y2="9"/>
+          </svg>
         </button>
       </div>
 
@@ -314,23 +360,9 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           selectedDate={selectedDate}
           onSelect={handleDateSelect}
           today={today}
+          slideDir={slideDir}
+          weekKey={weekKey}
         />
-      </div>
-
-      {/* Таби Майбутні / Минулі */}
-      <div className={styles.tabBar}>
-        <button
-          className={[styles.tab, tab === 'upcoming' ? styles.tabActive : ''].filter(Boolean).join(' ')}
-          onClick={() => { setTab('upcoming'); if (selectedDate < today) setSelectedDate(today) }}
-        >
-          Майбутні
-        </button>
-        <button
-          className={[styles.tab, tab === 'past' ? styles.tabActive : ''].filter(Boolean).join(' ')}
-          onClick={() => { setTab('past'); if (selectedDate >= today) setSelectedDate(new Date(today.getTime() - 86400000)) }}
-        >
-          Минулі
-        </button>
       </div>
 
       {/* Таймлайн */}
@@ -338,7 +370,6 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
         <Timeline
           classes={classes}
           selectedDate={selectedDate}
-          trainerId={trainerId}
           onClassClick={setDetailId}
           nowTop={nowTop}
         />
@@ -351,6 +382,15 @@ export default function TrainerMyClasses({ upcoming, past, trainerId }: Props) {
           onClassUpdated={() => setDetailId(null)}
           viewerTrainerId={trainerId}
           isStaff={false}
+        />
+      )}
+
+      {showClassModal && (
+        <ClassModal
+          onClose={() => setShowClassModal(false)}
+          onSaved={() => { setShowClassModal(false); router.refresh() }}
+          forcedTrainerId={trainerId}
+          prefill={{ starts_at: selectedDate.toISOString() }}
         />
       )}
     </div>

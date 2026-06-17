@@ -15,7 +15,7 @@ export async function getMyTrainer(
 }
 
 const TRAINER_CLASSES_SELECT =
-  'id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, choreo_stage, halls(name), enrollments(id, status)' as const
+  'id, ticket_type, title, starts_at, duration_min, capacity, is_cancelled, choreo_stage, halls(name), enrollments(id, status, clients(first_name, last_name))' as const
 
 function trainerUpcomingQuery(supabase: Db, trainerId: string, fromISO: string) {
   return supabase

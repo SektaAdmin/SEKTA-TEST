@@ -52,6 +52,24 @@
 
 .todayBtn:hover { opacity: 0.75; }
 
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.12s;
+}
+
+.addBtn:hover { opacity: 0.85; }
+.addBtn:active { transform: scale(0.95); }
+
 /* ── Week strip ──────────────────────────────────────────────────────────── */
 .weekStrip {
   flex-shrink: 0;
@@ -70,11 +88,24 @@
   padding-left: 4px;
 }
 
+@keyframes slideInLeft {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(-40px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
 .weekDays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
 }
+
+.slideLeft  { animation: slideInLeft  0.2s ease; }
+.slideRight { animation: slideInRight 0.2s ease; }
 
 .weekDay {
   display: flex;
@@ -176,8 +207,8 @@
   position: relative;
   /* 48px відступ зліва під мітки годин */
   padding-left: 48px;
-  /* висота = кількість годин × висота рядка */
-  height: calc(var(--timeline-hours, 14) * 64px);
+  /* висота = кількість годин × висота рядка + 10px зверху щоб 8:00 не обрізалось */
+  height: calc(var(--timeline-hours, 14) * 64px + 20px);
   min-height: 100%;
 }
 
