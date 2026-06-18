@@ -744,9 +744,17 @@ function MobileScheduleTimeline({
                       className={styles.mobileTlFreeSlot}
                       onClick={() => onFreeSlotClick(slotISO, hall.id)}
                     >
-                      <span className={styles.mobileTlFreeSlotIcon}>+</span>
-                      <span className={styles.mobileTlFreeSlotText}>
-                        {isSingleHall ? 'Вільно' : `${hall.name} — вільно`}
+                      <span className={styles.mobileTlFreeSlotBorder} />
+                      <span className={styles.mobileTlFreeSlotBody}>
+                        <span className={styles.mobileTlFreeSlotRow}>
+                          <span className={styles.mobileTlFreeSlotIcon}>+</span>
+                          <span className={styles.mobileTlFreeSlotTitle}>
+                            {isSingleHall ? 'Вільно' : hall.name}
+                          </span>
+                        </span>
+                        <span className={styles.mobileTlFreeSlotMeta}>
+                          {`${pad(h)}:00`}{isSingleHall ? '' : ' — вільно'}
+                        </span>
                       </span>
                     </button>
                   ))}
