@@ -462,6 +462,17 @@ interface MobileScheduleTimelineProps {
   onDateSelect: (d: Date) => void
   onFilterChip: (chip: string) => void
   onCardClick: (id: string) => void
+  onFreeSlotClick: (startsAt: string, hallId: string) => void
+}
+
+/** Чи перекриває заняття годину h (хоча б частково)? */
+function classCoversHour(cls: ClassWithJoins, h: number): boolean {
+  const start = new Date(cls.starts_at)
+  const startMin = start.getHours() * 60 + start.getMinutes()
+  const endMin = startMin + cls.duration_min
+  const hourStart = h * 60
+  const hourEnd = hourStart + 60
+  return startMin < hourEnd && endMin > hourStart
 }
 
 function MobileScheduleTimeline({
@@ -475,6 +486,7 @@ function MobileScheduleTimeline({
   onDateSelect,
   onFilterChip,
   onCardClick,
+  onFreeSlotClick,
 }: MobileScheduleTimelineProps) {
   const [anchorDate, setAnchorDate] = useState(() => selectedDate)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
@@ -555,9 +567,15 @@ function MobileScheduleTimeline({
   const monthLabel = MONTHS_UK_CAP[anchorDate.getMonth()] + ' ' + anchorDate.getFullYear()
   const animClass = slideDir === 'left' ? styles.mobileTlSlideLeft : slideDir === 'right' ? styles.mobileTlSlideRight : ''
 
-  // Згрупувати заняття по годині початку
+  // Заняття дня (без фільтра чипа) — для обчислення вільних залів
+  const dayClasses = useMemo(
+    () => classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate)),
+    [classes, selectedDate]
+  )
+
+  // Згрупувати заняття по годині початку (з фільтром чипа)
   const classesByHour = useMemo(() => {
-    let result = classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate))
+    let result = dayClasses
     if (filterChip === 'mine' && viewerTrainerId) result = result.filter(c => c.trainer_id === viewerTrainerId)
     else if (filterChip !== 'all') result = result.filter(c => c.hall_id === filterChip)
     result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
@@ -567,7 +585,28 @@ function MobileScheduleTimeline({
       const arr = map.get(h) ?? []; arr.push(cls); map.set(h, arr)
     }
     return map
-  }, [classes, selectedDate, filterChip, viewerTrainerId])
+  }, [dayClasses, filterChip, viewerTrainerId])
+
+  // Вільні зали для кожної години
+  const freeHallsByHour = useMemo(() => {
+    const map = new Map<number, Hall[]>()
+    for (const h of TL_HOURS) {
+      let hallsToCheck: Hall[]
+      if (filterChip !== 'all' && filterChip !== 'mine') {
+        // Конкретний зал вибрано
+        const hall = activeHalls.find(hall => hall.id === filterChip)
+        hallsToCheck = hall ? [hall] : []
+      } else {
+        hallsToCheck = activeHalls
+      }
+      const free = hallsToCheck.filter(hall => {
+        const hallClasses = dayClasses.filter(c => c.hall_id === hall.id && !c.is_cancelled)
+        return !hallClasses.some(c => classCoversHour(c, h))
+      })
+      map.set(h, free)
+    }
+    return map
+  }, [dayClasses, activeHalls, filterChip])
 
   const hasAnyClass = classesByHour.size > 0
 
@@ -626,8 +665,14 @@ function MobileScheduleTimeline({
         <div className={styles.mobileTlGrid}>
           {TL_HOURS.map(h => {
             const hourClasses = classesByHour.get(h) ?? []
+            const freeHalls = freeHallsByHour.get(h) ?? []
             const isNowHour = nowTop !== null && isSameDay(selectedDate, today) && Math.floor(nowTop) === h
             const nowPct = isNowHour ? ((nowTop! - h) * 100).toFixed(1) + '%' : null
+            const slotDate = new Date(selectedDate)
+            slotDate.setHours(h, 0, 0, 0)
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const slotISO = `${slotDate.getFullYear()}-${pad(slotDate.getMonth() + 1)}-${pad(slotDate.getDate())}T${pad(h)}:00`
+            const isSingleHall = filterChip !== 'all' && filterChip !== 'mine'
 
             return (
               <div key={h} className={styles.mobileTlRow}>
@@ -692,6 +737,19 @@ function MobileScheduleTimeline({
                       </button>
                     )
                   })}
+
+                  {freeHalls.map(hall => (
+                    <button
+                      key={hall.id}
+                      className={styles.mobileTlFreeSlot}
+                      onClick={() => onFreeSlotClick(slotISO, hall.id)}
+                    >
+                      <span className={styles.mobileTlFreeSlotIcon}>+</span>
+                      <span className={styles.mobileTlFreeSlotText}>
+                        {isSingleHall ? 'Вільно' : `${hall.name} — вільно`}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )
@@ -970,6 +1028,10 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           onDateSelect={setBaseDate}
           onFilterChip={setFilterChip}
           onCardClick={id => setEditClassId(id)}
+          onFreeSlotClick={(startsAt, hallId) => {
+            setPrefill({ starts_at: startsAt, hall_id: hallId })
+            setShowModal(true)
+          }}
         />
 
         {editClassId && (

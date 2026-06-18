@@ -1776,3 +1776,39 @@
   color: var(--text-3);
 }
 
+/* ── Free hall slot row ─────────────────────────────────── */
+.mobileTlFreeSlot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+  width: 100%;
+}
+
+.mobileTlFreeSlot:active {
+  background: var(--bg-2);
+}
+
+.mobileTlFreeSlotIcon {
+  font-size: 13px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.mobileTlFreeSlotText {
+  font-size: 12px;
+  color: var(--text-3);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

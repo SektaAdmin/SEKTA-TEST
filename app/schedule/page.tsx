@@ -481,6 +481,17 @@ interface MobileScheduleTimelineProps {
   onDateSelect: (d: Date) => void
   onHallFilter: (hallId: string) => void
   onCardClick: (id: string) => void
+  onFreeSlotClick: (startsAt: string, hallId: string) => void
+}
+
+/** Чи перекриває заняття годину h (хоча б частково)? */
+function classCoversHour(cls: ClassWithJoins, h: number): boolean {
+  const start = new Date(cls.starts_at)
+  const startMin = start.getHours() * 60 + start.getMinutes()
+  const endMin = startMin + cls.duration_min
+  const hourStart = h * 60
+  const hourEnd = hourStart + 60
+  return startMin < hourEnd && endMin > hourStart
 }
 
 function MobileScheduleTimeline({
@@ -494,6 +505,7 @@ function MobileScheduleTimeline({
   onDateSelect,
   onHallFilter,
   onCardClick,
+  onFreeSlotClick,
 }: MobileScheduleTimelineProps) {
   const [anchorDate, setAnchorDate] = useState(() => selectedDate)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
@@ -580,9 +592,15 @@ function MobileScheduleTimeline({
   const monthLabel = MONTHS_UK_CAP[anchorDate.getMonth()] + ' ' + anchorDate.getFullYear()
   const animClass = slideDir === 'left' ? styles.mobileTlSlideLeft : slideDir === 'right' ? styles.mobileTlSlideRight : ''
 
-  // Згрупувати заняття по годині початку
+  // Заняття дня (до фільтра залу/тренера) — для обчислення вільних залів
+  const dayClasses = useMemo(
+    () => classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate)),
+    [classes, selectedDate]
+  )
+
+  // Згрупувати заняття по годині початку (з фільтром)
   const classesByHour = useMemo(() => {
-    let result = classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate))
+    let result = dayClasses
     if (filterHall) result = result.filter(c => c.hall_id === filterHall)
     if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
     result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
@@ -592,7 +610,28 @@ function MobileScheduleTimeline({
       const arr = map.get(h) ?? []; arr.push(cls); map.set(h, arr)
     }
     return map
-  }, [classes, selectedDate, filterHall, filterTrainer])
+  }, [dayClasses, filterHall, filterTrainer])
+
+  // Вільні зали для кожної години: зали, у яких немає заняття що перекриває цей слот
+  const freeHallsByHour = useMemo(() => {
+    const map = new Map<number, Hall[]>()
+    for (const h of TL_HOURS) {
+      let hallsToCheck: Hall[]
+      if (filterHall) {
+        // Конкретний зал вибрано — показуємо лише його
+        const hall = activeHalls.find(hall => hall.id === filterHall)
+        hallsToCheck = hall ? [hall] : []
+      } else {
+        hallsToCheck = activeHalls
+      }
+      const free = hallsToCheck.filter(hall => {
+        const hallClasses = dayClasses.filter(c => c.hall_id === hall.id && !c.is_cancelled)
+        return !hallClasses.some(c => classCoversHour(c, h))
+      })
+      map.set(h, free)
+    }
+    return map
+  }, [dayClasses, activeHalls, filterHall])
 
   const hasAnyClass = classesByHour.size > 0
 
@@ -653,23 +692,23 @@ function MobileScheduleTimeline({
         <div className={styles.mobileTlGrid}>
           {TL_HOURS.map(h => {
             const hourClasses = classesByHour.get(h) ?? []
-            // Лінія "зараз" — відсоток всередині рядка поточної години
+            const freeHalls = freeHallsByHour.get(h) ?? []
             const isNowHour = nowTop !== null && isSameDay(selectedDate, today) && Math.floor(nowTop) === h
             const nowPct = isNowHour ? ((nowTop! - h) * 100).toFixed(1) + '%' : null
+            const slotDate = new Date(selectedDate)
+            slotDate.setHours(h, 0, 0, 0)
+            const pad = (n: number) => String(n).padStart(2, '0')
+            const slotISO = `${slotDate.getFullYear()}-${pad(slotDate.getMonth() + 1)}-${pad(slotDate.getDate())}T${pad(h)}:00`
 
             return (
               <div key={h} className={styles.mobileTlRow}>
-                {/* Гутер */}
                 <div className={styles.mobileTlGutter}>
                   <span className={styles.mobileTlHourLabel}>{String(h).padStart(2, '0')}:00</span>
                 </div>
 
-                {/* Контент рядка */}
                 <div className={styles.mobileTlRowBody}>
-                  {/* Лінія розділу (top рядка) */}
                   <div className={styles.mobileTlRowLine} />
 
-                  {/* Лінія "зараз" всередині рядка */}
                   {nowPct !== null && (
                     <div className={styles.mobileTlNowLine} style={{ top: nowPct }}>
                       <div className={styles.mobileTlNowDot} />
@@ -677,7 +716,6 @@ function MobileScheduleTimeline({
                     </div>
                   )}
 
-                  {/* Картки цього часового слота */}
                   {hourClasses.map(cls => {
                     const active = getActiveCount(cls.enrollments)
                     const waitlist = getWaitlistCount(cls.enrollments)
@@ -723,6 +761,19 @@ function MobileScheduleTimeline({
                       </button>
                     )
                   })}
+
+                  {freeHalls.map(hall => (
+                    <button
+                      key={hall.id}
+                      className={styles.mobileTlFreeSlot}
+                      onClick={() => onFreeSlotClick(slotISO, hall.id)}
+                    >
+                      <span className={styles.mobileTlFreeSlotIcon}>+</span>
+                      <span className={styles.mobileTlFreeSlotText}>
+                        {filterHall ? 'Вільно' : `${hall.name} — вільно`}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )
@@ -1094,6 +1145,10 @@ export default function SchedulePage() {
             onDateSelect={setBaseDate}
             onHallFilter={setFilterHall}
             onCardClick={id => setEditClassId(id)}
+            onFreeSlotClick={(startsAt, hallId) => {
+              setPrefill({ starts_at: startsAt, hall_id: hallId })
+              setShowModal(true)
+            }}
           />
         )}
 
