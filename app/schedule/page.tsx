@@ -14,7 +14,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
-import { MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { MONTHS_UK_CAP, MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './schedule.module.css'
@@ -451,6 +451,180 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
   )
 }
 
+// ── Mobile WeekStrip ──────────────────────────────────────────────
+function weekOf(d: Date): Date[] {
+  const day = d.getDay()
+  const daysBack = day === 0 ? 6 : day - 1
+  const mon = new Date(d); mon.setDate(d.getDate() - daysBack); mon.setHours(0, 0, 0, 0)
+  return Array.from({ length: 7 }, (_, i) => {
+    const r = new Date(mon); r.setDate(mon.getDate() + i); return r
+  })
+}
+
+interface MobileWeekStripProps {
+  selectedDate: Date
+  onSelect: (d: Date) => void
+  today: Date
+}
+
+function MobileWeekStrip({ selectedDate, onSelect, today }: MobileWeekStripProps) {
+  const week = weekOf(selectedDate)
+  const monthLabel = MONTHS_UK_CAP[selectedDate.getMonth()] + ' ' + selectedDate.getFullYear()
+
+  return (
+    <div className={styles.mobileWeekStrip}>
+      <div className={styles.mobileWeekMonth}>{monthLabel}</div>
+      <div className={styles.mobileWeekDays}>
+        {week.map((day, i) => {
+          const isToday = isSameDay(day, today)
+          const isSelected = isSameDay(day, selectedDate)
+          return (
+            <button
+              key={i}
+              className={[
+                styles.mobileWeekDay,
+                isToday ? styles.mobileWeekDayToday : '',
+                isSelected ? styles.mobileWeekDaySelected : '',
+              ].filter(Boolean).join(' ')}
+              onClick={() => onSelect(day)}
+            >
+              <span className={styles.mobileWeekDayLabel}>{WEEKDAYS_SHORT[dowMondayIndex(day)]}</span>
+              <span className={styles.mobileWeekDayNum}>{day.getDate()}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── Mobile list view ──────────────────────────────────────────────
+interface MobileScheduleListProps {
+  classes: ClassWithJoins[]
+  selectedDate: Date
+  today: Date
+  typeLabels: Record<string, string>
+  activeHalls: Hall[]
+  filterHall: string
+  filterTrainer: string
+  onDateSelect: (d: Date) => void
+  onCardClick: (id: string) => void
+}
+
+function MobileScheduleList({
+  classes,
+  selectedDate,
+  today,
+  typeLabels,
+  activeHalls,
+  filterHall,
+  filterTrainer,
+  onDateSelect,
+  onCardClick,
+}: MobileScheduleListProps) {
+  const dayClasses = useMemo(() => {
+    let result = classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate))
+    if (filterHall) result = result.filter(c => c.hall_id === filterHall)
+    if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
+    return result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+  }, [classes, selectedDate, filterHall, filterTrainer])
+
+  // Group by time slot (HH:MM)
+  const slots = useMemo(() => {
+    const map = new Map<string, ClassWithJoins[]>()
+    for (const cls of dayClasses) {
+      const key = formatTime(cls.starts_at)
+      const arr = map.get(key) ?? []
+      arr.push(cls)
+      map.set(key, arr)
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
+  }, [dayClasses])
+
+  // Halls busy at a given time slot
+  const busyHallIds = useCallback((slotClasses: ClassWithJoins[]): Set<string> => {
+    return new Set(slotClasses.map(c => c.hall_id).filter(Boolean) as string[])
+  }, [])
+
+  return (
+    <div className={styles.mobileListShell}>
+      <MobileWeekStrip selectedDate={selectedDate} onSelect={onDateSelect} today={today} />
+
+      <div className={styles.mobileListScroll}>
+        {slots.length === 0 ? (
+          <div className={styles.mobileListEmpty}>Занять немає</div>
+        ) : (
+          <div className={styles.mobileListSlots}>
+            {slots.map(([timeKey, slotClasses]) => {
+              const freeHalls = filterHall
+                ? []
+                : activeHalls.filter(h => !busyHallIds(slotClasses).has(h.id))
+
+              return (
+                <div key={timeKey} className={styles.mobileSlot}>
+                  <div className={styles.mobileSlotTime}>{timeKey}</div>
+                  <div className={styles.mobileSlotBody}>
+                    {slotClasses.map(cls => {
+                      const active = getActiveCount(cls.enrollments)
+                      const waitlist = getWaitlistCount(cls.enrollments)
+                      const full = isFull(cls.enrollments, cls.capacity)
+                      const color = typeColor(cls.ticket_type)
+                      const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+                      const endT = formatEndTime(cls.starts_at, cls.duration_min)
+                      const free = cls.capacity != null ? cls.capacity - active : null
+
+                      return (
+                        <button
+                          key={cls.id}
+                          className={[styles.mobileCard, cls.is_cancelled ? styles.mobileCardCancelled : ''].filter(Boolean).join(' ')}
+                          style={{ ['--card-color' as string]: color }}
+                          onClick={() => onCardClick(cls.id)}
+                        >
+                          <div className={styles.mobileCardBorder} />
+                          <div className={styles.mobileCardBody}>
+                            <div className={styles.mobileCardRow}>
+                              <span className={[styles.mobileCardTitle, cls.is_cancelled ? styles.mobileCardTitleCancelled : ''].filter(Boolean).join(' ')}>
+                                {label}
+                              </span>
+                              {cls.capacity != null && !cls.is_cancelled && (
+                                <span className={[styles.mobileCardSlots, full ? styles.mobileCardSlotsFull : ''].filter(Boolean).join(' ')}>
+                                  {active}/{cls.capacity}
+                                  {waitlist > 0 && <span className={styles.mobileCardWaitlist}> +{waitlist}</span>}
+                                </span>
+                              )}
+                            </div>
+                            <div className={styles.mobileCardMeta}>
+                              <span>{timeKey}–{endT}</span>
+                              {cls.halls?.name && <span> · {cls.halls.name}</span>}
+                              {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
+                              {free != null && !full && !cls.is_cancelled && (
+                                <span className={styles.mobileCardFree}> · {free} вільно</span>
+                              )}
+                              {full && !cls.is_cancelled && (
+                                <span className={styles.mobileCardFullText}> · повний</span>
+                              )}
+                            </div>
+                          </div>
+                          {cls.is_cancelled && <span className={styles.mobileCardCancelledBadge}>Скасовано</span>}
+                        </button>
+                      )
+                    })}
+                    {freeHalls.length > 0 && (
+                      <div className={styles.mobileSlotFreeHalls}>
+                        Вільно: {freeHalls.map(h => h.name).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────
 export default function SchedulePage() {
   const { trainers, halls, trainingTypes } = useRefs()
@@ -704,8 +878,8 @@ export default function SchedulePage() {
       <BottomNav />
       <main className={styles.main}>
 
-        {/* Topbar row 1 */}
-        <div className={styles.topbar}>
+        {/* Topbar row 1 — hidden on mobile (MobileScheduleList has its own WeekStrip) */}
+        <div className={[styles.topbar, isMobile ? styles.topbarMobileHidden : ''].filter(Boolean).join(' ')}>
           {/* Mobile nav — date + today icon + calendar icon */}
           <div className={styles.mobileTopNav}>
             <div className={styles.mobileDateText}>
@@ -795,8 +969,23 @@ export default function SchedulePage() {
         </div>
 
 
+        {/* Mobile list view */}
+        {isMobile && (
+          <MobileScheduleList
+            classes={classes}
+            selectedDate={baseDate}
+            today={today}
+            typeLabels={typeLabels}
+            activeHalls={activeHalls}
+            filterHall={filterHall}
+            filterTrainer={filterTrainer}
+            onDateSelect={setBaseDate}
+            onCardClick={id => setEditClassId(id)}
+          />
+        )}
+
         {/* Content row — grid area + right panel */}
-        <div className={styles.contentRow}>
+        <div className={[styles.contentRow, isMobile ? styles.contentRowHidden : ''].filter(Boolean).join(' ')}>
           <div className={styles.gridArea}>
             {/* Schedule grid */}
             <div
