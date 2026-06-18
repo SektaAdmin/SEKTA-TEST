@@ -576,8 +576,7 @@ function MobileScheduleTimeline({
   // Згрупувати заняття по годині початку (з фільтром чипа)
   const classesByHour = useMemo(() => {
     let result = dayClasses
-    if (filterChip === 'mine' && viewerTrainerId) result = result.filter(c => c.trainer_id === viewerTrainerId)
-    else if (filterChip !== 'all') result = result.filter(c => c.hall_id === filterChip)
+    if (filterChip !== 'all') result = result.filter(c => c.hall_id === filterChip)
     result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
     const map = new Map<number, ClassWithJoins[]>()
     for (const cls of result) {
@@ -585,14 +584,14 @@ function MobileScheduleTimeline({
       const arr = map.get(h) ?? []; arr.push(cls); map.set(h, arr)
     }
     return map
-  }, [dayClasses, filterChip, viewerTrainerId])
+  }, [dayClasses, filterChip])
 
   // Вільні зали для кожної години
   const freeHallsByHour = useMemo(() => {
     const map = new Map<number, Hall[]>()
     for (const h of TL_HOURS) {
       let hallsToCheck: Hall[]
-      if (filterChip !== 'all' && filterChip !== 'mine') {
+      if (filterChip !== 'all') {
         // Конкретний зал вибрано
         const hall = activeHalls.find(hall => hall.id === filterChip)
         hallsToCheck = hall ? [hall] : []
@@ -613,7 +612,6 @@ function MobileScheduleTimeline({
   const chips = [
     { value: 'all', label: 'Всі' },
     ...activeHalls.map(h => ({ value: h.id, label: h.name })),
-    ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
   ]
 
   return (
@@ -672,7 +670,7 @@ function MobileScheduleTimeline({
             slotDate.setHours(h, 0, 0, 0)
             const pad = (n: number) => String(n).padStart(2, '0')
             const slotISO = `${slotDate.getFullYear()}-${pad(slotDate.getMonth() + 1)}-${pad(slotDate.getDate())}T${pad(h)}:00`
-            const isSingleHall = filterChip !== 'all' && filterChip !== 'mine'
+            const isSingleHall = filterChip !== 'all'
 
             return (
               <div key={h} className={styles.mobileTlRow}>
@@ -800,7 +798,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
   const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
-  // 'all' = всі зали, hall-uuid = конкретний зал, 'mine' = тільки свої
+  // 'all' = всі зали, hall-uuid = конкретний зал
   const [filterChip, setFilterChip] = useState<'all' | string>('all')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -886,21 +884,18 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   }, [])
 
   const filteredClasses = useMemo(() => {
-    if (filterChip === 'mine' && viewerTrainerId) return classes.filter(c => c.trainer_id === viewerTrainerId)
     if (filterChip !== 'all') return classes.filter(c => c.hall_id === filterChip)
     return classes
-  }, [classes, filterChip, viewerTrainerId])
+  }, [classes, filterChip])
 
   const visibleHalls = useMemo(() => {
     const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
-    const isSingleHall = filterChip !== 'all' && filterChip !== 'mine'
+    const isSingleHall = filterChip !== 'all'
     const visHalls = isSingleHall
       ? activeHalls.filter(h => h.id === filterChip)
-      : filterChip === 'mine'
-        ? activeHalls.filter(h => hallIds.has(h.id))
-        : viewMode === 'day'
-          ? activeHalls
-          : activeHalls.filter(h => hallIds.has(h.id))
+      : viewMode === 'day'
+        ? activeHalls
+        : activeHalls.filter(h => hallIds.has(h.id))
     const hasNoHall = filteredClasses.some(c => !c.hall_id)
     return { halls: visHalls, hasNoHall }
   }, [filteredClasses, activeHalls, filterChip, viewMode])
@@ -1130,7 +1125,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
               {[
                 { value: 'all', label: 'Всі' },
                 ...activeHalls.map(h => ({ value: h.id, label: h.name })),
-                ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
               ].map(chip => (
                 <button
                   key={chip.value}
@@ -1163,7 +1157,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           {[
             { value: 'all', label: 'Всі' },
             ...activeHalls.map(h => ({ value: h.id, label: h.name })),
-            ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
           ].map(chip => (
             <button
               key={chip.value}
@@ -1213,7 +1206,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                       })}
                     </div>
                   )}
-                  {viewMode === 'week' && filterChip !== 'all' && filterChip !== 'mine' && (
+                  {viewMode === 'week' && filterChip !== 'all' && (
                     <div className={styles.weekFilterLabel}>
                       {activeHalls.find(h => h.id === filterChip)?.name}
                     </div>
