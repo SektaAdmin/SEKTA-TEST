@@ -441,45 +441,24 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
   )
 }
 
-// ── Mobile WeekStrip ──────────────────────────────────────────────────────────
-interface MobileWeekStripProps {
-  selectedDate: Date
-  onSelect: (d: Date) => void
-  today: Date
+// ── Mobile Timeline helpers ───────────────────────────────────────────────────
+const TL_MIN_HOUR = 8
+const TL_MAX_HOUR = 22
+const TL_HOUR_H = 64
+const TL_PAD_TOP = 10
+const TL_HOURS = Array.from({ length: TL_MAX_HOUR - TL_MIN_HOUR }, (_, i) => TL_MIN_HOUR + i)
+
+function tlCardTop(iso: string): number {
+  const d = new Date(iso)
+  return TL_PAD_TOP + (d.getHours() - TL_MIN_HOUR + d.getMinutes() / 60) * TL_HOUR_H
 }
 
-function MobileWeekStrip({ selectedDate, onSelect, today }: MobileWeekStripProps) {
-  const week = weekOf(selectedDate)
-  const monthLabel = MONTHS_UK_CAP[selectedDate.getMonth()] + ' ' + selectedDate.getFullYear()
-  return (
-    <div className={styles.mobileWeekStrip}>
-      <div className={styles.mobileWeekMonth}>{monthLabel}</div>
-      <div className={styles.mobileWeekDays}>
-        {week.map((day, i) => {
-          const isToday = isSameDay(day, today)
-          const isSelected = isSameDay(day, selectedDate)
-          return (
-            <button
-              key={i}
-              className={[
-                styles.mobileWeekDay,
-                isToday ? styles.mobileWeekDayToday : '',
-                isSelected ? styles.mobileWeekDaySelected : '',
-              ].filter(Boolean).join(' ')}
-              onClick={() => onSelect(day)}
-            >
-              <span className={styles.mobileWeekDayLabel}>{WEEKDAYS_SHORT[dowMondayIndex(day)]}</span>
-              <span className={styles.mobileWeekDayNum}>{day.getDate()}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
+function tlCardHeight(durationMin: number): number {
+  return Math.max((durationMin / 60) * TL_HOUR_H, 44)
 }
 
-// ── Mobile list view ───────────────────────────────────────────────────────────
-interface MobileScheduleListProps {
+// ── Mobile Schedule Timeline ──────────────────────────────────────────────────
+interface MobileScheduleTimelineProps {
   classes: ClassWithJoins[]
   selectedDate: Date
   today: Date
@@ -488,10 +467,11 @@ interface MobileScheduleListProps {
   filterChip: string
   viewerTrainerId: string | null
   onDateSelect: (d: Date) => void
+  onFilterChip: (chip: string) => void
   onCardClick: (id: string) => void
 }
 
-function MobileScheduleList({
+function MobileScheduleTimeline({
   classes,
   selectedDate,
   today,
@@ -500,8 +480,88 @@ function MobileScheduleList({
   filterChip,
   viewerTrainerId,
   onDateSelect,
+  onFilterChip,
   onCardClick,
-}: MobileScheduleListProps) {
+}: MobileScheduleTimelineProps) {
+  const [anchorDate, setAnchorDate] = useState(() => selectedDate)
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const [weekKey, setWeekKey] = useState(0)
+  const [nowTop, setNowTop] = useState<number | null>(null)
+  const stripRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const swipeRef = useRef<{ x: number; y: number; decided: boolean } | null>(null)
+
+  useEffect(() => { setAnchorDate(selectedDate) }, [selectedDate])
+
+  useEffect(() => {
+    function update() {
+      const now = new Date()
+      const h = now.getHours() + now.getMinutes() / 60
+      setNowTop(h >= TL_MIN_HOUR && h < TL_MAX_HOUR
+        ? TL_PAD_TOP + (h - TL_MIN_HOUR) * TL_HOUR_H
+        : null)
+    }
+    update()
+    const id = setInterval(update, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    if (nowTop !== null && scrollRef.current) {
+      scrollRef.current.scrollTo({ top: Math.max(0, nowTop - 80), behavior: 'smooth' })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handlePrevWeek = useCallback(() => {
+    setSlideDir('right')
+    setWeekKey(k => k - 1)
+    setAnchorDate(d => { const n = new Date(d); n.setDate(d.getDate() - 7); return n })
+  }, [])
+
+  const handleNextWeek = useCallback(() => {
+    setSlideDir('left')
+    setWeekKey(k => k + 1)
+    setAnchorDate(d => { const n = new Date(d); n.setDate(d.getDate() + 7); return n })
+  }, [])
+
+  useEffect(() => {
+    const el = stripRef.current
+    if (!el) return
+    function onStart(e: TouchEvent) {
+      swipeRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, decided: false }
+    }
+    function onMove(e: TouchEvent) {
+      const s = swipeRef.current; if (!s) return
+      const dx = e.touches[0].clientX - s.x
+      const dy = e.touches[0].clientY - s.y
+      if (!s.decided) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+        s.decided = true
+        if (Math.abs(dx) <= Math.abs(dy)) { swipeRef.current = null; return }
+      }
+      e.preventDefault()
+    }
+    function onEnd(e: TouchEvent) {
+      const s = swipeRef.current; swipeRef.current = null; if (!s || !s.decided) return
+      const dx = e.changedTouches[0].clientX - s.x
+      if (Math.abs(dx) < 40) return
+      if (dx < 0) handleNextWeek(); else handlePrevWeek()
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+  }, [handlePrevWeek, handleNextWeek])
+
+  const week = weekOf(anchorDate)
+  const monthLabel = MONTHS_UK_CAP[anchorDate.getMonth()] + ' ' + anchorDate.getFullYear()
+  const animClass = slideDir === 'left' ? styles.mobileTlSlideLeft : slideDir === 'right' ? styles.mobileTlSlideRight : ''
+
   const dayClasses = useMemo(() => {
     let result = classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate))
     if (filterChip === 'mine' && viewerTrainerId) result = result.filter(c => c.trainer_id === viewerTrainerId)
@@ -509,96 +569,142 @@ function MobileScheduleList({
     return result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
   }, [classes, selectedDate, filterChip, viewerTrainerId])
 
-  const slots = useMemo(() => {
-    const map = new Map<string, ClassWithJoins[]>()
-    for (const cls of dayClasses) {
-      const key = formatTime(cls.starts_at)
-      const arr = map.get(key) ?? []; arr.push(cls); map.set(key, arr)
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  }, [dayClasses])
+  const chips = [
+    { value: 'all', label: 'Всі' },
+    ...activeHalls.map(h => ({ value: h.id, label: h.name })),
+    ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
+  ]
 
-  const busyHallIds = useCallback((slotClasses: ClassWithJoins[]): Set<string> => {
-    return new Set(slotClasses.map(c => c.hall_id).filter(Boolean) as string[])
-  }, [])
+  const tlHeight = TL_PAD_TOP + (TL_MAX_HOUR - TL_MIN_HOUR) * TL_HOUR_H + 20
 
   return (
-    <div className={styles.mobileListShell}>
-      <MobileWeekStrip selectedDate={selectedDate} onSelect={onDateSelect} today={today} />
-      <div className={styles.mobileListScroll}>
-        {slots.length === 0 ? (
-          <div className={styles.mobileListEmpty}>Занять немає</div>
-        ) : (
-          <div className={styles.mobileListSlots}>
-            {slots.map(([timeKey, slotClasses]) => {
-              const showFreeHalls = filterChip === 'all' || filterChip === 'mine'
-              const freeHalls = showFreeHalls
-                ? activeHalls.filter(h => !busyHallIds(slotClasses).has(h.id))
-                : []
-              return (
-                <div key={timeKey} className={styles.mobileSlot}>
-                  <div className={styles.mobileSlotTime}>{timeKey}</div>
-                  <div className={styles.mobileSlotBody}>
-                    {slotClasses.map(cls => {
-                      const active = getActiveCount(cls.enrollments)
-                      const waitlist = getWaitlistCount(cls.enrollments)
-                      const full = isFull(cls.enrollments, cls.capacity)
-                      const color = typeColor(cls.ticket_type)
-                      const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
-                      const endT = formatEndTime(cls.starts_at, cls.duration_min)
-                      const free = cls.capacity != null ? cls.capacity - active : null
-                      const isOwn = !!viewerTrainerId && cls.trainer_id === viewerTrainerId
-                      return (
-                        <button
-                          key={cls.id}
-                          className={[
-                            styles.mobileCard,
-                            cls.is_cancelled ? styles.mobileCardCancelled : '',
-                            isOwn ? styles.mobileCardOwn : '',
-                          ].filter(Boolean).join(' ')}
-                          style={{ ['--card-color' as string]: color }}
-                          onClick={() => onCardClick(cls.id)}
-                        >
-                          <div className={styles.mobileCardBorder} />
-                          <div className={styles.mobileCardBody}>
-                            <div className={styles.mobileCardRow}>
-                              <span className={[styles.mobileCardTitle, cls.is_cancelled ? styles.mobileCardTitleCancelled : ''].filter(Boolean).join(' ')}>
-                                {label}
-                              </span>
-                              {cls.capacity != null && !cls.is_cancelled && (
-                                <span className={[styles.mobileCardSlots, full ? styles.mobileCardSlotsFull : ''].filter(Boolean).join(' ')}>
-                                  {active}/{cls.capacity}
-                                  {waitlist > 0 && <span className={styles.mobileCardWaitlist}> +{waitlist}</span>}
-                                </span>
-                              )}
-                            </div>
-                            <div className={styles.mobileCardMeta}>
-                              <span>{timeKey}–{endT}</span>
-                              {cls.halls?.name && <span> · {cls.halls.name}</span>}
-                              {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
-                              {free != null && !full && !cls.is_cancelled && (
-                                <span className={styles.mobileCardFree}> · {free} вільно</span>
-                              )}
-                              {full && !cls.is_cancelled && (
-                                <span className={styles.mobileCardFullText}> · повний</span>
-                              )}
-                            </div>
-                          </div>
-                          {cls.is_cancelled && <span className={styles.mobileCardCancelledBadge}>Скасовано</span>}
-                        </button>
-                      )
-                    })}
-                    {freeHalls.length > 0 && (
-                      <div className={styles.mobileSlotFreeHalls}>
-                        Вільно: {freeHalls.map(h => h.name).join(', ')}
+    <div className={styles.mobileTlShell}>
+      {/* Week strip */}
+      <div ref={stripRef} className={styles.mobileTlStripWrap}>
+        <div className={styles.mobileTlMonth}>{monthLabel}</div>
+        <div
+          key={weekKey}
+          className={[styles.mobileTlDays, animClass].filter(Boolean).join(' ')}
+          onAnimationEnd={() => setSlideDir(null)}
+        >
+          {week.map((day, i) => {
+            const isToday = isSameDay(day, today)
+            const isSelected = isSameDay(day, selectedDate)
+            return (
+              <button
+                key={i}
+                className={[
+                  styles.mobileTlDay,
+                  isToday ? styles.mobileTlDayToday : '',
+                  isSelected ? styles.mobileTlDaySelected : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => onDateSelect(day)}
+              >
+                <span className={styles.mobileTlDayLabel}>{WEEKDAYS_SHORT[dowMondayIndex(day)]}</span>
+                <span className={styles.mobileTlDayNum}>{day.getDate()}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Filter chips */}
+      <div className={styles.mobileTlHallChips}>
+        {chips.map(chip => (
+          <button
+            key={chip.value}
+            className={[styles.mobileTlHallChip, filterChip === chip.value ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+            onClick={() => onFilterChip(chip.value)}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Timeline scroll */}
+      <div ref={scrollRef} className={styles.mobileTlScroll}>
+        <div className={styles.mobileTlTimeline} style={{ height: tlHeight }}>
+          {TL_HOURS.map(h => (
+            <div key={h} className={styles.mobileTlHourRow} style={{ top: TL_PAD_TOP + (h - TL_MIN_HOUR) * TL_HOUR_H }}>
+              <span className={styles.mobileTlHourLabel}>{String(h).padStart(2, '0')}:00</span>
+              <div className={styles.mobileTlHourLine} />
+            </div>
+          ))}
+
+          {nowTop !== null && isSameDay(selectedDate, today) && (
+            <div className={styles.mobileTlNowLine} style={{ top: nowTop }}>
+              <div className={styles.mobileTlNowDot} />
+              <div className={styles.mobileTlNowLineLine} />
+            </div>
+          )}
+
+          {dayClasses.map(cls => {
+            const active = getActiveCount(cls.enrollments)
+            const waitlist = getWaitlistCount(cls.enrollments)
+            const full = isFull(cls.enrollments, cls.capacity)
+            const color = typeColor(cls.ticket_type)
+            const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+            const top = tlCardTop(cls.starts_at)
+            const height = tlCardHeight(cls.duration_min)
+            const timeStr = `${formatTime(cls.starts_at)}–${formatEndTime(cls.starts_at, cls.duration_min)}`
+            const compact = height < 56
+            const free = cls.capacity != null ? cls.capacity - active : null
+            const isOwn = !!viewerTrainerId && cls.trainer_id === viewerTrainerId
+
+            return (
+              <button
+                key={cls.id}
+                className={[
+                  styles.mobileTlCard,
+                  cls.is_cancelled ? styles.mobileTlCardCancelled : '',
+                  isOwn ? styles.mobileTlCardOwn : '',
+                ].filter(Boolean).join(' ')}
+                style={{ top, height, ['--card-color' as string]: color }}
+                onClick={() => onCardClick(cls.id)}
+              >
+                <div className={styles.mobileTlCardBorder} />
+                <div className={styles.mobileTlCardBody}>
+                  {compact ? (
+                    <span className={styles.mobileTlCardCompact}>
+                      <span className={styles.mobileTlCardTitle}>{label}</span>
+                      <span className={styles.mobileTlCardTime}>{timeStr}</span>
+                    </span>
+                  ) : (
+                    <>
+                      <div className={styles.mobileTlCardRow}>
+                        <span className={[styles.mobileTlCardTitle, cls.is_cancelled ? styles.mobileTlCardTitleCancelled : ''].filter(Boolean).join(' ')}>
+                          {label}
+                        </span>
+                        {cls.capacity != null && !cls.is_cancelled && (
+                          <span className={[styles.mobileTlCardSlots, full ? styles.mobileTlCardSlotsFull : ''].filter(Boolean).join(' ')}>
+                            {active}/{cls.capacity}
+                            {waitlist > 0 && <span className={styles.mobileTlCardWaitlist}> +{waitlist}</span>}
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </div>
+                      <div className={styles.mobileTlCardMeta}>
+                        <span>{timeStr}</span>
+                        {cls.halls?.name && <span> · {cls.halls.name}</span>}
+                        {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
+                        {free != null && !full && !cls.is_cancelled && (
+                          <span className={styles.mobileTlCardFree}> · {free} вільно</span>
+                        )}
+                        {full && !cls.is_cancelled && (
+                          <span className={styles.mobileTlCardFullText}> · повний</span>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
-              )
-            })}
-          </div>
-        )}
+                {cls.is_cancelled && <span className={styles.mobileTlCardCancelledBadge}>Скасовано</span>}
+              </button>
+            )
+          })}
+
+          {dayClasses.length === 0 && (
+            <div className={styles.mobileTlEmpty}>Занять немає</div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -857,15 +963,16 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           </button>
         </div>
 
-        <MobileScheduleList
+        <MobileScheduleTimeline
           classes={classes}
           selectedDate={baseDate}
           today={today}
           typeLabels={typeLabels}
           activeHalls={activeHalls}
-          filterChip="all"
+          filterChip={filterChip}
           viewerTrainerId={viewerTrainerId}
           onDateSelect={setBaseDate}
+          onFilterChip={setFilterChip}
           onCardClick={id => setEditClassId(id)}
         />
 
