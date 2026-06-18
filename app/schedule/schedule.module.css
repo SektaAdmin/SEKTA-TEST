@@ -175,6 +175,7 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+  position: relative;
 }
 
 /* ── Tabs ───────────────────────────────────────────────────── */
@@ -357,9 +358,6 @@
 
 /* ── Sticky header group ────────────────────────────────────── */
 .stickyHeaders {
-  position: sticky;
-  top: 0;
-  z-index: 5;
   background: var(--bg-3);
   border-radius: var(--radius) var(--radius) 0 0;
   flex-shrink: 0;
@@ -471,7 +469,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: clip;
+  overflow: hidden;
 }
 
 @keyframes slideOutLeft {
@@ -492,11 +490,20 @@
   display: contents;
 }
 
+/* ── Sticky header wrapper (outside scroll area) ─────────────── */
+.stickyHeadersWrap {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  overflow: hidden;
+}
+
 /* ── Calendar body grid wrapper (scrollable) ────────────────── */
 .bodyGridWrapper {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   min-height: 0;
 }
 
@@ -675,6 +682,7 @@
   .gridScrollWrap { display: contents; }
   .weekHeader { min-width: 0; }
   .bodyGridWrapper { overflow-x: hidden; min-width: 0; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+  .stickyHeadersWrap { display: none; }
   .hallSubCol { min-width: 0; }
 
   /* Touch targets */

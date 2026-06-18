@@ -1025,7 +1025,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 slideDir === 'right' ? styles.slideOutRight : '',
               ].filter(Boolean).join(' ')}
             >
-              <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
+              <div className={styles.stickyHeadersWrap}>
                 <div className={styles.stickyHeaders}>
                   {viewMode === 'week' && (
                     <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
@@ -1065,8 +1065,10 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                     })}
                   </div>
                 </div>
+              </div>
 
-                <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+              <div className={styles.bodyGridWrapper} ref={wrapperRef}>
+                <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`, minWidth: viewMode === 'week' ? `${48 + weekDays.length * 140}px` : undefined }}>
                   {viewMode === 'day' && nowTop !== null && (
                     <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
                       <span className={styles.nowLineTime}>

@@ -996,58 +996,53 @@ export default function SchedulePage() {
                 slideDir === 'right' ? styles.slideOutRight : '',
               ].filter(Boolean).join(' ')}
             >
-            {/* Body grid wrapper — scrolls both axes; stickyHeaders pins inside */}
-            <div className={styles.bodyGridWrapper} style={{ overflowX: viewMode === 'week' ? 'auto' : 'hidden' }} ref={wrapperRef}>
-            {/* Sticky header group — inside scroll container so x-scroll stays in sync */}
-            <div className={styles.stickyHeaders}>
-            {/* Week day names — only in week mode */}
-            {viewMode === 'week' && (
-              <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
-                <div />
-                {weekDays.map((day, di) => {
-                  const isToday = isSameDay(day, today)
-                  return (
-                    <div key={di} className={`${styles.weekDayLabel} ${isToday ? styles.weekDayToday : ''}`}>
-                      {WEEKDAYS_SHORT[dowMondayIndex(day)]} {String(day.getDate()).padStart(2, '0')}
+              <div className={styles.stickyHeadersWrap}>
+                <div className={styles.stickyHeaders}>
+                  {viewMode === 'week' && (
+                    <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
+                      <div />
+                      {weekDays.map((day, di) => {
+                        const isToday = isSameDay(day, today)
+                        return (
+                          <div key={di} className={`${styles.weekDayLabel} ${isToday ? styles.weekDayToday : ''}`}>
+                            {WEEKDAYS_SHORT[dowMondayIndex(day)]} {String(day.getDate()).padStart(2, '0')}
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Week filter label */}
-            {viewMode === 'week' && (filterHall || filterTrainer) && (
-              <div className={styles.weekFilterLabel}>
-                {filterHall
-                  ? activeHalls.find(h => h.id === filterHall)?.name
-                  : (trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}
-              </div>
-            )}
-
-            {/* Day header */}
-            <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
-              <div className={styles.gutterCorner} />
-              {weekDays.map((day, di) => {
-                const isToday = isSameDay(day, today)
-                return (
-                  <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
-                    {hallColumns.length > 1 && (
-                      <div className={styles.dayHallsRow}>
-                        {hallColumns.map(h => (
-                          <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
-                            {h ? h.name : '—'}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                  )}
+                  {viewMode === 'week' && (filterHall || filterTrainer) && (
+                    <div className={styles.weekFilterLabel}>
+                      {filterHall
+                        ? activeHalls.find(h => h.id === filterHall)?.name
+                        : (trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}
+                    </div>
+                  )}
+                  <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+                    <div className={styles.gutterCorner} />
+                    {weekDays.map((day, di) => {
+                      const isToday = isSameDay(day, today)
+                      return (
+                        <div key={di} className={`${styles.dayHeader} ${isToday ? styles.dayHeaderToday : ''}`}>
+                          {hallColumns.length > 1 && (
+                            <div className={styles.dayHallsRow}>
+                              {hallColumns.map(h => (
+                                <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                                  {h ? h.name : '—'}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
-            </div>
-            </div>{/* /stickyHeaders */}
+                </div>
+              </div>
 
+            <div className={styles.bodyGridWrapper} ref={wrapperRef}>
             {/* Body grid */}
-            <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+            <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`, minWidth: viewMode === 'week' ? `${48 + weekDays.length * 140}px` : undefined }}>
               {/* Now line overlay — day view only */}
               {viewMode === 'day' && nowTop !== null && (
                 <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
