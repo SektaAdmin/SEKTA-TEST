@@ -724,18 +724,21 @@
   /* Клієнт: займає більше місця бо балансу-колонки нема */
   .table td:nth-child(2) { width: auto; }
 
-  /* Статус: фіксована ширина, дозволяємо перенос тексту */
+  /* Дія: 72px — вистачає для «Дія... ▾» з padding 6px */
+  .table th:nth-child(5),
+  .actionsCell { width: 72px; white-space: nowrap; padding: 8px 4px !important; }
+
+  /* Статус: решта після №24 + Дія72 = ~258px для Клієнт+Статус
+     Статус «Відвідано» ≈ 80px з іконкою → 96px з запасом */
   .table th:nth-child(3),
-  .table td:nth-child(3) { width: 90px; }
+  .table td:nth-child(3) { width: 96px; }
   .table td:nth-child(3) span[class*="badge"] {
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.3;
-    padding: 2px 5px;
+    white-space: nowrap;
     font-size: 11px;
+    padding: 2px 5px;
   }
 
-  /* Ім'я клієнта: перенос по словах */
+  /* Ім'я клієнта: перенос по словах, займає залишок */
   .clientLink {
     display: block;
     white-space: normal;
@@ -743,8 +746,6 @@
     overflow-wrap: break-word;
   }
 
-  /* Дія — фіксована ширина */
-  .actionsCell { white-space: nowrap; width: 60px; padding: 8px 6px !important; }
   .actions { gap: 4px; }
   .btnAttend, .btnNoshow, .btnCancelEnroll { width: 28px; height: 28px; font-size: 13px; }
   .btnReEnroll, .btnCancelAdd { height: 28px; padding: 0 7px; font-size: 12px; }
