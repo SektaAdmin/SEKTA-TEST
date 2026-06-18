@@ -1277,6 +1277,11 @@
 .mobileCardFree { color: var(--success); font-weight: 500; }
 .mobileCardFullText { color: var(--danger); font-weight: 500; }
 
+.mobileCardOwn {
+  outline: 2px solid color-mix(in srgb, var(--card-color, var(--accent)) 60%, transparent);
+  outline-offset: 1px;
+}
+
 .mobileCardCancelledBadge {
   position: absolute;
   top: 6px;
