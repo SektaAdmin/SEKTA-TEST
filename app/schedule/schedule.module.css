@@ -766,7 +766,7 @@
 .hallSubCol {
   flex: 1;
   position: relative;
-  min-width: 0;
+  min-width: 160px;
   border-right: 1px solid var(--border);
   height: 100%;
   cursor: default;

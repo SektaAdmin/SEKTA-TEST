@@ -1042,7 +1042,14 @@ export default function SchedulePage() {
 
             <div className={styles.bodyGridWrapper} ref={wrapperRef}>
             {/* Body grid */}
-            <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`, minWidth: viewMode === 'week' ? `${48 + weekDays.length * 140}px` : undefined }}>
+            <div className={styles.bodyGrid} style={{
+              gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`,
+              minWidth: viewMode === 'week'
+                ? `${48 + weekDays.length * 140}px`
+                : hallColumns.length > 1
+                  ? `${48 + hallColumns.length * 160}px`
+                  : undefined,
+            }}>
               {/* Now line overlay — day view only */}
               {viewMode === 'day' && nowTop !== null && (
                 <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>

@@ -1068,7 +1068,14 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
               </div>
 
               <div className={styles.bodyGridWrapper} ref={wrapperRef}>
-                <div className={styles.bodyGrid} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`, minWidth: viewMode === 'week' ? `${48 + weekDays.length * 140}px` : undefined }}>
+                <div className={styles.bodyGrid} style={{
+                  gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`,
+                  minWidth: viewMode === 'week'
+                    ? `${48 + weekDays.length * 140}px`
+                    : hallColumns.length > 1
+                      ? `${48 + hallColumns.length * 160}px`
+                      : undefined,
+                }}>
                   {viewMode === 'day' && nowTop !== null && (
                     <div className={styles.nowLineOverlay} style={{ top: `${nowTop}px` }}>
                       <span className={styles.nowLineTime}>
