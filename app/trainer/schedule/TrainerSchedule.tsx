@@ -444,17 +444,10 @@ function HallSubCol({ classes, typeLabels, hourHeight, day, onCardClick, onSlotC
 // ── Mobile Timeline helpers ───────────────────────────────────────────────────
 const TL_MIN_HOUR = 8
 const TL_MAX_HOUR = 22
-const TL_HOUR_H = 64
-const TL_PAD_TOP = 10
 const TL_HOURS = Array.from({ length: TL_MAX_HOUR - TL_MIN_HOUR }, (_, i) => TL_MIN_HOUR + i)
 
-function tlCardTop(iso: string): number {
-  const d = new Date(iso)
-  return TL_PAD_TOP + (d.getHours() - TL_MIN_HOUR + d.getMinutes() / 60) * TL_HOUR_H
-}
-
-function tlCardHeight(durationMin: number): number {
-  return Math.max((durationMin / 60) * TL_HOUR_H, 44)
+function tlStartHour(iso: string): number {
+  return new Date(iso).getHours()
 }
 
 // ── Mobile Schedule Timeline ──────────────────────────────────────────────────
@@ -496,10 +489,8 @@ function MobileScheduleTimeline({
   useEffect(() => {
     function update() {
       const now = new Date()
-      const h = now.getHours() + now.getMinutes() / 60
-      setNowTop(h >= TL_MIN_HOUR && h < TL_MAX_HOUR
-        ? TL_PAD_TOP + (h - TL_MIN_HOUR) * TL_HOUR_H
-        : null)
+      const h = now.getHours()
+      setNowTop(h >= TL_MIN_HOUR && h < TL_MAX_HOUR ? h + now.getMinutes() / 60 : null)
     }
     update()
     const id = setInterval(update, 60000)
@@ -508,7 +499,9 @@ function MobileScheduleTimeline({
 
   useEffect(() => {
     if (nowTop !== null && scrollRef.current) {
-      scrollRef.current.scrollTo({ top: Math.max(0, nowTop - 80), behavior: 'smooth' })
+      const rowH = 64
+      const top = (nowTop - TL_MIN_HOUR) * rowH
+      scrollRef.current.scrollTo({ top: Math.max(0, top - 80), behavior: 'smooth' })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -562,20 +555,27 @@ function MobileScheduleTimeline({
   const monthLabel = MONTHS_UK_CAP[anchorDate.getMonth()] + ' ' + anchorDate.getFullYear()
   const animClass = slideDir === 'left' ? styles.mobileTlSlideLeft : slideDir === 'right' ? styles.mobileTlSlideRight : ''
 
-  const dayClasses = useMemo(() => {
+  // Згрупувати заняття по годині початку
+  const classesByHour = useMemo(() => {
     let result = classes.filter(c => isSameDay(new Date(c.starts_at), selectedDate))
     if (filterChip === 'mine' && viewerTrainerId) result = result.filter(c => c.trainer_id === viewerTrainerId)
     else if (filterChip !== 'all') result = result.filter(c => c.hall_id === filterChip)
-    return result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+    result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+    const map = new Map<number, ClassWithJoins[]>()
+    for (const cls of result) {
+      const h = tlStartHour(cls.starts_at)
+      const arr = map.get(h) ?? []; arr.push(cls); map.set(h, arr)
+    }
+    return map
   }, [classes, selectedDate, filterChip, viewerTrainerId])
+
+  const hasAnyClass = classesByHour.size > 0
 
   const chips = [
     { value: 'all', label: 'Всі' },
     ...activeHalls.map(h => ({ value: h.id, label: h.name })),
     ...(viewerTrainerId ? [{ value: 'mine', label: 'Мої' }] : []),
   ]
-
-  const tlHeight = TL_PAD_TOP + (TL_MAX_HOUR - TL_MIN_HOUR) * TL_HOUR_H + 20
 
   return (
     <div className={styles.mobileTlShell}>
@@ -623,85 +623,81 @@ function MobileScheduleTimeline({
 
       {/* Timeline scroll */}
       <div ref={scrollRef} className={styles.mobileTlScroll}>
-        <div className={styles.mobileTlTimeline} style={{ height: tlHeight }}>
-          {TL_HOURS.map(h => (
-            <div key={h} className={styles.mobileTlHourRow} style={{ top: TL_PAD_TOP + (h - TL_MIN_HOUR) * TL_HOUR_H }}>
-              <span className={styles.mobileTlHourLabel}>{String(h).padStart(2, '0')}:00</span>
-              <div className={styles.mobileTlHourLine} />
-            </div>
-          ))}
-
-          {nowTop !== null && isSameDay(selectedDate, today) && (
-            <div className={styles.mobileTlNowLine} style={{ top: nowTop }}>
-              <div className={styles.mobileTlNowDot} />
-              <div className={styles.mobileTlNowLineLine} />
-            </div>
-          )}
-
-          {dayClasses.map(cls => {
-            const active = getActiveCount(cls.enrollments)
-            const waitlist = getWaitlistCount(cls.enrollments)
-            const full = isFull(cls.enrollments, cls.capacity)
-            const color = typeColor(cls.ticket_type)
-            const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
-            const top = tlCardTop(cls.starts_at)
-            const height = tlCardHeight(cls.duration_min)
-            const timeStr = `${formatTime(cls.starts_at)}–${formatEndTime(cls.starts_at, cls.duration_min)}`
-            const compact = height < 56
-            const free = cls.capacity != null ? cls.capacity - active : null
-            const isOwn = !!viewerTrainerId && cls.trainer_id === viewerTrainerId
+        <div className={styles.mobileTlGrid}>
+          {TL_HOURS.map(h => {
+            const hourClasses = classesByHour.get(h) ?? []
+            const isNowHour = nowTop !== null && isSameDay(selectedDate, today) && Math.floor(nowTop) === h
+            const nowPct = isNowHour ? ((nowTop! - h) * 100).toFixed(1) + '%' : null
 
             return (
-              <button
-                key={cls.id}
-                className={[
-                  styles.mobileTlCard,
-                  cls.is_cancelled ? styles.mobileTlCardCancelled : '',
-                  isOwn ? styles.mobileTlCardOwn : '',
-                ].filter(Boolean).join(' ')}
-                style={{ top, height, ['--card-color' as string]: color }}
-                onClick={() => onCardClick(cls.id)}
-              >
-                <div className={styles.mobileTlCardBorder} />
-                <div className={styles.mobileTlCardBody}>
-                  {compact ? (
-                    <span className={styles.mobileTlCardCompact}>
-                      <span className={styles.mobileTlCardTitle}>{label}</span>
-                      <span className={styles.mobileTlCardTime}>{timeStr}</span>
-                    </span>
-                  ) : (
-                    <>
-                      <div className={styles.mobileTlCardRow}>
-                        <span className={[styles.mobileTlCardTitle, cls.is_cancelled ? styles.mobileTlCardTitleCancelled : ''].filter(Boolean).join(' ')}>
-                          {label}
-                        </span>
-                        {cls.capacity != null && !cls.is_cancelled && (
-                          <span className={[styles.mobileTlCardSlots, full ? styles.mobileTlCardSlotsFull : ''].filter(Boolean).join(' ')}>
-                            {active}/{cls.capacity}
-                            {waitlist > 0 && <span className={styles.mobileTlCardWaitlist}> +{waitlist}</span>}
-                          </span>
-                        )}
-                      </div>
-                      <div className={styles.mobileTlCardMeta}>
-                        <span>{timeStr}</span>
-                        {cls.halls?.name && <span> · {cls.halls.name}</span>}
-                        {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
-                        {free != null && !full && !cls.is_cancelled && (
-                          <span className={styles.mobileTlCardFree}> · {free} вільно</span>
-                        )}
-                        {full && !cls.is_cancelled && (
-                          <span className={styles.mobileTlCardFullText}> · повний</span>
-                        )}
-                      </div>
-                    </>
-                  )}
+              <div key={h} className={styles.mobileTlRow}>
+                <div className={styles.mobileTlGutter}>
+                  <span className={styles.mobileTlHourLabel}>{String(h).padStart(2, '0')}:00</span>
                 </div>
-                {cls.is_cancelled && <span className={styles.mobileTlCardCancelledBadge}>Скасовано</span>}
-              </button>
+                <div className={styles.mobileTlRowBody}>
+                  <div className={styles.mobileTlRowLine} />
+                  {nowPct !== null && (
+                    <div className={styles.mobileTlNowLine} style={{ top: nowPct }}>
+                      <div className={styles.mobileTlNowDot} />
+                      <div className={styles.mobileTlNowLineLine} />
+                    </div>
+                  )}
+                  {hourClasses.map(cls => {
+                    const active = getActiveCount(cls.enrollments)
+                    const waitlist = getWaitlistCount(cls.enrollments)
+                    const full = isFull(cls.enrollments, cls.capacity)
+                    const color = typeColor(cls.ticket_type)
+                    const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+                    const timeStr = `${formatTime(cls.starts_at)}–${formatEndTime(cls.starts_at, cls.duration_min)}`
+                    const free = cls.capacity != null ? cls.capacity - active : null
+                    const isOwn = !!viewerTrainerId && cls.trainer_id === viewerTrainerId
+
+                    return (
+                      <button
+                        key={cls.id}
+                        className={[
+                          styles.mobileTlCard,
+                          cls.is_cancelled ? styles.mobileTlCardCancelled : '',
+                          isOwn ? styles.mobileTlCardOwn : '',
+                        ].filter(Boolean).join(' ')}
+                        style={{ ['--card-color' as string]: color }}
+                        onClick={() => onCardClick(cls.id)}
+                      >
+                        <div className={styles.mobileTlCardBorder} />
+                        <div className={styles.mobileTlCardBody}>
+                          <div className={styles.mobileTlCardRow}>
+                            <span className={[styles.mobileTlCardTitle, cls.is_cancelled ? styles.mobileTlCardTitleCancelled : ''].filter(Boolean).join(' ')}>
+                              {label}
+                            </span>
+                            {cls.capacity != null && !cls.is_cancelled && (
+                              <span className={[styles.mobileTlCardSlots, full ? styles.mobileTlCardSlotsFull : ''].filter(Boolean).join(' ')}>
+                                {active}/{cls.capacity}
+                                {waitlist > 0 && <span className={styles.mobileTlCardWaitlist}> +{waitlist}</span>}
+                              </span>
+                            )}
+                          </div>
+                          <div className={styles.mobileTlCardMeta}>
+                            <span>{timeStr}</span>
+                            {cls.halls?.name && <span> · {cls.halls.name}</span>}
+                            {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
+                            {free != null && !full && !cls.is_cancelled && (
+                              <span className={styles.mobileTlCardFree}> · {free} вільно</span>
+                            )}
+                            {full && !cls.is_cancelled && (
+                              <span className={styles.mobileTlCardFullText}> · повний</span>
+                            )}
+                          </div>
+                        </div>
+                        {cls.is_cancelled && <span className={styles.mobileTlCardCancelledBadge}>Скасовано</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )
           })}
 
-          {dayClasses.length === 0 && (
+          {!hasAnyClass && (
             <div className={styles.mobileTlEmpty}>Занять немає</div>
           )}
         </div>

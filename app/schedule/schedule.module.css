@@ -1596,45 +1596,63 @@
   padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 72px);
 }
 
-/* ── Timeline canvas ────────────────────────────────────── */
-.mobileTlTimeline {
-  position: relative;
-  padding-left: 48px;
-  min-height: 100%;
+/* ── Timeline grid (row-based, no absolute positioning) ─── */
+.mobileTlGrid {
+  display: flex;
+  flex-direction: column;
 }
 
-/* ── Hour rows ──────────────────────────────────────────── */
-.mobileTlHourRow {
-  position: absolute;
-  left: 0;
-  right: 0;
+/* Один рядок години */
+.mobileTlRow {
+  display: flex;
+  align-items: stretch;
+  min-height: 64px;
+}
+
+/* Гутер з міткою часу */
+.mobileTlGutter {
+  width: 48px;
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
-  pointer-events: none;
+  justify-content: flex-end;
+  padding-right: 8px;
+  padding-top: 0;
 }
 
 .mobileTlHourLabel {
-  width: 44px;
-  text-align: right;
-  padding-right: 8px;
   font-size: 11px;
   color: var(--text-3);
   line-height: 1;
   margin-top: -6px;
-  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
 
-.mobileTlHourLine {
+/* Тіло рядка: лінія + картки */
+.mobileTlRowBody {
   flex: 1;
-  height: 1px;
-  background: var(--border);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 8px 4px 0;
 }
 
-/* ── Now line ───────────────────────────────────────────── */
+/* Горизонтальна лінія верхньої межі рядка */
+.mobileTlRowLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+/* ── Now line всередині рядка ───────────────────────────── */
 .mobileTlNowLine {
   position: absolute;
-  left: 44px;
+  left: 0;
   right: 0;
   display: flex;
   align-items: center;
@@ -1657,11 +1675,9 @@
   background: var(--danger, #e03050);
 }
 
-/* ── Class card ─────────────────────────────────────────── */
+/* ── Class card (flow, не absolute) ─────────────────────── */
 .mobileTlCard {
-  position: absolute;
-  left: 52px;
-  right: 8px;
+  position: relative;
   border-radius: 6px;
   background: color-mix(in srgb, var(--card-color) 12%, var(--bg));
   border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
@@ -1671,7 +1687,6 @@
   cursor: pointer;
   text-align: left;
   transition: opacity 0.12s;
-  z-index: 2;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1700,24 +1715,6 @@
   gap: 2px;
 }
 
-/* Compact mode (card < 56px high): inline title + time */
-.mobileTlCardCompact {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.mobileTlCardTime {
-  font-size: 11px;
-  color: var(--text-3);
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Full mode */
 .mobileTlCardRow {
   display: flex;
   align-items: baseline;
@@ -1773,12 +1770,9 @@
 
 /* ── Empty day ──────────────────────────────────────────── */
 .mobileTlEmpty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  padding: 40px 16px;
+  text-align: center;
   font-size: 14px;
   color: var(--text-3);
-  pointer-events: none;
 }
 
