@@ -1137,17 +1137,20 @@
 }
 
 .mobileWeekDays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  display: flex;
+  overflow-x: auto;
   gap: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.mobileWeekDays::-webkit-scrollbar { display: none; }
 
 .mobileWeekDay {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 6px 2px;
+  padding: 6px 4px;
   border-radius: var(--radius);
   background: none;
   border: none;
@@ -1156,6 +1159,8 @@
   -webkit-tap-highlight-color: transparent;
   -webkit-appearance: none;
   appearance: none;
+  flex-shrink: 0;
+  min-width: 40px;
 }
 
 .mobileWeekDayLabel {
