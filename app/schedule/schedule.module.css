@@ -1036,7 +1036,6 @@
 @media (max-width: 640px) {
   .topbarMobileHidden { display: none; }
   .contentRowHidden   { display: none; }
-  /* filterBar stays visible — used for hall/trainer filters in list view */
 }
 
 /* ── Mobile list shell ─────────────────────────────────────────── */
@@ -1053,6 +1052,63 @@
     overflow: hidden;
   }
 }
+
+/* ── Trainer schedule mobile wrapper ───────────────────────────── */
+.trainerSchedMobile {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ── Trainer schedule mobile topbar (‹ Меню | Розклад | Сьогодні) */
+.trainerSchedTopbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.trainerSchedBackBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trainerSchedBackBtn:hover { color: var(--text); }
+
+.trainerSchedTitle {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.trainerSchedTodayBtn {
+  font-size: 13px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trainerSchedTodayBtn:hover { opacity: 0.75; }
 
 /* ── Mobile WeekStrip ──────────────────────────────────────────── */
 .mobileWeekStrip {

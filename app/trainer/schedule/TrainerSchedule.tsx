@@ -840,43 +840,71 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   }, [weekDays, viewMode])
 
   // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Mobile render ──────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className={styles.trainerSchedMobile}>
+        <div className={styles.trainerSchedTopbar}>
+          <button className={styles.trainerSchedBackBtn} onClick={() => router.push('/trainer')} aria-label="Меню">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 2L4 7l5 5"/>
+            </svg>
+            <span>Меню</span>
+          </button>
+          <span className={styles.trainerSchedTitle}>Розклад</span>
+          <button className={styles.trainerSchedTodayBtn} onClick={() => setBaseDate(new Date())}>
+            Сьогодні
+          </button>
+        </div>
+
+        <MobileScheduleList
+          classes={classes}
+          selectedDate={baseDate}
+          today={today}
+          typeLabels={typeLabels}
+          activeHalls={activeHalls}
+          filterChip="all"
+          viewerTrainerId={viewerTrainerId}
+          onDateSelect={setBaseDate}
+          onCardClick={id => setEditClassId(id)}
+        />
+
+        {editClassId && (
+          <ClassDetailModal
+            classId={editClassId}
+            onClose={() => setEditClassId(null)}
+            onClassUpdated={() => { fetchClasses(); setEditClassId(null) }}
+            viewerTrainerId={viewerTrainerId ?? undefined}
+            isStaff={isStaff}
+          />
+        )}
+
+        {showModal && (
+          <ClassModal
+            onClose={() => { setShowModal(false); setPrefill(undefined) }}
+            onSaved={() => { setShowModal(false); setPrefill(undefined); fetchClasses() }}
+            prefill={prefill}
+            forcedTrainerId={viewerTrainerId ?? undefined}
+          />
+        )}
+
+        <button
+          className={styles.fab}
+          onClick={() => { setPrefill(undefined); setShowModal(true) }}
+          aria-label="Нове заняття"
+        >
+          +
+        </button>
+      </div>
+    )
+  }
+
+  // ── Desktop render ──────────────────────────────────────────────────────────
   return (
     <div className={styles.layout} style={{ '--sidebar-w': '0px' } as React.CSSProperties}>
       <main className={styles.main} style={{ marginLeft: 0, paddingBottom: 0 }}>
 
-        {/* Topbar — ‹ Меню | дата + навігація | controls */}
-        <div className={[styles.topbar, isMobile ? styles.topbarMobileHidden : ''].filter(Boolean).join(' ')} style={{ height: '48px' }}>
-
-          {/* Mobile: дата + іконки */}
-          <div className={styles.mobileTopNav}>
-            <button
-              className={styles.navBtn}
-              onClick={() => router.back()}
-              aria-label="Меню"
-              style={{ marginRight: 4 }}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 2L4 7l5 5"/>
-              </svg>
-            </button>
-            <div className={styles.mobileDateText}>
-              <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
-              <span className={styles.mobileDateVal}>{formatDate(baseDate)}</span>
-            </div>
-            <div className={styles.mobileNavIcons}>
-              <button className={styles.todayIconBtn} onClick={() => setBaseDate(new Date())} aria-label="Сьогодні">
-                <span className={styles.todayIconNum}>{today.getDate()}</span>
-              </button>
-              <button className={styles.navIconBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="1" y="2" width="12" height="11" rx="1.5"/>
-                  <path d="M1 6h12M4 1v2M10 1v2"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Desktop: ‹ Меню */}
+        <div className={styles.topbar} style={{ height: '48px' }}>
           <div className={styles.topbarLeft} style={{ flex: 'none', gap: 0 }}>
             <button className={styles.navBtn} onClick={() => router.push('/trainer')} aria-label="Меню">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -886,7 +914,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
             <span style={{ fontSize: 13, color: 'var(--text-3)', marginLeft: 6, whiteSpace: 'nowrap' }}>Меню</span>
           </div>
 
-          {/* Desktop: дата + навігація (центр) */}
           <div className={styles.topbarLeft} style={{ flex: 1, justifyContent: 'center' }}>
             <div className={styles.desktopNav}>
               <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
@@ -917,7 +944,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
             </div>
           </div>
 
-          {/* Desktop: controls справа */}
           <div className={styles.topbarRight}>
             <div className={styles.viewToggle}>
               <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
@@ -927,7 +953,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 Тиждень
               </button>
             </div>
-            {/* Чипи фільтрів: Всі · Зал 1 · … · Мої */}
             <div style={{ display: 'flex', gap: 4, flexWrap: 'nowrap' }}>
               {[
                 { value: 'all', label: 'Всі' },
@@ -961,7 +986,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           </div>
         </div>
 
-        {/* Mobile chip bar — видно тільки на мобільному */}
         <div className={styles.filterBar} style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '6px var(--topbar-px)' }}>
           {[
             { value: 'all', label: 'Всі' },
@@ -991,23 +1015,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           ))}
         </div>
 
-        {/* Mobile list view */}
-        {isMobile && (
-          <MobileScheduleList
-            classes={classes}
-            selectedDate={baseDate}
-            today={today}
-            typeLabels={typeLabels}
-            activeHalls={activeHalls}
-            filterChip={filterChip}
-            viewerTrainerId={viewerTrainerId}
-            onDateSelect={setBaseDate}
-            onCardClick={id => setEditClassId(id)}
-          />
-        )}
-
-        {/* Content row — grid area + right panel */}
-        <div className={[styles.contentRow, isMobile ? styles.contentRowHidden : ''].filter(Boolean).join(' ')}>
+        <div className={styles.contentRow}>
           <div className={styles.gridArea}>
             <div
               ref={gridCardRef}
@@ -1032,13 +1040,11 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                       })}
                     </div>
                   )}
-
                   {viewMode === 'week' && filterChip !== 'all' && filterChip !== 'mine' && (
                     <div className={styles.weekFilterLabel}>
                       {activeHalls.find(h => h.id === filterChip)?.name}
                     </div>
                   )}
-
                   <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
                     <div className={styles.gutterCorner} />
                     {weekDays.map((day, di) => {
@@ -1070,7 +1076,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                       <div className={styles.nowLineLine} />
                     </div>
                   )}
-
                   <div className={styles.timeGutter}>
                     {HOURS.map(h => (
                       <div key={h} className={styles.timeRow} style={{ height: `${hourHeight}px` }}>
@@ -1081,7 +1086,6 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                       <div key={h} className={styles.hourLine} style={{ top: `${(h - MIN_HOUR) * hourHeight}px` }} />
                     ))}
                   </div>
-
                   {weekDays.map((day, di) => {
                     const dayClasses = filteredClasses.filter(c => isSameDay(new Date(c.starts_at), day))
                     return (
