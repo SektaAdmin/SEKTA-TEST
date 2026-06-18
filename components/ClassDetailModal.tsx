@@ -575,7 +575,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                           <th className={styles.thNum}></th>
                           <th>Клієнт</th>
                           <th>Статус</th>
-                          <th>Баланс</th>
+                          <th className={styles.balanceDesktop}>Баланс</th>
                           <th className={styles.thRight}>Дія</th>
                         </tr>
                       </thead>
@@ -594,6 +594,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                                   {name}
                                 </a>
                                 {hoursLabel && <span className="badge badge-type">{hoursLabel}</span>}
+                                {/* Баланс під іменем — лише на мобілі (десктоп показує окрему колонку) */}
+                                {(() => {
+                                  const bal = balanceMap[e.client_id]
+                                  if (bal == null) return null
+                                  return <span className={`${styles.balanceMobile} ${balanceClass(bal)}`}>{bal}</span>
+                                })()}
                               </td>
                               <td>
                                 {(() => {
@@ -612,7 +618,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                                   )
                                 })()}
                               </td>
-                              <td>
+                              <td className={styles.balanceDesktop}>
                                 {(() => {
                                   const bal = balanceMap[e.client_id]
                                   if (bal == null) return <span className="balance-muted">—</span>
