@@ -68,41 +68,65 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   }, [trainingTypes])
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock}`}>
+    <section className={`${styles.block} ${styles.equalBlock}`} data-impeccable-wrap="FreeSpacesBlock">
       <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні місця на заняттях сьогодні</h2>
 
       <div className={styles.scrollBody}>
-      {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+      {loading && (
+        <div role="status" aria-label="Завантаження...">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className={styles.spacesSkeleton} aria-hidden="true">
+              <div className={styles.spacesSkelInfo}>
+                <div className={styles.spacesSkelLine} style={{ width: '52%' }} />
+                <div className={styles.spacesSkelLine} style={{ width: '34%' }} />
+              </div>
+              <div className={styles.spacesSkelCount} />
+            </div>
+          ))}
+        </div>
+      )}
       {error && <BlockError onRetry={refetch} />}
       {!loading && !error && rows.length === 0 && (
         <div className={styles.empty}>Всі заняття заповнені</div>
       )}
 
-      {!loading && !error && rows.map(r => (
-        <div key={r.id} className={styles.spacesRow}>
-          <div className={styles.spacesInfo}>
-            <div className={styles.spacesMain}>
-              <span className={styles.spacesTime}>{r.time}</span>
-              <span className={styles.spacesType}>{typeLabel[r.ticketType] ?? r.ticketType}</span>
+      {!loading && !error && rows.map(r => {
+        const type = typeLabel[r.ticketType] ?? r.ticketType
+        const meta = [r.trainer, r.hall].filter(Boolean)
+        return (
+          <button
+            key={r.id}
+            type="button"
+            onClick={() => setDetailClassId(r.id)}
+            className={styles.spacesRow}
+            aria-label={`${r.time} ${type}, вільних місць: ${r.free}. Відкрити заняття`}
+          >
+            <div className={styles.spacesInfo}>
+              <div className={styles.spacesMain}>
+                <span className={styles.spacesTime}>{r.time}</span>
+                <span className={styles.spacesType}>{type}</span>
+              </div>
+              {meta.length > 0 && (
+                <div className={styles.spacesSub}>
+                  {meta.map((m, i) => (
+                    <span key={i}>
+                      {i > 0 && <span className={styles.spacesDot}>·</span>}
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {r.choreo && <div className={styles.spacesChoreo}>{r.choreo}</div>}
             </div>
-            <div className={styles.spacesSub}>
-              {[r.trainer, r.hall, r.choreo].filter(Boolean).join(' · ')}
+            <div className={styles.spacesRight}>
+              <span className={styles.spacesCount}>
+                <span className={styles.spacesCountNum}>{r.free}</span>
+              </span>
+              <ArrowRightIcon className={styles.spacesChevron} />
             </div>
-          </div>
-          <div className={styles.spacesRight}>
-            <span className={styles.spacesFreeChip}>{r.free}</span>
-            <button
-              type="button"
-              onClick={() => setDetailClassId(r.id)}
-              className={styles.spacesLink}
-              title="Відкрити заняття"
-              aria-label={`Відкрити заняття ${r.time} ${r.ticketType}`}
-            >
-              <ArrowRightIcon />
-            </button>
-          </div>
-        </div>
-      ))}
+          </button>
+        )
+      })}
       </div>
 
       {detailClassId && (
