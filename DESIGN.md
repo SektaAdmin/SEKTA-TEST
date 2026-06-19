@@ -27,9 +27,11 @@ colors:
   brand-900: "#0a0a0a"
   danger: "#d93535"
   danger-dim: "rgba(217,53,53,0.08)"
+  danger-text: "#b32020"
   danger-border: "rgba(217,53,53,0.25)"
   success: "#00a544"
   success-dim: "#f0fdf4"
+  success-text: "#007a33"
   success-border: "rgba(0,165,68,0.25)"
   warning: "#b87a00"
   warning-dim: "rgba(184,122,0,0.08)"
@@ -154,8 +156,10 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Brand 50–950** (`#f7f7f7` to `#000000`): Pure neutral scale for badge backgrounds, subtle layering, and tonal depth.
 
 ### Semantic Status Colors
-- **Danger** (#d93535): Error states, destructive actions. Always paired with Danger Dim for backgrounds.
-- **Success** (#00a544): Completed actions, confirmed state.
+- **Danger** (#d93535): Error states, destructive actions. Used for fills, borders, icons, and large text (≥18px or bold ≥14px). Always paired with Danger Dim for backgrounds.
+- **Danger Text** (#b32020): Darker red for danger *text under 18px* (e.g. balance figures, hints) on white or Danger Dim. Clears 4.5:1 where #d93535 does not. Fills/borders stay on Danger.
+- **Success** (#00a544): Completed actions, confirmed state. Used for fills, borders, icons, and large text.
+- **Success Text** (#007a33): Darker green for success *text under 18px* (e.g. positive balances, chips) on white or Success Dim. Clears 4.5:1 where #00a544 does not. Fills/borders stay on Success.
 - **Warning** (#b87a00): Cautions, amber alerts. Do not use for danger (reserved for red).
 
 ### Semantic Roles (Finance)
@@ -182,7 +186,7 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 
 ### Named Rules
 
-**The No-Scare Rule.** Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background.
+**The No-Scare Rule.** Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background. **Semantic colors split fill from text:** the vivid token (`--success` / `--danger`) is for fills, borders, icons, and large text (≥18px or bold ≥14px); for semantic *text under 18px* on a light or dim background, use the darker `-text` variant (`--success-text` / `--danger-text`) — the vivid green/red fails 4.5:1 at small sizes. This is exactly the strain the rule exists to prevent, given the studio's variable lighting and older staff.
 
 **The Breathing Room Rule.** Line-height is never less than 1.3. Line length is capped at 65–75ch for body text on full-width surfaces. This reduces cognitive load for busy admins in variable lighting.
 

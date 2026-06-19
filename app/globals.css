@@ -23,6 +23,9 @@ html, body { overscroll-behavior: none; }
   --accent-text: #ffffff;
   --danger: #d93535;
   --danger-dim: rgba(217,53,53,0.08);
+  /* Текст danger на світлому (білий/dim) — темніший за заливку, щоб тримати ≥4.5:1.
+     Заливки/бордери/іконки лишаються на --danger; текст ≤18px бере --danger-text. */
+  --danger-text: #b32020;
   --radius: 10px;
   --radius-sm: 6px;
   --font: var(--font-nunito, 'Nunito Sans', sans-serif);
@@ -38,6 +41,9 @@ html, body { overscroll-behavior: none; }
   /* Семантичні кольори */
   --success: #00a544;
   --success-dim: #f0fdf4;
+  /* Текст success на світлому (білий/dim) — темніший за заливку для ≥4.5:1.
+     Заливки/бордери/іконки лишаються на --success; текст ≤18px бере --success-text. */
+  --success-text: #007a33;
   --warning: #b87a00;
   --warning-dim: rgba(184,122,0,0.08);
   --overlay-bg: rgba(0,0,0,0.35);

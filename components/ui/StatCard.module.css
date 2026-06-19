@@ -73,6 +73,5 @@
 }
 
 .alert .hint {
-  color: var(--danger);
-  opacity: 0.75;
+  color: var(--danger-text);
 }
