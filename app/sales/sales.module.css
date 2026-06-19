@@ -62,9 +62,10 @@
   font-family: var(--font);
   outline: none;
   width: 200px;
-  transition: border-color 0.12s, width 0.2s;
+  transition: border-color 0.12s, transform 0.12s ease-out;
+  transform-origin: left;
 }
-.filterSearchInput:focus { border-color: var(--accent); width: 240px; }
+.filterSearchInput:focus { border-color: var(--accent); transform: scaleX(1.2); }
 .filterSearchInput::placeholder { color: var(--text-3); }
 
 .filterClear {
