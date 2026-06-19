@@ -1,8 +1,18 @@
+/* ── Spacing Scale ─────────────────────────────────────────── */
+:scope {
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+}
+
 /* ── Head ──────────────────────────────────────────────────── */
 .head {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: var(--space-md);
   padding: 20px var(--topbar-px);
 }
 
@@ -22,7 +32,7 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-xl);
   padding: 20px var(--topbar-px) 32px;
 }
 
@@ -36,7 +46,7 @@
 .statGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
   flex: 1;
   min-width: 0;
 }
@@ -53,7 +63,7 @@
 .groupCards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 /* Вертикальний розподільник між групами */
@@ -84,7 +94,7 @@
 .twoCol {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: var(--space-xl);
   align-items: start;
 }
 
@@ -147,21 +157,21 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 14px;
+  margin-bottom: var(--space-lg);
 }
 
 .empty {
   font-size: 14px;
   color: var(--text-3);
-  padding: 12px 0;
+  padding: var(--space-md) 0;
 }
 
 /* Стан помилки у блоці — нейтральне повідомлення + кнопка повтору */
 .blockError {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
 }
 
 .blockErrorMsg {
@@ -194,9 +204,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-shrink: 0;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-lg);
 }
 
 .blockHead .blockTitle {
@@ -206,7 +216,7 @@
 .copyBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-2);
@@ -222,7 +232,7 @@
 }
 
 .debtGroup {
-  padding: 12px 0;
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -233,11 +243,11 @@
 .debtGroupHead {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-xs);
 }
 
 .debtHall {
@@ -257,10 +267,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-md);
   font-size: 14px;
   color: var(--text-2);
-  padding: 3px 0 3px 12px;
+  padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
 
@@ -268,8 +278,8 @@
 .slotRow {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -282,7 +292,7 @@
   width: 120px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .slotHall {
@@ -312,7 +322,7 @@
 .slotWindows {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .slotChip {
@@ -333,8 +343,8 @@
 .cashRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -366,8 +376,8 @@
 .spacesRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 7px 0;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -383,7 +393,7 @@
 .spacesMain {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .spacesTime {
@@ -405,7 +415,7 @@
 .spacesSub {
   font-size: 12px;
   color: var(--text-3);
-  margin-top: 1px;
+  margin-top: var(--space-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -414,7 +424,7 @@
 .spacesRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-shrink: 0;
 }
 
