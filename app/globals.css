@@ -46,6 +46,9 @@ html, body { overscroll-behavior: none; }
   --success-text: #007a33;
   --warning: #b87a00;
   --warning-dim: rgba(184,122,0,0.08);
+  /* Текст warning на світлому (білий/dim) — темніший за заливку для ≥4.5:1.
+     Заливки/бордери/іконки лишаються на --warning; текст ≤18px бере --warning-text. */
+  --warning-text: #805600;
   --overlay-bg: rgba(0,0,0,0.35);
   --white: #ffffff;
 
@@ -425,32 +428,32 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 /* Enrollment statuses */
 .badge-enrolled  { background: var(--bg-3);        color: var(--text-2);  border-color: var(--border); }
-.badge-attended  { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
-.badge-cancelled { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
-.badge-noshow    { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
-.badge-waitlist  { background: var(--warning-dim); color: var(--warning); border-color: var(--warning-border); }
+.badge-attended  { background: var(--success-dim); color: var(--success-text); border-color: var(--success-border); }
+.badge-cancelled { background: var(--warning-dim); color: var(--warning-text); border-color: var(--warning-border); }
+.badge-noshow    { background: var(--danger-dim);  color: var(--danger-text);  border-color: var(--danger-border); }
+.badge-waitlist  { background: var(--warning-dim); color: var(--warning-text); border-color: var(--warning-border); }
 
 /* Class statuses (journal) */
-.badge-completed       { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
-.badge-class-cancelled { background: var(--danger-dim);  color: var(--danger);  border-color: var(--danger-border); }
+.badge-completed       { background: var(--success-dim); color: var(--success-text); border-color: var(--success-border); }
+.badge-class-cancelled { background: var(--danger-dim);  color: var(--danger-text);  border-color: var(--danger-border); }
 
 /* Feed item type */
-.badge-sale { background: var(--success-dim); color: var(--success); border-color: var(--success-border); }
+.badge-sale { background: var(--success-dim); color: var(--success-text); border-color: var(--success-border); }
 
 /* Neutral type tag (settings: ticket type, training type code) */
 .badge-type { background: var(--bg-3); color: var(--text-2); border-color: var(--border); }
 
 /* Warning / negative state */
-.badge-danger { background: var(--danger-dim); color: var(--danger); border-color: var(--danger-border); }
+.badge-danger { background: var(--danger-dim); color: var(--danger-text); border-color: var(--danger-border); }
 
 /* Session balance chips (schedule, dashboard, client cabinet).
    balance-ok = >0 (green), balance-zero = 0 (yellow), balance-warn = <0 (red).
    Used for both money (₴) and session counts. */
-.balance-ok   { font-size: 14px; color: var(--success); background: var(--success-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
-.balance-zero { font-size: 14px; color: var(--warning); background: var(--warning-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
-.balance-warn { font-size: 14px; color: var(--danger);  background: var(--danger-dim);  padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-ok   { font-size: 14px; color: var(--success-text); background: var(--success-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-zero { font-size: 14px; color: var(--warning-text); background: var(--warning-dim); padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.balance-warn { font-size: 14px; color: var(--danger-text);  background: var(--danger-dim);  padding: 2px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
 .balance-muted{ font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }
 
 /* Count pill — small numeric counter next to a label */
 .count-chip        { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px; color: var(--text-3); }
-.count-chip-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 8px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--danger) 12%, transparent); border-radius: 999px; color: var(--danger); }
+.count-chip-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 8px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--danger) 12%, transparent); border-radius: 999px; color: var(--danger-text); }

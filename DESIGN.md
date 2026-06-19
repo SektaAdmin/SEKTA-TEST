@@ -35,6 +35,7 @@ colors:
   success-border: "rgba(0,165,68,0.25)"
   warning: "#b87a00"
   warning-dim: "rgba(184,122,0,0.08)"
+  warning-text: "#805600"
   warning-border: "rgba(184,122,0,0.25)"
   semantic-fop: "#2d78d6"
   semantic-fop-dim: "rgba(45,120,214,0.10)"
@@ -160,7 +161,8 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Danger Text** (#b32020): Darker red for danger *text under 18px* (e.g. balance figures, hints) on white or Danger Dim. Clears 4.5:1 where #d93535 does not. Fills/borders stay on Danger.
 - **Success** (#00a544): Completed actions, confirmed state. Used for fills, borders, icons, and large text.
 - **Success Text** (#007a33): Darker green for success *text under 18px* (e.g. positive balances, chips) on white or Success Dim. Clears 4.5:1 where #00a544 does not. Fills/borders stay on Success.
-- **Warning** (#b87a00): Cautions, amber alerts. Do not use for danger (reserved for red).
+- **Warning** (#b87a00): Cautions, amber alerts. Used for fills, borders, icons, and large text. Do not use for danger (reserved for red).
+- **Warning Text** (#805600): Darker amber for warning *text under 18px* (e.g. cancelled/waitlist badges, zero-balance chips) on white or Warning Dim. Clears 4.5:1 where #b87a00 does not. Fills/borders stay on Warning.
 
 ### Semantic Roles (Finance)
 - **FOP (Cashless)** (#2d78d6): Blue; represents card or online payment method.
