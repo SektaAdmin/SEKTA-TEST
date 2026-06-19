@@ -23,6 +23,7 @@ playwright-report/
 
 # External agent artifacts
 .codex/
+.impeccable/
 /AGENTS.md
 /RECOMMENDATIONS.md
 CLAUDE.md.bak
