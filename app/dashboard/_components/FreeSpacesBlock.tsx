@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listClassesForDate, listEnrolledCountsForDate } from '@/lib/queries/enrollments'
 import { useRefs } from '@/contexts/RefsContext'
@@ -7,6 +7,7 @@ import { useListQuery } from '@/hooks/useListQuery'
 import { formatTime } from '@/lib/formatters'
 import { ArrowRightIcon } from '@/components/icons/navigation'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
 /* Блок: вільні місця на заняттях сьогодні (крім selftraining). */
@@ -56,6 +57,10 @@ export function FreeSpacesBlock({ date }: { date: string }) {
     { realtime: ['classes', 'enrollments'] }
   )
 
+  useEffect(() => {
+    if (error) console.error('[FreeSpacesBlock]', error)
+  }, [error])
+
   const typeLabel = useMemo(() => {
     const map: Record<string, string> = {}
     for (const t of trainingTypes) map[t.code] = t.label
@@ -67,8 +72,8 @@ export function FreeSpacesBlock({ date }: { date: string }) {
       <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні місця на заняттях сьогодні</h2>
 
       <div className={styles.scrollBody}>
-      {loading && <div className="loading-dots"><span /><span /><span /></div>}
-      {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
+      {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+      {error && <BlockError onRetry={refetch} />}
       {!loading && !error && rows.length === 0 && (
         <div className={styles.empty}>Всі заняття заповнені</div>
       )}
@@ -91,6 +96,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
               onClick={() => setDetailClassId(r.id)}
               className={styles.spacesLink}
               title="Відкрити заняття"
+              aria-label={`Відкрити заняття ${r.time} ${r.ticketType}`}
             >
               <ArrowRightIcon />
             </button>

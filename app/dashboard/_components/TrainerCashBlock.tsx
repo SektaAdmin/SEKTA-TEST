@@ -1,9 +1,11 @@
 'use client'
+import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listAllCashBalances } from '@/lib/queries/trainer-rates'
 import { getCashIncomingByHolderForDate } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { useListQuery } from '@/hooks/useListQuery'
+import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
 /* Блок: готівка на руках у тренерів + що сьогодні надійшло (cash-продажі).
@@ -12,7 +14,7 @@ import styles from '../dashboard.module.css'
 type Row = { id: string; name: string; total: number; todayIncoming: number }
 
 export function TrainerCashBlock({ date }: { date: string }) {
-  const { data: rows, loading, error } = useListQuery<Row>(
+  const { data: rows, loading, error, refetch } = useListQuery<Row>(
     async () => {
       const [balRes, todayRes] = await Promise.all([
         listAllCashBalances(supabase),
@@ -34,12 +36,17 @@ export function TrainerCashBlock({ date }: { date: string }) {
     { realtime: ['sales', 'studio_expenses', 'trainer_payments'] }
   )
 
-  return (
-    <section className={styles.block}>
-      <h2 className={styles.blockTitle}>Готівка на руках у тренерів</h2>
+  useEffect(() => {
+    if (error) console.error('[TrainerCashBlock]', error)
+  }, [error])
 
-      {loading && <div className="loading-dots"><span /><span /><span /></div>}
-      {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
+  return (
+    <section className={`${styles.block} ${styles.equalBlockSm}`}>
+      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Готівка на руках у тренерів</h2>
+
+      <div className={styles.scrollBody}>
+      {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+      {error && <BlockError onRetry={refetch} />}
       {!loading && !error && rows.length === 0 && (
         <div className={styles.empty}>Немає готівки на руках</div>
       )}
@@ -53,6 +60,7 @@ export function TrainerCashBlock({ date }: { date: string }) {
           )}
         </div>
       ))}
+      </div>
     </section>
   )
 }

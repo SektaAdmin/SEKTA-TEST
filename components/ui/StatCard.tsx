@@ -12,7 +12,7 @@ interface Props {
   value: ReactNode      // вже форматований рядок/нода
   hint?: ReactNode
   href?: string
-  accent?: 'default' | 'danger' | 'success'
+  accent?: 'default' | 'danger' | 'success' | 'alert'
   loading?: boolean     // скелет замість value (не плодити '…'-рядки)
 }
 

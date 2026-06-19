@@ -39,10 +39,21 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          {/* Гроші за день + алерти — усі картки в один ряд */}
-          <div className={styles.statRow}>
-            <MoneyCardsBlock date={today} />
-            <AlertCardsBlock date={today} />
+          {/* Гроші за день + алерти — дві окремі групи з мітками */}
+          <div className={styles.statGroups}>
+            <div className={styles.statGroup}>
+              <span className={styles.groupLabel}>Гроші сьогодні</span>
+              <div className={styles.groupCards}>
+                <MoneyCardsBlock date={today} />
+              </div>
+            </div>
+            <div className={styles.statGroupDivider} />
+            <div className={styles.statGroup}>
+              <span className={styles.groupLabel}>Потребує уваги</span>
+              <div className={styles.groupCards}>
+                <AlertCardsBlock date={today} />
+              </div>
+            </div>
           </div>
 
           {/* Боржники по сесіях + вільні місця на заняттях */}

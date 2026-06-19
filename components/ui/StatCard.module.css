@@ -57,3 +57,22 @@
 .success .value {
   color: var(--success);
 }
+
+/* Alert: tinted danger background — signals "needs attention" without full red card */
+.alert {
+  background: var(--danger-dim);
+  border-color: var(--danger-border, rgba(217,53,53,0.25));
+}
+
+.alert .label {
+  color: var(--text-2);
+}
+
+.alert .value {
+  color: var(--danger);
+}
+
+.alert .hint {
+  color: var(--danger);
+  opacity: 0.75;
+}

@@ -233,6 +233,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots span { animation: none; opacity: 0.4; }
+}
+
 /* Standard data table — replaces .tableWrap/.table in 5 page modules */
 .data-table-wrap {
   background: var(--bg-2);

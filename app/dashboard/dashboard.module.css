@@ -26,11 +26,59 @@
   padding: 20px var(--topbar-px) 32px;
 }
 
-/* Усі KPI-картки (гроші + алерти) з адаптивною обіткою при 6+ картках. */
-.statRow {
+/* Дві групи карток (Гроші / Потребує уваги) в один горизонтальний рядок. */
+.statGroups {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.statGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.groupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 2px;
+}
+
+.groupCards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* Вертикальний розподільник між групами */
+.statGroupDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 20px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .statGroups {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .statGroupDivider {
+    width: auto;
+    height: 1px;
+    align-self: auto;
+    margin: 0;
+  }
+  .groupCards {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .twoCol {
@@ -41,11 +89,6 @@
 }
 
 @media (max-width: 640px) {
-  .statRow {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    grid-template-columns: 1fr 1fr;
-  }
   .twoCol {
     grid-template-columns: 1fr;
   }
@@ -64,7 +107,14 @@
 .equalBlock {
   display: flex;
   flex-direction: column;
-  height: 520px;
+  height: var(--dashboard-block-h, 520px);
+}
+
+/* Менша фіксована висота для нижнього ряду (слоти залів / готівка). */
+.equalBlockSm {
+  display: flex;
+  flex-direction: column;
+  height: var(--dashboard-block-sm-h, 320px);
 }
 
 .scrollBody {
@@ -86,6 +136,10 @@
     height: auto;
     max-height: 70vh;
   }
+  .equalBlockSm {
+    height: auto;
+    max-height: 50vh;
+  }
 }
 
 /* ── Спільне для блоків ────────────────────────────────────── */
@@ -100,6 +154,38 @@
   font-size: 14px;
   color: var(--text-3);
   padding: 12px 0;
+}
+
+/* Стан помилки у блоці — нейтральне повідомлення + кнопка повтору */
+.blockError {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.blockErrorMsg {
+  font-size: 14px;
+  color: var(--text-3);
+  flex: 1;
+}
+
+.blockErrorRetry {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.blockErrorRetry:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
 }
 
 /* ── Блок боржників ────────────────────────────────────────── */
@@ -338,7 +424,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--accent);
   background: var(--accent-dim);
-  border-radius: 999px;
+  border-radius: var(--badge-radius);
   padding: 1px 9px;
   min-width: 28px;
   text-align: center;
@@ -350,12 +436,15 @@
   justify-content: center;
   width: 26px;
   height: 26px;
+  /* Expand hit area to 44×44 without affecting layout */
+  padding: 9px;
+  margin: -9px;
   color: var(--text-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--bg-3);
   cursor: pointer;
-  padding: 0;
+  box-sizing: content-box;
 }
 
 .spacesLink:hover {

@@ -1,5 +1,5 @@
 'use client'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { MSG } from '@/lib/messages'
 import { supabase } from '@/lib/supabase'
@@ -7,6 +7,7 @@ import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queri
 import { useRefs } from '@/contexts/RefsContext'
 import { useListQuery } from '@/hooks/useListQuery'
 import { CopyIcon } from '@/components/icons/navigation'
+import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
 /* Блок 3: вільні вікна залів сьогодні (робочий день 8:00–22:00). */
@@ -43,11 +44,15 @@ function buildHallSlotsText(hallName: string, free: { from: number; to: number }
 
 export function FreeSlotsBlock({ date }: { date: string }) {
   const { halls } = useRefs()
-  const { data: busy, loading, error } = useListQuery<HallBusyInterval>(
+  const { data: busy, loading, error, refetch } = useListQuery<HallBusyInterval>(
     () => listHallBusyIntervalsForDate(supabase, date),
     [date],
     { realtime: ['classes'] }
   )
+
+  useEffect(() => {
+    if (error) console.error('[FreeSlotsBlock]', error)
+  }, [error])
 
   const byHall = useMemo(() => {
     const activeHalls = halls.filter(h => h.is_active)
@@ -65,20 +70,23 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }
 
   return (
-    <section className={styles.block}>
-      <h2 className={styles.blockTitle}>Вільні слоти залів (8:00–22:00)</h2>
+    <section className={`${styles.block} ${styles.equalBlockSm}`}>
+      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні слоти залів (8:00–22:00)</h2>
 
-      {loading && <div className="loading-dots"><span /><span /><span /></div>}
-      {error && <div className={styles.empty}>Помилка завантаження: {error}</div>}
+      <div className={styles.scrollBody}>
+      {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+      {error && <BlockError onRetry={refetch} />}
 
-      {!loading && !error && byHall.map((h, i) => (
-        <div key={i} className={styles.slotRow}>
+      {!loading && !error && byHall.map(h => (
+        <div key={h.hall} className={styles.slotRow}>
           <div className={styles.slotHallRow}>
             <span className={styles.slotHall}>{h.hall}</span>
             <button
+              type="button"
               className={styles.slotCopyBtn}
               onClick={() => handleCopyHall(h.hall, h.free)}
               title="Скопіювати слоти"
+              aria-label={`Скопіювати слоти залу ${h.hall}`}
             >
               <CopyIcon />
             </button>
@@ -86,14 +94,15 @@ export function FreeSlotsBlock({ date }: { date: string }) {
           <div className={styles.slotWindows}>
             {h.free.length === 0
               ? <span className={styles.slotFull}>Повністю зайнятий</span>
-              : h.free.map((w, j) => (
-                  <span key={j} className={styles.slotChip}>
+              : h.free.map(w => (
+                  <span key={w.from} className={styles.slotChip}>
                     {minToStr(w.from)}–{minToStr(w.to)}
                   </span>
                 ))}
           </div>
         </div>
       ))}
+      </div>
     </section>
   )
 }
