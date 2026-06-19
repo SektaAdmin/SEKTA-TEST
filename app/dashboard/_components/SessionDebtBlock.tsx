@@ -46,7 +46,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
         {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
         {error && <BlockError onRetry={refetch} />}
         {!loading && !error && groups.length === 0 && (
-          <div className={styles.empty}>Боржників немає 🎉</div>
+          <div className={styles.empty}>Боржників немає</div>
         )}
 
         {!loading && !error && groups.map(g => (
