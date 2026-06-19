@@ -16,6 +16,7 @@ tsconfig.tsbuildinfo
 
 # Playwright e2e
 e2e/.auth/
+e2e/.review/
 test-results/
 playwright-report/
 .playwright/
