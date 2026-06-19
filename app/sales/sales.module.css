@@ -112,8 +112,8 @@
 }
 
 /* Mobile expense card accents */
-.cardExpense { border-left: 3px solid var(--danger) !important; }
-.cardIncome  { border-left: 3px solid var(--success) !important; }
+.cardExpense { background: var(--danger-dim); }
+.cardIncome  { background: var(--success-dim); }
 
 .content { padding: 24px 28px; }
 
@@ -312,11 +312,11 @@
 }
 
 .depositWarning {
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   font-size: 14px;
   display: block;
   margin-top: 4px;
-  background: var(--warning-dim, rgba(245, 158, 11, 0.1));
+  background: var(--warning-dim);
   padding: 6px 8px;
   border-radius: var(--radius-sm);
 }

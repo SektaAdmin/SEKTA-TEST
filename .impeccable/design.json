@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-19T00:00:00Z",
+  "title": "Design System: SEKTA-CRM",
+  "extensions": {
+    "colorMeta": {
+      "professional-black": {
+        "role": "primary",
+        "displayName": "Professional Black",
+        "canonical": "#000000",
+        "tonalRamp": ["#f7f7f7", "#e6e6e6", "#cccccc", "#999999", "#666666", "#333333", "#1a1a1a", "#000000"]
+      },
+      "neutral-ink": {
+        "role": "neutral",
+        "displayName": "Neutral Ink",
+        "canonical": "#1a1917",
+        "tonalRamp": ["#f5f5f2", "#f0f0eb", "#e8e7e2", "#d4d1cb", "#9e9a92", "#525252", "#2e2a22", "#1a1917"]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "canonical": "#d93535",
+        "tonalRamp": ["#fff5f5", "#ffe6e6", "#ffcccc", "#ff9999", "#ff6666", "#ff3333", "#e63232", "#d93535"]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success Green",
+        "canonical": "#00a544",
+        "tonalRamp": ["#f0fdf4", "#d4f9e0", "#a8f3c4", "#7ced9c", "#4ae574", "#1adb4d", "#009a3a", "#00a544"]
+      },
+      "warning": {
+        "role": "semantic",
+        "displayName": "Warning Amber",
+        "canonical": "#b87a00",
+        "tonalRamp": ["#fffbf0", "#fff6e6", "#ffe6cc", "#ffc299", "#ffaa66", "#ff9933", "#d97d00", "#b87a00"]
+      },
+      "semantic-fop": {
+        "role": "semantic",
+        "displayName": "FOP Blue",
+        "canonical": "#2d78d6",
+        "tonalRamp": ["#f0f7ff", "#d9ecff", "#b3d9ff", "#7fbfff", "#4da6ff", "#2d78d6", "#2460b3", "#1a4a99"]
+      },
+      "semantic-card": {
+        "role": "semantic",
+        "displayName": "Card Orange",
+        "canonical": "#c07000",
+        "tonalRamp": ["#fff7f0", "#ffebdb", "#ffd6b3", "#ffb380", "#ff9f4d", "#ff8f1a", "#c07000", "#805000"]
+      },
+      "semantic-deposit": {
+        "role": "semantic",
+        "displayName": "Deposit Purple",
+        "canonical": "#8b34d4",
+        "tonalRamp": ["#f8f3ff", "#e6d9ff", "#ccb3ff", "#a680ff", "#8b34d4", "#7020cc", "#5a1a99", "#380066"]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text for descriptions, table content, labels."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings, card titles, list item labels."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles, modal headlines, top-level information."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, badges, secondary navigation, captions."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-small",
+        "value": "0 1px 4px rgba(0,0,0,0.08)",
+        "purpose": "Subtle lift on input focus, faint hover glow under buttons."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 4px 16px rgba(0,0,0,0.12)",
+        "purpose": "Dropdown menus, popover lift, secondary modals."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 8px 32px rgba(0,0,0,0.14)",
+        "purpose": "Primary modals, overlays, top-level UI."
+      },
+      {
+        "name": "shadow-overlay",
+        "value": "0 16px 48px rgba(0,0,0,0.18)",
+        "purpose": "Modal backdrop shadow; signals maximum elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "motion-fast",
+        "value": "0.12s ease-out",
+        "purpose": "Quick feedback for hover, focus states."
+      },
+      {
+        "name": "motion-standard",
+        "value": "0.18s ease-in-out",
+        "purpose": "Default easing for state transitions and modal entries."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "640px",
+        "purpose": "Portrait mobile devices; switches to bottom nav, full-width layout."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action button. Professional Black background, white text.",
+      "html": "<button class=\"ds-btn-primary\">Save Changes</button>",
+      "css": ".ds-btn-primary { background: #000000; color: #ffffff; padding: 8px 16px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: opacity 0.12s ease-out; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action. Neutral background, black text.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #f5f5f5; color: #000000; padding: 8px 16px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: background 0.12s ease-out; } .ds-btn-secondary:hover { background: #ebebeb; } .ds-btn-secondary:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive action. Red background, white text.",
+      "html": "<button class=\"ds-btn-danger\">Delete</button>",
+      "css": ".ds-btn-danger { background: #d93535; color: #ffffff; padding: 8px 16px; border-radius: 10px; border: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: opacity 0.12s ease-out; } .ds-btn-danger:hover { opacity: 0.85; } .ds-btn-danger:focus-visible { outline: 2px solid #d93535; outline-offset: 2px; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Form input with subtle background and border.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Enter text\">",
+      "css": ".ds-input { background: #eeede9; color: #1a1917; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 8px 12px; font-family: 'Nunito Sans', sans-serif; font-size: 14px; line-height: 1.5; transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out; } .ds-input:focus { outline: none; border-color: #000000; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Compact label or tag. Neutral background, rounded pill.",
+      "html": "<span class=\"ds-chip\">Active</span>",
+      "css": ".ds-chip { display: inline-block; background: #eeede9; color: #1a1917; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+    },
+    {
+      "name": "Chip Active",
+      "kind": "chip",
+      "refersTo": "chip-active",
+      "description": "Selected chip variant. Darker background.",
+      "html": "<span class=\"ds-chip-active\">Selected</span>",
+      "css": ".ds-chip-active { display: inline-block; background: #ebebeb; color: #000000; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+    },
+    {
+      "name": "Card Container",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Content container with white background and subtle border.",
+      "html": "<div class=\"ds-card\"><h3>Card Title</h3><p>Card content goes here.</p></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px; } .ds-card h3 { font-size: 16px; font-weight: 500; color: #1a1917; margin-bottom: 8px; } .ds-card p { font-size: 14px; color: #525252; line-height: 1.5; }"
+    },
+    {
+      "name": "Status Badge — Success",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Success status indicator.",
+      "html": "<span class=\"ds-badge-success\">Completed</span>",
+      "css": ".ds-badge-success { display: inline-block; background: #f0fdf4; color: #00a544; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+    },
+    {
+      "name": "Status Badge — Danger",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Danger/error status indicator.",
+      "html": "<span class=\"ds-badge-danger\">Error</span>",
+      "css": ".ds-badge-danger { display: inline-block; background: rgba(217,53,53,0.08); color: #d93535; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Studio Operations Toolkit",
+    "overview": "SEKTA-CRM is a professional instrument for studio management. Every interface element serves an operation: scheduling, financial tracking, attendance logging, payroll calculation. The system rejects unnecessary decoration, redundant hierarchy, and visual noise. It is calm by necessity — the admin is busy, making split-second decisions under time pressure. The toolkit whispers, never shouts.",
+    "keyCharacteristics": [
+      "Clear information hierarchy with minimal visual noise",
+      "Fast operations with minimal clicks or scrolling",
+      "Semantic color for intent (danger = red, success = green, financial roles distinct)",
+      "Subtle depth via shadows, not color or borders",
+      "Professional black as the only primary accent, used sparingly (≤10% of screen)"
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Professional Black is the only primary accent color on any given screen. It appears in ≤10% of the surface area (typically buttons, key numbers, active states). Secondary and semantic colors (status, financial roles) never compete; they occupy <5% together.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Fidelity Rule",
+        "body": "Danger is always red (#d93535). Success is always green (#00a544). Warning is always amber (#b87a00). Financial roles are distinct by name and color: FOP (blue), Card (orange), Deposit (purple). These are not decorative; they carry meaning the user must parse at a glance.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Scare Rule",
+        "body": "Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background.",
+        "section": "typography"
+      },
+      {
+        "name": "The Breathing Room Rule",
+        "body": "Line-height is never less than 1.3. Line length is capped at 65–75ch for body text on full-width surfaces. This reduces cognitive load for busy admins in variable lighting.",
+        "section": "typography"
+      },
+      {
+        "name": "The Subtle Layering Rule",
+        "body": "Shadows exist only to signal state change or hierarchy (hover, focus, modal precedence). A surface at rest has no shadow. A button on hover lifts with Shadow Small. A modal is raised with Shadow Large. This discipline prevents shadow creep and keeps the visual field calm.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Professional Black for primary buttons, critical text, and icons.",
+      "Do preserve the 4.5:1 contrast ratio for all body text (no muted grays on light backgrounds).",
+      "Do use semantic colors (red for danger, green for success, amber for warning) only for their intended meanings.",
+      "Do keep shadows subtle; they signal state change only, not decoration.",
+      "Do pair fonts from the Nunito family; never introduce a second sans-serif without strong reason.",
+      "Do embrace white space. A calm interface is spacious, not cramped.",
+      "Do document financial colors by their role (FOP, Card, Deposit) not by hex value; meaning carries the design forward."
+    ],
+    "donts": [
+      "Don't use dark mode with purple gradients, neon accents, or glassmorphism. This is a business tool, not a gaming interface.",
+      "Don't use muted gray text on tinted backgrounds (e.g., #737373 on #f5f5f2). Gray text on colored bg looks washed out. Use semantic color instead.",
+      "Don't use more than one primary accent on a single screen. Professional Black is the only primary; semantic colors are secondary.",
+      "Don't apply shadows to surfaces at rest. Shadows signal state; resting surfaces are flat.",
+      "Don't use border-left or border-right stripes as a primary design element. Use full borders, background tints, or leading icons instead.",
+      "Don't pair two similar sans-serifs (e.g., Nunito with Inter). Pair on a contrast axis (serif + sans) or use one family in multiple weights.",
+      "Don't bury critical information behind scrolling or multiple clicks. Fast operations with minimal friction are the north star.",
+      "Don't introduce decorative gradients, skewed cards, or nested card grids. These are AI slop tells; the design must stay restrained and functional."
+    ]
+  }
+}
