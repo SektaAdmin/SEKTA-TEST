@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-06-19T00:00:00Z",
+  "generatedAt": "2026-06-19T11:55:00Z",
   "title": "Design System: SEKTA-CRM",
   "extensions": {
     "colorMeta": {
@@ -22,17 +22,35 @@
         "canonical": "#d93535",
         "tonalRamp": ["#fff5f5", "#ffe6e6", "#ffcccc", "#ff9999", "#ff6666", "#ff3333", "#e63232", "#d93535"]
       },
+      "danger-text": {
+        "role": "semantic",
+        "displayName": "Danger Text",
+        "canonical": "#b32020",
+        "tonalRamp": ["#fdf2f2", "#f7d9d9", "#edaeae", "#dd7a7a", "#cc4d4d", "#bf3030", "#b32020", "#991c1c"]
+      },
       "success": {
         "role": "semantic",
         "displayName": "Success Green",
         "canonical": "#00a544",
         "tonalRamp": ["#f0fdf4", "#d4f9e0", "#a8f3c4", "#7ced9c", "#4ae574", "#1adb4d", "#009a3a", "#00a544"]
       },
+      "success-text": {
+        "role": "semantic",
+        "displayName": "Success Text",
+        "canonical": "#007a33",
+        "tonalRamp": ["#f0fdf4", "#d4f0dd", "#a3dcb8", "#5fbf85", "#2a9d5f", "#138048", "#0a6d3a", "#007a33"]
+      },
       "warning": {
         "role": "semantic",
         "displayName": "Warning Amber",
         "canonical": "#b87a00",
         "tonalRamp": ["#fffbf0", "#fff6e6", "#ffe6cc", "#ffc299", "#ffaa66", "#ff9933", "#d97d00", "#b87a00"]
+      },
+      "warning-text": {
+        "role": "semantic",
+        "displayName": "Warning Text",
+        "canonical": "#805600",
+        "tonalRamp": ["#fbf6ec", "#f3e4c6", "#e3c47f", "#c79a33", "#a87d00", "#946b00", "#805600", "#6b4800"]
       },
       "semantic-fop": {
         "role": "semantic",
@@ -174,17 +192,17 @@
       "name": "Status Badge — Success",
       "kind": "chip",
       "refersTo": "chip",
-      "description": "Success status indicator.",
+      "description": "Success status indicator. Text uses the darker success-text token (#007a33) so 12px text clears 4.5:1 on the success-dim tint.",
       "html": "<span class=\"ds-badge-success\">Completed</span>",
-      "css": ".ds-badge-success { display: inline-block; background: #f0fdf4; color: #00a544; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+      "css": ".ds-badge-success { display: inline-block; background: #f0fdf4; color: #007a33; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid rgba(0,165,68,0.25); }"
     },
     {
       "name": "Status Badge — Danger",
       "kind": "chip",
       "refersTo": "chip",
-      "description": "Danger/error status indicator.",
+      "description": "Danger/error status indicator. Text uses the darker danger-text token (#b32020) so 12px text clears 4.5:1 on the danger-dim tint.",
       "html": "<span class=\"ds-badge-danger\">Error</span>",
-      "css": ".ds-badge-danger { display: inline-block; background: rgba(217,53,53,0.08); color: #d93535; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; }"
+      "css": ".ds-badge-danger { display: inline-block; background: rgba(217,53,53,0.08); color: #b32020; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid rgba(217,53,53,0.25); }"
     }
   ],
   "narrative": {
@@ -210,7 +228,7 @@
       },
       {
         "name": "The No-Scare Rule",
-        "body": "Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background.",
+        "body": "Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background. Semantic colors split fill from text: the vivid token (--success / --danger / --warning) is for fills, borders, icons, and large text (≥18px or bold ≥14px); for semantic text under 18px on a light or dim background, use the darker -text variant (--success-text #007a33, --danger-text #b32020, --warning-text #805600) — the vivid green/red/amber fails 4.5:1 at small sizes.",
         "section": "typography"
       },
       {
