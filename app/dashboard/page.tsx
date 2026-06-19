@@ -30,7 +30,7 @@ export default function DashboardPage() {
     <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className="page-main">
+      <main className={`page-main ${styles.dashboard}`}>
         <div className="page-head">
           <div className={styles.head}>
             <h1 className={styles.title}>Дашборд</h1>

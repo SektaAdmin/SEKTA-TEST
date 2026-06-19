@@ -1,5 +1,5 @@
 /* ── Spacing Scale ─────────────────────────────────────────── */
-:scope {
+.dashboard {
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 12px;
