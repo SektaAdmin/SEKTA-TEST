@@ -10,11 +10,16 @@
 }
 
 .clickable {
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, outline 0.15s;
 }
 
 .clickable:hover {
   border-color: var(--text-3);
+}
+
+.clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .label {
@@ -42,12 +47,17 @@
   width: 60%;
   border-radius: var(--radius-sm);
   background: var(--bg-3);
-  animation: statSkeleton 1.2s ease-in-out infinite;
 }
 
-@keyframes statSkeleton {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: statSkeleton 1.2s ease-in-out infinite;
+  }
+
+  @keyframes statSkeleton {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
 }
 
 .danger .value {
