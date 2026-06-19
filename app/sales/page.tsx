@@ -177,10 +177,13 @@ export default function SalesPage() {
 
           <div className={styles.filters}>
             {/* Таби — завжди видимі */}
-            <div className={styles.feedTabGroup}>
+            <div className={styles.feedTabGroup} role="tablist">
               {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
                 <button
                   key={tab}
+                  role="tab"
+                  aria-selected={feedTab === tab}
+                  aria-controls={`panel-${tab}`}
                   className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
                   onClick={() => handleTabChange(tab)}
                 >
@@ -192,16 +195,19 @@ export default function SalesPage() {
             {/* Пошук по клієнту — тільки для Продажі або Всі */}
             {feedTab !== 'expenses' && (
               <div className={styles.filterSearch}>
+                <label htmlFor="search-input" className="sr-only">
+                  Пошук за клієнтом
+                </label>
                 <svg className={styles.filterSearchIcon} width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
                 </svg>
                 <input
+                  id="search-input"
                   className={styles.filterSearchInput}
                   type="text"
                   value={searchInput}
                   onChange={e => handleSearchInput(e.target.value)}
                   placeholder="Пошук за клієнтом..."
-                  aria-label="Пошук за клієнтом"
                 />
               </div>
             )}
