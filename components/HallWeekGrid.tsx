@@ -1,6 +1,5 @@
 'use client'
-import { useMemo } from 'react'
-import { UserRound } from 'lucide-react'
+import { useMemo, useRef, useState, useLayoutEffect } from 'react'
 import { typeColor } from '@/lib/typeColor'
 import { ticketTypeAbbr } from '@/lib/badges'
 import type { ClassSeries, Hall, TrainingType } from '@/types'
@@ -27,6 +26,10 @@ const MAX_HOUR = 22
 const HOUR_HEIGHT = 83
 const CARD_GAP = 2
 const CARD_MIN_HEIGHT = 36
+// Below this rendered column width, the full card (title + time + trainer + slots)
+// truncates to garbage. Collapse to the overview variant (dot/abbr + N/M + trainer),
+// which stays legible. Width-driven, not viewport-driven (week view = 28 cols on desktop).
+const NARROW_COL_WIDTH = 78
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const TOTAL_H = HOUR_HEIGHT * (MAX_HOUR - MIN_HOUR)
 const TIME_GUTTER_W = 48
@@ -163,16 +166,19 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
           {trainerName && <span className={styles.cardOverviewTrainer}>{trainerName}</span>}
         </span>
       ) : isCompact ? (
-        <span className={styles.cardCompact}>{label} {timeStart}</span>
+        <span className={styles.cardCompact}>
+          <span className={styles.cardDot} aria-hidden="true" />
+          <span>{label} {timeStart}</span>
+        </span>
       ) : (
         <>
-          <div className={styles.cardTitle}>{label}</div>
+          <div className={styles.cardTitleRow}>
+            <span className={styles.cardDot} aria-hidden="true" />
+            <span className={styles.cardTitle}>{label}</span>
+          </div>
           <div className={styles.cardTime}>{timeLabel}</div>
           {trainerName && (
-            <div className={styles.cardTrainerRow}>
-              <UserRound className={styles.cardTrainerIcon} />
-              <span>{trainerName}</span>
-            </div>
+            <div className={styles.cardTrainerRow}>{trainerName}</div>
           )}
           {capacity != null && (() => {
             const free = capacity - clientCount
@@ -217,6 +223,22 @@ interface HallSubColProps {
 function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick, overview = false }: HallSubColProps) {
   const lanes = useMemo(() => computeLanes(items), [items])
 
+  // Collapse to the overview card when the rendered column is too narrow for the
+  // full layout (week view packs up to 28 sub-columns). Measured on the container,
+  // so it stays correct regardless of viewport, hall count, or lane splitting.
+  const colRef = useRef<HTMLDivElement>(null)
+  const [narrow, setNarrow] = useState(false)
+  useLayoutEffect(() => {
+    const el = colRef.current
+    if (!el) return
+    const ro = new ResizeObserver(([entry]) => {
+      setNarrow(entry.contentRect.width < NARROW_COL_WIDTH)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const compact = overview || narrow
+
   function relYOverlapsCard(relY: number): boolean {
     return items.some(s => {
       const top = cardTop(s.time_of_day)
@@ -227,6 +249,7 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick, 
 
   return (
     <div
+      ref={colRef}
       className={styles.hallSubCol}
       style={{ '--hour-h': `${HOUR_HEIGHT}px` } as React.CSSProperties}
       onMouseMove={e => {
@@ -270,8 +293,29 @@ function HallSubCol({ items, typeLabels, dow, hallId, onCardClick, onSlotClick, 
             laneIndex={laneIndex}
             laneCount={laneCount}
             onCardClick={onCardClick}
-            overview={overview}
+            overview={compact}
           />
+        )
+      })}
+      {/* Keyboard path to slot creation: one focusable button per empty hour.
+          Rendered after cards so Tab reaches existing classes first.
+          pointer-events:none keeps the mouse on the parent's "click anywhere"
+          handler (no double-fire); Tab + Enter/Space + screen readers reach these. */}
+      {onSlotClick && HOURS.map(h => {
+        const top = (h - MIN_HOUR) * HOUR_HEIGHT
+        if (relYOverlapsCard(top + HOUR_HEIGHT / 2)) return null
+        const time = `${String(h).padStart(2, '0')}:00`
+        return (
+          <button
+            key={`slot-${h}`}
+            type="button"
+            className={styles.slotButton}
+            style={{ top: `${top}px`, height: `${HOUR_HEIGHT}px` }}
+            aria-label={`Додати заняття о ${time}`}
+            onClick={() => onSlotClick(dow, time, hallId)}
+          >
+            <span className={styles.slotButtonPlus} aria-hidden="true">+</span>
+          </button>
         )
       })}
     </div>
@@ -345,6 +389,17 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
     ? DAYS.filter(d => d.dow === singleDayDow)
     : DAYS
 
+  // Legend: the type abbreviations on the cards are cryptic in the collapsed
+  // (week) view — pair each present type's color + abbr with its full label so
+  // the encoding is recognition, not recall. Scoped to types actually rendered,
+  // in the reference order from trainingTypes.
+  const legendTypes = useMemo(() => {
+    const present = new Set(series.map(s => s.ticket_type))
+    return trainingTypes
+      .filter(t => present.has(t.code))
+      .map(t => ({ code: t.code, label: t.label }))
+  }, [series, trainingTypes])
+
   return (
     <div className={styles.root}>
       {/* ── Scrollable body (header is sticky inside so x-scroll stays in sync) ── */}
@@ -396,6 +451,23 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
           ))}
         </div>
       </div>
+
+      {legendTypes.length > 0 && (
+        <ul className={styles.legend} aria-label="Типи занять">
+          {legendTypes.map(({ code, label }) => (
+            <li key={code} className={styles.legendItem}>
+              <span
+                className={styles.legendAbbr}
+                style={{ ['--card-color' as string]: typeColor(code) }}
+                aria-hidden="true"
+              >
+                {ticketTypeAbbr(code)}
+              </span>
+              <span className={styles.legendLabel}>{label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

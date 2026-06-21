@@ -333,12 +333,16 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
         </span>
       ) : isCompact ? (
         <span className={`${styles.cardCompact} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
-          {label} {formatTime(cls.starts_at)}
+          <span className={styles.cardDot} aria-hidden="true" />
+          <span>{label} {formatTime(cls.starts_at)}</span>
         </span>
       ) : (
         <>
-          <div className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
-            {label}
+          <div className={styles.cardTitleRow}>
+            <span className={styles.cardDot} aria-hidden="true" />
+            <span className={`${styles.cardTitle} ${cls.is_cancelled ? styles.cardTitleCancelled : ''}`}>
+              {label}
+            </span>
           </div>
           {cls.trainers?.name && (
             <div className={styles.cardTrainerRow}>

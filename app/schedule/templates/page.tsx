@@ -19,6 +19,7 @@ import { getOverCapacityCount } from '@/lib/scheduleMetrics'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, toYMD, getMondayOf } from '@/lib/dateUtils'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import FilterSelect from '@/components/ui/FilterSelect'
+import { CalendarDays, SearchX } from 'lucide-react'
 import styles from './page.module.css'
 
 // dow: 1=Пн…6=Сб, 0=Нд. Ordered Mon→Sun
@@ -83,6 +84,17 @@ export default function TemplatesPage() {
     () => templates.filter(s => s.day_of_week === activeDow),
     [templates, activeDow]
   )
+
+  const hasFilters = Boolean(filterTrainer || filterHall || filterClient)
+  // Filters wiped out everything for the current view (templates exist, just hidden).
+  // Day view scopes to one weekday, so the relevant set differs per view.
+  const viewTemplatesEmpty = (viewMode === 'day' ? dayTemplates : templates).length === 0
+  const resetFilters = useCallback(() => {
+    setFilterTrainer('')
+    setFilterHall('')
+    setFilterClient(null)
+    setClientFilterKey(k => k + 1)
+  }, [])
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [prefillSeries, setPrefillSeries] = useState<{ day_of_week?: number; time_of_day?: string; hall_id?: string } | null>(null)
@@ -347,7 +359,13 @@ export default function TemplatesPage() {
       <div className={styles.contentRow}>
         <div className={styles.gridArea}>
           {loading ? (
-            <span className={styles.loading}>...</span>
+            <GridSkeleton />
+          ) : rawTemplates.length === 0 ? (
+            <EmptyState onCreate={() => setShowCreateModal(true)} />
+          ) : viewTemplatesEmpty ? (
+            hasFilters
+              ? <NoResultsState onReset={resetFilters} />
+              : <EmptyDayState day={DOW_LABELS_FULL[activeDow]} onCreate={() => setShowCreateModal(true)} />
           ) : viewMode === 'day' ? (
             <div className={styles.gridCard}>
               <HallWeekGrid
@@ -524,5 +542,75 @@ function MiniCalendar({ anchorRef, open, onClose, calendarMonth, setCalendarMont
         )
       }}
     />
+  )
+}
+
+// ── Grid states (loading / empty / no-results) ───────────────────────
+// Skeleton mirrors the real grid shape (gutter + day headers + a few
+// placeholder cards) so the load reads as "a calendar is arriving", not a spinner.
+function GridSkeleton() {
+  const days = [0, 1, 2, 3, 4]
+  const slots = [
+    { top: 8, h: 64 }, { top: 96, h: 48 }, { top: 168, h: 80 },
+    { top: 24, h: 56 }, { top: 120, h: 72 }, { top: 40, h: 48 },
+    { top: 88, h: 64 }, { top: 176, h: 56 }, { top: 16, h: 72 },
+  ]
+  return (
+    <div className={styles.gridCard} aria-hidden="true">
+      <div className={styles.skelHeader}>
+        <div className={styles.skelGutter} />
+        {days.map(d => <div key={d} className={styles.skelDayHead}><span className={styles.skelBar} /></div>)}
+      </div>
+      <div className={styles.skelBody}>
+        <div className={styles.skelGutter} />
+        {days.map(d => (
+          <div key={d} className={styles.skelCol}>
+            {slots.filter((_, i) => i % days.length === d % days.length).map((s, i) => (
+              <div key={i} className={styles.skelCell} style={{ top: s.top, height: s.h }} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function EmptyState({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className={styles.stateWrap}>
+      <div className={styles.stateIcon}><CalendarDays size={26} strokeWidth={1.5} /></div>
+      <h2 className={styles.stateTitle}>Ще немає шаблонів тижня</h2>
+      <p className={styles.stateText}>
+        Шаблони — це постійні заняття, які щотижня повторюються. Додайте їх один раз,
+        а далі «Виставити тиждень» створить заняття й запише постійників автоматично.
+      </p>
+      <button className="btn-primary" onClick={onCreate}>+ Новий шаблон</button>
+    </div>
+  )
+}
+
+function EmptyDayState({ day, onCreate }: { day: string; onCreate: () => void }) {
+  return (
+    <div className={styles.stateWrap}>
+      <div className={styles.stateIcon}><CalendarDays size={26} strokeWidth={1.5} /></div>
+      <h2 className={styles.stateTitle}>{day}: занять немає</h2>
+      <p className={styles.stateText}>
+        Цього дня тижня ще немає шаблонів. Додайте заняття або перейдіть на інший день.
+      </p>
+      <button className="btn-primary" onClick={onCreate}>+ Новий шаблон</button>
+    </div>
+  )
+}
+
+function NoResultsState({ onReset }: { onReset: () => void }) {
+  return (
+    <div className={styles.stateWrap}>
+      <div className={styles.stateIcon}><SearchX size={26} strokeWidth={1.5} /></div>
+      <h2 className={styles.stateTitle}>Нічого не знайдено</h2>
+      <p className={styles.stateText}>
+        Жоден шаблон не підходить під обрані фільтри. Спробуйте змінити або скинути їх.
+      </p>
+      <button className={styles.btnEdit} onClick={onReset}>Скинути фільтри</button>
+    </div>
   )
 }
