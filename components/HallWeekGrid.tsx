@@ -29,7 +29,10 @@ const CARD_MIN_HEIGHT = 36
 // Below this rendered column width, the full card (title + time + trainer + slots)
 // truncates to garbage. Collapse to the overview variant (dot/abbr + N/M + trainer),
 // which stays legible. Width-driven, not viewport-driven (week view = 28 cols on desktop).
-const NARROW_COL_WIDTH = 78
+// Kept above the multi-hall sub-column min-width (--col-min in CSS) so the all-halls
+// week view renders the legible overview density, while single-hall/day views (columns
+// that flex-grow well past this) get the full card.
+const NARROW_COL_WIDTH = 104
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const TOTAL_H = HOUR_HEIGHT * (MAX_HOUR - MIN_HOUR)
 const TIME_GUTTER_W = 48
@@ -163,7 +166,7 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
               </span>
             )}
           </span>
-          {trainerName && <span className={styles.cardOverviewTrainer}>{trainerName}</span>}
+          {trainerName && <span className={styles.cardOverviewTrainer} title={trainerName}>{trainerName}</span>}
         </span>
       ) : isCompact ? (
         <span className={styles.cardCompact}>
@@ -174,11 +177,11 @@ function TemplateCard({ s, typeLabel, height, top, laneIndex, laneCount, onCardC
         <>
           <div className={styles.cardTitleRow}>
             <span className={styles.cardDot} aria-hidden="true" />
-            <span className={styles.cardTitle}>{label}</span>
+            <span className={styles.cardTitle} title={label}>{label}</span>
           </div>
           <div className={styles.cardTime}>{timeLabel}</div>
           {trainerName && (
-            <div className={styles.cardTrainerRow}>{trainerName}</div>
+            <div className={styles.cardTrainerRow} title={trainerName}>{trainerName}</div>
           )}
           {capacity != null && (() => {
             const free = capacity - clientCount
@@ -413,7 +416,11 @@ export default function HallWeekGrid({ series, halls, trainingTypes, onCardClick
             {hallColumns.length > 1 && (
               <div className={styles.dayHallsRow}>
                 {hallColumns.map(h => (
-                  <span key={h?.id ?? 'none'} className={styles.dayHallLabel}>
+                  <span
+                    key={h?.id ?? 'none'}
+                    className={styles.dayHallLabel}
+                    title={h ? h.name : undefined}
+                  >
                     {h ? h.name : '—'}
                   </span>
                 ))}

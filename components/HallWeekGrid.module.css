@@ -5,6 +5,11 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  /* Minimum readable width per hall sub-column. Drives both the header hall
+     labels and the body columns so they stay aligned. When few columns fit the
+     viewport they flex-grow past this; when many (week × all halls) they bottom
+     out here and the body scrolls horizontally instead of squeezing to slivers. */
+  --col-min: 88px;
 }
 
 /* ── Sticky week header (inside bodyWrapper so x-scroll stays in sync) ── */
@@ -25,8 +30,10 @@
 }
 
 .dayHeader {
+  /* No explicit min-width and no overflow:hidden — content-based min size lets the
+     hall-labels row (N × --col-min) drive the header width so it matches the body
+     day column exactly during horizontal scroll. */
   flex: 1;
-  min-width: 120px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -34,7 +41,6 @@
   border-right: 1px solid var(--border);
   background: var(--bg-2);
   min-height: 40px;
-  overflow: hidden;
 }
 .dayHeader:last-child { border-right: none; }
 
@@ -47,6 +53,10 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-align: center;
+  white-space: nowrap;
+  /* Floor the single-hall day header to a column width so it lines up with the
+     (single) body column when no hall-labels row is rendered. */
+  min-width: var(--col-min);
   user-select: none;
 }
 
@@ -59,13 +69,16 @@
 
 .dayHallLabel {
   flex: 1;
-  font-size: 10px;
+  min-width: var(--col-min);
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  /* Mixed case (not uppercase/tracked) so full hall names like "Великий зал"
+     fit at column width instead of truncating to "ВЕЛ…". title= reveals the
+     full name on hover for the rare long one. */
+  letter-spacing: 0;
   text-align: center;
-  padding: 5px 4px;
+  padding: 5px 6px;
   border-right: 1px solid var(--border);
   white-space: nowrap;
   overflow: hidden;
@@ -78,7 +91,10 @@
 .bodyWrapper {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  /* Scroll horizontally when the columns exceed the viewport (week × all halls)
+     rather than squeezing them to slivers. The sticky header lives inside, so it
+     scrolls in sync. Single-hall / day views fit and show no scrollbar. */
+  overflow-x: auto;
   min-height: 0;
 }
 
@@ -115,19 +131,23 @@
 
 /* ── Day column ──────────────────────────────────────────────── */
 .dayCol {
+  /* No explicit min-width — the content-based minimum (N hall sub-columns, each
+     min-width:--col-min) sizes the day so it matches its header during scroll. */
   flex: 1;
   display: flex;
   position: relative;
-  min-width: 120px;
   border-right: 1px solid var(--border);
 }
 .dayCol:last-child { border-right: none; }
 
 /* ── Hall sub-column ─────────────────────────────────────────── */
 .hallSubCol {
+  /* min-width keeps each hall column readable; cards live as absolute children so
+     they contribute no intrinsic width — without this the column collapses to a
+     sliver in the all-halls week view. */
   flex: 1;
   position: relative;
-  min-width: 0;
+  min-width: var(--col-min);
   border-right: 1px solid var(--border);
   height: 100%;
   cursor: default;
@@ -502,11 +522,13 @@
 }
 
 @media (max-width: 640px) {
-  /* Day view (single column): no horizontal scroll, fill width */
+  /* Day view (single column): no horizontal scroll, fill width.
+     Release the desktop --col-min floor so columns/labels fit the narrow screen. */
   .dayHeader { min-width: 0; }
   .dayCol { min-width: 0; }
   .hallSubCol { min-width: 0; }
-  .dayHeaderText { font-size: 10px; }
+  .dayHallLabel { min-width: 0; }
+  .dayHeaderText { font-size: 10px; min-width: 0; }
 
   /* Body scrollable horizontally only when needed (week view) */
   .bodyWrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
