@@ -27,6 +27,13 @@ const MAX_HOUR = 22
 const HOURS = Array.from({ length: MAX_HOUR - MIN_HOUR }, (_, i) => MIN_HOUR + i)
 const HOUR_HEIGHT = 83
 const CARD_GAP = 2
+// Week view with all halls: each hall gets its own legible column (full card, no
+// abbreviations). Must equal .hallSubCol min-width (160px) so the day/hall headers
+// stay pixel-aligned with the body columns across all 7 days; the grid scrolls
+// horizontally instead of squeezing 4 concurrent halls into one day. Single-hall /
+// day views fit and don't scroll.
+const WEEK_HALL_COL = 160
+const TIME_GUTTER_W = 48
 
 type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -825,6 +832,7 @@ export default function SchedulePage() {
   const [filterTrainer, setFilterTrainer] = useState('')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const headerWrapRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
   const gridCardRef = useRef<HTMLDivElement>(null)
@@ -939,6 +947,14 @@ export default function SchedulePage() {
   // Overview = всі зали одночасно у вузьких колонках (мобільний day-view без вибраного
   // залу). Картки переходять у компактний вигляд «абревіатура + тренер».
   const isOverview = isMobile && viewMode === 'day' && hallColumns.length > 1
+
+  // Week + кілька залів: кожен зал отримує власну читабельну колонку (повна картка,
+  // без скорочень). 7 днів × N залів не влазять у viewport → сітка скролиться по
+  // горизонталі, а час-гутер липне ліворуч. Один зал / day-view влазять без скролу.
+  const weekMultiHall = !isMobile && viewMode === 'week' && hallColumns.length > 1
+  const weekGridMinWidth = weekMultiHall
+    ? TIME_GUTTER_W + weekDays.length * hallColumns.length * WEEK_HALL_COL
+    : undefined
 
   // Navigation with slide animation
   const navigateDay = useCallback((dir: 'left' | 'right') => {
@@ -1176,11 +1192,11 @@ export default function SchedulePage() {
                 slideDir === 'right' ? styles.slideOutRight : '',
               ].filter(Boolean).join(' ')}
             >
-              <div className={styles.stickyHeadersWrap}>
+              <div className={styles.stickyHeadersWrap} ref={headerWrapRef}>
                 <div className={styles.stickyHeaders}>
                   {viewMode === 'week' && (
-                    <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)` }}>
-                      <div />
+                    <div className={styles.weekDayHeader} style={{ gridTemplateColumns: `48px repeat(${weekDays.length}, 1fr)`, minWidth: weekGridMinWidth }}>
+                      <div className={styles.gutterCorner} />
                       {weekDays.map((day, di) => {
                         const isToday = isSameDay(day, today)
                         return (
@@ -1198,7 +1214,7 @@ export default function SchedulePage() {
                         : (trainers as { id: string; name: string }[]).find(t => t.id === filterTrainer)?.name}
                     </div>
                   )}
-                  <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}` }}>
+                  <div className={styles.weekHeader} style={{ gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`, minWidth: weekGridMinWidth }}>
                     <div className={styles.gutterCorner} />
                     {weekDays.map((day, di) => {
                       const isToday = isSameDay(day, today)
@@ -1220,15 +1236,25 @@ export default function SchedulePage() {
                 </div>
               </div>
 
-            <div className={styles.bodyGridWrapper} ref={wrapperRef}>
+            <div
+              className={styles.bodyGridWrapper}
+              ref={wrapperRef}
+              onScroll={e => {
+                // Keep the sticky day/hall headers aligned with the body during
+                // horizontal scroll (all-halls week view).
+                if (headerWrapRef.current) headerWrapRef.current.scrollLeft = e.currentTarget.scrollLeft
+              }}
+            >
             {/* Body grid */}
             <div className={styles.bodyGrid} style={{
               gridTemplateColumns: `48px ${viewMode === 'week' ? `repeat(${weekDays.length}, 1fr)` : '1fr'}`,
-              minWidth: viewMode === 'week'
-                ? `${48 + weekDays.length * 140}px`
-                : hallColumns.length > 1
-                  ? `${48 + hallColumns.length * 160}px`
-                  : undefined,
+              minWidth: weekMultiHall
+                ? `${weekGridMinWidth}px`
+                : viewMode === 'week'
+                  ? `${48 + weekDays.length * 140}px`
+                  : hallColumns.length > 1
+                    ? `${48 + hallColumns.length * 160}px`
+                    : undefined,
             }}>
               {/* Now line overlay — day view only */}
               {viewMode === 'day' && nowTop !== null && (
