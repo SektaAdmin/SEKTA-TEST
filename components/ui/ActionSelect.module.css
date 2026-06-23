@@ -22,7 +22,18 @@
 .trigger[data-disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
 @media (max-width: 640px) {
-  .trigger { padding: 0 6px; font-size: 12px; height: 28px; }
+  /* Touch-target + ghost: «Дія ▾» — повноцінна ціль для пальця (44px) і
+     прозорий фон замість сірої заливки, щоб тертіарна дія не конкурувала
+     з бейджем статусу за увагу (One Voice Rule). */
+  .trigger {
+    padding: 0 14px;
+    font-size: 14px;
+    height: 44px;
+    background: transparent;
+    border-color: var(--border-hover);
+    color: var(--text-2);
+  }
+  .trigger:active { background: var(--bg-3); }
 }
 
 .chevron {

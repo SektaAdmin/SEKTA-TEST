@@ -15,7 +15,7 @@ interface Props {
   onChange: (value: string) => void
 }
 
-export function ActionSelect({ options, placeholder = 'Дія...', disabled, onChange }: Props) {
+export function ActionSelect({ options, placeholder = 'Дія', disabled, onChange }: Props) {
   return (
     <SelectPrimitive.Root
       value=""

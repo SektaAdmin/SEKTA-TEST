@@ -405,51 +405,32 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
 
               {/* Class details card */}
               <div className={styles.detailsCard}>
-                <div className={styles.detailsHeadRow}>
-                  <span id="class-detail-title" className={styles.detailsTitle}>
-                    {cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)}
+                {/* Дата · час (+ бейдж скасування справа) */}
+                <div className={styles.metaRow}>
+                  <span className={styles.metaWhen}>
+                    {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
+                    {' · '}
+                    <span className={styles.metaTime}>{timeRange}</span>
                   </span>
                   {cls.is_cancelled && (
-                    <span className={"badge badge-class-cancelled"}>
-                      скасовано
-                    </span>
+                    <span className="badge badge-class-cancelled">скасовано</span>
                   )}
                 </div>
 
-                <div className={styles.detailsDivider} />
-
-                {(cls.trainers || cls.halls) ? (
-                  <div className={styles.detailsGrid}>
-                    <div className={styles.detailsCol}>
-                      <span className={styles.detailsDate}>
-                        {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
-                      </span>
-                      <span className={styles.detailsTime}>{timeRange}</span>
-                    </div>
-                    <div className={styles.detailsCol}>
-                      {cls.trainers && <span className={styles.detailsMeta}>{cls.trainers.name}</span>}
-                      {cls.halls && <span className={styles.detailsMeta}>{cls.halls.name}</span>}
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.detailsColSingle}>
-                    <span className={styles.detailsDate}>
-                      {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
-                    </span>
-                    <span className={styles.detailsTime}>{timeRange}</span>
+                {/* Тренер · зал */}
+                {(cls.trainers || cls.halls) && (
+                  <div className={styles.metaSub}>
+                    {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ')}
                   </div>
                 )}
 
-                <div className={styles.detailsDivider} />
-
+                {/* Місця + бар в одну строку */}
                 <div className={styles.capacityRow}>
-                  <div className={styles.capacityLabel}>
-                    <span>Місця</span>
-                    <span className={styles.capacityCount}>
-                      <strong>{activeCount}</strong>
-                      {cls.capacity != null && <span> / {cls.capacity}</span>}
-                    </span>
-                  </div>
+                  <span className={styles.capacityLabel}>Місця</span>
+                  <span className={styles.capacityCount}>
+                    <strong>{activeCount}</strong>
+                    {cls.capacity != null && <span> / {cls.capacity}</span>}
+                  </span>
                   <div className={styles.capacityBar}>
                     <div
                       className={styles.capacityBarFill}
@@ -462,36 +443,45 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                 </div>
 
                 {cls.notes && (
+                  <div className={styles.notesRow}>
+                    <span className={styles.notesLabel}>Нотатки</span>
+                    <span className={styles.notesValue}>{cls.notes}</span>
+                  </div>
+                )}
+
+                {/* Етап хореографії: staff бачить компактне поле (rows=1, росте при
+                    потребі); read-only глядач — лише як текст, а порожнє поле взагалі
+                    ховаємо, щоб не їсти перший екран під списком клієнтів. */}
+                {(canManage || cls.choreo_stage) && (
                   <>
                     <div className={styles.detailsDivider} />
-                    <div className={styles.notesRow}>
-                      <span className={styles.notesLabel}>Нотатки</span>
-                      <span className={styles.notesValue}>{cls.notes}</span>
+                    <div className={styles.choreoRow}>
+                      <span className={styles.notesLabel}>Етап хореографії</span>
+                      {canManage ? (
+                        <>
+                          <textarea
+                            className={styles.choreoInput}
+                            value={choreoDraft}
+                            onChange={e => setChoreoDraft(e.target.value)}
+                            placeholder="На якому етапі вивчення хореографії…"
+                            rows={1}
+                          />
+                          {choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
+                            <button
+                              className={styles.choreoSave}
+                              onClick={handleSaveChoreo}
+                              disabled={savingChoreo}
+                            >
+                              {savingChoreo ? 'Збереження…' : 'Зберегти'}
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <span className={styles.notesValue}>{cls.choreo_stage}</span>
+                      )}
                     </div>
                   </>
                 )}
-
-                <div className={styles.detailsDivider} />
-                <div className={styles.choreoRow}>
-                  <span className={styles.notesLabel}>Етап хореографії</span>
-                  <textarea
-                    className={styles.choreoInput}
-                    value={choreoDraft}
-                    onChange={e => canManage && setChoreoDraft(e.target.value)}
-                    readOnly={!canManage}
-                    placeholder="На якому етапі вивчення хореографії…"
-                    rows={2}
-                  />
-                  {canManage && choreoDraft.trim() !== (cls.choreo_stage ?? '') && (
-                    <button
-                      className={styles.choreoSave}
-                      onClick={handleSaveChoreo}
-                      disabled={savingChoreo}
-                    >
-                      {savingChoreo ? 'Збереження…' : 'Зберегти'}
-                    </button>
-                  )}
-                </div>
               </div>
 
               {/* Enrollment section */}
@@ -590,6 +580,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                             <tr key={e.id} className={e.status === 'cancelled' ? styles.rowCancelled : ''}>
                               <td className={styles.rowNum}>{i + 1}</td>
                               <td>
+                                <span className={styles.rowNumInline}>{i + 1}.</span>
                                 <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                   {name}
                                 </a>
@@ -702,6 +693,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                               <tr key={e.id}>
                                 <td className={styles.rowNum}>{i + 1}</td>
                                 <td>
+                                  <span className={styles.rowNumInline}>{i + 1}.</span>
                                   <a href={`/clients/${e.client_id}`} className={styles.clientLink}>
                                     {name}
                                   </a>
@@ -756,7 +748,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                       Скасувати заняття
                     </button>
                   )}
-                  <button className={styles.btnDeleteClass} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
+                  <button className={styles.btnDeleteGhost} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
                     Видалити
                   </button>
                 </div>
