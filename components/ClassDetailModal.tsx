@@ -436,7 +436,9 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                       className={styles.capacityBarFill}
                       style={{
                         width: `${fillPctValue}%`,
-                        backgroundColor: isFull ? 'var(--danger)' : 'var(--success)',
+                        // Повний зал — очікувано, не помилка: нейтральний accent замість
+                        // тривожного червоного. Є місця → green («можна записати»).
+                        backgroundColor: isFull ? 'var(--accent)' : 'var(--success)',
                       }}
                     />
                   </div>

@@ -83,10 +83,10 @@
   color: var(--text);
 }
 
-/* Тренер · зал — приглушений підрядок */
+/* Тренер · зал — приглушений підрядок (text-2: text-3 не дотягує 4.5:1 на bg-3) */
 .metaSub {
   font-size: 13px;
-  color: var(--text-3);
+  color: var(--text-2);
   line-height: 1.4;
 }
 
@@ -134,24 +134,27 @@
   border-radius: var(--radius-pill);
 }
 
+/* Нотатки — інлайн «підпис · значення», як рядок «Місця» (єдиний ритм картки) */
 .notesRow {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
 }
 
+/* Єдиний стиль підпису в картці (sentence-case, без uppercase-eyebrow; text-2
+   проходить 4.5:1 на сірому bg-3). Спільний для нотаток і хореографії. */
 .notesLabel {
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-2);
+  flex-shrink: 0;
 }
 
 .notesValue {
   font-size: 14px;
   color: var(--text);
   line-height: 1.4;
+  min-width: 0;
 }
 
 .choreoRow {
