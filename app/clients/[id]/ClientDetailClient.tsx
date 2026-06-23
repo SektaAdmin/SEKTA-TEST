@@ -11,6 +11,7 @@ import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import { deleteSale } from '@/lib/queries/sales'
 import { createClientLogin } from '@/lib/queries/client-login'
+import { Phone, AtSign, Send } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
@@ -294,6 +295,90 @@ export default function ClientDetailClient({ id }: { id: string }) {
         </div>
 
         <div className={`page-body ${styles.content}`}>
+
+          {/* ── Mobile summary header (≤640px) ── */}
+          <div className={styles.mobileSummary}>
+            <div className={styles.msContacts}>
+              {client.phone
+                ? <a href={`tel:${client.phone}`} className={styles.msContact}><Phone size={14} />{client.phone}</a>
+                : <span className={`${styles.msContact} ${styles.msContactEmpty}`}><Phone size={14} />Без номера</span>}
+              {client.instagram_username && (
+                <a href={`https://instagram.com/${client.instagram_username.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className={styles.msContact}>
+                  <AtSign size={14} />@{client.instagram_username.replace(/^@/, '')}
+                </a>
+              )}
+              {client.telegram_username && (
+                <a href={`https://t.me/${client.telegram_username.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" className={styles.msContact}>
+                  <Send size={14} />@{client.telegram_username.replace(/^@/, '')}
+                </a>
+              )}
+              <div className={styles.msCabinet}>
+                {client.user_id ? (
+                  <span className="badge badge-completed">Кабінет</span>
+                ) : (
+                  <button
+                    className={styles.btnEdit}
+                    onClick={() => { setLoginError(''); setResetMode(false); setShowLoginConfirm(true) }}
+                    disabled={!client.phone}
+                    title={client.phone ? '' : 'Додайте номер телефону, щоб створити кабінет'}
+                  >
+                    Створити кабінет
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.msMetrics}>
+              <div className={styles.msMetric}>
+                <span className={styles.msMetricLabel}>Депозит</span>
+                <span className={`${styles.msMetricValue} ${balance < 0 ? styles.msMetricAlert : ''}`}>
+                  {formatMoney(balance)}
+                </span>
+                {balance < 0 && <span className={styles.msMetricSub}>Від&apos;ємний депозит</span>}
+              </div>
+              <div className={styles.msMetric}>
+                <span className={styles.msMetricLabel}>Залишок занять</span>
+                {sessionBalances.length === 0 ? (
+                  <span className={`${styles.msMetricValue} ${styles.msMetricSub}`} style={{ fontSize: 14, fontWeight: 400 }}>
+                    {MSG.empty.activeEnrollments}
+                  </span>
+                ) : sessionBalances.length === 1 ? (
+                  <span className={`${styles.msMetricValue} ${sessionBalances[0].sessions_balance < 0 ? styles.msMetricAlert : ''}`}>
+                    {sessionBalances[0].sessions_balance}
+                    <span className={styles.msMetricSub} style={{ marginLeft: 6 }}>
+                      {typeLabels[sessionBalances[0].ticket_type] ?? sessionBalances[0].ticket_type}
+                    </span>
+                  </span>
+                ) : (
+                  <div className={styles.msSessionStack}>
+                    {sessionBalances.map(b => (
+                      <span key={b.ticket_type} className={styles.msSessionLine}>
+                        <span className={styles.msSessionName}>{typeLabels[b.ticket_type] ?? b.ticket_type}</span>
+                        <span className={`${styles.msSessionVal} ${b.sessions_balance < 0 ? styles.msSessionAlert : ''}`}>
+                          {b.sessions_balance}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.msActions}>
+              <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
+                Записати продаж
+              </button>
+              {client.user_id && (
+                <button
+                  className={styles.btnEdit}
+                  onClick={() => { setLoginError(''); setResetMode(true); setShowLoginConfirm(true) }}
+                >
+                  Скинути пароль
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className={styles.topGrid}>
 
             <section className={styles.card}>
@@ -402,39 +487,39 @@ export default function ClientDetailClient({ id }: { id: string }) {
               )}
             </section>
 
-            <section className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.sectionTitle}>Постійні записи</h2>
-                <button className={styles.btnPrimary} onClick={() => router.push('/schedule/templates')}>
-                  Шаблони →
-                </button>
-              </div>
-              {permanentEnrollments.length === 0 ? (
-                <div className={styles.emptySection}>
-                  <span className={styles.empty2}>{MSG.empty.permanentRecords}</span>
-                </div>
-              ) : (
-                <div className={styles.sessionCards}>
-                  {permanentEnrollments.filter(e => e.class_series).map(e => {
-                    const s = e.class_series!
-                    const [h, m] = s.time_of_day.split(':')
-                    const startMin = parseInt(h) * 60 + parseInt(m)
-                    const endMin = startMin + s.duration_min
-                    const timeStr = `${pad(Math.floor(startMin / 60))}:${pad(startMin % 60)}–${pad(Math.floor(endMin / 60))}:${pad(endMin % 60)}`
-                    return (
-                      <div key={e.id} className={styles.sessionCard}>
-                        <span className={styles.sessionType}>
-                          {DOW_LABELS_SHORT[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
-                          {s.trainers?.name ? ` · ${s.trainers.name}` : ''}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </section>
-
           </div>
+
+          <section className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h2 className={styles.sectionTitle}>Постійні записи</h2>
+              <button className={styles.btnPrimary} onClick={() => router.push('/schedule/templates')}>
+                Шаблони →
+              </button>
+            </div>
+            {permanentEnrollments.length === 0 ? (
+              <div className={styles.emptySection}>
+                <span className={styles.empty2}>{MSG.empty.permanentRecords}</span>
+              </div>
+            ) : (
+              <div className={styles.sessionCards}>
+                {permanentEnrollments.filter(e => e.class_series).map(e => {
+                  const s = e.class_series!
+                  const [h, m] = s.time_of_day.split(':')
+                  const startMin = parseInt(h) * 60 + parseInt(m)
+                  const endMin = startMin + s.duration_min
+                  const timeStr = `${pad(Math.floor(startMin / 60))}:${pad(startMin % 60)}–${pad(Math.floor(endMin / 60))}:${pad(endMin % 60)}`
+                  return (
+                    <div key={e.id} className={styles.sessionCard}>
+                      <span className={styles.sessionType}>
+                        {DOW_LABELS_SHORT[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
+                        {s.trainers?.name ? ` · ${s.trainers.name}` : ''}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
 
           <section className={styles.card}>
             <div className={styles.cardHeader}>
