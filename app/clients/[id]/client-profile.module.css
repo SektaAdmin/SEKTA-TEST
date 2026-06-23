@@ -619,83 +619,127 @@ a.msContact:hover svg { color: var(--accent); }
     gap: 8px;
   }
 
-  .itemCard {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 14px;
+  /* ── Картка в стилі кабінету (.visitCard) ─────────────────────
+     Аватар тренера зверху + футер «лейбл → бейдж». Спільний рендер
+     для Майбутніх / Стрічки / Тренувань / Продажів. */
+  .iCard {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    padding: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
   }
 
-  .itemCardLabel {
-    font-size: 11px;
+  /* Шапка: аватар тренера (ініціал) + ім'я / роль */
+  .iCardTop {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .iCardAvatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-dim, var(--bg-3));
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .iCardTrainerName {
+    font-size: 14px;
     font-weight: 500;
-    color: var(--text-3);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 2px;
+    color: var(--text);
   }
 
-  .itemCardRow {
+  .iCardTrainerRole {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  /* Основний блок: коли + мета */
+  .iCardWhen {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .iCardMeta {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 4px;
+  }
+
+  /* Футер: рядки «лейбл → значення/бейдж» */
+  .iCardFooter {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .iCardRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-width: 0;
   }
 
-  .itemCardMain {
-    font-size: 14px;
+  .iCardLabel {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  .iCardValue {
+    font-size: 13px;
     font-weight: 500;
     color: var(--text);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  .itemCardDate {
-    font-size: 14px;
-    color: var(--text);
-    white-space: nowrap;
-    flex-shrink: 0;
+  .iCardBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid transparent;
   }
 
-  .itemCardSub {
-    font-size: 14px;
-    color: var(--text);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  /* Тони бейджів — узгоджено з кабінетом (.visitTimer*) */
+  .toneAttended  { color: var(--success); background: var(--success-dim); border-color: var(--success-border); }
+  .toneNoshow    { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
+  .toneLate      { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
+  .toneCancelled { color: var(--text-2);  background: var(--bg-3);        border-color: var(--border); }
+  .toneEnrolled  { color: var(--text-2);  background: var(--bg-3);        border-color: var(--border); }
+  .toneWaitlist  { color: var(--warning); background: var(--warning-dim); border-color: var(--warning-border); }
 
-  .itemCardTime {
-    font-size: 14px;
-    color: var(--text);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  .balPositive { color: var(--success); background: var(--success-dim); border-color: var(--success-border); }
+  .balZero     { color: var(--warning); background: var(--warning-dim); border-color: var(--warning-border); }
+  .balNegative { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
 
-  .itemCardMeta {
-    font-size: 14px;
-    color: var(--text);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .itemCardActions {
+  /* Слот дій усередині картки */
+  .iCardActions {
     display: flex;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 12px;
   }
 
-  .itemCardActions .btnRowEdit,
-  .itemCardActions .btnRowDel {
+  .iCardActions .btnRowEdit,
+  .iCardActions .btnRowDel {
     flex: 1;
-    height: 34px;
+    height: 36px;
     font-size: 14px;
   }
 

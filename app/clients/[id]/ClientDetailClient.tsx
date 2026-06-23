@@ -3,22 +3,22 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
-import { getClientDetail, listPastEnrollmentsForClient, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
-import type { PastEnrollment, FeedEnrollment, UpcomingEnrollment } from '@/lib/queries/client-detail'
+import { getClientDetail, listFeedEnrollmentsForClient } from '@/lib/queries/client-detail'
+import type { FeedEnrollment, UpcomingEnrollment } from '@/lib/queries/client-detail'
 import { listSalesForClient, listAllSalesForFeed } from '@/lib/queries/sales'
 import type { FeedSale } from '@/lib/queries/sales'
 import { listBalanceAfterBySaleIds } from '@/lib/queries/balance-transactions'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import { deleteSale } from '@/lib/queries/sales'
 import { createClientLogin } from '@/lib/queries/client-login'
-import { Phone, AtSign, Send } from 'lucide-react'
+import { Phone, AtSign, Send, ChevronRight } from 'lucide-react'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime, formatMoney, formatDate, hhmm } from '@/lib/formatters'
-import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
@@ -43,6 +43,41 @@ type PermanentEnrollment = {
 
 const SALES_PAGE_SIZE = 20
 
+// Tone → CSS-клас бейджа картки (узгоджено з кабінетом, .visitTimer*).
+const TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
+  attended:  styles.toneAttended,
+  noshow:    styles.toneNoshow,
+  late:      styles.toneLate,
+  cancelled: styles.toneCancelled,
+  enrolled:  styles.toneEnrolled,
+  waitlist:  styles.toneWaitlist,
+}
+
+function balToneClass(bal: number): string {
+  return bal > 0 ? styles.balPositive : bal < 0 ? styles.balNegative : styles.balZero
+}
+
+// Шапка картки з аватаром тренера (ініціал). Немає тренера → лише chevron / нічого.
+function ICardTop({ name, chevron }: { name?: string | null; chevron?: boolean }) {
+  if (!name) {
+    return chevron ? (
+      <div className={styles.iCardTop}>
+        <ChevronRight size={16} style={{ marginLeft: 'auto', color: 'var(--text-3)', flexShrink: 0 }} />
+      </div>
+    ) : null
+  }
+  return (
+    <div className={styles.iCardTop}>
+      <span className={styles.iCardAvatar}>{name.trim()[0]?.toUpperCase() || '?'}</span>
+      <div style={{ minWidth: 0 }}>
+        <div className={styles.iCardTrainerName}>{name}</div>
+        <div className={styles.iCardTrainerRole}>Тренер</div>
+      </div>
+      {chevron && <ChevronRight size={16} style={{ marginLeft: 'auto', color: 'var(--text-3)', flexShrink: 0 }} />}
+    </div>
+  )
+}
+
 export default function ClientDetailClient({ id }: { id: string }) {
   const router = useRouter()
 
@@ -65,12 +100,9 @@ export default function ClientDetailClient({ id }: { id: string }) {
   const [permanentEnrollments, setPermanentEnrollments] = useState<PermanentEnrollment[]>([])
   const [showEnrollModal, setShowEnrollModal] = useState(false)
   const [detailClassId, setDetailClassId] = useState<string | null>(null)
-  const [pastEnrollments, setPastEnrollments] = useState<PastEnrollment[]>([])
-  const [pastTotal, setPastTotal] = useState(0)
-  const [pastPage, setPastPage] = useState(0)
   const [feedEnrollments, setFeedEnrollments] = useState<FeedEnrollment[]>([])
   const [feedSales, setFeedSales] = useState<FeedSale[]>([])
-  const [activeTab, setActiveTab] = useState<'feed' | 'trainings' | 'sales'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'sales'>('feed')
   const [feedShowAll, setFeedShowAll] = useState(false)
   const [showLoginConfirm, setShowLoginConfirm] = useState(false)
   const [resetMode, setResetMode] = useState(false)
@@ -110,16 +142,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
     setUpcomingEnrollments(upcomingEnrollments)
   }, [id])
 
-  const fetchPastEnrollments = useCallback(async (page: number) => {
-    const { data, count } = await listPastEnrollmentsForClient(supabase, id, page, SALES_PAGE_SIZE)
-    if (page === 0) {
-      setPastEnrollments(data)
-    } else {
-      setPastEnrollments(prev => [...prev, ...data])
-    }
-    setPastTotal(count)
-  }, [id])
-
   const fetchFeedEnrollments = useCallback(async () => {
     const { data } = await listFeedEnrollmentsForClient(supabase, id)
     setFeedEnrollments(data)
@@ -157,21 +179,18 @@ export default function ClientDetailClient({ id }: { id: string }) {
       listTrainingTypeLabels(supabase).then(r => setTypeLabels(r.data)),
       fetchAllClientData(),
       fetchSales(0),
-      fetchPastEnrollments(0),
       fetchFeedEnrollments(),
       fetchFeedSales(),
     ]).then(() => setLoading(false))
-  }, [fetchAllClientData, fetchSales, fetchFeedEnrollments])
+  }, [fetchAllClientData, fetchSales, fetchFeedEnrollments, fetchFeedSales])
 
   const reloadAll = useCallback(() => {
     fetchAllClientData()
     setSalesPage(0)
     fetchSales(0)
-    setPastPage(0)
-    fetchPastEnrollments(0)
     fetchFeedEnrollments()
     fetchFeedSales()
-  }, [fetchAllClientData, fetchSales, fetchPastEnrollments, fetchFeedEnrollments, fetchFeedSales])
+  }, [fetchAllClientData, fetchSales, fetchFeedEnrollments, fetchFeedSales])
 
   useEffect(() => {
     function onVisible() {
@@ -247,12 +266,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
     const next = salesPage + 1
     setSalesPage(next)
     fetchSales(next)
-  }
-
-  function handleLoadMorePast() {
-    const next = pastPage + 1
-    setPastPage(next)
-    fetchPastEnrollments(next)
   }
 
   if (loading) return (
@@ -585,28 +598,25 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     const end = new Date(start.getTime() + cls.duration_min * 60000)
                     const timeStr = `${hhmm(start)}–${hhmm(end)}`
                     const dateStr = formatDate(start)
+                    const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
+                    const badge = enrollmentBadge(e, 'admin')
                     return (
-                      <div key={e.id} className={styles.itemCard}>
-                        <div className={styles.itemCardRow}>
-                          <span className={styles.itemCardMain}>
-                            {typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}
-                          </span>
-                          <span className={styles.itemCardDate}>{dateStr}</span>
+                      <div key={e.id} className={styles.iCard}>
+                        <ICardTop name={cls.trainers?.name} />
+                        <div className={styles.iCardWhen}>{dateStr} · {timeStr}</div>
+                        <div className={styles.iCardMeta}>
+                          {[typeName, cls.halls?.name].filter(Boolean).join(' · ')}
+                          {cls.choreo_stage ? ` · 🩰 ${cls.choreo_stage}` : ''}
                         </div>
-                        <div className={styles.itemCardRow}>
-                          <span className={styles.itemCardSub}>
-                            {timeStr}{cls.trainers?.name ? ` · ${cls.trainers.name}` : ''}{cls.halls?.name ? ` · ${cls.halls.name}` : ''}
-                          </span>
-                        </div>
-                        {cls.choreo_stage && (
-                          <div className={styles.itemCardRow}>
-                            <span className={styles.choreoSub}>🩰 {cls.choreo_stage}</span>
+                        <div className={styles.iCardFooter}>
+                          <div className={styles.iCardRow}>
+                            <span className={styles.iCardLabel}>Статус</span>
+                            <span className={`${styles.iCardBadge} ${TONE_CLASS[badge.tone]}`}>{badge.label}</span>
                           </div>
-                        )}
-                        <div className={styles.itemCardActions}>
+                        </div>
+                        <div className={styles.iCardActions}>
                           <button
                             className={styles.btnRowEdit}
-                            style={{ flex: 1, height: 36 }}
                             onClick={() => setDetailClassId(e.class_id)}
                           >
                             Перейти до заняття
@@ -628,12 +638,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   onClick={() => setActiveTab('feed')}
                 >
                   Зведена стрічка
-                </button>
-                <button
-                  className={activeTab === 'trainings' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
-                  onClick={() => setActiveTab('trainings')}
-                >
-                  Тренування
                 </button>
                 <button
                   className={activeTab === 'sales' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
@@ -660,7 +664,14 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   date: new Date(s.created_at).getTime(),
                   data: s,
                 })),
-              ].sort((a, b) => a.date - b.date)
+              ].sort((a, b) => {
+                // Хронологія oldest→newest. Тай-брейк при рівних timestamp:
+                // продаж раніше заняття (спершу купив → потім відходив), щоб
+                // наростаючий залишок рахувався коректно.
+                if (a.date !== b.date) return a.date - b.date
+                if (a.kind !== b.kind) return a.kind === 'sale' ? -1 : 1
+                return 0
+              })
 
               // compute running session balance per ticket_type, oldest→newest
               const running: Record<string, number> = {}
@@ -703,6 +714,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             <th>Тип / Операція</th>
                             <th>Тренер</th>
                             <th>Деталі</th>
+                            <th>Списано</th>
                             <th>Залишок</th>
                           </tr>
                         </thead>
@@ -734,6 +746,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                   <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
                                   <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
                                   <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
+                                  <td className={styles.numCell}>
+                                    {e.sessions_used > 0
+                                      ? `${e.sessions_used} год.`
+                                      : <span className={styles.empty2}>—</span>
+                                    }
+                                  </td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
                                       ? <span className={balanceClass(bal)}>{bal}</span>
@@ -767,6 +785,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                       {paymentLabel(s.payment_method)}
                                     </span>
                                   </td>
+                                  <td className={styles.numCell}><span className={styles.empty2}>—</span></td>
                                   <td className={styles.numCell}>
                                     {bal !== undefined
                                       ? <span className={balanceClass(bal)}>{bal}</span>
@@ -794,31 +813,31 @@ export default function ClientDetailClient({ id }: { id: string }) {
                           const dateStr = formatDate(start)
                           const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
                           const bal = item.runningBalance[cls.ticket_type]
-                          const Icon = enrollmentStatusIcon(e.status)
+                          const badge = enrollmentBadge(e, 'admin')
                           return (
-                            <div key={`e-${e.id}`} className={styles.itemCard}>
-                              <span className={styles.itemCardLabel}>Тренування</span>
-                              <div className={styles.itemCardRow}>
-                                <span className={styles.itemCardMain}>{typeName}</span>
-                                <span className={styles.itemCardDate}>{dateStr}</span>
+                            <div key={`e-${e.id}`} className={styles.iCard}>
+                              <ICardTop name={cls.trainers?.name} />
+                              <div className={styles.iCardWhen}>{dateStr} · {timeStr}</div>
+                              <div className={styles.iCardMeta}>
+                                {[typeName, cls.halls?.name].filter(Boolean).join(' · ')}
                               </div>
-                              <div className={styles.itemCardRow}>
-                                <span className={styles.itemCardSub}>
-                                  {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ') || '—'}
-                                </span>
-                                <span className={styles.itemCardTime}>{timeStr}</span>
-                              </div>
-                              <div className={styles.itemCardRow}>
-                                <span className={enrollmentStatusClass(e.status)}>
-                                  {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
-                                  {enrollmentStatusLabel(e.status)}
-                                </span>
-                                {bal !== undefined
-                                  ? <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>
-                                      Залишок: {bal} год.
-                                    </span>
-                                  : null
-                                }
+                              <div className={styles.iCardFooter}>
+                                <div className={styles.iCardRow}>
+                                  <span className={styles.iCardLabel}>Статус</span>
+                                  <span className={`${styles.iCardBadge} ${TONE_CLASS[badge.tone]}`}>{badge.label}</span>
+                                </div>
+                                <div className={styles.iCardRow}>
+                                  <span className={styles.iCardLabel}>Списано</span>
+                                  <span className={styles.iCardValue}>
+                                    {e.sessions_used > 0 ? `${e.sessions_used} год.` : 'Не списано'}
+                                  </span>
+                                </div>
+                                {bal !== undefined && (
+                                  <div className={styles.iCardRow}>
+                                    <span className={styles.iCardLabel}>Залишок після</span>
+                                    <span className={`${styles.iCardBadge} ${balToneClass(bal)}`}>{bal} год.</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )
@@ -831,26 +850,24 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             ? s.ticket_name
                             : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
                           return (
-                            <div key={`s-${s.id}`} className={styles.itemCard}>
-                              <span className={styles.itemCardLabel}>Продаж</span>
-                              <div className={styles.itemCardRow}>
-                                <span className={styles.itemCardMain}>{opLabel}</span>
-                                <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
-                              </div>
-                              <div className={styles.itemCardRow}>
-                                <span className={styles.itemCardSub}>{s.trainers?.name ?? '—'}</span>
-                                <span className={paymentClass(s.payment_method)}>
-                                  {paymentLabel(s.payment_method)}
-                                </span>
-                              </div>
-                              {bal !== undefined && (
-                                <div className={styles.itemCardRow}>
-                                  <span />
-                                  <span className={bal > 0 ? 'balance-ok' : bal < 0 ? 'balance-warn' : 'balance-zero'}>
-                                    Залишок: {bal} год.
+                            <div key={`s-${s.id}`} className={styles.iCard}>
+                              <ICardTop name={s.trainers?.name} />
+                              <div className={styles.iCardWhen}>{opLabel}</div>
+                              <div className={styles.iCardMeta}>{formatSaleDatetime(s.created_at)}</div>
+                              <div className={styles.iCardFooter}>
+                                <div className={styles.iCardRow}>
+                                  <span className={styles.iCardLabel}>Оплата</span>
+                                  <span className={paymentClass(s.payment_method)}>
+                                    {paymentLabel(s.payment_method)}
                                   </span>
                                 </div>
-                              )}
+                                {bal !== undefined && (
+                                  <div className={styles.iCardRow}>
+                                    <span className={styles.iCardLabel}>Залишок після</span>
+                                    <span className={`${styles.iCardBadge} ${balToneClass(bal)}`}>{bal} год.</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )
                         }
@@ -866,94 +883,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 </>
               )
             })()}
-
-            {activeTab === 'trainings' && (
-              pastEnrollments.length === 0 ? (
-                <div className={styles.emptySection}>
-                  <span className={styles.empty2}>Ще не було тренувань</span>
-                </div>
-              ) : (
-                <>
-                  {!isMobile && (
-                    <div className={styles.tableWrap}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr>
-                            <th>Дата і час</th>
-                            <th>Тип</th>
-                            <th>Тренер</th>
-                            <th>Зал</th>
-                            <th>Занять</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {pastEnrollments.filter(e => e.classes).map(e => {
-                            const cls = e.classes!
-                            const start = new Date(cls.starts_at)
-                            const end = new Date(start.getTime() + cls.duration_min * 60000)
-                            const timeStr = `${hhmm(start)}–${hhmm(end)}`
-                            return (
-                              <tr key={e.id}>
-                                <td className={styles.dateCell}>
-                                  {formatDate(start)} {timeStr}
-                                </td>
-                                <td>{typeLabels[cls.ticket_type] ?? cls.ticket_type}{cls.title ? ` · ${cls.title}` : ''}</td>
-                                <td>{cls.trainers?.name ?? <span className={styles.empty2}>—</span>}</td>
-                                <td>{cls.halls?.name ?? <span className={styles.empty2}>—</span>}</td>
-                                <td className={styles.numCell}>{e.sessions_used}</td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  {isMobile && (
-                    <div className={styles.cardList}>
-                      {pastEnrollments.filter(e => e.classes).map(e => {
-                        const cls = e.classes!
-                        const start = new Date(cls.starts_at)
-                        const end = new Date(start.getTime() + cls.duration_min * 60000)
-                        const timeStr = `${hhmm(start)}–${hhmm(end)}`
-                        const dateStr = formatDate(start)
-                        const typeName = (typeLabels[cls.ticket_type] ?? cls.ticket_type) + (cls.title ? ` · ${cls.title}` : '')
-                        const Icon = enrollmentStatusIcon(e.status)
-                        return (
-                          <div key={e.id} className={styles.itemCard}>
-                            <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardMain}>{typeName}</span>
-                              <span className={styles.itemCardDate}>{dateStr}</span>
-                            </div>
-                            <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardSub}>
-                                {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ') || '—'}
-                              </span>
-                              <span className={styles.itemCardTime}>{timeStr}</span>
-                            </div>
-                            <div className={styles.itemCardRow}>
-                              <span className={enrollmentStatusClass(e.status)}>
-                                {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
-                                {enrollmentStatusLabel(e.status)}
-                              </span>
-                              {e.sessions_used > 1 && (
-                                <span className={styles.itemCardMeta}>списано: {e.sessions_used} год.</span>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  {pastEnrollments.length < pastTotal && (
-                    <button className={styles.btnLoadMore} onClick={handleLoadMorePast}>
-                      Завантажити ще ({pastTotal - pastEnrollments.length})
-                    </button>
-                  )}
-                </>
-              )
-            )}
 
             {activeTab === 'sales' && (
               sales.length === 0 ? (
@@ -1068,38 +997,33 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         const opLabel = s.ticket_name
                           ? s.ticket_name
                           : delta >= 0 ? '↑ Поповнення' : '↓ Списання'
-                        const isCash = s.payment_method === 'cash'
                         return (
-                          <div key={s.id} className={styles.itemCard}>
-                            <div className={styles.itemCardRow}>
-                              <span className={styles.itemCardMain}>{opLabel}</span>
-                              <span className={styles.itemCardDate}>{formatSaleDatetime(s.created_at)}</span>
-                            </div>
-                            <div className={styles.itemCardRow}>
-                              {isCash && s.trainers?.name
-                                ? <span className={styles.itemCardSub}>{s.trainers.name}</span>
-                                : <span className={paymentClass(s.payment_method)}>
-                                    {paymentLabel(s.payment_method)}
-                                  </span>
-                              }
-                              {s.sessions != null
-                                ? <span className={delta > 0 ? styles.sessionsPos : delta < 0 ? styles.sessionsNeg : styles.itemCardMeta}>
-                                    {delta > 0 ? '+' : ''}{s.sessions} год.
-                                  </span>
-                                : <span className={delta > 0 ? styles.deltaPos : delta < 0 ? styles.deltaNeg : styles.itemCardMeta}>
-                                    {delta > 0 ? '+' : ''}{formatMoney(Math.abs(delta))}
-                                  </span>
-                              }
-                            </div>
-                            {isCash && s.trainers?.name && (
-                              <div className={styles.itemCardRow}>
+                          <div key={s.id} className={styles.iCard}>
+                            <ICardTop name={s.trainers?.name} />
+                            <div className={styles.iCardWhen}>{opLabel}</div>
+                            <div className={styles.iCardMeta}>{formatSaleDatetime(s.created_at)}</div>
+                            <div className={styles.iCardFooter}>
+                              <div className={styles.iCardRow}>
+                                <span className={styles.iCardLabel}>Оплата</span>
                                 <span className={paymentClass(s.payment_method)}>
                                   {paymentLabel(s.payment_method)}
                                 </span>
-                                <span />
                               </div>
-                            )}
-                            <div className={styles.itemCardActions}>
+                              <div className={styles.iCardRow}>
+                                <span className={styles.iCardLabel}>
+                                  {s.sessions != null ? 'Занять' : 'Сума'}
+                                </span>
+                                {s.sessions != null
+                                  ? <span className={delta > 0 ? styles.sessionsPos : delta < 0 ? styles.sessionsNeg : styles.iCardValue}>
+                                      {delta > 0 ? '+' : ''}{s.sessions} год.
+                                    </span>
+                                  : <span className={delta > 0 ? styles.deltaPos : delta < 0 ? styles.deltaNeg : styles.iCardValue}>
+                                      {delta > 0 ? '+' : ''}{formatMoney(Math.abs(delta))}
+                                    </span>
+                                }
+                              </div>
+                            </div>
+                            <div className={styles.iCardActions}>
                               <button
                                 className={styles.btnRowEdit}
                                 onClick={() => setEditingSale({

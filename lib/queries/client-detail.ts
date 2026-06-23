@@ -68,30 +68,6 @@ export async function getClientDetail(
   }
 }
 
-export async function listPastEnrollmentsForClient(
-  supabase: Db,
-  clientId: string,
-  page: number,
-  pageSize: number
-): Promise<{ data: PastEnrollment[]; count: number; error: string | null }> {
-  const from = page * pageSize
-  const to = from + pageSize - 1
-
-  const { data, count, error } = await supabase
-    .from('enrollments')
-    .select(PAST_SELECT, { count: 'exact' })
-    .eq('client_id', clientId)
-    .in('status', ['attended', 'noshow', 'cancelled'])
-    .order('starts_at', { referencedTable: 'classes', ascending: false })
-    .range(from, to)
-
-  return {
-    data: data ?? [],
-    count: count ?? 0,
-    error: error?.message ?? null,
-  }
-}
-
 export async function listFeedEnrollmentsForClient(
   supabase: Db,
   clientId: string
