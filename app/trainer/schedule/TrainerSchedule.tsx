@@ -457,10 +457,13 @@ interface MobileScheduleTimelineProps {
   today: Date
   typeLabels: Record<string, string>
   activeHalls: Hall[]
+  activeTrainers: { id: string; name: string }[]
   filterChip: string
+  filterTrainer: string
   viewerTrainerId: string | null
   onDateSelect: (d: Date) => void
   onFilterChip: (chip: string) => void
+  onTrainerFilter: (trainerId: string) => void
   onCardClick: (id: string) => void
   onFreeSlotClick: (startsAt: string, hallId: string) => void
 }
@@ -481,10 +484,13 @@ function MobileScheduleTimeline({
   today,
   typeLabels,
   activeHalls,
+  activeTrainers,
   filterChip,
+  filterTrainer,
   viewerTrainerId,
   onDateSelect,
   onFilterChip,
+  onTrainerFilter,
   onCardClick,
   onFreeSlotClick,
 }: MobileScheduleTimelineProps) {
@@ -577,6 +583,7 @@ function MobileScheduleTimeline({
   const classesByHour = useMemo(() => {
     let result = dayClasses
     if (filterChip !== 'all') result = result.filter(c => c.hall_id === filterChip)
+    if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
     result.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
     const map = new Map<number, ClassWithJoins[]>()
     for (const cls of result) {
@@ -584,7 +591,7 @@ function MobileScheduleTimeline({
       const arr = map.get(h) ?? []; arr.push(cls); map.set(h, arr)
     }
     return map
-  }, [dayClasses, filterChip])
+  }, [dayClasses, filterChip, filterTrainer])
 
   // Вільні зали для кожної години
   const freeHallsByHour = useMemo(() => {
@@ -645,7 +652,7 @@ function MobileScheduleTimeline({
         </div>
       </div>
 
-      {/* Filter chips */}
+      {/* Filter chips — зали */}
       <div className={styles.mobileTlHallChips}>
         {chips.map(chip => (
           <button
@@ -657,6 +664,27 @@ function MobileScheduleTimeline({
           </button>
         ))}
       </div>
+
+      {/* Trainer chips */}
+      {activeTrainers.length > 1 && (
+        <div className={styles.mobileTlTrainerChips}>
+          <button
+            className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+            onClick={() => onTrainerFilter('')}
+          >
+            Всі тренери
+          </button>
+          {activeTrainers.map(t => (
+            <button
+              key={t.id}
+              className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              onClick={() => onTrainerFilter(t.id)}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Timeline scroll */}
       <div ref={scrollRef} className={styles.mobileTlScroll}>
@@ -777,8 +805,11 @@ interface Props {
 }
 
 export default function TrainerSchedule({ viewerTrainerId }: Props) {
-  const { halls, trainingTypes } = useRefs()
+  const { halls, trainers, trainingTypes } = useRefs()
   const activeHalls = (halls as Hall[]).filter(h => h.is_active)
+  const activeTrainers = (trainers as { id: string; name: string; is_active: boolean }[])
+    .filter(t => t.is_active)
+    .map(t => ({ id: t.id, name: t.name }))
   const isStaff = viewerTrainerId === null
   const router = useRouter()
 
@@ -800,6 +831,8 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   const [nowTop, setNowTop] = useState<number | null>(null)
   // 'all' = всі зали, hall-uuid = конкретний зал
   const [filterChip, setFilterChip] = useState<'all' | string>('all')
+  // '' = всі тренери, trainer-uuid = конкретний тренер (mobile-чипи)
+  const [filterTrainer, setFilterTrainer] = useState('')
   const [hourHeight, setHourHeight] = useState(HOUR_HEIGHT)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const swipeRef = useRef<{ startX: number; startY: number; decided: boolean } | null>(null)
@@ -1026,10 +1059,13 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           today={today}
           typeLabels={typeLabels}
           activeHalls={activeHalls}
+          activeTrainers={activeTrainers}
           filterChip={filterChip}
+          filterTrainer={filterTrainer}
           viewerTrainerId={viewerTrainerId}
           onDateSelect={setBaseDate}
           onFilterChip={setFilterChip}
+          onTrainerFilter={setFilterTrainer}
           onCardClick={id => setEditClassId(id)}
           onFreeSlotClick={(startsAt, hallId) => {
             setPrefill({ starts_at: startsAt, hall_id: hallId })

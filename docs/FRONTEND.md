@@ -86,8 +86,9 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 
 | | /schedule (адмінка) | /trainer/schedule |
 |---|---|---|
-| Фільтр | два незалежні: `filterHall` + `filterTrainer` | один чип `filterChip` (`'all'` \| hallId) |
-| Колбек | `onHallFilter(hallId)` | `onFilterChip(chip)` |
+| Фільтр залу | `filterHall` (чипи) | `filterChip` (`'all'` \| hallId, чипи) |
+| Фільтр тренера | `filterTrainer` (чипи) | `filterTrainer` (чипи, окремий від `filterChip`) |
+| Колбек | `onHallFilter` + `onTrainerFilter` | `onFilterChip` + `onTrainerFilter` |
 | Своє заняття | — | `viewerTrainerId` → `isOwn` (підсвітка свого) |
 
 Спільні: розмітка `.mobileTl*`, утиліти (`weekOf`/`classCoversHour`/`freeHallsByHour`/`nowTop`), `TL_HOURS [8..22]`, свайп. CSS `.mobileTl*` дубльований у двох module.css. **Правиш одну — звіряй другу.** Виносити в спільний компонент НЕ варто, поки фільтр-моделі не зведені до спільної (інакше абстракція обростає прапорцями).
@@ -95,7 +96,7 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 | Елемент | Desktop | Mobile |
 |---------|---------|--------|
 | **Топбар** | Дата + кнопки ← → Сьогодні | Місяць + неділя-полоса (7 днів, анім свайпу) |
-| **Фільтрбар** | FilterSelect зал + тренер (sticky) | Чипи залу (`.mobileTlHallChips`, горизонтальний скрол) |
+| **Фільтрбар** | FilterSelect зал + тренер (sticky); `.filterBar` `display:none` на mobile | Дві смуги чипів: зали (`.mobileTlHallChips`) + тренери (`.mobileTlTrainerChips`), горизонтальний скрол кожна |
 | **Основа** | Grid колонок залів × рядків часу | Тайм-лайн: `.mobileTlGrid` → `.mobileTlRow` для TL_HOURS [8..22] |
 | **Картка заняття** | ClassCard із типом/часом/тренером | `.mobileTlCard`: назва + час·зал·тренер·місця (повна інформація) |
 | **Вільні слоти** | — | `.mobileTlFreeSlot` (пунктирна рамка, + Зал/Вільно) |
@@ -104,7 +105,8 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 **MobileScheduleTimeline структура:**
 - `.mobileTlShell` обгортка
   - `.mobileTlStripWrap`: `.mobileTlMonth` + `.mobileTlDays` (7 днів, кнопки `.mobileTlDay`, анім `.mobileTlSlideLeft/Right`)
-  - `.mobileTlHallChips`: кнопки «Всі» + по залу (`.mobileTlHallChipActive` = вибраний)
+  - `.mobileTlHallChips`: кнопки «Всі» + по залу (`.mobileTlHallChipActive` = вибраний; ховається при ≤1 залі)
+  - `.mobileTlTrainerChips`: «Всі тренери» + по тренеру (ті ж `.mobileTlHallChip*` класи; ховається при ≤1 тренері)
   - `.mobileTlScroll` → `.mobileTlGrid` (TL_HOURS.map)
     - `.mobileTlRow` = `.mobileTlGutter` (час `.mobileTlHourLabel`) + `.mobileTlRowBody`
       - `.mobileTlRowLine` (сірий розділювач)
@@ -113,7 +115,7 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
       - Вільні: `.mobileTlFreeSlot` → `.mobileTlFreeSlotBody` = `.mobileTlFreeSlotRow` + `.mobileTlFreeSlotMeta`
     - `.mobileTlEmpty` (якщо немає занять)
 
-**Props MobileScheduleTimelineProps (L484–496):** classes, selectedDate, today, typeLabels, activeHalls, filterHall, filterTrainer, onDateSelect, onHallFilter, onCardClick, onFreeSlotClick.
+**Props MobileScheduleTimelineProps (admin):** classes, selectedDate, today, typeLabels, activeHalls, activeTrainers, filterHall, filterTrainer, onDateSelect, onHallFilter, onTrainerFilter, onCardClick, onFreeSlotClick. Trainer-варіант: `filterChip`/`onFilterChip` замість `filterHall`/`onHallFilter`, + `viewerTrainerId`.
 
 **Логіка:**
 - `week = weekOf(anchorDate)`: масив 7 днів

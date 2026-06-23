@@ -670,19 +670,8 @@
     gap: 12px;
   }
 
-  /* filterBar: not sticky on mobile */
-  .filterBar {
-    position: static;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    flex-wrap: nowrap;
-    padding: 8px 16px;
-    gap: 8px;
-  }
-  .filterBar::-webkit-scrollbar { display: none; }
-  .fsTrigger { height: 36px; font-size: 13px; }
+  /* filterBar: ховаємо на mobile — фільтри живуть як чипи в MobileScheduleTimeline */
+  .filterBar { display: none; }
 
   /* Grid */
   .gridCard { margin: 8px; overflow: hidden; }
@@ -1608,6 +1597,19 @@
   border-bottom: 1px solid var(--border);
 }
 .mobileTlHallChips::-webkit-scrollbar { display: none; }
+
+/* Друга смуга чипів — фільтр тренерів (під залами) */
+.mobileTlTrainerChips {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.mobileTlTrainerChips::-webkit-scrollbar { display: none; }
 
 .mobileTlHallChip {
   height: 28px;

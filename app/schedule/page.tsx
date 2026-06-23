@@ -487,10 +487,12 @@ interface MobileScheduleTimelineProps {
   today: Date
   typeLabels: Record<string, string>
   activeHalls: Hall[]
+  activeTrainers: { id: string; name: string }[]
   filterHall: string
   filterTrainer: string
   onDateSelect: (d: Date) => void
   onHallFilter: (hallId: string) => void
+  onTrainerFilter: (trainerId: string) => void
   onCardClick: (id: string) => void
   onFreeSlotClick: (startsAt: string, hallId: string) => void
 }
@@ -511,10 +513,12 @@ function MobileScheduleTimeline({
   today,
   typeLabels,
   activeHalls,
+  activeTrainers,
   filterHall,
   filterTrainer,
   onDateSelect,
   onHallFilter,
+  onTrainerFilter,
   onCardClick,
   onFreeSlotClick,
 }: MobileScheduleTimelineProps) {
@@ -693,6 +697,27 @@ function MobileScheduleTimeline({
               onClick={() => onHallFilter(h.id)}
             >
               {h.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Trainer chips */}
+      {activeTrainers.length > 1 && (
+        <div className={styles.mobileTlTrainerChips}>
+          <button
+            className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+            onClick={() => onTrainerFilter('')}
+          >
+            Всі тренери
+          </button>
+          {activeTrainers.map(t => (
+            <button
+              key={t.id}
+              className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              onClick={() => onTrainerFilter(t.id)}
+            >
+              {t.name}
             </button>
           ))}
         </div>
@@ -1168,10 +1193,14 @@ export default function SchedulePage() {
             today={today}
             typeLabels={typeLabels}
             activeHalls={activeHalls}
+            activeTrainers={(trainers as { id: string; name: string; is_active: boolean }[])
+              .filter(t => t.is_active)
+              .map(t => ({ id: t.id, name: t.name }))}
             filterHall={filterHall}
             filterTrainer={filterTrainer}
             onDateSelect={setBaseDate}
             onHallFilter={setFilterHall}
+            onTrainerFilter={setFilterTrainer}
             onCardClick={id => setEditClassId(id)}
             onFreeSlotClick={(startsAt, hallId) => {
               setPrefill({ starts_at: startsAt, hall_id: hallId })
