@@ -776,7 +776,10 @@
 
   /* Баланс — одразу за статусом у мета-рядку: тихий підпис + значення
      (колір знаку лишається через balanceClass, але вага — body, не 700). */
-  .balanceDesktop {
+  /* td.balanceDesktop — специфічність мусить бити `.table td { display:block }`
+     (0,1,1), інакше display:inline-flex не застосується і gap між підписом
+     «Баланс» та чипом стає інертним (чип злипається зі словом). */
+  .table td.balanceDesktop {
     grid-area: balance;
     justify-self: start;
     align-self: center;
