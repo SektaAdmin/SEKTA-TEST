@@ -243,8 +243,9 @@ drop policy if exists "tickets: anon can read" on tickets;
   нові заняття (browse розкладу) — свідомо відкладено на наступну ітерацію.
 
 > ⚠️ Спадковий ризик (поза Фазою 4): старі RPC `change_enrollment_status`/`mark_attendance`/
-> `cancel_class_and_restore_sessions`/`reverse_attendance` досі anon-executable (advisor 0028). Нові
-> client-RPC від цього захищені (`revoke from public`). Закрити окремо при потребі.
+> `cancel_class_and_restore_sessions`/`reverse_attendance` обходять RLS (DEFINER). Anon-доступ відтоді
+> закрито (EXECUTE лише `authenticated`+`postgres`; видно `authenticated` — advisor 0029, гейт
+> `can_manage_enrollment()` відсікає). Актуальний стан сигналів → [SECURITY.md](SECURITY.md).
 
 ---
 

@@ -50,7 +50,7 @@ training_types — довідник
 ## Колонки — бізнес-сенс
 - `clients.balance` — депозит ₴ (від'ємний до `-credit_limit`, дефолт 10000).
 - `client_session_balances` — залишок по типу (`ticket_type`), не загальний.
-- `tickets.ticket_type` — вільний текст (не enum), = `training_types.code`. Відомі: `group`, `individual`, `hallrental`, `smallhallrental`, `individualduo`, `individualtrio`, `pylonrental`, `striprental`. Max 20 активних тарифів.
+- `tickets.ticket_type` — вільний текст (не enum), = `training_types.code`. Відомі: `group`, `individual`, `hallrental`, `smallhallrental`, `individualduo`, `individualtrio`, `pylonrental`, `striprental`, `selftraining`. Max 20 активних тарифів.
 - Оренда (`*rental`) — звичайний абонемент: N сесій наперед, списується сесія, депозит НЕ чіпається. `enrollClient` НЕ створює sale.
 - `sales.payment_method` — `cash`/`fop`/`personal_card`/`deposit`. `deposit` — 4-й спосіб у `SaleModal` (лише для абонемента). Закон: `Δдепозит = amount_given − price_paid` (`create_sale`/`update_sale`). `amount_given`=живі гроші; `deposit`→`amount_given=0`, `price_paid`=списання. Жива оплата абонемента: `amount_given>0` (zod).
 - `sales.cash_holder` / `studio_expenses.cash_holder` / `trainer_payments.cash_holder` — `uuid`→`trainers.id` (хто тримає готівку, лише `cash`). НЕ текст.
