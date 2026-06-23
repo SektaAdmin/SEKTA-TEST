@@ -78,19 +78,39 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 ## Per-page
 
 ### /schedule
-Власна scroll-архітектура (не page-layout). `main{height:100svh}`, скролиться лише `bodyGridWrapper`.
-- View: Day (всі зали в колонку + ScheduleRightPanel інлайн-календар) / Week (7 днів Пн–Нд, right-panel прихована, авто-вибір 1-го залу). Mobile — лише day (форс `useEffect(isMobile)`).
-- Константи: `MIN_HOUR=8`, `MAX_HOUR=22`, `HOUR_HEIGHT=83`.
-- Navigation: назад ≤30 днів (інакше редірект на сьогодні, кнопка disabled на межі). ±день у day, ±тиждень у week.
-- **ClassCard** (page.tsx): повний (≥60px: title→час→тренер→місця+progress) / компакт (<60px). Ліва смуга 3px кольору типу + обводка 1px. Progress bar знизу 2.5px. Now line: full-width day / per-column week.
-- Week headers: `.weekDayHeader`, сьогодні=зелений pill, `.weekFilterLabel` під датами.
-- Click скрізь → `ClassDetailModal`.
-- Mobile: topbar = день+дата + іконка-число(сьогодні) + 📅. Свайп ←/→ міняє день (`touchstart/move passive:false` на bodyGridWrapper). Календар → bottom sheet. FAB `bottom:calc(--bottom-nav-h+16px); z:250`. ClassModal+ClassDetailModal fullScreen.
-- **⚠️ Mobile day = 2 дропдауни (зал+тренер).** `FilterSelect` залу керує 2 режимами:
-  - **«Всі зали»** (`filterHall=''`) — усі зали у вузьких колонках (~85px). Картки → `overview`: абревіатура типу (`ticketTypeAbbr`: G/I/ID/IT/H/SH/P/S) + місця `зайнято/всього`(черв коли повно) зверху, тренер нижче, без часу. Класи `.cardOverview/.cardOverviewTop/.cardAbbr/.cardOverviewSlots(.Full)/.cardOverviewTrainer`, padding через `.card:has(.cardOverview)`.
-  - **Один зал** (`filterHall=id`) — на весь екран, повні деталі.
-  - `overview` = `isMobile && viewMode==='day' && hallColumns.length>1`, прокидається page→HallSubCol→ClassCard. Тап → ClassDetailModal.
-  - Гориз. скрол колонок НЕ годиться (конфлікт зі свайпом дня) → overview = вузькі колонки в viewport.
+**Desktop:** scroll-архітектура (не page-layout), `main{height:100svh}`, скролиться `bodyGridWrapper`. Day (всі зали + ScheduleRightPanel календар) / Week (7 дн, right-panel скрита). Константи: `MIN_HOUR=8`, `MAX_HOUR=22`, `HOUR_HEIGHT=83`.
+
+**Mobile:** `MobileScheduleTimeline` (page.tsx:508–807), вбудована компонента з власною логікою. Не використовує `page-layout` або desktop grid.
+
+| Елемент | Desktop | Mobile |
+|---------|---------|--------|
+| **Топбар** | Дата + кнопки ← → Сьогодні | Місяць + неділя-полоса (7 днів, анім свайпу) |
+| **Фільтрбар** | FilterSelect зал + тренер (sticky) | Чипи залу (`.mobileTlHallChips`, горизонтальний скрол) |
+| **Основа** | Grid колонок залів × рядків часу | Тайм-лайн: `.mobileTlGrid` → `.mobileTlRow` для TL_HOURS [8..22] |
+| **Картка заняття** | ClassCard із типом/часом/тренером | `.mobileTlCard`: назва + час·зал·тренер·місця (повна інформація) |
+| **Вільні слоти** | — | `.mobileTlFreeSlot` (пунктирна рамка, + Зал/Вільно) |
+| **Now line** | Per-column | `.mobileTlNowLine` у поточній годині (точка + лінія) |
+
+**MobileScheduleTimeline структура:**
+- `.mobileTlShell` обгортка
+  - `.mobileTlStripWrap`: `.mobileTlMonth` + `.mobileTlDays` (7 днів, кнопки `.mobileTlDay`, анім `.mobileTlSlideLeft/Right`)
+  - `.mobileTlHallChips`: кнопки «Всі» + по залу (`.mobileTlHallChipActive` = вибраний)
+  - `.mobileTlScroll` → `.mobileTlGrid` (TL_HOURS.map)
+    - `.mobileTlRow` = `.mobileTlGutter` (час `.mobileTlHourLabel`) + `.mobileTlRowBody`
+      - `.mobileTlRowLine` (сірий розділювач)
+      - `.mobileTlNowLine` (якщо час зараз): `.mobileTlNowDot` (точка) + `.mobileTlNowLineLine` (лінія)
+      - Картки: `.mobileTlCard` + `.mobileTlCardBody` = `.mobileTlCardRow` + `.mobileTlCardMeta`. Стани: `.mobileTlCardCancelled`, `.mobileTlCardSlotsFull` (червоний), `.mobileTlCardWaitlist` (жовтий)
+      - Вільні: `.mobileTlFreeSlot` → `.mobileTlFreeSlotBody` = `.mobileTlFreeSlotRow` + `.mobileTlFreeSlotMeta`
+    - `.mobileTlEmpty` (якщо немає занять)
+
+**Props MobileScheduleTimelineProps (L484–496):** classes, selectedDate, today, typeLabels, activeHalls, filterHall, filterTrainer, onDateSelect, onHallFilter, onCardClick, onFreeSlotClick.
+
+**Логіка:**
+- `week = weekOf(anchorDate)`: масив 7 днів
+- Свайп на полосі: `touchstart/move/end` (dx < −40 → next week, dx > 40 → prev week), анім `.mobileTlSlideLeft/Right`
+- `classCoversHour(cls, h)`: час старту + тривалість перекривають годину h
+- `freeHallsByHour`: Map<hour, Hall[]>, залу без занять у слоті. Окремо для `filterHall=""` (всі) vs `filterHall=id` (конкретний)
+- `nowTop`: залишок + хвилини в поточній годині (оновлюється кожні 60 сек)
 
 ### /schedule/templates
 View: День/Тиждень/Список. Mobile — форс day.
