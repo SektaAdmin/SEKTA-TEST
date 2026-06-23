@@ -82,6 +82,16 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 
 **Mobile:** `MobileScheduleTimeline` (page.tsx:508–807), вбудована компонента з власною логікою. Не використовує `page-layout` або desktop grid.
 
+⚠️ **Дубль із розбіжністю.** Друга копія `MobileScheduleTimeline` живе в `app/trainer/schedule/TrainerSchedule.tsx` (інтерфейс L454, ф-ція L478, рендер L1023). Це **НЕ точна копія** — фільтр-модель навмисно інша:
+
+| | /schedule (адмінка) | /trainer/schedule |
+|---|---|---|
+| Фільтр | два незалежні: `filterHall` + `filterTrainer` | один чип `filterChip` (`'all'` \| hallId) |
+| Колбек | `onHallFilter(hallId)` | `onFilterChip(chip)` |
+| Своє заняття | — | `viewerTrainerId` → `isOwn` (підсвітка свого) |
+
+Спільні: розмітка `.mobileTl*`, утиліти (`weekOf`/`classCoversHour`/`freeHallsByHour`/`nowTop`), `TL_HOURS [8..22]`, свайп. CSS `.mobileTl*` дубльований у двох module.css. **Правиш одну — звіряй другу.** Виносити в спільний компонент НЕ варто, поки фільтр-моделі не зведені до спільної (інакше абстракція обростає прапорцями).
+
 | Елемент | Desktop | Mobile |
 |---------|---------|--------|
 | **Топбар** | Дата + кнопки ← → Сьогодні | Місяць + неділя-полоса (7 днів, анім свайпу) |
