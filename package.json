@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "sync:schema": "node scripts/sync-schema.js",
+    "sync:docs": "node scripts/sync-docs.js",
     "test:e2e": "playwright test smoke sales-date-picker performance",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
