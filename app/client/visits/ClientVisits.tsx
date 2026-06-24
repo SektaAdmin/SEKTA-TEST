@@ -12,6 +12,7 @@ import {
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
+import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
@@ -245,13 +246,13 @@ export default function ClientVisits({
     fromISO: new Date().toISOString(),
   }), [])
 
-  const { data: upcoming, error: upcomingError } = useListQuery(
+  const { data: upcoming, error: upcomingError, refetch: refetchUpcoming } = useListQuery(
     () => listMyUpcomingEnrollments(supabase, clientId, fromISO),
     [clientId, fromISO],
     { refetchOnVisible: true, initialData: initialUpcoming }
   )
 
-  const { data: past, total: pastFetchedTotal, error: pastError } = useListQuery(
+  const { data: past, total: pastFetchedTotal, error: pastError, refetch: refetchPast } = useListQuery(
     async () => {
       const { data, totalCount, error } = await listMyPastEnrollments(supabase, clientId)
       return { data, count: totalCount, error }
@@ -261,11 +262,19 @@ export default function ClientVisits({
   )
   const pastTotal = pastFetchedTotal || initialPastTotal
 
-  const { data: balanceAfterById } = useAsync(
+  const { data: balanceAfterById, refetch: refetchBalances } = useAsync(
     () => listMyRunningBalances(supabase, clientId, fromISO),
     [clientId, fromISO],
     { refetchOnVisible: true, initialData: initialBalanceAfter }
   )
+
+  // Pull-to-refresh: тягне всі три джерела разом (той самий шлях, що й
+  // refetchOnVisible). Чекаємо на завершення, щоб індикатор тримався до даних.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchUpcoming(), refetchPast(), refetchBalances()])
+  }, [refetchUpcoming, refetchPast, refetchBalances])
+  const { pull, refreshing } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -335,7 +344,16 @@ export default function ClientVisits({
   const wrap = (content: ReactNode) => (
     <>
       <CabinetHeader title="Мої візити" backHref="/client" hideLogout action={todayAction} />
-      <div className={styles.scroll}>{content}</div>
+      <div ref={scrollRef} className={styles.scroll}>
+        <div
+          className={styles.ptrIndicator}
+          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
+          aria-hidden
+        >
+          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+        </div>
+        {content}
+      </div>
     </>
   )
 

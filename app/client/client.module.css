@@ -25,6 +25,38 @@
   margin-right: auto;
 }
 
+/* Pull-to-refresh індикатор: висота керується інлайн зі стану (px відтягування),
+   тому в потоці зверху .scroll — контент плавно зсувається вниз за пальцем. */
+.ptrIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  max-width: none !important; /* override .scroll > * центрування — це повна смуга */
+  margin: 0 !important;
+  transition: opacity 0.15s ease;
+}
+
+.ptrSpinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text-3);
+  border-radius: 50%;
+}
+
+.ptrSpinning {
+  animation: ptrSpin 0.7s linear infinite;
+}
+
+@keyframes ptrSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptrSpinning { animation: none; }
+}
+
 .empty {
   color: var(--text-2);
   font-size: 14px;
