@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -9,7 +9,7 @@ import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
-import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
 import { kyivParts } from '@/lib/cancellation'
 import { ModalShell } from '@/components/ui/ModalShell'
@@ -25,10 +25,10 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
   'Заняття скасовано': 'Заняття скасовано',
 }
 
-function dayParts(startISO: string): { dow: number; day: number; month: number } {
+function dayParts(startISO: string): { dow: number; day: number; month: number; year: number } {
   const k = kyivParts(new Date(startISO))
   const utcDate = new Date(Date.UTC(k.year, k.month - 1, k.day, 12, 0, 0))
-  return { dow: utcDate.getUTCDay(), day: k.day, month: k.month }
+  return { dow: utcDate.getUTCDay(), day: k.day, month: k.month, year: k.year }
 }
 
 function dayKey(startISO: string): string {
@@ -56,7 +56,7 @@ function initials(name: string): string {
 
 type EnrolledState = 'enrolled' | 'waitlist'
 type TrainerOption = { id: string; name: string }
-type DayGroup = { key: string; dow: number; day: number; month: number }
+type DayGroup = { key: string; dow: number; day: number; month: number; year: number }
 
 type Props = {
   clientId: string
@@ -220,29 +220,34 @@ export default function ClientSchedule({
 
   return (
     <>
-      {/* ── Горизонтальний скрол дат ── */}
-      {activeDay && (
-        <div className={styles.bookDaysMonth}>{MONTHS_UK_GENITIVE[activeDay.month - 1]}</div>
-      )}
+      {/* ── Горизонтальний скрол дат (роздільник місяця перед першим днем кожного нового місяця) ── */}
       <div className={styles.bookDays}>
-        {allDays.map((d) => {
+        {allDays.map((d, i) => {
           const isToday = d.key === today
           const isSelected = activeDayKey === d.key
+          const prev = allDays[i - 1]
+          const showMonth = !prev || prev.month !== d.month || prev.year !== d.year
           return (
-            <button
-              key={d.key}
-              type="button"
-              className={[
-                styles.bookDay,
-                isToday ? styles.bookDayToday : '',
-                isSelected ? styles.bookDayOn : '',
-              ].filter(Boolean).join(' ')}
-              aria-pressed={isSelected}
-              onClick={() => setDateSel(d.key)}
-            >
-              <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
-              <span className={styles.bookDayNum}>{d.day}</span>
-            </button>
+            <Fragment key={d.key}>
+              {showMonth && (
+                <div className={styles.bookDaysMonth}>
+                  {MONTHS_UK_CAP[d.month - 1]} {d.year}
+                </div>
+              )}
+              <button
+                type="button"
+                className={[
+                  styles.bookDay,
+                  isToday ? styles.bookDayToday : '',
+                  isSelected ? styles.bookDayOn : '',
+                ].filter(Boolean).join(' ')}
+                aria-pressed={isSelected}
+                onClick={() => setDateSel(d.key)}
+              >
+                <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
+                <span className={styles.bookDayNum}>{d.day}</span>
+              </button>
+            </Fragment>
           )
         })}
       </div>
