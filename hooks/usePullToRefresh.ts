@@ -29,6 +29,8 @@ export function usePullToRefresh(
 
   const [pull, setPull] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
+  // TODO: тимчасова діагностика — прибрати після підтвердження жесту.
+  const [dbg, setDbg] = useState('ptr: waiting')
 
   // Тримаємо колбек у ref — щоб слухачі не пересоздавались на кожен рендер.
   const onRefreshRef = useRef(onRefresh)
@@ -47,9 +49,11 @@ export function usePullToRefresh(
 
   useEffect(() => {
     const el = scrollRef.current
+    setDbg(el ? 'ptr: bound' : 'ptr: NO ELEMENT')
     if (!el) return
 
     function onTouchStart(e: TouchEvent) {
+      setDbg(`start top=${el!.scrollTop}`)
       // Старт лише від самого верху і не під час активного оновлення.
       if (refreshingRef.current || el!.scrollTop > 0) return
       const t = e.touches[0]
@@ -64,6 +68,7 @@ export function usePullToRefresh(
       const t = e.touches[0]
       const dy = t.clientY - startYRef.current
       const dx = t.clientX - startXRef.current
+      setDbg(`move dy=${dy.toFixed(0)} dx=${dx.toFixed(0)} top=${el!.scrollTop} act=${activeRef.current}`)
 
       // Визначаємо напрямок один раз: тягнемо вниз і вертикаль домінує.
       if (!decidedRef.current) {
@@ -112,5 +117,5 @@ export function usePullToRefresh(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollRef])
 
-  return { pull, refreshing }
+  return { pull, refreshing, dbg }
 }
