@@ -35,6 +35,13 @@
   max-width: none !important; /* override .scroll > * центрування — це повна смуга */
   margin: 0 !important;
   transition: opacity 0.15s ease;
+  /* Під час тяги height змінюється інлайн БЕЗ transition — йде 1:1 за пальцем. */
+}
+
+/* Відпускання: висота плавно вертається назад/до спінера, замість щолчка.
+   ease-out-quint — нативний overscroll гальмує плавно (без «перельоту»). */
+.ptrReleasing {
+  transition: opacity 0.15s ease, height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ptrSpinner {

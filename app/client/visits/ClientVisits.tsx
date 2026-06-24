@@ -274,7 +274,7 @@ export default function ClientVisits({
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchUpcoming(), refetchPast(), refetchBalances()])
   }, [refetchUpcoming, refetchPast, refetchBalances])
-  const { pull, refreshing } = usePullToRefresh(scrollRef, handleRefresh)
+  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -346,7 +346,7 @@ export default function ClientVisits({
       <CabinetHeader title="Мої візити" backHref="/client" hideLogout action={todayAction} />
       <div ref={scrollRef} className={styles.scroll}>
         <div
-          className={styles.ptrIndicator}
+          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
           style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
           aria-hidden
         >

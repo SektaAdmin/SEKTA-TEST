@@ -14,21 +14,32 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * Спрацьовує ТІЛЬКИ від самого верху (scrollTop<=0) і лише після порогу —
  * щоб інерційний доскрол до верху не зчитувався як pull.
  *
+ * Відчуття «як нативний bounce»: під час тяги — прогресивний опір (що далі,
+ * то тугіше, без лінійного «їде за пальцем»), на відпускання — `releasing`
+ * вмикає CSS-transition, тож індикатор плавно пружинить назад, а не щолкає.
+ *
  * @param scrollRef    реф на скрол-контейнер
  * @param onRefresh    що викликати на відпускання після порогу (може бути async)
- * @returns { pull, refreshing } — пікселі поточного відтягування і прапор
- *          активного оновлення, для рендеру індикатора
+ * @returns { pull, refreshing, releasing } — пікселі відтягування, прапор
+ *          активного оновлення і прапор «пружинить назад» (для CSS-transition)
  */
 export function usePullToRefresh(
   scrollRef: React.RefObject<HTMLElement>,
   onRefresh: () => void | Promise<void>,
 ) {
   const THRESHOLD = 64       // px відтягування для запуску
-  const MAX_PULL = 96        // стеля візуального відтягування
-  const RESISTANCE = 0.5     // «гумовий» опір: палець:індикатор ≈ 2:1
+  const MAX_PULL = 110       // стеля візуального відтягування (асимптота опору)
 
   const [pull, setPull] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
+  const [releasing, setReleasing] = useState(false)  // true → CSS пружинить висоту
+
+  // Прогресивний (нелінійний) опір як у нативного overscroll: близько до верху
+  // індикатор іде майже за пальцем, далі асимптотично загальмовує до MAX_PULL.
+  // d — «сирий» dy пальця; повертаємо фактичну висоту відтягування.
+  function resist(d: number) {
+    return (1 - 1 / (d / MAX_PULL + 1)) * MAX_PULL
+  }
 
   // Тримаємо колбек у ref — щоб слухачі не пересоздавались на кожен рендер.
   const onRefreshRef = useRef(onRefresh)
@@ -57,6 +68,8 @@ export function usePullToRefresh(
       startXRef.current = t.clientX
       activeRef.current = false
       decidedRef.current = false
+      // Палець знову на склі — вимикаємо пружину, щоб тяга йшла 1:1, без лагу.
+      setReleasing(false)
     }
 
     function onTouchMove(e: TouchEvent) {
@@ -76,13 +89,14 @@ export function usePullToRefresh(
 
       // Гасимо нативний bounce/скрол поки тягнемо індикатор.
       if (e.cancelable) e.preventDefault()
-      const dist = Math.min(dy * RESISTANCE, MAX_PULL)
-      setPull(dist > 0 ? dist : 0)
+      setPull(resist(dy))
     }
 
     async function onTouchEnd() {
       if (!activeRef.current) return
       activeRef.current = false
+      // Пружимо назад/у позицію спінера через CSS-transition.
+      setReleasing(true)
       const reached = pullRef.current >= THRESHOLD
       if (reached) {
         setRefreshing(true)
@@ -112,5 +126,5 @@ export function usePullToRefresh(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollRef])
 
-  return { pull, refreshing }
+  return { pull, refreshing, releasing }
 }
