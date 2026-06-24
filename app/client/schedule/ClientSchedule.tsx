@@ -7,6 +7,7 @@ import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-c
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
+import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE, MONTHS_UK_CAP } from '@/lib/dateUtils'
@@ -94,7 +95,7 @@ export default function ClientSchedule({
   const [confirm, setConfirm] = useState<BookableClassRow | null>(null)
   const [trainerFilter, setTrainerFilter] = useState<string | null>(null)
 
-  const { data: liveBalance } = useAsync(
+  const { data: liveBalance, refetch: refetchBalance } = useAsync(
     async () => {
       const { data, error } = await listMySessionBalances(supabase, clientId)
       if (error) return { data: initialBalanceByType, error }
@@ -108,7 +109,7 @@ export default function ClientSchedule({
   )
   const balanceByType = liveBalance ?? initialBalanceByType
 
-  const { data: classes, loading, error: classesError } = useListQuery(
+  const { data: classes, loading, error: classesError, refetch: refetchClasses } = useListQuery(
     () => listBookableClasses(supabase, fromISO, toISO),
     [fromISO, toISO],
     { refetchOnVisible: true, initialData: initialClasses }
@@ -121,7 +122,7 @@ export default function ClientSchedule({
     [classes]
   )
 
-  const { data: currentAvailability } = useAsync(
+  const { data: currentAvailability, refetch: refetchAvailability } = useAsync(
     async () => {
       const ids = classes.map(c => c.id)
       if (!ids.length) return { data: availability, error: null }
@@ -131,6 +132,15 @@ export default function ClientSchedule({
     { refetchOnVisible: true, initialData: availability }
   )
   const avMap = currentAvailability ?? availability
+
+  // Pull-to-refresh: оновлює класи+доступність+баланс разом. Жест активний лише
+  // від верху .scroll і лише коли вертикаль домінує — горизонтальний свайп тижня
+  // (stripRef) не зачіпається.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchClasses(), refetchAvailability(), refetchBalance()])
+  }, [refetchClasses, refetchAvailability, refetchBalance])
+  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
   const serviceName = (t: string) => ticketTypeNominativeLabel(t) || typeLabel(t)
@@ -297,7 +307,16 @@ export default function ClientSchedule({
   const wrap = (content: ReactNode, action?: ReactNode) => (
     <>
       <CabinetHeader title="Розклад" backHref="/client" hideLogout action={action} />
-      <div className={styles.scroll}>{content}</div>
+      <div ref={scrollRef} className={styles.scroll}>
+        <div
+          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
+          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
+          aria-hidden
+        >
+          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+        </div>
+        {content}
+      </div>
     </>
   )
 

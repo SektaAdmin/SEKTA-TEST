@@ -1,4 +1,5 @@
 'use client'
+import { useCallback, useRef, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   getMyClient,
@@ -6,8 +7,10 @@ import {
   listMyPurchases,
 } from '@/lib/queries/client-cabinet-data'
 import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
+import CabinetHeader from '@/components/CabinetHeader'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
+import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, clientPaymentLabel, balanceClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
@@ -75,7 +78,7 @@ export default function ClientSubscriptions({
   // Усе прийшло зі сервера (initialData) — без realtime, без дубль-запиту.
   // Свіжість балансу/покупок — через refetchOnVisible (повернення з чату з
   // адміном, який списав заняття / провів продаж).
-  const { data: balanceData, error: balanceError } = useAsync(
+  const { data: balanceData, error: balanceError, refetch: refetchBalance } = useAsync(
     async () => {
       const { data, error } = await getMyClient(supabase, userId)
       return { data: data ? { balance: data.balance } : null, error }
@@ -85,13 +88,13 @@ export default function ClientSubscriptions({
   )
   const balance = balanceData?.balance ?? initialBalance
 
-  const { data: sessions, error: sessionsError } = useListQuery(
+  const { data: sessions, error: sessionsError, refetch: refetchSessions } = useListQuery(
     () => listMySessionBalances(supabase, clientId),
     [clientId],
     { refetchOnVisible: true, initialData: initialSessions }
   )
 
-  const { data: purchases, total: purchasesFetchedTotal, error: purchasesError } = useListQuery(
+  const { data: purchases, total: purchasesFetchedTotal, error: purchasesError, refetch: refetchPurchases } = useListQuery(
     async () => {
       const { data, totalCount, error } = await listMyPurchases(supabase, clientId)
       return { data, count: totalCount, error }
@@ -103,8 +106,25 @@ export default function ClientSubscriptions({
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
+  // Pull-to-refresh: тягне баланс+сесії+покупки разом (той самий шлях, що й
+  // refetchOnVisible). Жест активний лише від верху .scroll.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchBalance(), refetchSessions(), refetchPurchases()])
+  }, [refetchBalance, refetchSessions, refetchPurchases])
+  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
+
   return (
     <>
+      <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
+      <div ref={scrollRef} className={styles.scroll}>
+        <div
+          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
+          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
+          aria-hidden
+        >
+          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+        </div>
       <div className={styles.sectionLabel}>Баланс</div>
       {(balanceError || sessionsError) ? (
         <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
@@ -184,6 +204,7 @@ export default function ClientSubscriptions({
         )}
         </>
       )}
+      </div>
     </>
   )
 }

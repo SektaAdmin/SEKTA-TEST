@@ -7,9 +7,7 @@ import {
   listMyPurchases,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
-import CabinetHeader from '@/components/CabinetHeader'
 import ClientSubscriptions from './ClientSubscriptions'
-import styles from '../client.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,19 +33,14 @@ export default async function ClientSubscriptionsPage() {
   ])
 
   return (
-    <>
-      <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
-      <div className={styles.scroll}>
-        <ClientSubscriptions
-          clientId={client.id}
-          userId={user.id}
-          initialBalance={client.balance}
-          typeLabels={typeLabels}
-          initialSessions={sessions}
-          initialPurchases={purchases}
-          initialPurchasesTotal={purchasesTotal}
-        />
-      </div>
-    </>
+    <ClientSubscriptions
+      clientId={client.id}
+      userId={user.id}
+      initialBalance={client.balance}
+      typeLabels={typeLabels}
+      initialSessions={sessions}
+      initialPurchases={purchases}
+      initialPurchasesTotal={purchasesTotal}
+    />
   )
 }
