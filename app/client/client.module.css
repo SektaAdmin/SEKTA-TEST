@@ -1073,6 +1073,12 @@
 /* Дні — горизонтальний скрол міні-тайлів (число + день тижня). */
 /* Місяць активного дня — над стрічкою (вікно 30 днів перетинає межу місяця),
    у стилі адмінського .mobileTlMonth, щоб навігація виглядала однаково. */
+/* Обгортка тижневої стрічки — приймач свайпу (як адмінський .mobileTlStripWrap). */
+.bookStripWrap {
+  margin-bottom: 16px;
+  touch-action: pan-y;
+}
+
 .bookDaysMonth {
   font-size: 11px;
   font-weight: 600;
@@ -1083,29 +1089,34 @@
   padding-left: 4px;
 }
 
+/* Тижнева сітка пн–нд (7 рівних колонок) — як адмінський .mobileTlDays. */
 .bookDays {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 2px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
-  margin-bottom: 16px;
-  scrollbar-width: none; /* Firefox */
 }
 
-.bookDays::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Android */
+/* Slide-анімація зміни тижня (як .mobileTlSlide*). */
+@keyframes bookSlideInLeft {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes bookSlideInRight {
+  from { transform: translateX(-40px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+.bookDaysSlideLeft  { animation: bookSlideInLeft  0.2s ease both; }
+.bookDaysSlideRight { animation: bookSlideInRight 0.2s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .bookDaysSlideLeft, .bookDaysSlideRight { animation: none; }
 }
 
-/* Чип дня — як адмінський .mobileTlDay: прозора кнопка, число в колі.
-   flex-shrink: 0 лишаємо — стрічка скролиться горизонтально (вікно 30 днів). */
+/* Чип дня — як адмінський .mobileTlDay: прозора кнопка, число в колі. */
 .bookDay {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  flex-shrink: 0;
-  width: 44px;
   padding: 6px 2px;
   background: none;
   border: none;
@@ -1115,7 +1126,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 @media (hover: hover) {
-  .bookDay:hover { background: var(--bg-2); }
+  .bookDay:not(:disabled):hover { background: var(--bg-2); }
+}
+
+/* Минулі дні тижня — приглушені й неактивні (запис у минуле неможливий). */
+.bookDayPast {
+  opacity: 0.38;
+  cursor: default;
 }
 
 .bookDayDow {
@@ -1155,6 +1172,21 @@
   font-weight: 600;
 }
 .bookDayOn:not(.bookDayToday) .bookDayDow { color: var(--accent); }
+
+/* Крапка-індикатор: під числом, якщо в дні є доступні заняття.
+   .bookDayDotEmpty тримає висоту, щоб дні без занять не «стрибали». */
+.bookDayDot,
+.bookDayDotEmpty {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+.bookDayDot { background: var(--text-3); }
+.bookDayDotEmpty { background: transparent; }
+/* На вибраному/сьогоднішньому дні крапка стає контрастною до заливки кола. */
+.bookDayOn .bookDayDot,
+.bookDayToday .bookDayDot { background: var(--text); }
 
 /* Заголовок обраного дня над списком слотів. */
 .bookDayHeading {

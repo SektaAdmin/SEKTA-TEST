@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -25,12 +25,6 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
   'Заняття скасовано': 'Заняття скасовано',
 }
 
-function dayParts(startISO: string): { dow: number; day: number; month: number; year: number } {
-  const k = kyivParts(new Date(startISO))
-  const utcDate = new Date(Date.UTC(k.year, k.month - 1, k.day, 12, 0, 0))
-  return { dow: utcDate.getUTCDay(), day: k.day, month: k.month, year: k.year }
-}
-
 function dayKey(startISO: string): string {
   const k = kyivParts(new Date(startISO))
   return `${k.year}-${k.month}-${k.day}`
@@ -38,6 +32,21 @@ function dayKey(startISO: string): string {
 
 function todayKey(): string {
   return dayKey(new Date().toISOString())
+}
+
+/** Понеділок-початок тижня, що містить d, + 7 днів (Date, локальний час). */
+function weekOf(d: Date): Date[] {
+  const day = d.getDay()
+  const daysBack = day === 0 ? 6 : day - 1
+  const mon = new Date(d); mon.setDate(d.getDate() - daysBack); mon.setHours(0, 0, 0, 0)
+  return Array.from({ length: 7 }, (_, i) => {
+    const r = new Date(mon); r.setDate(mon.getDate() + i); return r
+  })
+}
+
+/** dayKey для Date (через ISO, той самий київський день що й у занять). */
+function dateKey(d: Date): string {
+  return dayKey(d.toISOString())
 }
 
 function dayHeading(key: string, dp: { dow: number; day: number; month: number }): string {
@@ -136,29 +145,97 @@ export default function ClientSchedule({
 
   const availableByType = (t: string) => (balanceByType[t] ?? 0) - (reservedByType[t] ?? 0)
 
-  // Усі дні вікна (незалежно від фільтра тренера) — для рядка чипів дат.
-  const allDays = useMemo<DayGroup[]>(() => {
-    const seen = new Set<string>()
-    const result: DayGroup[] = []
-    for (const c of classes) {
-      const k = dayKey(c.starts_at)
-      if (!seen.has(k)) {
-        seen.add(k)
-        const dp = dayParts(c.starts_at)
-        result.push({ key: k, ...dp })
-      }
-    }
-    return result
+  // Дні з доступними заняттями (для індикатора-крапки під числом).
+  const daysWithClasses = useMemo<Set<string>>(() => {
+    const s = new Set<string>()
+    for (const c of classes) s.add(dayKey(c.starts_at))
+    return s
   }, [classes])
 
-  // dateSel: сьогодні якщо є заняття, інакше перший доступний день.
+  // ── Тижнева навігація (як в адмінці): сітка пн–нд + свайп між тижнями ──
+  // Межі вікна запису = [сьогодні; сьогодні+30] (див. page.tsx). Свайп далі не йде.
+  const now = useMemo(() => new Date(), [])
   const today = todayKey()
-  const defaultDay = allDays.find(d => d.key === today)?.key ?? allDays[0]?.key ?? today
-  const [dateSel, setDateSel] = useState<string>(defaultDay)
+  const todayStart = useMemo(() => { const t = new Date(now); t.setHours(0, 0, 0, 0); return t }, [now])
+  const minWeekStart = useMemo(() => weekOf(now)[0], [now])
+  const maxWeekStart = useMemo(() => {
+    const last = new Date(now); last.setDate(now.getDate() + 30)
+    return weekOf(last)[0]
+  }, [now])
+  const maxOffset = useMemo(
+    () => Math.round((maxWeekStart.getTime() - minWeekStart.getTime()) / 604800000),
+    [minWeekStart, maxWeekStart]
+  )
 
-  // Валідний вибраний день (якщо після refetch зник — береться перший).
-  const activeDayKey = allDays.find(d => d.key === dateSel)?.key ?? allDays[0]?.key ?? dateSel
-  const activeDay = allDays.find(d => d.key === activeDayKey) ?? null
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const stripRef = useRef<HTMLDivElement | null>(null)
+  const swipeRef = useRef<{ x: number; y: number; decided: boolean } | null>(null)
+
+  const anchorDate = useMemo(() => {
+    const a = new Date(minWeekStart); a.setDate(minWeekStart.getDate() + weekOffset * 7); return a
+  }, [minWeekStart, weekOffset])
+  const week = useMemo(() => weekOf(anchorDate), [anchorDate])
+  const monthLabel = `${MONTHS_UK_CAP[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`
+
+  const goPrevWeek = useCallback(() => {
+    setWeekOffset(o => {
+      if (o <= 0) return o
+      setSlideDir('right'); return o - 1
+    })
+  }, [])
+  const goNextWeek = useCallback(() => {
+    setWeekOffset(o => {
+      if (o >= maxOffset) return o
+      setSlideDir('left'); return o + 1
+    })
+  }, [maxOffset])
+
+  // Свайп ←/→ по стрічці тижня (порт логіки MobileScheduleTimeline).
+  useEffect(() => {
+    const el = stripRef.current
+    if (!el) return
+    function onStart(e: TouchEvent) {
+      swipeRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, decided: false }
+    }
+    function onMove(e: TouchEvent) {
+      const s = swipeRef.current; if (!s) return
+      const dx = e.touches[0].clientX - s.x
+      const dy = e.touches[0].clientY - s.y
+      if (!s.decided) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+        s.decided = true
+        if (Math.abs(dx) <= Math.abs(dy)) { swipeRef.current = null; return }
+      }
+      e.preventDefault()
+    }
+    function onEnd(e: TouchEvent) {
+      const s = swipeRef.current; swipeRef.current = null; if (!s || !s.decided) return
+      const dx = e.changedTouches[0].clientX - s.x
+      if (Math.abs(dx) < 40) return
+      if (dx < 0) goNextWeek(); else goPrevWeek()
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+  }, [goPrevWeek, goNextWeek])
+
+  // Вибраний день: сьогодні за замовчуванням.
+  const [dateSel, setDateSel] = useState<string>(today)
+  const activeDayKey = dateSel
+  const activeDay = useMemo<DayGroup | null>(() => {
+    for (const d of week) {
+      if (dateKey(d) === activeDayKey) {
+        return { key: activeDayKey, dow: d.getDay(), day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() }
+      }
+    }
+    return null
+  }, [week, activeDayKey])
 
   // Distinct тренери всього вікна (для рядка фільтра).
   const allTrainers = useMemo<TrainerOption[]>(() => {
@@ -214,37 +291,51 @@ export default function ClientSchedule({
   if (loading && classes.length === 0) {
     return <div className="loading-dots"><span /><span /><span /></div>
   }
-  if (allDays.length === 0) {
+  if (daysWithClasses.size === 0) {
     return <p className={styles.empty}>{MSG.empty.bookableClasses}.</p>
   }
 
   return (
     <>
-      {/* ── Горизонтальний скрол дат ── */}
-      {activeDay && (
-        <div className={styles.bookDaysMonth}>{MONTHS_UK_CAP[activeDay.month - 1]} {activeDay.year}</div>
-      )}
-      <div className={styles.bookDays}>
-        {allDays.map((d) => {
-          const isToday = d.key === today
-          const isSelected = activeDayKey === d.key
-          return (
-            <button
-              key={d.key}
-              type="button"
-              className={[
-                styles.bookDay,
-                isToday ? styles.bookDayToday : '',
-                isSelected ? styles.bookDayOn : '',
-              ].filter(Boolean).join(' ')}
-              aria-pressed={isSelected}
-              onClick={() => setDateSel(d.key)}
-            >
-              <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
-              <span className={styles.bookDayNum}>{d.day}</span>
-            </button>
-          )
-        })}
+      {/* ── Тижнева сітка дат (пн–нд) + свайп між тижнями — як адмінський MobileScheduleTimeline ── */}
+      <div ref={stripRef} className={styles.bookStripWrap}>
+        <div className={styles.bookDaysMonth}>{monthLabel}</div>
+        <div
+          key={weekOffset}
+          className={[
+            styles.bookDays,
+            slideDir === 'left' ? styles.bookDaysSlideLeft : '',
+            slideDir === 'right' ? styles.bookDaysSlideRight : '',
+          ].filter(Boolean).join(' ')}
+          onAnimationEnd={() => setSlideDir(null)}
+        >
+          {week.map((d) => {
+            const key = dateKey(d)
+            const isToday = key === today
+            const isSelected = activeDayKey === key
+            const isPast = d.getTime() < todayStart.getTime()
+            const hasClasses = daysWithClasses.has(key)
+            return (
+              <button
+                key={key}
+                type="button"
+                className={[
+                  styles.bookDay,
+                  isToday ? styles.bookDayToday : '',
+                  isSelected ? styles.bookDayOn : '',
+                  isPast ? styles.bookDayPast : '',
+                ].filter(Boolean).join(' ')}
+                aria-pressed={isSelected}
+                disabled={isPast}
+                onClick={() => setDateSel(key)}
+              >
+                <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.getDay()]}</span>
+                <span className={styles.bookDayNum}>{d.getDate()}</span>
+                <span className={hasClasses && !isPast ? styles.bookDayDot : styles.bookDayDotEmpty} />
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* ── Фільтр тренерів ── */}
