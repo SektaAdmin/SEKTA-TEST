@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { clientCancel } from '@/lib/queries/client-cabinet'
 import type { MyEnrollmentDetailRow } from '@/lib/queries/client-cabinet-data'
-import { fullWhen, hhmm, pluralHours } from '@/lib/formatters'
+import { fullWhen, hhmm } from '@/lib/formatters'
 import { avatarColor } from '@/lib/avatarColor'
 import { enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import { MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
@@ -198,13 +198,12 @@ export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
             </p>
           ) : free ? (
             <p className={styles.confirmRule}>
-              Скасування безкоштовне до <b>{deadlineText}</b>. Після цього часу
-              спишеться {cost} {pluralHours(cost)}.
+              Безкоштовне скасування діє до <b>{deadlineText}</b>. Пізніше —
+              спишеться {cost} год.
             </p>
           ) : (
             <p className={`${styles.confirmRule} ${styles.confirmRuleWarn}`}>
-              ⚠️ Час безкоштовного скасування минув ({deadlineText}). Буде списано
-              {' '}{cost} {pluralHours(cost)}.
+              ❗️ Пізнє скасування ❗️ З вашого абонемента буде списано {cost} год
             </p>
           )}
         </ModalShell>
