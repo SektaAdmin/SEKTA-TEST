@@ -162,7 +162,7 @@ test.describe('Staff — SPA Navigation latency', () => {
     const nav = page.getByRole('navigation', { name: 'Основна навігація' })
 
     const links: Array<{ label: string; urlRe: RegExp }> = [
-      { label: 'Продажи',   urlRe: /\/sales$/ },
+      { label: 'Продажі',   urlRe: /\/sales$/ },
       { label: 'Клієнти',   urlRe: /\/clients$/ },
       { label: 'Розклад',   urlRe: /\/schedule$/ },
       { label: 'Журнал',    urlRe: /\/journal$/ },
