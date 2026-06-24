@@ -198,12 +198,13 @@ export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
             </p>
           ) : free ? (
             <p className={styles.confirmRule}>
-              Безкоштовне скасування діє до <b>{deadlineText}</b>. Пізніше —
+              Безкоштовне скасування діє до <b>{deadlineText}</b>. Після цього
               спишеться {cost} год.
             </p>
           ) : (
             <p className={`${styles.confirmRule} ${styles.confirmRuleWarn}`}>
-              ❗️ Пізнє скасування ❗️ З вашого абонемента буде списано {cost} год
+              ❗ Пізнє скасування. Спишеться {cost} год — час безкоштовної
+              відміни минув о {deadlineText}.
             </p>
           )}
         </ModalShell>
