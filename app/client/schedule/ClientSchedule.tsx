@@ -227,15 +227,14 @@ export default function ClientSchedule({
 
   // Вибраний день: сьогодні за замовчуванням.
   const [dateSel, setDateSel] = useState<string>(today)
+  // activeDay будуємо з самого ключа dateSel (а не з видимого тижня) — інакше
+  // після свайпу на тиждень без вибраного дня заголовок і список зникали б.
   const activeDayKey = dateSel
-  const activeDay = useMemo<DayGroup | null>(() => {
-    for (const d of week) {
-      if (dateKey(d) === activeDayKey) {
-        return { key: activeDayKey, dow: d.getDay(), day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() }
-      }
-    }
-    return null
-  }, [week, activeDayKey])
+  const activeDay = useMemo<DayGroup>(() => {
+    const [y, m, dd] = activeDayKey.split('-').map(Number)
+    const local = new Date(y, m - 1, dd)
+    return { key: activeDayKey, dow: local.getDay(), day: dd, month: m, year: y }
+  }, [activeDayKey])
 
   // Distinct тренери всього вікна (для рядка фільтра).
   const allTrainers = useMemo<TrainerOption[]>(() => {
@@ -363,11 +362,9 @@ export default function ClientSchedule({
       )}
 
       {/* ── Заголовок дня ── */}
-      {activeDay && (
-        <div className={styles.bookDayHeading}>
-          {dayHeading(activeDayKey, activeDay)}
-        </div>
-      )}
+      <div className={styles.bookDayHeading}>
+        {dayHeading(activeDayKey, activeDay)}
+      </div>
 
       {/* ── Список занять дня ── */}
       <div className={styles.bookSlots}>
