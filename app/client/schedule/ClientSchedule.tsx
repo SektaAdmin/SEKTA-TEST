@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -140,7 +140,7 @@ export default function ClientSchedule({
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchClasses(), refetchAvailability(), refetchBalance()])
   }, [refetchClasses, refetchAvailability, refetchBalance])
-  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
+  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
   const serviceName = (t: string) => ticketTypeNominativeLabel(t) || typeLabel(t)
@@ -313,7 +313,10 @@ export default function ClientSchedule({
           style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
           aria-hidden
         >
-          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+          <span
+            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
+            style={{ '--ptr-progress': progress } as CSSProperties}
+          />
         </div>
         {content}
       </div>

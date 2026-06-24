@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import CabinetHeader from '@/components/CabinetHeader'
@@ -274,7 +274,7 @@ export default function ClientVisits({
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchUpcoming(), refetchPast(), refetchBalances()])
   }, [refetchUpcoming, refetchPast, refetchBalances])
-  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
+  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -350,7 +350,10 @@ export default function ClientVisits({
           style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
           aria-hidden
         >
-          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+          <span
+            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
+            style={{ '--ptr-progress': progress } as CSSProperties}
+          />
         </div>
         {content}
       </div>

@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useRef, type ReactNode } from 'react'
+import { useCallback, useRef, type ReactNode, type CSSProperties } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   getMyClient,
@@ -112,7 +112,7 @@ export default function ClientSubscriptions({
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchBalance(), refetchSessions(), refetchPurchases()])
   }, [refetchBalance, refetchSessions, refetchPurchases])
-  const { pull, refreshing, releasing } = usePullToRefresh(scrollRef, handleRefresh)
+  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
 
   return (
     <>
@@ -123,7 +123,10 @@ export default function ClientSubscriptions({
           style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
           aria-hidden
         >
-          <span className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''}`} />
+          <span
+            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
+            style={{ '--ptr-progress': progress } as CSSProperties}
+          />
         </div>
       <div className={styles.sectionLabel}>Баланс</div>
       {(balanceError || sessionsError) ? (

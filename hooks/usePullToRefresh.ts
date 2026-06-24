@@ -20,8 +20,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  *
  * @param scrollRef    реф на скрол-контейнер
  * @param onRefresh    що викликати на відпускання після порогу (може бути async)
- * @returns { pull, refreshing, releasing } — пікселі відтягування, прапор
- *          активного оновлення і прапор «пружинить назад» (для CSS-transition)
+ * @returns пікселі відтягування + прапори стану + похідні для реакції спінера:
+ *          `progress` 0..1 (частка до порогу — для opacity/обертання спінера),
+ *          `ready` (поріг досягнуто — спінер «готовий до запуску»).
  */
 export function usePullToRefresh(
   scrollRef: React.RefObject<HTMLElement>,
@@ -126,5 +127,9 @@ export function usePullToRefresh(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollRef])
 
-  return { pull, refreshing, releasing }
+  // Похідні для реакції спінера на тягу (без окремого state).
+  const progress = Math.min(pull / THRESHOLD, 1)
+  const ready = pull >= THRESHOLD
+
+  return { pull, refreshing, releasing, progress, ready }
 }

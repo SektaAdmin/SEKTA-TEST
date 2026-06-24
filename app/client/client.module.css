@@ -50,9 +50,21 @@
   border: 2px solid var(--border);
   border-top-color: var(--text-3);
   border-radius: 50%;
+  /* Реакція на тягу: --ptr-progress 0..1 ставиться інлайн з хука.
+     Спінер проявляється і докручується пропорційно до порога. */
+  opacity: var(--ptr-progress, 0);
+  transform: rotate(calc(var(--ptr-progress, 0) * 270deg));
 }
 
+/* Поріг досягнуто — спінер «готовий»: повний колір + лагідний пульс. */
+.ptrSpinnerReady {
+  border-top-color: var(--text);
+  animation: ptrPulse 0.9s ease-in-out infinite;
+}
+
+/* Іде refetch — крутимо. Перебиває статичний transform/pulse. */
 .ptrSpinning {
+  opacity: 1;
   animation: ptrSpin 0.7s linear infinite;
 }
 
@@ -60,8 +72,13 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes ptrPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ptrSpinning { animation: none; }
+  .ptrSpinning, .ptrSpinnerReady { animation: none; }
 }
 
 .empty {
