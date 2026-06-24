@@ -314,20 +314,21 @@ export default function ClientVisits({
     </p>
   )
 
-  // «Сьогодні» (у шапці): повернути активну вкладку до її дефолтного дня —
+  // «До запису» (у шапці): повернути активну вкладку до її дефолтного дня —
   // найближчого майбутнього (Майбутні) / найсвіжішого минулого (Історія) візиту —
-  // і скинути зсув тижня після свайпу.
+  // і скинути зсув тижня після свайпу. Назва нейтральна, бо кнопка веде не на
+  // «сьогодні», а на найближчий запис (на сьогодні занять може й не бути).
   const activeHasVisits = activeTab === 'upcoming'
     ? upcomingSorted.length > 0
     : pastSorted.length > 0
-  const goToday = useCallback(() => {
+  const goToNearestVisit = useCallback(() => {
     if (activeTab === 'upcoming') { setUpcomingWeekOffset(0); setUpcomingDaySel(null) }
     else { setHistoryWeekOffset(0); setHistoryDaySel(null); setPastShown(PAGE_SIZE) }
   }, [activeTab])
   // Кнопка лише коли є що показати (порожній стан кнопки не потребує).
   const todayAction: ReactNode = activeHasVisits ? (
-    <button type="button" className={styles.bookTodayBtn} onClick={goToday}>
-      Сьогодні
+    <button type="button" className={styles.bookTodayBtn} onClick={goToNearestVisit}>
+      До запису
     </button>
   ) : undefined
 
