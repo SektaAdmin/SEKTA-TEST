@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { listClassesForWeek, listDatesWithClasses } from '@/lib/queries/classes'
@@ -490,6 +490,7 @@ interface MobileScheduleTimelineProps {
   activeTrainers: { id: string; name: string }[]
   filterHall: string
   filterTrainer: string
+  loading: boolean
   onDateSelect: (d: Date) => void
   onHallFilter: (hallId: string) => void
   onTrainerFilter: (trainerId: string) => void
@@ -516,6 +517,7 @@ function MobileScheduleTimeline({
   activeTrainers,
   filterHall,
   filterTrainer,
+  loading,
   onDateSelect,
   onHallFilter,
   onTrainerFilter,
@@ -547,15 +549,18 @@ function MobileScheduleTimeline({
     return () => clearInterval(id)
   }, [])
 
-  // Scroll to current time on mount
-  useEffect(() => {
-    if (nowTop !== null && scrollRef.current) {
-      const rowH = 64
-      const top = (nowTop - TL_MIN_HOUR) * rowH
-      scrollRef.current.scrollTo({ top: Math.max(0, top - 80), behavior: 'smooth' })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Скрол до поточної години — лише ОДИН раз, синхронно ДО paint.
+  // useLayoutEffect + behavior:'auto' замість useEffect + 'smooth': інакше
+  // плавна анімація бігла після першого кадру і реєструвалась як layout shift
+  // (CLS ~0.9 на мобілці). nowTop ставиться окремим ефектом, тож чекаємо його.
+  const didInitialScroll = useRef(false)
+  useLayoutEffect(() => {
+    if (didInitialScroll.current || nowTop === null || !scrollRef.current) return
+    didInitialScroll.current = true
+    const rowH = 64
+    const top = (nowTop - TL_MIN_HOUR) * rowH
+    scrollRef.current.scrollTo({ top: Math.max(0, top - 80), behavior: 'auto' })
+  }, [nowTop])
 
   const handlePrevWeek = useCallback(() => {
     setSlideDir('right')
@@ -681,50 +686,62 @@ function MobileScheduleTimeline({
         </div>
       </div>
 
-      {/* Hall chips */}
-      {activeHalls.length > 1 && (
-        <div className={styles.mobileTlHallChips}>
-          <button
-            className={[styles.mobileTlHallChip, !filterHall ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-            onClick={() => onHallFilter('')}
-          >
-            Всі
-          </button>
-          {activeHalls.map(h => (
+      {/* Зона чипів-фільтрів. Висота зарезервована (min-height) під дві смуги —
+          зали + тренери — щоб їх пізня поява (довідники приїжджають з RefsContext
+          асинхронно) не штовхала тайм-лайн вниз. Без цього CLS ~0.9 на мобілці.
+          У студії завжди >1 зала і >1 тренера, тож обидві смуги стабільно є —
+          порожнього місця резерв не лишає. */}
+      <div className={styles.mobileTlChipsZone}>
+        {/* Hall chips */}
+        {activeHalls.length > 1 && (
+          <div className={styles.mobileTlHallChips}>
             <button
-              key={h.id}
-              className={[styles.mobileTlHallChip, filterHall === h.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-              onClick={() => onHallFilter(h.id)}
+              className={[styles.mobileTlHallChip, !filterHall ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              onClick={() => onHallFilter('')}
             >
-              {h.name}
+              Всі
             </button>
-          ))}
-        </div>
-      )}
+            {activeHalls.map(h => (
+              <button
+                key={h.id}
+                className={[styles.mobileTlHallChip, filterHall === h.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                onClick={() => onHallFilter(h.id)}
+              >
+                {h.name}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Trainer chips */}
-      {activeTrainers.length > 1 && (
-        <div className={styles.mobileTlTrainerChips}>
-          <button
-            className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-            onClick={() => onTrainerFilter('')}
-          >
-            Всі тренери
-          </button>
-          {activeTrainers.map(t => (
+        {/* Trainer chips */}
+        {activeTrainers.length > 1 && (
+          <div className={styles.mobileTlTrainerChips}>
             <button
-              key={t.id}
-              className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-              onClick={() => onTrainerFilter(t.id)}
+              className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              onClick={() => onTrainerFilter('')}
             >
-              {t.name}
+              Всі тренери
             </button>
-          ))}
-        </div>
-      )}
+            {activeTrainers.map(t => (
+              <button
+                key={t.id}
+                className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                onClick={() => onTrainerFilter(t.id)}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Timeline scroll */}
       <div ref={scrollRef} className={styles.mobileTlScroll}>
+        {loading ? (
+          // Поки заняття вантажаться — заглушка фіксованої висоти (flex:1),
+          // щоб тайм-лайн не «доростав» рядками і не давав layout shift.
+          <div className={styles.mobileTlLoading} aria-hidden="true" />
+        ) : (
         <div className={styles.mobileTlGrid}>
           {TL_HOURS.map(h => {
             const hourClasses = classesByHour.get(h) ?? []
@@ -827,6 +844,7 @@ function MobileScheduleTimeline({
             <div className={styles.mobileTlEmpty}>Занять немає</div>
           )}
         </div>
+        )}
       </div>
     </div>
   )
@@ -1198,6 +1216,7 @@ export default function SchedulePage() {
               .map(t => ({ id: t.id, name: t.name }))}
             filterHall={filterHall}
             filterTrainer={filterTrainer}
+            loading={loading}
             onDateSelect={setBaseDate}
             onHallFilter={setFilterHall}
             onTrainerFilter={setFilterTrainer}

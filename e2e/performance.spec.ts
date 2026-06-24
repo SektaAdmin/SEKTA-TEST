@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, devices as devicesMobile, type Page } from '@playwright/test'
 
 /**
  * Performance + навантажувальне тестування — read-only, без змін даних.
@@ -125,7 +125,7 @@ test.describe('Staff — Navigation Timing', () => {
     { path: '/dashboard',  waitFor: '[data-testid="money-cards"], h1, main' },
     { path: '/sales',      waitFor: 'h1' },
     { path: '/clients',    waitFor: 'h1' },
-    { path: '/schedule',   waitFor: 'h1, [data-testid="schedule-grid"], .schedule' },
+    { path: '/schedule',   waitFor: 'main, [class*="card"], [class*="dayCol"]' },
     { path: '/journal',    waitFor: 'h1' },
     { path: '/accounting', waitFor: 'h1' },
   ]
@@ -213,14 +213,17 @@ test.describe('Staff — /schedule ClassDetailModal', () => {
     await page.goto('/schedule', { waitUntil: 'networkidle' })
     await expect(page).not.toHaveURL(/\/login/)
 
-    // чекаємо на першу картку заняття
-    const classCard = page.locator('[data-class-id], .class-card, [data-testid="class-card"]').first()
-    const anyCard = page.locator('article, .event, [class*="class"]').first()
+    // чекаємо на першу картку заняття (CSS-модуль → клас містить "card",
+    // виключаємо tooltip-обгортку, що не клікабельна)
+    const classCard = page.locator('[class*="card"]')
+      .filter({ hasNot: page.locator('[class*="cardTooltip"]') })
+      .first()
+    const mobileCard = page.locator('[class*="mobileTlCard"]').first()
 
-    // пробуємо обидва варіанти
+    // пробуємо обидва варіанти (desktop / mobile layout)
     const t0 = Date.now()
     let opened = false
-    for (const loc of [classCard, anyCard]) {
+    for (const loc of [classCard, mobileCard]) {
       try {
         await loc.waitFor({ state: 'visible', timeout: 5_000 })
         await loc.click()
@@ -379,6 +382,138 @@ test.describe('Concurrency — паралельні вкладки', () => {
 })
 
 // ── Settings pages ─────────────────────────────────────────────────────────────
+
+// ── Mobile adaptation (admin /schedule + ClassDetailModal bottom-sheet) ─────────
+//
+// Мобільна адаптація: той самий staff-логін, але viewport iPhone 13 + touch.
+// На мобілці /schedule рендерить MobileScheduleTimeline (карточки .mobileTlCard),
+// модалка деталей відкривається як bottom-sheet (той самий role="dialog").
+
+test.describe('Mobile — /schedule (iPhone 13 viewport)', () => {
+  const MOBILE = devicesMobile['iPhone 13']
+
+  test('/schedule mobile — Navigation Timing + перша карточка', async ({ browser }) => {
+    const ctx = await browser.newContext({
+      ...MOBILE,
+      storageState: 'e2e/.auth/state.json',
+    })
+    const page = await ctx.newPage()
+
+    await page.goto('/schedule', { waitUntil: 'networkidle' })
+    await expect(page).not.toHaveURL(/\/login/)
+    await page.locator('h1, [class*="mobileTl"]').first().waitFor({ state: 'visible', timeout: 10_000 })
+
+    const timing = await getNavigationTiming(page)
+    const fcp = await getFCP(page)
+    const lcp = await getLCP(page)
+    const cls = await getCLS(page)
+    logMetrics('/schedule (mobile)', { ...timing, fcp, lcp, cls })
+
+    expect.soft(timing.domContentLoaded, 'mobile /schedule DCL too slow').toBeLessThan(THRESHOLDS.domContentLoaded)
+    expect.soft(timing.loadEvent, 'mobile /schedule load too slow').toBeLessThan(THRESHOLDS.loadEvent)
+    if (lcp !== null) expect.soft(lcp, 'mobile /schedule LCP too slow').toBeLessThan(THRESHOLDS.lcp)
+    expect.soft(cls, 'mobile /schedule CLS too high').toBeLessThan(THRESHOLDS.cls)
+
+    await ctx.close()
+  })
+
+  test('/schedule mobile — ClassDetailModal (bottom-sheet) open time', async ({ browser }) => {
+    const ctx = await browser.newContext({
+      ...MOBILE,
+      storageState: 'e2e/.auth/state.json',
+    })
+    const page = await ctx.newPage()
+
+    await page.goto('/schedule', { waitUntil: 'networkidle' })
+    await expect(page).not.toHaveURL(/\/login/)
+
+    // мобільна карточка таймлайну (CSS-модуль → клас містить "mobileTlCard")
+    const card = page.locator('[class*="mobileTlCard"]').first()
+    try {
+      await card.waitFor({ state: 'visible', timeout: 6_000 })
+    } catch {
+      console.log('[PERF] mobile ClassDetailModal: немає занять у видимому дні — тест пропущено')
+      await ctx.close()
+      test.skip()
+      return
+    }
+
+    const t0 = Date.now()
+    await card.click()
+    await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5_000 })
+    const elapsed = Date.now() - t0
+    console.log(`[PERF] mobile ClassDetailModal open: ${elapsed}ms`)
+    expect.soft(elapsed, 'mobile ClassDetailModal too slow to open').toBeLessThan(1500)
+
+    await ctx.close()
+  })
+})
+
+// ── Trainer cabinet (/trainer/schedule + ClassDetailModal) ──────────────────────
+
+const TRAINER_AUTH_FILE = 'e2e/.auth/trainer-state.json'
+const hasTrainerAuth = (() => {
+  try { return fs.existsSync(TRAINER_AUTH_FILE) } catch { return false }
+})()
+
+test.describe('Trainer cabinet — /trainer/schedule', () => {
+  test.skip(!hasTrainerAuth, 'E2E_TRAINER_PHONE/PASSWORD не задані — пропускаємо кабінет тренера')
+
+  test('/trainer/schedule — Navigation Timing', async ({ browser }) => {
+    const ctx = await browser.newContext({ storageState: TRAINER_AUTH_FILE })
+    const page = await ctx.newPage()
+    page.setDefaultNavigationTimeout(20_000)
+
+    await page.goto('/trainer/schedule', { waitUntil: 'networkidle' })
+    await expect(page).not.toHaveURL(/\/login/)
+    await page.locator('h1, [class*="card"], [class*="mobileTl"]').first()
+      .waitFor({ state: 'visible', timeout: 10_000 })
+
+    const timing = await getNavigationTiming(page)
+    const fcp = await getFCP(page)
+    const lcp = await getLCP(page)
+    const cls = await getCLS(page)
+    logMetrics('/trainer/schedule', { ...timing, fcp, lcp, cls })
+
+    expect.soft(timing.domContentLoaded, 'trainer /schedule DCL too slow').toBeLessThan(THRESHOLDS.domContentLoaded)
+    expect.soft(timing.loadEvent, 'trainer /schedule load too slow').toBeLessThan(THRESHOLDS.loadEvent)
+    if (lcp !== null) expect.soft(lcp, 'trainer /schedule LCP too slow').toBeLessThan(THRESHOLDS.lcp)
+    expect.soft(cls, 'trainer /schedule CLS too high').toBeLessThan(THRESHOLDS.cls)
+
+    await ctx.close()
+  })
+
+  test('/trainer/schedule — ClassDetailModal open time', async ({ browser }) => {
+    const ctx = await browser.newContext({ storageState: TRAINER_AUTH_FILE })
+    const page = await ctx.newPage()
+    page.setDefaultNavigationTimeout(20_000)
+
+    await page.goto('/trainer/schedule', { waitUntil: 'networkidle' })
+    await expect(page).not.toHaveURL(/\/login/)
+
+    // desktop-картка .card або мобільна .mobileTlCard
+    const card = page.locator('[class*="mobileTlCard"], [class*="card"]')
+      .filter({ hasNot: page.locator('[class*="cardTooltip"]') })
+      .first()
+    try {
+      await card.waitFor({ state: 'visible', timeout: 6_000 })
+    } catch {
+      console.log('[PERF] trainer ClassDetailModal: немає занять у видимому дні — тест пропущено')
+      await ctx.close()
+      test.skip()
+      return
+    }
+
+    const t0 = Date.now()
+    await card.click()
+    await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5_000 })
+    const elapsed = Date.now() - t0
+    console.log(`[PERF] trainer ClassDetailModal open: ${elapsed}ms`)
+    expect.soft(elapsed, 'trainer ClassDetailModal too slow to open').toBeLessThan(1500)
+
+    await ctx.close()
+  })
+})
 
 test.describe('Staff — /settings pages timing', () => {
   const SETTINGS_ROUTES = [

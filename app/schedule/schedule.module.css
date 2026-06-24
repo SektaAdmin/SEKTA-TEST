@@ -1586,6 +1586,20 @@
 }
 
 /* ── Hall chips ─────────────────────────────────────────── */
+/* Обгортка чипів-фільтрів. Резервує висоту двох смуг (зали + тренери ≈ 90px),
+   щоб пізня поява чипів (довідники приїжджають асинхронно) не штовхала
+   тайм-лайн вниз — інакше CLS ~0.9 на мобілці. */
+.mobileTlChipsZone {
+  flex-shrink: 0;
+  min-height: 90px;
+}
+/* Кабінет тренера: смуга залів завжди є (чип «Всі»), тож резервуємо лише під
+   смугу тренерів, що приїжджає пізніше (одна смуга ≈ 45px). */
+.mobileTlTrainerChipsReserve {
+  flex-shrink: 0;
+  min-height: 45px;
+}
+
 .mobileTlHallChips {
   display: flex;
   gap: 6px;
@@ -1632,6 +1646,12 @@
   background: var(--accent-dim);
   border-color: var(--accent-border);
   color: var(--accent);
+}
+
+/* Заглушка тайм-лайну на час завантаження занять — тримає висоту scroll-зони
+   (flex:1), щоб поява рядків з даними не давала layout shift. */
+.mobileTlLoading {
+  min-height: 60vh;
 }
 
 /* ── Timeline scroll area ───────────────────────────────── */

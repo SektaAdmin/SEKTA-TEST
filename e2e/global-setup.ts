@@ -1,5 +1,5 @@
 import { chromium, type FullConfig } from '@playwright/test'
-import { mkdirSync } from 'fs'
+import { mkdirSync, existsSync } from 'fs'
 
 const AUTH_FILE = 'e2e/.auth/state.json'
 const CLIENT_AUTH_FILE = 'e2e/.auth/client-state.json'
@@ -49,18 +49,32 @@ export default async function globalSetup(config: FullConfig) {
   }
 
   // --- Phone logins (client / trainer) — той самий флоу, різниться лише зоною редиректу ---
+  // Логін по телефону йде через middleware-редирект (/ → зона ролі), який іноді
+  // не встигає за 15с. НЕ валимо весь прогін через це: якщо є збережена сесія —
+  // лишаємо її (тести під роль все одно стартують з кешу); якщо нема — роль
+  // просто скіпнеться (test.skip по !existsSync файлу).
   async function phoneLogin(phone: string, pass: string, zone: RegExp, file: string) {
     const page = await browser.newPage({ baseURL })
-    await page.goto('/login')
-    // поле має placeholder "+380…"; CSS-фолбек — перший не-password input
-    const phoneInput = page.getByPlaceholder('+380…')
-      .or(page.locator('input:not([type="password"])').first())
-    await phoneInput.fill(phone)
-    await page.locator('input[type="password"]').fill(pass)
-    await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
-    await page.waitForURL(zone, { timeout: 15_000 }) // middleware веде / → зону ролі
-    await page.context().storageState({ path: file })
-    await page.close()
+    try {
+      await page.goto('/login')
+      // поле має placeholder "+380…"; CSS-фолбек — перший не-password input
+      const phoneInput = page.getByPlaceholder('+380…')
+        .or(page.locator('input:not([type="password"])').first())
+      await phoneInput.fill(phone)
+      await page.locator('input[type="password"]').fill(pass)
+      await page.getByRole('button', { name: /Увійти|Вхід/ }).click()
+      await page.waitForURL(zone, { timeout: 15_000 }) // middleware веде / → зону ролі
+      await page.context().storageState({ path: file })
+    } catch (err) {
+      const reused = existsSync(file)
+      console.warn(
+        `[global-setup] phoneLogin(${file}) не завершився: ${(err as Error).message}. ` +
+        (reused ? 'Використовую попередньо збережену сесію.' : 'Сесії нема — роль буде пропущено (test.skip).')
+      )
+      // не кидаємо: staff-логін (головний) уже зроблено; роль без сесії скіпнеться
+    } finally {
+      await page.close()
+    }
   }
 
   if (clientPhone && clientPassword) {

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -461,6 +461,7 @@ interface MobileScheduleTimelineProps {
   filterChip: string
   filterTrainer: string
   viewerTrainerId: string | null
+  loading: boolean
   onDateSelect: (d: Date) => void
   onFilterChip: (chip: string) => void
   onTrainerFilter: (trainerId: string) => void
@@ -488,6 +489,7 @@ function MobileScheduleTimeline({
   filterChip,
   filterTrainer,
   viewerTrainerId,
+  loading,
   onDateSelect,
   onFilterChip,
   onTrainerFilter,
@@ -515,14 +517,17 @@ function MobileScheduleTimeline({
     return () => clearInterval(id)
   }, [])
 
-  useEffect(() => {
-    if (nowTop !== null && scrollRef.current) {
-      const rowH = 64
-      const top = (nowTop - TL_MIN_HOUR) * rowH
-      scrollRef.current.scrollTo({ top: Math.max(0, top - 80), behavior: 'smooth' })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Скрол до поточної години — ОДИН раз, синхронно ДО paint (useLayoutEffect +
+  // behavior:'auto'). 'smooth' бігло після першого кадру і давало layout shift.
+  // Звірено з адмінською копією у app/schedule/page.tsx.
+  const didInitialScroll = useRef(false)
+  useLayoutEffect(() => {
+    if (didInitialScroll.current || nowTop === null || !scrollRef.current) return
+    didInitialScroll.current = true
+    const rowH = 64
+    const top = (nowTop - TL_MIN_HOUR) * rowH
+    scrollRef.current.scrollTo({ top: Math.max(0, top - 80), behavior: 'auto' })
+  }, [nowTop])
 
   const handlePrevWeek = useCallback(() => {
     setSlideDir('right')
@@ -665,29 +670,38 @@ function MobileScheduleTimeline({
         ))}
       </div>
 
-      {/* Trainer chips */}
-      {activeTrainers.length > 1 && (
-        <div className={styles.mobileTlTrainerChips}>
-          <button
-            className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-            onClick={() => onTrainerFilter('')}
-          >
-            Всі тренери
-          </button>
-          {activeTrainers.map(t => (
+      {/* Trainer chips — резервуємо висоту поки тренери ще не приїхали (CLS-фікс,
+          звірено з адмінською копією). Смуга залів тут завжди має чип «Всі»,
+          тож зсуву не дає; пізно з'являється лише ця смуга тренерів. */}
+      <div className={styles.mobileTlTrainerChipsReserve}>
+        {activeTrainers.length > 1 && (
+          <div className={styles.mobileTlTrainerChips}>
             <button
-              key={t.id}
-              className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
-              onClick={() => onTrainerFilter(t.id)}
+              className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              onClick={() => onTrainerFilter('')}
             >
-              {t.name}
+              Всі тренери
             </button>
-          ))}
-        </div>
-      )}
+            {activeTrainers.map(t => (
+              <button
+                key={t.id}
+                className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                onClick={() => onTrainerFilter(t.id)}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Timeline scroll */}
       <div ref={scrollRef} className={styles.mobileTlScroll}>
+        {loading ? (
+          // Заглушка фіксованої висоти поки заняття вантажаться (CLS-фікс,
+          // звірено з адмінською копією у app/schedule/page.tsx).
+          <div className={styles.mobileTlLoading} aria-hidden="true" />
+        ) : (
         <div className={styles.mobileTlGrid}>
           {TL_HOURS.map(h => {
             const hourClasses = classesByHour.get(h) ?? []
@@ -793,6 +807,7 @@ function MobileScheduleTimeline({
             <div className={styles.mobileTlEmpty}>Занять немає</div>
           )}
         </div>
+        )}
       </div>
     </div>
   )
@@ -1063,6 +1078,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           filterChip={filterChip}
           filterTrainer={filterTrainer}
           viewerTrainerId={viewerTrainerId}
+          loading={loading}
           onDateSelect={setBaseDate}
           onFilterChip={setFilterChip}
           onTrainerFilter={setFilterTrainer}
