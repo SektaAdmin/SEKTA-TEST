@@ -1,5 +1,5 @@
 'use client'
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -220,34 +220,29 @@ export default function ClientSchedule({
 
   return (
     <>
-      {/* ── Горизонтальний скрол дат (роздільник місяця перед першим днем кожного нового місяця) ── */}
+      {/* ── Горизонтальний скрол дат ── */}
+      {activeDay && (
+        <div className={styles.bookDaysMonth}>{MONTHS_UK_CAP[activeDay.month - 1]} {activeDay.year}</div>
+      )}
       <div className={styles.bookDays}>
-        {allDays.map((d, i) => {
+        {allDays.map((d) => {
           const isToday = d.key === today
           const isSelected = activeDayKey === d.key
-          const prev = allDays[i - 1]
-          const showMonth = !prev || prev.month !== d.month || prev.year !== d.year
           return (
-            <Fragment key={d.key}>
-              {showMonth && (
-                <div className={styles.bookDaysMonth}>
-                  {MONTHS_UK_CAP[d.month - 1]} {d.year}
-                </div>
-              )}
-              <button
-                type="button"
-                className={[
-                  styles.bookDay,
-                  isToday ? styles.bookDayToday : '',
-                  isSelected ? styles.bookDayOn : '',
-                ].filter(Boolean).join(' ')}
-                aria-pressed={isSelected}
-                onClick={() => setDateSel(d.key)}
-              >
-                <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
-                <span className={styles.bookDayNum}>{d.day}</span>
-              </button>
-            </Fragment>
+            <button
+              key={d.key}
+              type="button"
+              className={[
+                styles.bookDay,
+                isToday ? styles.bookDayToday : '',
+                isSelected ? styles.bookDayOn : '',
+              ].filter(Boolean).join(' ')}
+              aria-pressed={isSelected}
+              onClick={() => setDateSel(d.key)}
+            >
+              <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
+              <span className={styles.bookDayNum}>{d.day}</span>
+            </button>
           )
         })}
       </div>

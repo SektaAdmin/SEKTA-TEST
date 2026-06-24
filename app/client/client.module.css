@@ -1073,21 +1073,14 @@
 /* Дні — горизонтальний скрол міні-тайлів (число + день тижня). */
 /* Місяць активного дня — над стрічкою (вікно 30 днів перетинає межу місяця),
    у стилі адмінського .mobileTlMonth, щоб навігація виглядала однаково. */
-/* Роздільник місяця всередині стрічки (iOS-стиль): вертикальний підпис
-   перед першим днем кожного нового місяця. flex-shrink:0 — не стискається при скролі. */
 .bookDaysMonth {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 0 8px 0 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  margin-bottom: 8px;
+  padding-left: 4px;
 }
 
 .bookDays {
