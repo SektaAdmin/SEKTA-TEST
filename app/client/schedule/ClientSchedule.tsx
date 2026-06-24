@@ -221,23 +221,27 @@ export default function ClientSchedule({
   return (
     <>
       {/* ── Горизонтальний скрол дат ── */}
+      {activeDay && (
+        <div className={styles.bookDaysMonth}>{MONTHS_UK_GENITIVE[activeDay.month - 1]}</div>
+      )}
       <div className={styles.bookDays}>
-        {allDays.map((d, i) => {
+        {allDays.map((d) => {
           const isToday = d.key === today
-          const showMonth = i === 0 || d.month !== allDays[i - 1].month
+          const isSelected = activeDayKey === d.key
           return (
             <button
               key={d.key}
               type="button"
-              className={`${styles.bookDay} ${activeDayKey === d.key ? styles.bookDayOn : ''}`}
-              aria-pressed={activeDayKey === d.key}
+              className={[
+                styles.bookDay,
+                isToday ? styles.bookDayToday : '',
+                isSelected ? styles.bookDayOn : '',
+              ].filter(Boolean).join(' ')}
+              aria-pressed={isSelected}
               onClick={() => setDateSel(d.key)}
             >
-              <span className={styles.bookDayDow}>
-                {isToday ? 'Сьог.' : DOW_LABELS_SHORT[d.dow]}
-              </span>
+              <span className={styles.bookDayDow}>{DOW_LABELS_SHORT[d.dow]}</span>
               <span className={styles.bookDayNum}>{d.day}</span>
-              <span className={styles.bookDayMonth}>{showMonth ? MONTHS_UK_SHORT[d.month - 1] : ''}</span>
             </button>
           )
         })}

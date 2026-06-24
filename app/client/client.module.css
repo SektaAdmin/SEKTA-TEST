@@ -1071,9 +1071,21 @@
 }
 
 /* Дні — горизонтальний скрол міні-тайлів (число + день тижня). */
+/* Місяць активного дня — над стрічкою (вікно 30 днів перетинає межу місяця),
+   у стилі адмінського .mobileTlMonth, щоб навігація виглядала однаково. */
+.bookDaysMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
 .bookDays {
   display: flex;
-  gap: 8px;
+  gap: 2px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
@@ -1085,54 +1097,64 @@
   display: none; /* Chrome/Safari/Android */
 }
 
+/* Чип дня — як адмінський .mobileTlDay: прозора кнопка, число в колі.
+   flex-shrink: 0 лишаємо — стрічка скролиться горизонтально (вікно 30 днів). */
 .bookDay {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
-  width: 52px;
-  padding: 8px 0;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  width: 44px;
+  padding: 6px 2px;
+  background: none;
+  border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: border-color var(--motion-fast), background var(--motion-fast);
+  transition: background var(--motion-fast);
+  -webkit-tap-highlight-color: transparent;
 }
-.bookDay:hover { border-color: var(--border-hover); }
-
-.bookDayOn {
-  background: var(--accent);
-  border-color: var(--accent);
+@media (hover: hover) {
+  .bookDay:hover { background: var(--bg-2); }
 }
-.bookDayOn .bookDayDow,
-.bookDayOn .bookDayNum,
-.bookDayOn .bookDayMonth { color: var(--accent-text); }
 
 .bookDayDow {
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--text-3);
 }
 
 .bookDayNum {
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 1;
   color: var(--text);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   font-variant-numeric: tabular-nums;
 }
 
-/* Місяць — показуємо на першому чипі й при зміні місяця (вікно 30 днів перетинає
-   межу). Порожній рядок резервує висоту (min-height), щоб чипи лишались рівні. */
-.bookDayMonth {
-  min-height: 13px;
-  font-size: 10px;
+/* Сьогодні — червоне коло (пріоритет над вибраним, як .mobileTlDayToday). */
+.bookDayToday .bookDayNum {
+  background: var(--danger, #e03050);
+  color: #fff;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: var(--text-3);
-  white-space: nowrap;
 }
+.bookDayToday .bookDayDow { color: var(--danger, #e03050); }
+
+/* Вибраний день (не сьогодні) — коло заливається акцентом. */
+.bookDayOn:not(.bookDayToday) .bookDayNum {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.bookDayOn:not(.bookDayToday) .bookDayDow { color: var(--accent); }
 
 /* Заголовок обраного дня над списком слотів. */
 .bookDayHeading {
