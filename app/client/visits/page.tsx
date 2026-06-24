@@ -8,9 +8,7 @@ import {
   listMyPastEnrollments,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
-import CabinetHeader from '@/components/CabinetHeader'
 import ClientVisits from './ClientVisits'
-import styles from '../client.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,19 +37,16 @@ export default async function ClientVisitsPage() {
     listMyPastEnrollments(supabase, client.id),
   ])
 
+  // Шапку (з кнопкою «Сьогодні») рендерить сам ClientVisits через wrap() —
+  // кнопці потрібен доступ до стану активної вкладки/тижня.
   return (
-    <>
-      <CabinetHeader title="Мої візити" backHref="/client" hideLogout />
-      <div className={styles.scroll}>
-        <ClientVisits
-          clientId={client.id}
-          typeLabels={typeLabels}
-          initialBalanceAfter={balanceAfter}
-          initialUpcoming={upcoming}
-          initialPast={past}
-          initialPastTotal={pastTotal}
-        />
-      </div>
-    </>
+    <ClientVisits
+      clientId={client.id}
+      typeLabels={typeLabels}
+      initialBalanceAfter={balanceAfter}
+      initialUpcoming={upcoming}
+      initialPast={past}
+      initialPastTotal={pastTotal}
+    />
   )
 }

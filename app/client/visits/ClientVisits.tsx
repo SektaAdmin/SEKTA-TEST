@@ -1,7 +1,8 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import CabinetHeader from '@/components/CabinetHeader'
 import { supabase } from '@/lib/supabase'
 import {
   listMyUpcomingEnrollments,
@@ -99,17 +100,19 @@ function weekOf(d: Date): Date[] {
  *  - 'future' (Майбутні): минулі дні приглушені/неактивні, свайп уперед.
  *  - 'past'   (Історія):  майбутні дні приглушені/неактивні, свайп назад.
  */
-function WeekStrip({ direction, selected, daysWithVisits, onSelect }: {
+function WeekStrip({ direction, selected, daysWithVisits, weekOffset, onWeekOffsetChange, onSelect }: {
   direction: 'future' | 'past'
   selected: DayKey
   daysWithVisits: Set<DayKey>
+  /** Зсув тижня контрольований ззовні — щоб кнопка «Сьогодні» могла його скинути. */
+  weekOffset: number
+  onWeekOffsetChange: (n: number) => void
   onSelect: (k: DayKey) => void
 }) {
   const now = useMemo(() => new Date(), [])
   const today = useMemo(() => dateKey(now), [now])
   const todayStart = useMemo(() => { const t = new Date(now); t.setHours(0, 0, 0, 0); return t }, [now])
 
-  const [weekOffset, setWeekOffset] = useState(0)
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
   const stripRef = useRef<HTMLDivElement | null>(null)
   const swipeRef = useRef<{ x: number; y: number; decided: boolean } | null>(null)
@@ -124,17 +127,13 @@ function WeekStrip({ direction, selected, daysWithVisits, onSelect }: {
   // Майбутні: weekOffset >= 0 (поточний тиждень і вперед).
   // Історія:  weekOffset <= 0 (поточний тиждень і назад).
   const goPrevWeek = useCallback(() => {
-    setWeekOffset(o => {
-      if (direction === 'future' && o <= 0) return o
-      setSlideDir('right'); return o - 1
-    })
-  }, [direction])
+    if (direction === 'future' && weekOffset <= 0) return
+    setSlideDir('right'); onWeekOffsetChange(weekOffset - 1)
+  }, [direction, weekOffset, onWeekOffsetChange])
   const goNextWeek = useCallback(() => {
-    setWeekOffset(o => {
-      if (direction === 'past' && o >= 0) return o
-      setSlideDir('left'); return o + 1
-    })
-  }, [direction])
+    if (direction === 'past' && weekOffset >= 0) return
+    setSlideDir('left'); onWeekOffsetChange(weekOffset + 1)
+  }, [direction, weekOffset, onWeekOffsetChange])
 
   // Свайп ←/→ по стрічці тижня (порт логіки /client/schedule).
   useEffect(() => {
@@ -238,6 +237,8 @@ export default function ClientVisits({
   const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming')
   const [upcomingDaySel, setUpcomingDaySel] = useState<DayKey | null>(null)
   const [historyDaySel, setHistoryDaySel] = useState<DayKey | null>(null)
+  const [upcomingWeekOffset, setUpcomingWeekOffset] = useState(0)
+  const [historyWeekOffset, setHistoryWeekOffset] = useState(0)
   const [pastShown, setPastShown] = useState(PAGE_SIZE)
 
   const { fromISO } = useMemo(() => ({
@@ -313,7 +314,31 @@ export default function ClientVisits({
     </p>
   )
 
-  return (
+  // «Сьогодні» (у шапці): повернути активну вкладку до її дефолтного дня —
+  // найближчого майбутнього (Майбутні) / найсвіжішого минулого (Історія) візиту —
+  // і скинути зсув тижня після свайпу.
+  const activeHasVisits = activeTab === 'upcoming'
+    ? upcomingSorted.length > 0
+    : pastSorted.length > 0
+  const goToday = useCallback(() => {
+    if (activeTab === 'upcoming') { setUpcomingWeekOffset(0); setUpcomingDaySel(null) }
+    else { setHistoryWeekOffset(0); setHistoryDaySel(null); setPastShown(PAGE_SIZE) }
+  }, [activeTab])
+  // Кнопка лише коли є що показати (порожній стан кнопки не потребує).
+  const todayAction: ReactNode = activeHasVisits ? (
+    <button type="button" className={styles.bookTodayBtn} onClick={goToday}>
+      Сьогодні
+    </button>
+  ) : undefined
+
+  const wrap = (content: ReactNode) => (
+    <>
+      <CabinetHeader title="Мої візити" backHref="/client" hideLogout action={todayAction} />
+      <div className={styles.scroll}>{content}</div>
+    </>
+  )
+
+  return wrap(
     <>
       {/* Tabs */}
       <div className={styles.visitTabs}>
@@ -353,6 +378,8 @@ export default function ClientVisits({
               direction="future"
               selected={effectiveUpcomingDay}
               daysWithVisits={upcomingDaysSet}
+              weekOffset={upcomingWeekOffset}
+              onWeekOffsetChange={setUpcomingWeekOffset}
               onSelect={setUpcomingDaySel}
             />
             <div className={styles.bookDayHeading}>{dayHeading(effectiveUpcomingDay)}</div>
@@ -410,6 +437,8 @@ export default function ClientVisits({
               direction="past"
               selected={effectiveHistoryDay}
               daysWithVisits={historyDaysSet}
+              weekOffset={historyWeekOffset}
+              onWeekOffsetChange={setHistoryWeekOffset}
               onSelect={k => { setHistoryDaySel(k); setPastShown(PAGE_SIZE) }}
             />
             <div className={styles.bookDayHeading}>{dayHeading(effectiveHistoryDay)}</div>
@@ -455,3 +484,4 @@ export default function ClientVisits({
     </>
   )
 }
+
