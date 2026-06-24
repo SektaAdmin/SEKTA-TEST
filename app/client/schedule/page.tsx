@@ -9,9 +9,7 @@ import {
   listMyUpcomingEnrollments,
 } from '@/lib/queries/client-cabinet-data'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
-import CabinetHeader from '@/components/CabinetHeader'
 import ClientSchedule from './ClientSchedule'
-import styles from '../client.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,20 +55,15 @@ export default async function ClientSchedulePage() {
   }
 
   return (
-    <>
-      <CabinetHeader title="Розклад" backHref="/client" hideLogout />
-      <div className={styles.scroll}>
-        <ClientSchedule
-          clientId={client.id}
-          fromISO={fromISO}
-          toISO={toISO}
-          typeLabels={typeLabels}
-          initialBalanceByType={balanceByType}
-          availability={availability}
-          initialEnrolled={initialEnrolled}
-          initialClasses={classes}
-        />
-      </div>
-    </>
+    <ClientSchedule
+      clientId={client.id}
+      fromISO={fromISO}
+      toISO={toISO}
+      typeLabels={typeLabels}
+      initialBalanceByType={balanceByType}
+      availability={availability}
+      initialEnrolled={initialEnrolled}
+      initialClasses={classes}
+    />
   )
 }

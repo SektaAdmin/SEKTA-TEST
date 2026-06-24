@@ -1073,6 +1073,23 @@
 /* Дні — горизонтальний скрол міні-тайлів (число + день тижня). */
 /* Місяць активного дня — над стрічкою (вікно 30 днів перетинає межу місяця),
    у стилі адмінського .mobileTlMonth, щоб навігація виглядала однаково. */
+/* Кнопка «Сьогодні» у шапці (права зона CabinetHeader) — як адмінський .todayBtn. */
+.bookTodayBtn {
+  height: var(--control-h);
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+@media (hover: hover) {
+  .bookTodayBtn:hover { border-color: var(--border-hover); color: var(--text); }
+}
+
 /* Обгортка тижневої стрічки — приймач свайпу (як адмінський .mobileTlStripWrap). */
 .bookStripWrap {
   margin-bottom: 16px;

@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -12,6 +12,7 @@ import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import { goesToWaitlist } from '@/lib/scheduleMetrics'
 import { kyivParts } from '@/lib/cancellation'
+import CabinetHeader from '@/components/CabinetHeader'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { MSG } from '@/lib/messages'
@@ -230,6 +231,18 @@ export default function ClientSchedule({
   // activeDay будуємо з самого ключа dateSel (а не з видимого тижня) — інакше
   // після свайпу на тиждень без вибраного дня заголовок і список зникали б.
   const activeDayKey = dateSel
+
+  // «Сьогодні» (у шапці): повернутись на поточний тиждень + вибрати сьогодні.
+  const goToday = useCallback(() => {
+    setWeekOffset(0)
+    setSlideDir(null)
+    setDateSel(today)
+  }, [today])
+  const todayAction = (
+    <button type="button" className={styles.bookTodayBtn} onClick={goToday}>
+      Сьогодні
+    </button>
+  )
   const activeDay = useMemo<DayGroup>(() => {
     const [y, m, dd] = activeDayKey.split('-').map(Number)
     const local = new Date(y, m - 1, dd)
@@ -280,21 +293,29 @@ export default function ClientSchedule({
     setConfirm(null)
   }
 
+  // Шапка з контентом. action (кнопка «Сьогодні») лише коли є тижнева стрічка.
+  const wrap = (content: ReactNode, action?: ReactNode) => (
+    <>
+      <CabinetHeader title="Розклад" backHref="/client" hideLogout action={action} />
+      <div className={styles.scroll}>{content}</div>
+    </>
+  )
+
   if (classesError) {
-    return (
+    return wrap(
       <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
         Помилка завантаження. Спробуйте оновити сторінку.
       </p>
     )
   }
   if (loading && classes.length === 0) {
-    return <div className="loading-dots"><span /><span /><span /></div>
+    return wrap(<div className="loading-dots"><span /><span /><span /></div>)
   }
   if (daysWithClasses.size === 0) {
-    return <p className={styles.empty}>{MSG.empty.bookableClasses}.</p>
+    return wrap(<p className={styles.empty}>{MSG.empty.bookableClasses}.</p>)
   }
 
-  return (
+  return wrap(
     <>
       {/* ── Тижнева сітка дат (пн–нд) + свайп між тижнями — як адмінський MobileScheduleTimeline ── */}
       <div ref={stripRef} className={styles.bookStripWrap}>
@@ -504,6 +525,7 @@ export default function ClientSchedule({
           </ModalShell>
         )
       })()}
-    </>
+    </>,
+    todayAction,
   )
 }

@@ -1,4 +1,5 @@
 'use client'
+import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { LogoutIcon } from './icons/navigation'
@@ -17,12 +18,15 @@ export default function CabinetHeader({
   address,
   backHref,
   hideLogout,
+  action,
 }: {
   title: string
   subtitle?: string
   address?: string
   backHref?: string
   hideLogout?: boolean
+  /** Дія у правій зоні шапки (напр. кнопка «Сьогодні»). Має пріоритет над «Вийти». */
+  action?: ReactNode
 }) {
   const router = useRouter()
 
@@ -51,12 +55,14 @@ export default function CabinetHeader({
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
       </div>
-      {!hideLogout && (
-        <button type="button" className={styles.logout} onClick={() => signOutAndRedirect(router)} aria-label="Вийти">
-          <LogoutIcon />
-          <span>Вийти</span>
-        </button>
-      )}
+      {action
+        ? action
+        : !hideLogout && (
+            <button type="button" className={styles.logout} onClick={() => signOutAndRedirect(router)} aria-label="Вийти">
+              <LogoutIcon />
+              <span>Вийти</span>
+            </button>
+          )}
     </header>
   )
 }
