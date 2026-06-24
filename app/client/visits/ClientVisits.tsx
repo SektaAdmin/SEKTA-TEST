@@ -274,7 +274,7 @@ export default function ClientVisits({
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchUpcoming(), refetchPast(), refetchBalances()])
   }, [refetchUpcoming, refetchPast, refetchBalances])
-  const { pull, refreshing, dbg } = usePullToRefresh(scrollRef, handleRefresh)
+  const { pull, refreshing } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
@@ -344,10 +344,6 @@ export default function ClientVisits({
   const wrap = (content: ReactNode) => (
     <>
       <CabinetHeader title="Мої візити" backHref="/client" hideLogout action={todayAction} />
-      {/* TODO: тимчасова PTR-діагностика — прибрати після підтвердження жесту */}
-      <div style={{ position: 'fixed', top: 60, left: 8, zIndex: 9999, background: 'rgba(0,0,0,0.85)', color: '#0f0', font: '11px monospace', padding: '4px 6px', borderRadius: 4, pointerEvents: 'none' }}>
-        {dbg}
-      </div>
       <div ref={scrollRef} className={styles.scroll}>
         <div
           className={styles.ptrIndicator}
