@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   getMyClient,
@@ -10,7 +10,6 @@ import type { MyPurchaseRow } from '@/lib/queries/client-cabinet-data'
 import CabinetHeader from '@/components/CabinetHeader'
 import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
-import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, clientPaymentClass, clientPaymentLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
@@ -133,8 +132,7 @@ function AlertIcon() {
 
 /* Спокійна плашка помилки завантаження секції — єдиний словник для обох
    секцій (баланс / історія), щоб не дублювати інлайн-стиль. Кнопка «Оновити»
-   дає шлях оновлення без жесту (десктоп / клавіатура / switch) — pull-to-refresh
-   працює лише на тач, тож сама плашка має нести дію. */
+   дає явний шлях повторного завантаження прямо в плашці. */
 function SectionError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className={styles.sectionError} role="status">
@@ -195,51 +193,23 @@ export default function ClientSubscriptions({
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
   // Клієнтська пагінація: дані вже в руках (до 100 з listMyPurchases), «Показати
-  // ще» лише піднімає visibleCount. Без дозапиту → нема рейсів і конфлікту з
-  // pull-to-refresh. Перший показ — 5, далі кроком +10.
+  // ще» лише піднімає visibleCount. Без дозапиту → нема рейсів. Перший показ — 5,
+  // далі кроком +10.
   const [visibleCount, setVisibleCount] = useState(PURCHASES_INITIAL)
   const visiblePurchases = purchases.slice(0, visibleCount)
   const currentYear = new Date().getFullYear()
   const purchaseGroups = groupByMonth(visiblePurchases, currentYear)
 
-  // Pull-to-refresh: тягне баланс+сесії+покупки разом (той самий шлях, що й
-  // refetchOnVisible). Жест активний лише від верху .scroll.
-  const scrollRef = useRef<HTMLDivElement>(null)
+  // «Оновити» в плашці помилки тягне баланс+сесії+покупки разом (той самий шлях,
+  // що й refetchOnVisible).
   const handleRefresh = useCallback(async () => {
     await Promise.all([refetchBalance(), refetchSessions(), refetchPurchases()])
   }, [refetchBalance, refetchSessions, refetchPurchases])
-  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
-
-  // Озвучення pull-to-refresh для скрін-рідерів: візуальний спінер aria-hidden,
-  // тож стан оновлення доносимо текстом у polite live-region («Оновлення…» →
-  // «Оновлено»). Без цього незрячий користувач не знає, що жест спрацював.
-  const [refreshStatus, setRefreshStatus] = useState('')
-  const wasRefreshing = useRef(false)
-  useEffect(() => {
-    if (refreshing) {
-      setRefreshStatus('Оновлення…')
-      wasRefreshing.current = true
-    } else if (wasRefreshing.current) {
-      wasRefreshing.current = false
-      setRefreshStatus('Оновлено')
-    }
-  }, [refreshing])
 
   return (
     <>
       <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
-      <span className="sr-only" role="status" aria-live="polite">{refreshStatus}</span>
-      <div ref={scrollRef} className={styles.scroll}>
-        <div
-          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
-          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
-          aria-hidden
-        >
-          <span
-            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
-            style={{ '--ptr-progress': progress } as CSSProperties}
-          />
-        </div>
+      <div className={styles.scroll}>
       <h2 className={styles.sectionLabel}>Залишок занять</h2>
       {(balanceError || sessionsError) ? (
         <SectionError onRetry={handleRefresh} />
@@ -286,8 +256,7 @@ export default function ClientSubscriptions({
         <>
         {purchaseGroups.map(group => (
           <section key={group.key} className={styles.txGroup}>
-            {/* Sticky-заголовок місяця: непрозорий --bg, z-index нижче PTR-спінера
-                (.ptrIndicator), щоб при відтягуванні вони не наклалися. */}
+            {/* Sticky-заголовок місяця: непрозорий --bg, щоб рядки не просвічували. */}
             <h3 className={styles.txMonthHeader}>{group.label}</h3>
             <ul className={styles.txList}>
               {group.items.map(p => {

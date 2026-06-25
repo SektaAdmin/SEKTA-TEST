@@ -30,62 +30,6 @@
   max-width: 640px;
 }
 
-/* Pull-to-refresh індикатор: висота керується інлайн зі стану (px відтягування),
-   тому в потоці зверху .scroll — контент плавно зсувається вниз за пальцем. */
-.ptrIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  max-width: none !important; /* override .scroll > * центрування — це повна смуга */
-  margin: 0 !important;
-  transition: opacity 0.15s ease;
-  /* Під час тяги height змінюється інлайн БЕЗ transition — йде 1:1 за пальцем. */
-}
-
-/* Відпускання: висота плавно вертається назад/до спінера, замість щолчка.
-   ease-out-quint — нативний overscroll гальмує плавно (без «перельоту»). */
-.ptrReleasing {
-  transition: opacity 0.15s ease, height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.ptrSpinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
-  border-top-color: var(--text-3);
-  border-radius: 50%;
-  /* Реакція на тягу: --ptr-progress 0..1 ставиться інлайн з хука.
-     Спінер проявляється і докручується пропорційно до порога. */
-  opacity: var(--ptr-progress, 0);
-  transform: rotate(calc(var(--ptr-progress, 0) * 270deg));
-}
-
-/* Поріг досягнуто — спінер «готовий»: повний колір + лагідний пульс. */
-.ptrSpinnerReady {
-  border-top-color: var(--text);
-  animation: ptrPulse 0.9s ease-in-out infinite;
-}
-
-/* Іде refetch — крутимо. Перебиває статичний transform/pulse. */
-.ptrSpinning {
-  opacity: 1;
-  animation: ptrSpin 0.7s linear infinite;
-}
-
-@keyframes ptrSpin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ptrPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ptrSpinning, .ptrSpinnerReady { animation: none; }
-}
-
 .empty {
   color: var(--text-2);
   font-size: 14px;

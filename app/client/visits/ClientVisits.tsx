@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import CabinetHeader from '@/components/CabinetHeader'
@@ -12,7 +12,6 @@ import {
 import type { MyEnrollmentRow, MyPastEnrollmentRow } from '@/lib/queries/client-cabinet-data'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
-import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { ticketTypeShortLabel, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
 import { fullWhen, pluralHours } from '@/lib/formatters'
 import { MSG } from '@/lib/messages'
@@ -268,14 +267,6 @@ export default function ClientVisits({
     { refetchOnVisible: true, initialData: initialBalanceAfter }
   )
 
-  // Pull-to-refresh: тягне всі три джерела разом (той самий шлях, що й
-  // refetchOnVisible). Чекаємо на завершення, щоб індикатор тримався до даних.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([refetchUpcoming(), refetchPast(), refetchBalances()])
-  }, [refetchUpcoming, refetchPast, refetchBalances])
-  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
-
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
 
   const upcomingSorted = useMemo(
@@ -344,17 +335,7 @@ export default function ClientVisits({
   const wrap = (content: ReactNode) => (
     <>
       <CabinetHeader title="Мої візити" backHref="/client" hideLogout action={todayAction} />
-      <div ref={scrollRef} className={styles.scroll}>
-        <div
-          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
-          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
-          aria-hidden
-        >
-          <span
-            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
-            style={{ '--ptr-progress': progress } as CSSProperties}
-          />
-        </div>
+      <div className={styles.scroll}>
         {content}
       </div>
     </>

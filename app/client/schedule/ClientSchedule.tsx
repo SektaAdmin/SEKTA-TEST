@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { listBookableClasses, listMySessionBalances, getClassAvailability } from '@/lib/queries/client-cabinet-data'
@@ -7,7 +7,6 @@ import type { BookableClassRow, ClassAvailability } from '@/lib/queries/client-c
 import { clientEnroll } from '@/lib/queries/client-cabinet'
 import { useListQuery } from '@/hooks/useListQuery'
 import { useAsync } from '@/hooks/useAsync'
-import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { ticketTypeShortLabel, ticketTypeNominativeLabel, enrollmentStatusLabel } from '@/lib/badges'
 import { hhmm, fullWhen, pluralHours } from '@/lib/formatters'
 import { DOW_LABELS_SHORT, DOW_LABELS_FULL, MONTHS_UK_SHORT, MONTHS_UK_GENITIVE, MONTHS_UK_CAP } from '@/lib/dateUtils'
@@ -132,15 +131,6 @@ export default function ClientSchedule({
     { refetchOnVisible: true, initialData: availability }
   )
   const avMap = currentAvailability ?? availability
-
-  // Pull-to-refresh: оновлює класи+доступність+баланс разом. Жест активний лише
-  // від верху .scroll і лише коли вертикаль домінує — горизонтальний свайп тижня
-  // (stripRef) не зачіпається.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([refetchClasses(), refetchAvailability(), refetchBalance()])
-  }, [refetchClasses, refetchAvailability, refetchBalance])
-  const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
   const serviceName = (t: string) => ticketTypeNominativeLabel(t) || typeLabel(t)
@@ -307,17 +297,7 @@ export default function ClientSchedule({
   const wrap = (content: ReactNode, action?: ReactNode) => (
     <>
       <CabinetHeader title="Розклад" backHref="/client" hideLogout action={action} />
-      <div ref={scrollRef} className={styles.scroll}>
-        <div
-          className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
-          style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
-          aria-hidden
-        >
-          <span
-            className={`${styles.ptrSpinner} ${refreshing ? styles.ptrSpinning : ''} ${ready && !refreshing ? styles.ptrSpinnerReady : ''}`}
-            style={{ '--ptr-progress': progress } as CSSProperties}
-          />
-        </div>
+      <div className={styles.scroll}>
         {content}
       </div>
     </>
