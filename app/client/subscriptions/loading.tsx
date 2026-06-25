@@ -10,7 +10,12 @@ export default function ClientSubscriptionsLoading() {
     <>
       <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
       <div className={styles.scroll}>
-        <div className={styles.sectionLabel} style={{ marginTop: 4 }}>Залишок занять</div>
+        {/* Перший .sectionLabel у реальному екрані йде ПІСЛЯ .ptrIndicator, тому
+            :first-child не спрацьовує і він має повний margin-top:24px. Скелетон
+            відтворює ту саму геометрію (порожній .ptrIndicator-плейсхолдер),
+            щоб не було вертикального стрибка при підміні на контент. */}
+        <div className={styles.ptrIndicator} style={{ height: 0 }} aria-hidden />
+        <div className={styles.sectionLabel}>Залишок занять</div>
         <section className={styles.balanceBlock}>
           {[64, 80, 56].map((w, i) => (
             <div key={i} className={styles.balanceRow}>

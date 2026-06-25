@@ -34,7 +34,15 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
     if (p.amount_given > 0) {
       return { title: 'Поповнення депозиту', amount: p.amount_given, sign: '+', deposit: null, total: null }
     }
-    return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−', deposit: null, total: null }
+    // price_paid>0 — реальне списання зі знаком «−». Вироджений рядок (0/0) не
+    // повинен показувати «−0 ₴»: знак прибираємо, лишаємо нейтральний нуль.
+    return {
+      title: 'Списання з депозиту',
+      amount: p.price_paid,
+      sign: p.price_paid > 0 ? '−' : '',
+      deposit: null,
+      total: null,
+    }
   }
 
   // ticket_name (адмінський free-text) може бути порожнім; typeLabel за
@@ -45,6 +53,12 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
     (p.ticket_type ? typeLabel(p.ticket_type) : '') ||
     'Абонемент'
   const diff = p.amount_given - p.price_paid
+
+  // Безкоштовний/компенсований абонемент (ціна 0) — нічого не списано й не дано.
+  // Без фантомного «З депозиту −0 ₴»: показуємо нейтральний нульовий рядок.
+  if (p.price_paid === 0 && p.amount_given === 0) {
+    return { title, amount: 0, sign: '', deposit: null, total: null }
+  }
 
   // Повна оплата з депозиту (amount_given=0)
   if (p.amount_given === 0) {
@@ -254,7 +268,9 @@ export default function ClientSubscriptions({
           })}
         </ul>
         {purchases.length < purchasesTotal && (
-          <p className={styles.listFooterNote}>Показано {purchases.length} з {purchasesTotal}</p>
+          // Список обмежено останніми 100 записами (listMyPurchases). Без «завантажити
+          // ще» — тож копія чесна: це найновіші N, а не «N з total, решта десь є».
+          <p className={styles.listFooterNote}>Показано {purchases.length} найновіших записів</p>
         )}
         </>
       )}
