@@ -1,16 +1,43 @@
 import CabinetHeader from '@/components/CabinetHeader'
 import styles from '../client.module.css'
 
-/** Скелетон екрану «Абонементи» — блок балансу + список покупок. */
+/** Скелетон екрану «Абонементи». Форма точно повторює реальний layout
+ *  (панель залишку занять + картки історії), щоб не було стрибка при підміні
+ *  на справжній контент. Скелети-бари сидять у тих самих контейнерах
+ *  (.balanceBlock / .txItem), тому паддінги й рамки збігаються з продакшеном. */
 export default function ClientSubscriptionsLoading() {
   return (
     <>
       <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
       <div className={styles.scroll}>
-        <div className={`${styles.skel}`} style={{ height: 140, borderRadius: 'var(--radius)', marginBottom: 24 }} />
-        <div className={`${styles.skel}`} style={{ height: 14, width: 120, marginBottom: 12 }} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
+        <div className={styles.sectionLabel} style={{ marginTop: 4 }}>Залишок занять</div>
+        <section className={styles.balanceBlock}>
+          {[64, 80, 56].map((w, i) => (
+            <div key={i} className={styles.balanceRow}>
+              <span className={styles.skel} style={{ height: 15, width: w, borderRadius: 4 }} />
+              <span className={styles.skel} style={{ height: 26, width: 52, borderRadius: 4 }} />
+            </div>
+          ))}
+          <div className={styles.depositRow}>
+            <span className={styles.skel} style={{ height: 14, width: 56, borderRadius: 4 }} />
+            <span className={styles.skel} style={{ height: 16, width: 64, borderRadius: 4 }} />
+          </div>
+        </section>
+
+        <div className={styles.sectionLabel}>Історія покупок</div>
+        <ul className={styles.txList}>
+          {[140, 120, 160].map((w, i) => (
+            <li key={i} className={styles.txItem}>
+              <div className={styles.txItemMain}>
+                <div className={styles.txMain}>
+                  <span className={styles.skel} style={{ display: 'block', height: 15, width: w, borderRadius: 4 }} />
+                  <span className={styles.skel} style={{ display: 'block', height: 13, width: 96, marginTop: 7, borderRadius: 4 }} />
+                </div>
+                <span className={styles.skel} style={{ height: 16, width: 72, borderRadius: 4 }} />
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </>
   )

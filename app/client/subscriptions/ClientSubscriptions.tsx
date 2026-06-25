@@ -181,12 +181,9 @@ export default function ClientSubscriptions({
                     <div className={styles.txMeta}>
                       {formatDate(p.created_at)}
                       {p.payment_method && (
-                        <>
-                          <span className={styles.txMetaDot}>·</span>
-                          <span className={paymentClass(p.payment_method)}>
-                            {clientPaymentLabel(p.payment_method)}
-                          </span>
-                        </>
+                        <span className={paymentClass(p.payment_method)}>
+                          {clientPaymentLabel(p.payment_method)}
+                        </span>
                       )}
                     </div>
                   </div>
