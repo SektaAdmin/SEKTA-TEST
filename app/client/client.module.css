@@ -1477,9 +1477,15 @@
   margin-bottom: 10px;
 }
 
-/* Фільтр тренерів — горизонтальний скрол pill-чипів. */
+/* Фільтр тренерів — горизонтальний скрол pill-чипів.
+   align-items:center + flex-shrink:0: цей рядок — flex-item у колонці .scroll
+   (align-items:center), а сам по собі — overflow-x:auto scroll-container. Без
+   цих двох правил батьківська колонка стискала рядок по вертикалі й чипи
+   обрізались навпіл (видно на мобільному Safari/Chrome). */
 .bookTrainerFilter {
   display: flex;
+  align-items: center;
+  flex-shrink: 0;
   gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
