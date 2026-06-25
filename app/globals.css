@@ -28,6 +28,7 @@ html, body { overscroll-behavior: none; }
   --danger-text: #b32020;
   --radius: 10px;
   --radius-sm: 6px;
+  --radius-full: 999px; /* повна капсула — pill-чипи (дні/фільтри), count-chip */
   --font: var(--font-nunito, 'Nunito Sans', sans-serif);
   --control-h: 32px;
   --topbar-py: 16px;
@@ -455,5 +456,5 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .balance-muted{ font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }
 
 /* Count pill — small numeric counter next to a label */
-.count-chip        { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px; color: var(--text-3); }
-.count-chip-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 8px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--danger) 12%, transparent); border-radius: 999px; color: var(--danger-text); }
+.count-chip        { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-3); }
+.count-chip-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 8px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--danger) 12%, transparent); border-radius: var(--radius-full); color: var(--danger-text); }

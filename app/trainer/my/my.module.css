@@ -156,13 +156,13 @@
 
 /* Сьогодні — червоний кружок (як iOS) */
 .weekDayToday .weekDayNum {
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   color: #fff;
   font-weight: 600;
 }
 
 .weekDayToday .weekDayLabel {
-  color: var(--danger, #e03050);
+  color: var(--danger, #d93535);
 }
 
 /* Вибраний день — акцентний кружок */
@@ -265,7 +265,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   margin-left: -4px;
   flex-shrink: 0;
 }
@@ -273,7 +273,7 @@
 .nowLineLine {
   flex: 1;
   height: 2px;
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
 }
 
 /* ── Картка заняття ──────────────────────────────────────────────────────── */

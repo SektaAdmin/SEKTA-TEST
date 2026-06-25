@@ -72,6 +72,7 @@ rounded:
   base: "10px"
   sm: "6px"
   badge: "20px"
+  full: "999px"
 spacing:
   control-h: "32px"
   topbar-py: "16px"

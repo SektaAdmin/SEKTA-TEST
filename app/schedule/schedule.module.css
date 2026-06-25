@@ -1218,13 +1218,13 @@
 }
 
 .mobileWeekDayToday .mobileWeekDayNum {
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   color: #fff;
   font-weight: 600;
 }
 
 .mobileWeekDayToday .mobileWeekDayLabel {
-  color: var(--danger, #e03050);
+  color: var(--danger, #d93535);
 }
 
 .mobileWeekDaySelected:not(.mobileWeekDayToday) .mobileWeekDayNum {
@@ -1566,13 +1566,13 @@
 }
 
 .mobileTlDayToday .mobileTlDayNum {
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   color: #fff;
   font-weight: 600;
 }
 
 .mobileTlDayToday .mobileTlDayLabel {
-  color: var(--danger, #e03050);
+  color: var(--danger, #d93535);
 }
 
 .mobileTlDaySelected:not(.mobileTlDayToday) .mobileTlDayNum {
@@ -1731,7 +1731,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   margin-left: -4px;
   flex-shrink: 0;
 }
@@ -1739,7 +1739,7 @@
 .mobileTlNowLineLine {
   flex: 1;
   height: 2px;
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
 }
 
 /* ── Class card (flow, не absolute) ─────────────────────── */

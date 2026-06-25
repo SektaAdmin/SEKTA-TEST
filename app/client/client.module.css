@@ -182,7 +182,9 @@
 
 /* ── Hero «Наступне заняття» (перший fold) ──────────────────────────
    Та сама картка, що у списках (.item), щоб не було стилістичного розбою.
-   Виділення «героя» — лейбл зверху + тонка ліва акцентна смуга на .item. */
+   Виділення «героя» — лейбл зверху + повна акцентна рамка з тонким кільцем
+   (не ліва-смуга: side-stripe — AI-патерн; повна рамка + ring читаються як
+   «активна/поточна картка» без штампу). */
 .hero {
   margin-bottom: 16px;
 }
@@ -197,7 +199,8 @@
 }
 
 .hero .item {
-  border-left: 3px solid var(--accent, var(--text));
+  border-color: color-mix(in srgb, var(--accent, var(--text)) 40%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--text)) 22%, transparent);
 }
 
 /* ── Блок балансів ───────────────────────────────────────────────
@@ -1351,11 +1354,11 @@
 
 /* Сьогодні — червоне коло (пріоритет над вибраним, як .mobileTlDayToday). */
 .bookDayToday .bookDayNum {
-  background: var(--danger, #e03050);
+  background: var(--danger, #d93535);
   color: #fff;
   font-weight: 600;
 }
-.bookDayToday .bookDayDow { color: var(--danger, #e03050); }
+.bookDayToday .bookDayDow { color: var(--danger, #d93535); }
 
 /* Вибраний день (не сьогодні) — коло заливається акцентом. */
 .bookDayOn:not(.bookDayToday) .bookDayNum {
@@ -1412,7 +1415,7 @@
   color: var(--text-2);
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   white-space: nowrap;
   transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
@@ -1509,7 +1512,7 @@
   font-size: 12px;
   font-weight: 500;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   color: var(--success);
   background: var(--success-dim);
