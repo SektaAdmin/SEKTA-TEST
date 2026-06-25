@@ -207,13 +207,16 @@
   padding: 6px 16px;
 }
 
-/* Рядок типу занять — назва зліва, крупна кількість справа. */
+/* Рядок типу занять — назва зліва, крупна кількість справа. min-height тримає
+   рядки рівними: «Вичерпано» (без 28px-цифри) інакше нижчий за рядки з числом
+   і ламає вертикальний ритм блоку. */
 .balanceRow {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding: 11px 0;
+  min-height: 46px;
+  padding: 9px 0;
 }
 
 .balanceRow + .balanceRow {
@@ -251,17 +254,14 @@
   color: var(--text-3);
 }
 
-/* Вичерпано — спокійний бурштин (не цифра), тип приглушається. */
+/* Вичерпано — нейтральний факт, не алерт. Цей екран лише читають; амбер тут
+   читався б як «щось не так» і перетягував око з живих чисел (нейтраль>семантика
+   на read-only поверхні). --text-3 на білому = 4.48:1; «Вичерпано» 15px/500 —
+   це large text (bold ≥14px), поріг 3:1 → проходить. */
 .balanceZero {
   font-size: 15px;
   font-weight: 500;
-  color: var(--warning-text);
-}
-
-/* Приглушуємо назву, але не нижче --text-2: --text-3 (#737373) на білому
-   дає ~4.48:1 — нижче AA 4.5:1 (No-Scare Rule). --text-2 чисто проходить. */
-.balanceRowDepleted .balanceRowLabel {
-  color: var(--text-2);
+  color: var(--text-3);
 }
 
 /* Немає жодного типу абонемента — спокійний рядок замість порожнього блоку
@@ -295,7 +295,9 @@
   font-variant-numeric: tabular-nums;
   color: var(--success-text);
 }
-.depositValueZero { color: var(--warning-text); }
+/* Нуль — нейтральний факт (не алерт): амбер тут перебивав би живі числа.
+   Мінус (борг) лишається червоним — це справжній сигнал, який клієнт має бачити. */
+.depositValueZero { color: var(--text-2); }
 .depositValueNeg { color: var(--danger-text); }
 
 /* ── Вкладки (Майбутні / Архів / Покупки) ───────────────────────── */

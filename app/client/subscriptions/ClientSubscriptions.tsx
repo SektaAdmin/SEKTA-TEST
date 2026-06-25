@@ -177,10 +177,7 @@ export default function ClientSubscriptions({
             <div className={styles.balanceEmpty}>Поки немає активних абонементів</div>
           )}
           {sessions.map(s => (
-            <div
-              key={s.ticket_type}
-              className={`${styles.balanceRow} ${s.sessions_balance > 0 ? '' : styles.balanceRowDepleted}`}
-            >
+            <div key={s.ticket_type} className={styles.balanceRow}>
               <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
               {s.sessions_balance > 0 ? (
                 <span className={styles.balanceSessions}>
