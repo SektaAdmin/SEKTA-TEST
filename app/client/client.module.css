@@ -230,6 +230,7 @@
 
 .balanceRowLabel {
   font-size: 15px;
+  font-weight: 400;
   color: var(--text-2);
   /* Назва типу занять може бути довгою (невідомий код → сирий рядок). Дозволяємо
      стискатись і переносити, щоб крупна цифра справа не зрізалась/виштовхувалась. */
@@ -253,8 +254,10 @@
   color: var(--text);
 }
 
+/* Одиниця «год» — підпорядкована герой-цифрі (28px). 13px тримає її нижче
+   body-тіру (15px), щоб око читало «число + дрібна одиниця», а не два рівні слова. */
 .balanceSessionsUnit {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-3);
 }
@@ -289,8 +292,11 @@
   border-top: 1px solid var(--border);
 }
 
+/* Лейбл «Депозит» — той самий секундарний-лейбл тір, що й рядки залишку
+   (15px/400/--text-2). Раніше 14px створював зайвий проміжний крок у шкалі. */
 .depositLabel {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--text-2);
 }
 
@@ -685,13 +691,16 @@
 }
 
 /* ── Екран «Мої візити» (картки візитів) ────────────────────────── */
+/* Заголовок секції — справжній заголовок, не tracked-eyebrow. Капс+трекінг
+   над КОЖНОЮ секцією читається як AI-шаблон і пере­плутується з лейблом-чипом;
+   sentence-case + вага + майже-чорнильний колір дають чисту ієрархію без шуму.
+   Чітко вищий за рядки-вміст (15px/400) і нижчий за герой-цифру (28px). */
 .sectionLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin: 24px 0 12px;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin: 26px 0 10px;
 }
 
 .sectionLabel:first-child {
