@@ -139,30 +139,25 @@
   border-left: 3px solid var(--accent, var(--text));
 }
 
-/* ── Блок балансів (депозит + типи занять) ───────────────────────── */
+/* ── Блок балансів ───────────────────────────────────────────────
+   Ієрархія: ГОЛОВНЕ — залишок занять (год), бо клієнт відкриває екран
+   щоб дізнатись «скільки лишилось записатись». Кількість — крупна цифра,
+   читається з відстані. Депозит (гроші) — другорядний, рядком знизу під
+   розділювачем. */
 .balanceBlock {
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  padding: 6px 16px;
 }
 
-.balanceHeader {
-  padding: 10px 16px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  border-bottom: 1px solid var(--border);
-}
-
+/* Рядок типу занять — назва зліва, крупна кількість справа. */
 .balanceRow {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 16px;
+  padding: 11px 0;
 }
 
 .balanceRow + .balanceRow {
@@ -170,33 +165,68 @@
 }
 
 .balanceRowLabel {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-2);
 }
 
-.balanceZero {
+/* Кількість занять — герой блоку: крупна tabular-цифра + дрібна одиниця. */
+.balanceSessions {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.balanceSessionsNum {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.balanceSessionsUnit {
   font-size: 14px;
+  font-weight: 500;
   color: var(--text-3);
 }
 
-/* Депозит — гроші (₴), акцент над заняттями (год). Крупніший рядок + розділювач. */
+/* Вичерпано — спокійний бурштин (не цифра), тип приглушається. */
+.balanceZero {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--warning-text);
+}
+
+.balanceRowDepleted .balanceRowLabel {
+  color: var(--text-3);
+}
+
+/* Депозит — гроші (₴), другорядний. Рядок знизу під розділювачем,
+   менший за кількість занять, але виразніший за звичайний рядок. */
 .depositRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  margin-top: 4px;
+  padding: 13px 0 12px;
+  border-top: 1px solid var(--border);
 }
 
 .depositLabel {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
+  font-size: 14px;
+  color: var(--text-2);
 }
 
-.depositRow + .balanceRow {
-  border-top: 1px solid var(--border);
+.depositValue {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--success-text);
 }
+.depositValueZero { color: var(--warning-text); }
+.depositValueNeg { color: var(--danger-text); }
 
 /* ── Вкладки (Майбутні / Архів / Покупки) ───────────────────────── */
 .tabs {
@@ -325,40 +355,40 @@
 }
 
 .txItem {
-  display: flex;
-  flex-direction: column;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
 }
 
+/* Сітка 1fr auto — сума завжди в правій колонці фіксованої ширини, тому
+   праві краї сум вирівнюються в єдиний стовпчик (фінансові дані скануються
+   зверху вниз). */
 .txItemMain {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
+  column-gap: 14px;
+  padding: 13px 14px;
 }
 
 .txDepositRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 7px 14px;
+  column-gap: 14px;
+  padding: 8px 14px;
   border-top: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-2);
 }
 
-/* Рядок «Всього» — акцент: трохи крупніший, колір тексту (не --text-2). */
+/* Рядок «Всього» — акцент: колір тексту (не --text-2), напівжирний. */
 .txTotalRow {
-  font-size: 13px;
   font-weight: 500;
   color: var(--text);
 }
 
 .txMain {
-  flex: 1;
   min-width: 0;
 }
 
@@ -372,37 +402,39 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
   font-size: 13px;
   color: var(--text-2);
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
-.amountBadge {
-  font-size: 13px;
+/* Крапка-роздільник між датою і способом оплати. */
+.txMetaDot {
+  color: var(--text-3);
+}
+
+/* Сума — проста tabular-цифра з кольоровим знаком (без чипа-плашки):
+   три плашки різної ширини в стовпчику створювали шум. Колір несе знак. */
+.amount {
+  font-size: 16px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
+  text-align: right;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
-.amountNeutral {
-  background: var(--bg-3);
-  color: var(--text);
-  border: 1px solid var(--border);
+/* Менша сума у під-рядках (з депозиту / решта / всього). */
+.txDepositRow .amount {
+  font-size: 13px;
 }
 
 .amountPos {
-  background: var(--success-dim);
-  color: var(--success);
-  border: 1px solid var(--success-border);
+  color: var(--success-text);
 }
 
 .amountNeg {
-  background: var(--danger-dim);
-  color: var(--danger);
-  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
 }
 
 /* ── Профіль (read-only) ────────────────────────────────────────── */

@@ -12,7 +12,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentLabel, paymentClass, clientPaymentLabel, balanceClass } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentClass, clientPaymentLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
@@ -128,25 +128,36 @@ export default function ClientSubscriptions({
             style={{ '--ptr-progress': progress } as CSSProperties}
           />
         </div>
-      <div className={styles.sectionLabel}>Баланс</div>
+      <div className={styles.sectionLabel}>Залишок занять</div>
       {(balanceError || sessionsError) ? (
         <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
           Помилка завантаження. Спробуйте оновити сторінку.
         </p>
       ) : (
         <section className={styles.balanceBlock}>
-          <div className={styles.depositRow}>
-            <span className={styles.depositLabel}>Депозит</span>
-            <span className={balanceClass(balance)}>{formatMoney(balance)}</span>
-          </div>
+          {/* Головне — кількість занять (год): клієнт відкриває екран, щоб знати,
+              скільки лишилось записатись. Крупна цифра, читається з відстані. */}
           {sessions.map(s => (
-            <div key={s.ticket_type} className={styles.balanceRow}>
+            <div
+              key={s.ticket_type}
+              className={`${styles.balanceRow} ${s.sessions_balance > 0 ? '' : styles.balanceRowDepleted}`}
+            >
               <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
-              <span className={s.sessions_balance > 0 ? balanceClass(s.sessions_balance) : styles.balanceZero}>
-                {s.sessions_balance > 0 ? `${s.sessions_balance} год` : 'Вичерпано'}
-              </span>
+              {s.sessions_balance > 0 ? (
+                <span className={styles.balanceSessions}>
+                  <span className={styles.balanceSessionsNum}>{s.sessions_balance}</span>
+                  <span className={styles.balanceSessionsUnit}>год</span>
+                </span>
+              ) : (
+                <span className={styles.balanceZero}>Вичерпано</span>
+              )}
             </div>
           ))}
+          {/* Депозит — другорядний (гроші), рядком знизу під розділювачем. */}
+          <div className={styles.depositRow}>
+            <span className={styles.depositLabel}>Депозит</span>
+            <span className={`${styles.depositValue} ${balance < 0 ? styles.depositValueNeg : balance === 0 ? styles.depositValueZero : ''}`}>{formatMoney(balance)}</span>
+          </div>
         </section>
       )}
 
@@ -170,14 +181,17 @@ export default function ClientSubscriptions({
                     <div className={styles.txMeta}>
                       {formatDate(p.created_at)}
                       {p.payment_method && (
-                        <span className={paymentClass(p.payment_method)}>
-                          {clientPaymentLabel(p.payment_method)}
-                        </span>
+                        <>
+                          <span className={styles.txMetaDot}>·</span>
+                          <span className={paymentClass(p.payment_method)}>
+                            {clientPaymentLabel(p.payment_method)}
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
                   {amount !== null && (
-                    <span className={`${styles.amountBadge} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : styles.amountNeutral}`}>
+                    <span className={`${styles.amount} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : ''}`}>
                       {sign}{formatMoney(amount)}
                     </span>
                   )}
@@ -185,7 +199,7 @@ export default function ClientSubscriptions({
                 {deposit && (
                   <div className={styles.txDepositRow}>
                     <span>{deposit.label}</span>
-                    <span className={`${styles.amountBadge} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
+                    <span className={`${styles.amount} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
                       {deposit.sign}{formatMoney(deposit.amount)}
                     </span>
                   </div>
@@ -193,7 +207,7 @@ export default function ClientSubscriptions({
                 {total !== null && (
                   <div className={`${styles.txDepositRow} ${styles.txTotalRow}`}>
                     <span>Всього</span>
-                    <span className={`${styles.amountBadge} ${styles.amountNeutral}`}>
+                    <span className={styles.amount}>
                       {formatMoney(total)}
                     </span>
                   </div>
