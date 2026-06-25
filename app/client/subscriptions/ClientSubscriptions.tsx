@@ -211,7 +211,7 @@ export default function ClientSubscriptions({
         </section>
       )}
 
-      <div className={styles.sectionLabel}>Історія покупок</div>
+      <div className={`${styles.sectionLabel} ${styles.sectionLabelGap}`}>Історія покупок</div>
       {purchasesError ? (
         <SectionError />
       ) : purchases.length === 0 ? (
