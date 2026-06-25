@@ -68,5 +68,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // /api/** виключено: Route Handlers захищають себе самі (telegram-webhook —
+  // секретним заголовком; admin/** — getRole()+isStaff). Без цього middleware
+  // редиректив би вебхук Telegram (немає cookie-сесії) на /login.
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
