@@ -33,7 +33,12 @@ export default async function TrainerCabinet() {
     <>
       <CabinetHeader title={trainer.name} subtitle="Кабінет тренера" />
       <div className={styles.scroll}>
-        <TrainerHome trainerId={trainer.id} trainerName={trainer.name} />
+        <TrainerHome
+          trainerId={trainer.id}
+          trainerName={trainer.name}
+          telegramConnected={trainer.telegram_chat_id != null}
+          telegramLinkToken={trainer.telegram_link_token}
+        />
       </div>
     </>
   )

@@ -58,6 +58,60 @@
   margin-top: 4px;
 }
 
+/* ── Telegram-картка ──────────────────────────────────────────────────────── */
+.tgCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 4px;
+}
+
+.tgInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.tgTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tgHint {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.tgConnectBtn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.12s;
+}
+
+.tgConnectBtn:hover {
+  opacity: 0.85;
+}
+
+.tgConnected {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
 /* ── Меню-лаунчер ─────────────────────────────────────────────────────────── */
 .menu {
   display: flex;

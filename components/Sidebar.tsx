@@ -14,6 +14,7 @@ const nav = [
   { href: '/schedule', label: 'Розклад', icon: <ScheduleIcon /> },
   { href: '/schedule/templates', label: 'Шаблони', icon: <TemplatesIcon /> },
   { href: '/journal', label: 'Журнал', icon: <JournalIcon /> },
+  { href: '/audit', label: 'Аудит', icon: <JournalIcon /> },
   { href: '/accounting', label: 'Звітність', icon: <AccountingIcon /> },
 ]
 

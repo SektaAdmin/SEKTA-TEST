@@ -45,6 +45,7 @@ const moreNav = [
   { href: '/accounting', label: 'Звіти' },
   { href: '/schedule/templates', label: 'Шаблони' },
   { href: '/journal', label: 'Журнал' },
+  { href: '/audit', label: 'Аудит' },
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
   { href: '/settings', label: 'Налаштування' },

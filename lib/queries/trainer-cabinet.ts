@@ -2,14 +2,21 @@ import type { Db } from '@/lib/queries/_db'
 import type { QueryData } from '@supabase/supabase-js'
 import { sanitizePostgrestSearch } from './_escape'
 
+export type MyTrainer = {
+  id: string
+  name: string
+  telegram_chat_id: number | null
+  telegram_link_token: string
+}
+
 /** trainers-картка, привʼязана до поточного auth-user (кабінет тренера). */
 export async function getMyTrainer(
   supabase: Db,
   userId: string
-): Promise<{ data: { id: string; name: string } | null; error: string | null }> {
+): Promise<{ data: MyTrainer | null; error: string | null }> {
   const { data, error } = await supabase
     .from('trainers')
-    .select('id, name')
+    .select('id, name, telegram_chat_id, telegram_link_token')
     .eq('user_id', userId)
     .maybeSingle()
   return { data, error: error?.message ?? null }

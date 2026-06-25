@@ -367,6 +367,121 @@ export type Database = {
         }
         Relationships: []
       }
+      enrollment_events: {
+        Row: {
+          actor_client_id: string | null
+          actor_role: string
+          actor_trainer_id: string | null
+          actor_user_id: string | null
+          class_id: string | null
+          client_id: string | null
+          created_at: string
+          delivered: boolean
+          delivered_at: string | null
+          delivery_attempts: number
+          enrollment_id: string | null
+          event_type: string
+          id: string
+          is_self_owner: boolean
+          last_error: string | null
+          message_text: string | null
+          new_status: string | null
+          notify: boolean
+          old_status: string | null
+          owner_trainer_id: string | null
+          telegram_chat_id: number | null
+        }
+        Insert: {
+          actor_client_id?: string | null
+          actor_role: string
+          actor_trainer_id?: string | null
+          actor_user_id?: string | null
+          class_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          delivered?: boolean
+          delivered_at?: string | null
+          delivery_attempts?: number
+          enrollment_id?: string | null
+          event_type: string
+          id?: string
+          is_self_owner?: boolean
+          last_error?: string | null
+          message_text?: string | null
+          new_status?: string | null
+          notify?: boolean
+          old_status?: string | null
+          owner_trainer_id?: string | null
+          telegram_chat_id?: number | null
+        }
+        Update: {
+          actor_client_id?: string | null
+          actor_role?: string
+          actor_trainer_id?: string | null
+          actor_user_id?: string | null
+          class_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          delivered?: boolean
+          delivered_at?: string | null
+          delivery_attempts?: number
+          enrollment_id?: string | null
+          event_type?: string
+          id?: string
+          is_self_owner?: boolean
+          last_error?: string | null
+          message_text?: string | null
+          new_status?: string | null
+          notify?: boolean
+          old_status?: string | null
+          owner_trainer_id?: string | null
+          telegram_chat_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_events_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_with_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "v_client_balance_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollment_events_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrollments: {
         Row: {
           cancellation_source: string | null
@@ -862,6 +977,8 @@ export type Database = {
           is_active: boolean
           name: string
           phone: string | null
+          telegram_chat_id: number | null
+          telegram_link_token: string
           telegram_username: string | null
           updated_at: string
           user_id: string | null
@@ -874,6 +991,8 @@ export type Database = {
           is_active?: boolean
           name: string
           phone?: string | null
+          telegram_chat_id?: number | null
+          telegram_link_token?: string
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
@@ -886,6 +1005,8 @@ export type Database = {
           is_active?: boolean
           name?: string
           phone?: string | null
+          telegram_chat_id?: number | null
+          telegram_link_token?: string
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1036,6 +1157,11 @@ export type Database = {
           trainer_amount: number
         }[]
       }
+      can_manage_class: { Args: { p_class_id: string }; Returns: boolean }
+      can_manage_class_enrollment: {
+        Args: { p_enrollment_id: string }
+        Returns: boolean
+      }
       can_manage_enrollment: { Args: never; Returns: boolean }
       cancel_class_and_restore_sessions: {
         Args: { p_class_id: string }
@@ -1152,6 +1278,7 @@ export type Database = {
           success: boolean
         }[]
       }
+      dispatch_telegram_notifications: { Args: never; Returns: undefined }
       generate_week: {
         Args: { p_start_date: string; p_weeks?: number }
         Returns: {
@@ -1192,6 +1319,15 @@ export type Database = {
         }[]
       }
       normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
+      render_enrollment_event_message: {
+        Args: {
+          p_actor_role: string
+          p_class_id: string
+          p_client_id: string
+          p_event_type: string
+        }
+        Returns: string
+      }
       restore_class: {
         Args: { p_class_id: string }
         Returns: {

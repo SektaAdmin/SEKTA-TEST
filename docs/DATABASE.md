@@ -2,8 +2,8 @@
 
 Канон: колонки/типи → `types/database.types.ts` (`npm run sync:schema`); зв'язки+бізнес-сенс → `CLAUDE.md` §Схема; сигнатури RPC → `CLAUDE.md` §RPC; тіла RPC/тригерів/RLS → `supabase/migrations/*`; прод-стан → Supabase MCP (лише SELECT, project-ref у `reference_supabase_mcp`).
 
-## Таблиці (16)
-`balance_transactions` · `class_series` · `classes` · `client_contacts` · `client_session_balances` · `clients` · `enrollments` · `halls` · `sales` · `series_clients` · `studio_expenses` · `tickets` · `trainer_payments` · `trainer_rates` · `trainers` · `training_types`.
+## Таблиці (17)
+`balance_transactions` · `class_series` · `classes` · `client_contacts` · `client_session_balances` · `clients` · `enrollment_events` · `enrollments` · `halls` · `sales` · `series_clients` · `studio_expenses` · `tickets` · `trainer_payments` · `trainer_rates` · `trainers` · `training_types`.
 
 ## Views (4)
 | View | Призначення | Вживає |
@@ -63,6 +63,8 @@ training_types — довідник
 - `enrollments.cancellation_source` — `self`/`staff_manual`/`class_cancelled`/`auto_close`. `cancelled_at` — час переходу в `cancelled` (NULL поки ні). `cancelled_from_status` — з якого статусу (для `cancel_class_and_restore_sessions`).
 - `enrollments.hours_attended` — `int[]` для `duration_min>=120`: `[1]`/`[2]`/`[1,2]`. `NULL`=усе заняття. `sessions_used = hours_attended.length` (або 1 якщо NULL).
 - `enrollments.staff_note` — `text` nullable. Пишеться `change_enrollment_status` лише при `p_force_no_charge=true`.
+- `enrollment_events` — append-only лог змін enrollment + аутбокс Telegram-нотифікацій (одна таблиця: `notify`/`delivered` роблять її і логом, і чергою). Пише ТІЛЬКИ тригер `log_enrollment_event` (SECURITY DEFINER) на `enrollments` AFTER INSERT/UPDATE OF status. `actor_role` — owner/admin/trainer/client/**system** (cron: `auth.uid()` NULL + cron-ідіома). `is_self_owner`=власник діє у себе. `notify` (=actor≠system AND not self-owner AND owner≠NULL AND type∈enrolled/cancelled/waitlisted) → подію шле dispatcher. `class_id`/`client_id` — FK `ON DELETE SET NULL`; решта (`owner_trainer_id` тощо) — снапшот-uuid без FK. RLS: SELECT лише owner/admin; INSERT/UPDATE без grant (definer-тригер + dispatcher-postgres). frontend — `/audit` (`listEnrollmentEvents`).
+- `trainers.telegram_chat_id` (`bigint`, UNIQUE) — куди слати нотифікації; пише лише service-role webhook (`/api/telegram/webhook`), тренер не має UPDATE на свій рядок. `telegram_link_token` (`uuid`, UNIQUE) — одноразовий deep-link `t.me/<bot>?start=<token>`; ротується webhook-ом після привʼязки.
 - Дедлайн відміни — `cancellation_deadline(starts_at)`: початок `<14:00` → 19:00 попереднього дня; `>=14:00` → `starts_at−6год`. До дедлайну `cancelled` без списання, після — зі списанням. `noshow` списує завжди.
 - `studio_expenses.direction` — `expense` (зменшує) / `income` (збільшує). `payment_method` без `deposit`.
 - `trainers.phone`/`email` — контакти для логіну, UNIQUE серед заповнених. `trainers.user_id` заповнений = є кабінет.
@@ -111,3 +113,6 @@ training_types — довідник
 | `class_availability(p_class_ids[])` | → `TABLE(class_id, active_count, waitlist_count, capacity)`. SECURITY DEFINER, лише числові агрегати (IDOR-безпечно). EXECUTE `authenticated`. frontend `getClassAvailability()`; дзеркало `goesToWaitlist()` |
 | `client_cancel(p_enrollment_id)` | → `(success, charged, error_message)`. Self-відміна. Перевіряє «це мій запис», ставить `app.trusted_call='on'`, делегує в `change_enrollment_status('cancelled')`. `p_force_no_charge=false` зашито |
 | `auto_close_classes()` | pg_cron щохвилини. «Почалось=проведено»: закриває `enrolled` для `starts_at<=now()` через `mark_attendance`→`attended`. Списує `COALESCE(array_length(hours_attended,1),1)` сесій (в мінус якщо нема). Непришедших адмін → `noshow`/`cancelled` вручну. Запис постфактум закривається одразу через `change_enrollment_status` (НЕ `mark_attendance` — EXECUTE лише `postgres`) |
+| `log_enrollment_event()` | TRIGGER `trg_enrollment_event` AFTER INSERT OR UPDATE OF status ON `enrollments`. SECURITY DEFINER. Визначає актора (system якщо cron/`auth.uid()` NULL), власника заняття, suppress (власник у себе), пише рядок у `enrollment_events`. Тіло в `exception when others → warning` (НЕ валить грошовий шлях). Гард: UPDATE без зміни статусу → no-op |
+| `render_enrollment_event_message(p_event_type, p_class_id, p_client_id, p_actor_role) → text` | SECURITY DEFINER STABLE. Українське повідомлення для Telegram, час `Europe/Kyiv`. Викликає тригер для notify-рядків |
+| `dispatch_telegram_notifications()` | pg_cron `dispatch-telegram` щохвилини. SECURITY DEFINER. Бере токен з `vault.decrypted_secrets('telegram_bot_token')`, шле до 50 недоставлених notify-рядків через `net.http_post` (pg_net), `delivered=true` оптимістично в тому ж UPDATE, cap 5 спроб. chat_id резолвиться `coalesce(снапшот, trainers.telegram_chat_id)`. EXECUTE лише `postgres`. Токен — ручний крок: `vault.create_secret('<BOT_TOKEN>','telegram_bot_token')` |

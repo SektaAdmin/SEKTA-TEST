@@ -9,9 +9,13 @@ import styles from './trainer.module.css'
 type Props = {
   trainerId: string
   trainerName: string
+  telegramConnected: boolean
+  telegramLinkToken: string
 }
 
-export default function TrainerHome({ trainerName }: Props) {
+const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
+
+export default function TrainerHome({ trainerName, telegramConnected, telegramLinkToken }: Props) {
   const router = useRouter()
   const initial = (trainerName.trim()[0] || '?').toUpperCase()
 
@@ -23,6 +27,29 @@ export default function TrainerHome({ trainerName }: Props) {
           <div className={styles.profileName}>{trainerName}</div>
           <p className={styles.hint}>Тренер</p>
         </div>
+      </section>
+
+      <section className={styles.tgCard}>
+        <div className={styles.tgInfo}>
+          <div className={styles.tgTitle}>Сповіщення в Telegram</div>
+          <p className={styles.tgHint}>
+            {telegramConnected
+              ? 'Надсилаємо записи й скасування на ваші заняття.'
+              : 'Отримуйте записи й скасування на ваші заняття.'}
+          </p>
+        </div>
+        {telegramConnected ? (
+          <span className={styles.tgConnected}>Підключено ✅</span>
+        ) : BOT_USERNAME ? (
+          <a
+            className={styles.tgConnectBtn}
+            href={`https://t.me/${BOT_USERNAME}?start=${telegramLinkToken}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Підключити
+          </a>
+        ) : null}
       </section>
 
       <nav className={styles.menu}>
