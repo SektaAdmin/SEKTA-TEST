@@ -69,6 +69,7 @@ typography:
     lineHeight: 1.3
     letterSpacing: "normal"
 rounded:
+  xs: "4px"
   base: "10px"
   sm: "6px"
   badge: "20px"

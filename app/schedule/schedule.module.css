@@ -1770,7 +1770,7 @@
   width: 4px;
   flex-shrink: 0;
   background: var(--card-color);
-  border-radius: 4px 0 0 4px;
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
 }
 
 .mobileTlCardBody {
@@ -1867,7 +1867,7 @@
   width: 4px;
   flex-shrink: 0;
   background: var(--border);
-  border-radius: 4px 0 0 4px;
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
 }
 
 .mobileTlFreeSlotBody {

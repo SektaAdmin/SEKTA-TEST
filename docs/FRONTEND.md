@@ -38,7 +38,7 @@ components/ui/         shadcn: button/calendar/command/dialog/popover/select/tab
 - Акцент `--accent/-dim/-text/-border*` (зелений) · Стани `--danger/-dim/-border*`, `--success/-dim`, `--warning/-dim`
 - Оплата `--fop/-dim`, `--card/-dim`, `--deposit/-dim`
 - Анім `--motion-fast:.12s ease-out`, `--motion-standard:.18s ease-in-out`. @keyframes: `dotPulse`, `overlayIn`, `modalIn`, `bottomSheetIn`
-- Layout: `--control-h:32px`(44 mobile), `--topbar-h:64px`, `--topbar-py:16px`, `--topbar-px:28px`, `--sidebar-w:196px`, `--right-panel-w:280px`, `--bottom-nav-h:56px`, `--radius:10px`, `--radius-sm:6px`, `--radius-full:999px`
+- Layout: `--control-h:32px`(44 mobile), `--topbar-h:64px`, `--topbar-py:16px`, `--topbar-px:28px`, `--sidebar-w:196px`, `--right-panel-w:280px`, `--bottom-nav-h:56px`, `--radius-xs:4px`, `--radius:10px`, `--radius-sm:6px`, `--radius-full:999px`
 
 Shared utils: `.btn-primary`, `.loading-dots`, `.data-table-wrap`+`.data-table`. Нестандартні таблиці (accounting/salary/rates) — у module.css.
 
