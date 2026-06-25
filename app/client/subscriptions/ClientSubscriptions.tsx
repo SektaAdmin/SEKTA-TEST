@@ -56,6 +56,38 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
   return { title, amount: p.price_paid, sign: '', deposit: null, total: null }
 }
 
+/* Іконки у словнику проекту: 16×16, fill=none, stroke=currentColor, 1.4. */
+function ReceiptIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <path d="M3.5 2v12l1.5-1 1.5 1 1.5-1 1.5 1 1.5-1 1.5 1V2L11 3 9.5 2 8 3 6.5 2 5 3 3.5 2Z" strokeLinejoin="round" />
+      <line x1="5.75" y1="6" x2="10.25" y2="6" />
+      <line x1="5.75" y1="9" x2="10.25" y2="9" />
+    </svg>
+  )
+}
+
+function AlertIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <circle cx="8" cy="8" r="6" />
+      <line x1="8" y1="5" x2="8" y2="8.5" strokeLinecap="round" />
+      <circle cx="8" cy="11" r="0.35" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+/* Спокійна плашка помилки завантаження секції — єдиний словник для обох
+   секцій (баланс / історія), щоб не дублювати інлайн-стиль. */
+function SectionError() {
+  return (
+    <div className={styles.sectionError} role="alert">
+      <AlertIcon />
+      <span>Не вдалося завантажити. Потягніть вниз, щоб оновити.</span>
+    </div>
+  )
+}
+
 type Props = {
   clientId: string
   userId: string
@@ -130,9 +162,7 @@ export default function ClientSubscriptions({
         </div>
       <div className={styles.sectionLabel}>Залишок занять</div>
       {(balanceError || sessionsError) ? (
-        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
-          Помилка завантаження. Спробуйте оновити сторінку.
-        </p>
+        <SectionError />
       ) : (
         <section className={styles.balanceBlock}>
           {/* Головне — кількість занять (год): клієнт відкриває екран, щоб знати,
@@ -163,11 +193,15 @@ export default function ClientSubscriptions({
 
       <div className={styles.sectionLabel}>Історія покупок</div>
       {purchasesError ? (
-        <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
-          Помилка завантаження. Спробуйте оновити сторінку.
-        </p>
+        <SectionError />
       ) : purchases.length === 0 ? (
-        <p className={styles.empty}>{MSG.empty.purchases}.</p>
+        <div className={styles.emptyCard}>
+          <ReceiptIcon />
+          <div className={styles.emptyCardTitle}>{MSG.empty.purchases}</div>
+          <p className={styles.emptyCardHint}>
+            Тут зʼявляться ваші абонементи й поповнення депозиту після оплати в студії.
+          </p>
+        </div>
       ) : (
         <>
         <ul className={styles.txList}>
