@@ -112,16 +112,26 @@
   gap: 8px;
 }
 
+/* Картка-кнопка: тап відкриває залишок занять клієнта. Скидаємо дефолти
+   <button> (вирівнювання/шрифт/ширина), додаємо hover-афорданс. */
 .card {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  width: 100%;
   padding: 14px 16px;
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
 }
+
+.card:hover { border-color: var(--accent); }
+.card:active { background: var(--bg-3); }
 
 .cardName {
   font-size: 15px;
@@ -167,3 +177,102 @@
 
 .fab:hover { opacity: 0.88; }
 .fab:active { transform: scale(0.93); }
+
+/* ── Модалка «Залишок занять» ───────────────────────────────────────────────
+   Картка-герой ідентична кабінету клієнта (/subscriptions): крупна кількість
+   занять (год) справа, депозит другорядним рядком знизу. Нейтраль > семантика
+   на read-only поверхні — амбер лишаємо лише для боргу. */
+.modalSectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 0 0 8px;
+}
+
+.balanceBlock {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+}
+
+.balanceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 52px;
+}
+
+.balanceRow + .balanceRow {
+  border-top: 1px solid var(--border);
+}
+
+.balanceRowLabel {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-2);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.balanceSessions {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.balanceSessionsNum {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.balanceSessionsUnit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.balanceZero {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.balanceEmpty {
+  padding: 11px 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.depositRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 52px;
+  border-top: 1px solid var(--border);
+}
+
+.depositLabel {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.depositValue {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--success-text);
+}
+.depositValueZero { color: var(--text-2); }
+.depositValueNeg { color: var(--danger-text); }

@@ -10,6 +10,7 @@ import { balanceClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import Pagination, { type PageSize } from '@/components/ui/Pagination'
 import CreateClientModal from './CreateClientModal'
+import ClientSessionsModal from './ClientSessionsModal'
 import styles from './clients.module.css'
 
 function clientName(c: TrainerClientRow): string {
@@ -19,6 +20,7 @@ function clientName(c: TrainerClientRow): string {
 export default function TrainerClients() {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
+  const [selected, setSelected] = useState<TrainerClientRow | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -103,12 +105,18 @@ export default function TrainerClients() {
         ) : (
           <div className={styles.list}>
             {clients.map(c => (
-              <div key={c.id} className={styles.card}>
+              <button
+                key={c.id}
+                type="button"
+                className={styles.card}
+                onClick={() => setSelected(c)}
+                aria-label={`Залишок занять: ${clientName(c)}`}
+              >
                 <span className={styles.cardName}>{clientName(c)}</span>
                 <span className={balanceClass(c.balance ?? 0)}>
                   {formatMoney(c.balance ?? 0)}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -140,6 +148,10 @@ export default function TrainerClients() {
 
       {showModal && (
         <CreateClientModal onClose={() => setShowModal(false)} onSaved={handleSaved} />
+      )}
+
+      {selected && (
+        <ClientSessionsModal client={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   )
