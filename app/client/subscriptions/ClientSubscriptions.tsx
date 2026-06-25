@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useRef, type ReactNode, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   getMyClient,
@@ -166,9 +166,25 @@ export default function ClientSubscriptions({
   }, [refetchBalance, refetchSessions, refetchPurchases])
   const { pull, refreshing, releasing, progress, ready } = usePullToRefresh(scrollRef, handleRefresh)
 
+  // Озвучення pull-to-refresh для скрін-рідерів: візуальний спінер aria-hidden,
+  // тож стан оновлення доносимо текстом у polite live-region («Оновлення…» →
+  // «Оновлено»). Без цього незрячий користувач не знає, що жест спрацював.
+  const [refreshStatus, setRefreshStatus] = useState('')
+  const wasRefreshing = useRef(false)
+  useEffect(() => {
+    if (refreshing) {
+      setRefreshStatus('Оновлення…')
+      wasRefreshing.current = true
+    } else if (wasRefreshing.current) {
+      wasRefreshing.current = false
+      setRefreshStatus('Оновлено')
+    }
+  }, [refreshing])
+
   return (
     <>
       <CabinetHeader title="Абонементи" backHref="/client" hideLogout />
+      <span className="sr-only" role="status" aria-live="polite">{refreshStatus}</span>
       <div ref={scrollRef} className={styles.scroll}>
         <div
           className={`${styles.ptrIndicator} ${releasing ? styles.ptrReleasing : ''}`}
@@ -180,7 +196,7 @@ export default function ClientSubscriptions({
             style={{ '--ptr-progress': progress } as CSSProperties}
           />
         </div>
-      <div className={styles.sectionLabel}>Залишок занять</div>
+      <h2 className={styles.sectionLabel}>Залишок занять</h2>
       {(balanceError || sessionsError) ? (
         <SectionError />
       ) : (
@@ -211,7 +227,7 @@ export default function ClientSubscriptions({
         </section>
       )}
 
-      <div className={`${styles.sectionLabel} ${styles.sectionLabelGap}`}>Історія покупок</div>
+      <h2 className={`${styles.sectionLabel} ${styles.sectionLabelGap}`}>Історія покупок</h2>
       {purchasesError ? (
         <SectionError />
       ) : purchases.length === 0 ? (

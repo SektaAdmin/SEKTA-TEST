@@ -15,7 +15,7 @@ export default function ClientSubscriptionsLoading() {
             відтворює ту саму геометрію (порожній .ptrIndicator-плейсхолдер),
             щоб не було вертикального стрибка при підміні на контент. */}
         <div className={styles.ptrIndicator} style={{ height: 0 }} aria-hidden />
-        <div className={styles.sectionLabel}>Залишок занять</div>
+        <h2 className={styles.sectionLabel}>Залишок занять</h2>
         <section className={styles.balanceBlock}>
           {[64, 80, 56].map((w, i) => (
             <div key={i} className={styles.balanceRow}>
@@ -29,7 +29,7 @@ export default function ClientSubscriptionsLoading() {
           </div>
         </section>
 
-        <div className={styles.sectionLabel}>Історія покупок</div>
+        <h2 className={`${styles.sectionLabel} ${styles.sectionLabelGap}`}>Історія покупок</h2>
         <ul className={styles.txList}>
           {[140, 120, 160].map((w, i) => (
             <li key={i} className={styles.txItem}>
