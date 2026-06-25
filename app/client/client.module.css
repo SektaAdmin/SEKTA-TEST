@@ -17,12 +17,17 @@
 
 .scroll {
   padding: 16px 16px calc(40px + env(safe-area-inset-bottom));
+  /* Колонка з центруванням: кожна секція — width:100% max-width:640px. align-items
+     центрує НЕЗАЛЕЖНО від власних margin дитини (margin:auto на дитині скидався,
+     якщо вона ставила margin-shorthand → на десктопі секції розʼїжджались по осі). */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .scroll > :global(*) {
+  width: 100%;
   max-width: 640px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Pull-to-refresh індикатор: висота керується інлайн зі стану (px відтягування),
