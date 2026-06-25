@@ -277,7 +277,11 @@
 .balanceSessionsNum {
   font-size: 28px;
   font-weight: 700;
-  line-height: 1;
+  /* line-height: 1 робив бокс цифри асиметричним — при center-вирівнюванні рядка
+     цифра провисала ~1.5px нижче лейбла зліва й рядок «з числом» здавався іншим
+     за висотою, хоч бокс рядка ідентичний (52px). 1.1 симетризує — цифра рівно
+     по центру. Одиниця «год» лишається на baseline числа (align-items: baseline). */
+  line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--text);
 }
