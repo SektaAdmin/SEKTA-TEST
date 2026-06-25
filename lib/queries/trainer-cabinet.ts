@@ -1,5 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
 import type { QueryData } from '@supabase/supabase-js'
+import { sanitizePostgrestSearch } from './_escape'
 
 /** trainers-картка, привʼязана до поточного auth-user (кабінет тренера). */
 export async function getMyTrainer(
@@ -52,4 +53,72 @@ export async function listMyPastClasses(
     .order('starts_at', { ascending: false })
     .limit(50)
   return { data: (data as TrainerClassRow[]) ?? [], error: error?.message ?? null }
+}
+
+// ── Клієнти (екран /trainer/clients) ──────────────────────────────────────────
+// Тренер за RLS бачить лише clients (ім'я+баланс), БЕЗ контактів (вони в
+// client_contacts, куди тренеру доступ закрито). Тому читаємо clients напряму —
+// контакти сюди не потрапляють by design.
+
+export type TrainerClientRow = {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  balance: number
+}
+
+export interface ListTrainerClientsParams {
+  search: string
+  page: number
+  pageSize: number
+}
+
+/** Список клієнтів для кабінету тренера: ім'я + баланс, без контактів. */
+export async function listTrainerClients(
+  supabase: Db,
+  { search, page, pageSize }: ListTrainerClientsParams
+): Promise<{ data: TrainerClientRow[]; count: number; error: string | null }> {
+  let query = supabase
+    .from('clients')
+    .select('id, first_name, last_name, balance', { count: 'exact' })
+    .order('last_name', { ascending: true })
+    .order('first_name', { ascending: true })
+
+  // Пошук лише по імені/прізвищу — телефон тренеру недоступний.
+  if (search.trim()) {
+    const s = sanitizePostgrestSearch(search)
+    if (s) query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%`)
+  }
+
+  const from = page * pageSize
+  query = query.range(from, from + pageSize - 1)
+
+  const { data, count, error } = await query
+  return { data: (data as TrainerClientRow[]) ?? [], count: count ?? 0, error: error?.message ?? null }
+}
+
+export interface CreateClientPayload {
+  first_name: string
+  last_name: string
+  phone?: string
+  instagram_username?: string
+  telegram_username?: string
+}
+
+/**
+ * Створити клієнта через серверний API (service-role): дедуп по телефону/імені
+ * та запис у client_contacts робить сервер, бо тренеру контакти недоступні.
+ * Повертає код помилки (для локалізованого повідомлення) або null.
+ */
+export async function createClientViaApi(
+  payload: CreateClientPayload
+): Promise<{ error: string | null }> {
+  const res = await fetch('/api/admin/create-client', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (res.ok) return { error: null }
+  const body = (await res.json().catch(() => ({}))) as { error?: string }
+  return { error: body.error ?? 'unknown' }
 }

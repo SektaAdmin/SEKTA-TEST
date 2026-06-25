@@ -35,7 +35,9 @@
 - Привілейований (DEFINER) → внутрішній гейт ролі + REVOKE від PUBLIC/anon.
 
 ## Route Handlers зі service-role
-Лише в `app/api/admin/**` (`SUPABASE_SERVICE_ROLE_KEY` не світимо в браузер). Гейтять `isStaff` через `getRole()`. Канон → `CLAUDE.md` §Карта коду.
+Лише в `app/api/admin/**` (`SUPABASE_SERVICE_ROLE_KEY` не світимо в браузер). Гейтять роль через `getRole()`. Канон → `CLAUDE.md` §Карта коду.
+- `create-trainer-login` / `create-client-login` — гейт `isStaff` (owner/admin).
+- `create-client` — гейт `owner/admin/trainer`. Тренер за RLS не має доступу до `client_contacts` і не може INSERT-ити `clients` напряму; цей ендпоінт під service-role робить дедуп (телефон сирий+нормалізований, ім'я+прізвище) і запис у `clients`+`client_contacts`. Контакти лише надходять — назад тренеру НЕ повертаються (інваріант «тренер не бачить контактів» лишається). Екран — `/trainer/clients` (список ім'я+баланс із `clients` по `trainer_select` RLS, без контактів).
 
 ## Перевірка дрейфу
 Звірка docs ↔ RLS/гранти/тіла RPC → `DRIFT_CHECK_PROMPT.md`. `mcp__supabase__get_advisors` (security) — сигнал про RLS-дірки.
