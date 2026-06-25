@@ -27,6 +27,7 @@ export function formatMoney(n: number): string {
    Вхід — ISO-рядок або Date. Для РРРР-ММ-ДД (input value) див. dateUtils: toYMD/isoToYMD. */
 export function formatDate(input: string | Date): string {
   const d = typeof input === 'string' ? new Date(input) : input
+  if (Number.isNaN(d.getTime())) return '—'
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`
 }
 

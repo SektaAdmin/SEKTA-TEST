@@ -37,7 +37,13 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
     return { title: 'Списання з депозиту', amount: p.price_paid, sign: '−', deposit: null, total: null }
   }
 
-  const title = p.ticket_name ?? typeLabel(p.ticket_type ?? '')
+  // ticket_name (адмінський free-text) може бути порожнім; typeLabel за
+  // невідомим/null кодом повертає сирий код або ''. Гарантуємо непорожній
+  // заголовок, щоб рядок історії ніколи не лишився без назви.
+  const title =
+    p.ticket_name?.trim() ||
+    (p.ticket_type ? typeLabel(p.ticket_type) : '') ||
+    'Абонемент'
   const diff = p.amount_given - p.price_paid
 
   // Повна оплата з депозиту (amount_given=0)
@@ -167,6 +173,9 @@ export default function ClientSubscriptions({
         <section className={styles.balanceBlock}>
           {/* Головне — кількість занять (год): клієнт відкриває екран, щоб знати,
               скільки лишилось записатись. Крупна цифра, читається з відстані. */}
+          {sessions.length === 0 && (
+            <div className={styles.balanceEmpty}>Поки немає активних абонементів</div>
+          )}
           {sessions.map(s => (
             <div
               key={s.ticket_type}
