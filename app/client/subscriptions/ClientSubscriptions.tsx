@@ -213,7 +213,7 @@ export default function ClientSubscriptions({
           )}
           {sessions.map(s => (
             <div key={s.ticket_type} className={styles.balanceRow}>
-              <span className={styles.balanceRowLabel}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
+              <span className={styles.balanceRowLabel} title={ticketTypeNominativeLabel(s.ticket_type)}>{ticketTypeNominativeLabel(s.ticket_type)}</span>
               {s.sessions_balance > 0 ? (
                 <span className={styles.balanceSessions}>
                   <span className={styles.balanceSessionsNum}>{s.sessions_balance}</span>
