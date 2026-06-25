@@ -165,12 +165,22 @@ export function paymentClass(method: string): string {
 
 export function clientPaymentLabel(method: string): string {
   const map: Record<string, string> = {
-    fop: 'ФОП',
-    personal_card: 'Картка',
+    // «ФОП» — бухгалтерський термін (фізособа-підприємець), для клієнта це
+    // просто безготівкова оплата. Картка теж безготівкова → один зрозумілий
+    // ярлик. Клієнт не звіряє каси, спосіб оплати тут — лише довідка.
+    fop: 'Безготівкова',
+    personal_card: 'Безготівкова',
     cash: 'Готівка',
     deposit: 'З депозиту',
   }
   return map[method] ?? method
+}
+
+/* У кабінеті клієнта спосіб оплати — другорядна довідка, а не фінансова роль,
+   яку звіряє адмін. Фірмові кольори ФОП/Картка тягнуть око вбік від сум, тому
+   чіп тут завжди нейтральний (на відміну від paymentClass в /sales, /accounting). */
+export function clientPaymentClass(_method: string): string {
+  return 'badge badge-type'
 }
 
 /* ── Баланс (грошовий) ──────────────────────────────────────────── */

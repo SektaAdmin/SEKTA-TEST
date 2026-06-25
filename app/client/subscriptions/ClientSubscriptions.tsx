@@ -12,7 +12,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useListQuery } from '@/hooks/useListQuery'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { formatMoney, formatDate } from '@/lib/formatters'
-import { ticketTypeShortLabel, ticketTypeNominativeLabel, paymentClass, clientPaymentLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, ticketTypeNominativeLabel, clientPaymentClass, clientPaymentLabel } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import styles from '../client.module.css'
 
@@ -215,7 +215,7 @@ export default function ClientSubscriptions({
                     <div className={styles.txMeta}>
                       {formatDate(p.created_at)}
                       {p.payment_method && (
-                        <span className={paymentClass(p.payment_method)}>
+                        <span className={clientPaymentClass(p.payment_method)}>
                           {clientPaymentLabel(p.payment_method)}
                         </span>
                       )}
