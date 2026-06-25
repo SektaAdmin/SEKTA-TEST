@@ -16,6 +16,7 @@ const PAGE_SIZE = 20
 const EVENT_LABEL: Record<string, string> = {
   enrolled: 'Запис',
   cancelled: 'Скасування',
+  deleted: 'Видалено',
   waitlisted: 'У чергу',
   attended: 'Відвідано',
   noshow: 'Не прийшов',
@@ -24,6 +25,7 @@ const EVENT_LABEL: Record<string, string> = {
 const EVENT_BADGE: Record<string, string> = {
   enrolled: 'badge-attended',
   cancelled: 'badge-noshow',
+  deleted: 'badge-cancelled',
   waitlisted: 'badge-waitlist',
   attended: 'badge-enrolled',
   noshow: 'badge-cancelled',
@@ -93,6 +95,7 @@ export default function AuditPage() {
     { value: '', label: 'Всі дії' },
     { value: 'enrolled', label: 'Запис' },
     { value: 'cancelled', label: 'Скасування' },
+    { value: 'deleted', label: 'Видалено' },
     { value: 'waitlisted', label: 'У чергу' },
     { value: 'attended', label: 'Відвідано' },
     { value: 'noshow', label: 'Не прийшов' },
