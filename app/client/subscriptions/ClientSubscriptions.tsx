@@ -98,12 +98,17 @@ function AlertIcon() {
 }
 
 /* Спокійна плашка помилки завантаження секції — єдиний словник для обох
-   секцій (баланс / історія), щоб не дублювати інлайн-стиль. */
-function SectionError() {
+   секцій (баланс / історія), щоб не дублювати інлайн-стиль. Кнопка «Оновити»
+   дає шлях оновлення без жесту (десктоп / клавіатура / switch) — pull-to-refresh
+   працює лише на тач, тож сама плашка має нести дію. */
+function SectionError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className={styles.sectionError} role="alert">
+    <div className={styles.sectionError} role="status">
       <AlertIcon />
-      <span>Не вдалося завантажити. Потягніть вниз, щоб оновити.</span>
+      <span>Не вдалося завантажити.</span>
+      <button type="button" className={styles.sectionErrorRetry} onClick={onRetry}>
+        Оновити
+      </button>
     </div>
   )
 }
@@ -198,7 +203,7 @@ export default function ClientSubscriptions({
         </div>
       <h2 className={styles.sectionLabel}>Залишок занять</h2>
       {(balanceError || sessionsError) ? (
-        <SectionError />
+        <SectionError onRetry={handleRefresh} />
       ) : (
         <section className={styles.balanceBlock}>
           {/* Головне — кількість занять (год): клієнт відкриває екран, щоб знати,
@@ -229,7 +234,7 @@ export default function ClientSubscriptions({
 
       <h2 className={`${styles.sectionLabel} ${styles.sectionLabelGap}`}>Історія покупок</h2>
       {purchasesError ? (
-        <SectionError />
+        <SectionError onRetry={handleRefresh} />
       ) : purchases.length === 0 ? (
         <div className={styles.emptyCard}>
           <ReceiptIcon />
