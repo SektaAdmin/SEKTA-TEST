@@ -1,8 +1,8 @@
 -- ── Новий формат повідомлення тренеру (багаторядковий) ──────────────────────
 -- Замість однорядкового тексту — блок Клас/Дата/Час/Зал + жирне імʼя клієнта.
 -- Роль актора українською: (Адмін)/(Клієнт)/(Тренер).
--- Жирний текст (**…**) рендериться лише з parse_mode=Markdown — додано в
--- dispatch_telegram_notifications нижче.
+-- Жирне імʼя через <b>…</b> + parse_mode=HTML у dispatch_telegram_notifications.
+-- (legacy Markdown не підтримує **; MarkdownV2 вимагає екранування — HTML простіший.)
 
 create or replace function public.render_enrollment_event_message(
   p_event_type text,
@@ -80,9 +80,12 @@ begin
     || 'Час:   ' || coalesce(v_time, '—') || E'\n'
     || 'Зал:   ' || coalesce(v_hall, '—');
 
+  -- HTML parse_mode: екрануємо &<> у імені (інші поля — без спецсимволів)
   return v_header || ' (' || v_actor || ')' || E'\n\n'
     || v_body || E'\n\n'
-    || 'Клієнт: **' || coalesce(v_client, 'клієнт') || '**';
+    || 'Клієнт: <b>' || replace(replace(replace(
+         coalesce(v_client, 'клієнт'), '&', '&amp;'), '<', '&lt;'), '>', '&gt;')
+    || '</b>';
 end;
 $$;
 
@@ -173,7 +176,7 @@ begin
       body    := jsonb_build_object(
                    'chat_id', r.chat_id,
                    'text', r.message_text,
-                   'parse_mode', 'Markdown'
+                   'parse_mode', 'HTML'
                  ),
       headers := '{"Content-Type": "application/json"}'::jsonb,
       timeout_milliseconds := 15000
