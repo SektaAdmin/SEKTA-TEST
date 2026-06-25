@@ -25,7 +25,7 @@ export default async function ClientSubscriptionsPage() {
   const [
     { data: typeLabels },
     { data: sessions },
-    { data: purchases, totalCount: purchasesTotal },
+    { data: purchases },
   ] = await Promise.all([
     listTrainingTypeLabels(supabase),
     listMySessionBalances(supabase, client.id),
@@ -40,7 +40,6 @@ export default async function ClientSubscriptionsPage() {
       typeLabels={typeLabels}
       initialSessions={sessions}
       initialPurchases={purchases}
-      initialPurchasesTotal={purchasesTotal}
     />
   )
 }

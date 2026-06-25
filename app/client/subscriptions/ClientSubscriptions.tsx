@@ -76,6 +76,40 @@ function describeSale(p: MyPurchaseRow, typeLabel: (t: string) => string): SaleD
   return { title, amount: p.price_paid, sign: '', deposit: null, total: null }
 }
 
+const MONTHS_NOM = [
+  'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+  'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень',
+] as const
+
+/** Підпис групи-місяця: «Травень» у поточному році, «Грудень 2025» інакше.
+    Рік дописуємо лише коли він ≠ поточному — інакше «2026» у кожному
+    заголовку стає шумом. */
+function monthLabel(d: Date, currentYear: number): string {
+  const m = MONTHS_NOM[d.getMonth()]
+  return d.getFullYear() === currentYear ? m : `${m} ${d.getFullYear()}`
+}
+
+/** Розбиває вже зрізаний (видимий) масив покупок на групи по календарному
+    місяцю. Порядок зберігається (created_at desc), межа між групами падає там,
+    де змінюється YYYY-MM. */
+function groupByMonth(rows: MyPurchaseRow[], currentYear: number) {
+  const groups: { key: string; label: string; items: MyPurchaseRow[] }[] = []
+  for (const r of rows) {
+    const d = new Date(r.created_at)
+    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) last.items.push(r)
+    else groups.push({ key, label: monthLabel(d, currentYear), items: [r] })
+  }
+  return groups
+}
+
+// Перший показ і крок «Показати ще». Перші 5 ріжуться наскрізь (не по межі
+// місяця) — межа групи може впасти всередину місяця, це свідомий вибір:
+// просто й передбачувано, «Показати ще» догружає решту.
+const PURCHASES_INITIAL = 5
+const PURCHASES_STEP = 10
+
 /* Іконки у словнику проекту: 16×16, fill=none, stroke=currentColor, 1.4. */
 function ReceiptIcon() {
   return (
@@ -120,7 +154,6 @@ type Props = {
   typeLabels: Record<string, string>
   initialSessions: { ticket_type: string; sessions_balance: number }[]
   initialPurchases: MyPurchaseRow[]
-  initialPurchasesTotal: number
 }
 
 export default function ClientSubscriptions({
@@ -130,7 +163,6 @@ export default function ClientSubscriptions({
   typeLabels,
   initialSessions,
   initialPurchases,
-  initialPurchasesTotal,
 }: Props) {
   // Усе прийшло зі сервера (initialData) — без realtime, без дубль-запиту.
   // Свіжість балансу/покупок — через refetchOnVisible (повернення з чату з
@@ -151,7 +183,7 @@ export default function ClientSubscriptions({
     { refetchOnVisible: true, initialData: initialSessions }
   )
 
-  const { data: purchases, total: purchasesFetchedTotal, error: purchasesError, refetch: refetchPurchases } = useListQuery(
+  const { data: purchases, error: purchasesError, refetch: refetchPurchases } = useListQuery(
     async () => {
       const { data, totalCount, error } = await listMyPurchases(supabase, clientId)
       return { data, count: totalCount, error }
@@ -159,9 +191,16 @@ export default function ClientSubscriptions({
     [clientId],
     { refetchOnVisible: true, initialData: initialPurchases }
   )
-  const purchasesTotal = purchasesFetchedTotal || initialPurchasesTotal
 
   const typeLabel = (t: string) => typeLabels[t] || ticketTypeShortLabel(t)
+
+  // Клієнтська пагінація: дані вже в руках (до 100 з listMyPurchases), «Показати
+  // ще» лише піднімає visibleCount. Без дозапиту → нема рейсів і конфлікту з
+  // pull-to-refresh. Перший показ — 5, далі кроком +10.
+  const [visibleCount, setVisibleCount] = useState(PURCHASES_INITIAL)
+  const visiblePurchases = purchases.slice(0, visibleCount)
+  const currentYear = new Date().getFullYear()
+  const purchaseGroups = groupByMonth(visiblePurchases, currentYear)
 
   // Pull-to-refresh: тягне баланс+сесії+покупки разом (той самий шлях, що й
   // refetchOnVisible). Жест активний лише від верху .scroll.
@@ -245,53 +284,64 @@ export default function ClientSubscriptions({
         </div>
       ) : (
         <>
-        <ul className={styles.txList}>
-          {purchases.map(p => {
-            const { title, amount, sign, deposit, total } = describeSale(p, typeLabel)
-            return (
-              <li key={p.id} className={styles.txItem}>
-                <div className={styles.txItemMain}>
-                  <div className={styles.txMain}>
-                    <div className={styles.txTitle}>{title}</div>
-                    <div className={styles.txMeta}>
-                      {formatDate(p.created_at)}
-                      {p.payment_method && (
-                        <span className={clientPaymentClass(p.payment_method)}>
-                          {clientPaymentLabel(p.payment_method)}
+        {purchaseGroups.map(group => (
+          <section key={group.key} className={styles.txGroup}>
+            {/* Sticky-заголовок місяця: непрозорий --bg, z-index нижче PTR-спінера
+                (.ptrIndicator), щоб при відтягуванні вони не наклалися. */}
+            <h3 className={styles.txMonthHeader}>{group.label}</h3>
+            <ul className={styles.txList}>
+              {group.items.map(p => {
+                const { title, amount, sign, deposit, total } = describeSale(p, typeLabel)
+                return (
+                  <li key={p.id} className={styles.txItem}>
+                    <div className={styles.txItemMain}>
+                      <div className={styles.txMain}>
+                        <div className={styles.txTitle}>{title}</div>
+                        <div className={styles.txMeta}>
+                          {formatDate(p.created_at)}
+                          {p.payment_method && (
+                            <span className={clientPaymentClass(p.payment_method)}>
+                              {clientPaymentLabel(p.payment_method)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {amount !== null && (
+                        <span className={`${styles.amount} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : ''}`}>
+                          {sign}{formatMoney(amount)}
                         </span>
                       )}
                     </div>
-                  </div>
-                  {amount !== null && (
-                    <span className={`${styles.amount} ${sign === '+' ? styles.amountPos : sign === '−' ? styles.amountNeg : ''}`}>
-                      {sign}{formatMoney(amount)}
-                    </span>
-                  )}
-                </div>
-                {deposit && (
-                  <div className={styles.txDepositRow}>
-                    <span>{deposit.label}</span>
-                    <span className={`${styles.amount} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
-                      {deposit.sign}{formatMoney(deposit.amount)}
-                    </span>
-                  </div>
-                )}
-                {total !== null && (
-                  <div className={`${styles.txDepositRow} ${styles.txTotalRow}`}>
-                    <span>Всього</span>
-                    <span className={styles.amount}>
-                      {formatMoney(total)}
-                    </span>
-                  </div>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-        {purchases.length < purchasesTotal && (
-          // Список обмежено останніми 100 записами (listMyPurchases). Без «завантажити
-          // ще» — тож копія чесна: це найновіші N, а не «N з total, решта десь є».
-          <p className={styles.listFooterNote}>Показано {purchases.length} найновіших записів</p>
+                    {deposit && (
+                      <div className={styles.txDepositRow}>
+                        <span>{deposit.label}</span>
+                        <span className={`${styles.amount} ${deposit.sign === '+' ? styles.amountPos : styles.amountNeg}`}>
+                          {deposit.sign}{formatMoney(deposit.amount)}
+                        </span>
+                      </div>
+                    )}
+                    {total !== null && (
+                      <div className={`${styles.txDepositRow} ${styles.txTotalRow}`}>
+                        <span>Всього</span>
+                        <span className={styles.amount}>
+                          {formatMoney(total)}
+                        </span>
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+        {visibleCount < purchases.length && (
+          <button
+            type="button"
+            className={styles.txShowMore}
+            onClick={() => setVisibleCount(c => c + PURCHASES_STEP)}
+          >
+            Показати ще
+          </button>
         )}
         </>
       )}

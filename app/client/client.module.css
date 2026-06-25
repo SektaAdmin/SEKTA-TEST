@@ -617,6 +617,51 @@
   padding: 8px 0 2px;
 }
 
+/* ── Історія покупок: групи по місяцях + «Показати ще» ──────────── */
+.txGroup {
+  margin-top: 14px;
+}
+
+.txGroup:first-of-type {
+  margin-top: 0;
+}
+
+/* Sticky-заголовок місяця. Непрозорий --bg (сторінковий фон, не біла картка),
+   щоб рядки історії не «просвічували» під ним при скролі. z-index лишаємо
+   низьким — PTR-індикатор у потоці зверху, тож конфлікту нема; запас на випадок
+   майбутніх накладань. Капс-трекінг навмисно НЕ беремо (читається як AI-шаблон,
+   див. .sectionLabel) — sentence-case + вага. */
+.txMonthHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 0 8px;
+  padding: 6px 0;
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Той самий візуальний словник, що .showMore (картка-кнопка на всю ширину),
+   але з власним верхнім відступом під ритм історії. */
+.txShowMore {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.txShowMore:hover {
+  border-color: var(--border-hover);
+}
+
 /* ── Головна-меню (профіль-картка + меню-лаунчер) ───────────────── */
 .profileCard {
   display: flex;
