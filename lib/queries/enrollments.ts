@@ -203,7 +203,7 @@ export async function enrollClient(
   // Якщо адмін не передав hours явно і заняття 2-год — проставляємо обидві години.
   const resolvedHours = hoursAttended ?? ((cls?.duration_min ?? 0) >= 120 ? [1, 2] : undefined)
 
-  const { data: inserted, error: insertError } = await supabase
+  let { data: inserted, error: insertError } = await supabase
     .from('enrollments')
     .insert({
       class_id: classId,
@@ -213,6 +213,40 @@ export async function enrollClient(
     })
     .select('id, status')
     .single()
+
+  // Реанімація: пара (class_id, client_id) має UNIQUE-індекс, тож після відміни на
+  // занятті лишається рядок status='cancelled'/'noshow'. Сліпий INSERT падав на 23505,
+  // показуючи «вже записаний», хоча клієнт відмінений. При 23505 оживляємо ТОЙ рядок як
+  // нову чисту заявку (скидаємо всі сліди відмови/проведення). `.in(status, cancelled/noshow)`
+  // гарантує, що активний рядок (enrolled/attended/waitlist) НЕ перетреться → справжній
+  // дубль повертає null-рядок і трактується як isDuplicate. (Дзеркало client_enroll RPC.)
+  if (insertError && insertError.code === '23505') {
+    const revive = await supabase
+      .from('enrollments')
+      .update({
+        status: 'enrolled',
+        hours_attended: resolvedHours ?? null,
+        sessions_used: 0,
+        sale_id: null,
+        cancelled_at: null,
+        cancellation_source: null,
+        cancelled_from_status: null,
+        staff_note: null,
+      })
+      .eq('class_id', classId)
+      .eq('client_id', clientId)
+      .in('status', ['cancelled', 'noshow'])
+      .select('id, status')
+      .maybeSingle()
+    if (revive.data) {
+      inserted = revive.data
+      insertError = null
+    } else {
+      // Рядок існує, але активний → це справжній дубль.
+      return { error: revive.error?.message ?? 'duplicate', isDuplicate: true }
+    }
+  }
+
   if (insertError) {
     const isDuplicate = insertError.message.includes('duplicate') || insertError.code === '23505'
     return { error: insertError.message, isDuplicate }
