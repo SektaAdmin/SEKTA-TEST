@@ -24,6 +24,11 @@ playwright-report/
 # External agent artifacts
 .codex/
 .impeccable/
+.codegraph/
+.cursor/
+.gemini/
+.mcp.json
+/GEMINI.md
 /AGENTS.md
 /RECOMMENDATIONS.md
 CLAUDE.md.bak
