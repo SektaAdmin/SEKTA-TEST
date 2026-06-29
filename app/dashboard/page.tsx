@@ -39,8 +39,8 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          {/* Гроші за день + алерти — дві окремі групи з мітками */}
-          <div className={styles.statGroups}>
+          {/* Гроші за день + алерти — дві окремі групи з мітками. На mobile сховано (.desktopOnly). */}
+          <div className={`${styles.statGroups} ${styles.desktopOnly}`}>
             <div className={styles.statGroup}>
               <span className={styles.groupLabel}>Гроші сьогодні</span>
               <div className={styles.groupCards}>
@@ -62,10 +62,12 @@ export default function DashboardPage() {
             <FreeSpacesBlock date={today} />
           </div>
 
-          {/* Розклад: вільні слоти залів + готівка тренерів */}
+          {/* Розклад: вільні слоти залів + готівка тренерів. Готівка тренерів на mobile сховано (.desktopOnly). */}
           <div className={styles.twoCol}>
             <FreeSlotsBlock date={today} />
-            <TrainerCashBlock date={today} />
+            <div className={styles.desktopOnly}>
+              <TrainerCashBlock date={today} />
+            </div>
           </div>
         </div>
       </main>

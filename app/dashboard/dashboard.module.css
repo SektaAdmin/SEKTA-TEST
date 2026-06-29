@@ -104,6 +104,19 @@
   }
 }
 
+/* На mobile показуємо лише 3 блоки (боржники / вільні місця / слоти залів).
+   display:contents — обгортка прозора на desktop: діти лишаються прямими
+   у своєму grid/flex-контейнері. На mobile весь блок ховається. */
+.desktopOnly {
+  display: contents;
+}
+
+@media (max-width: 640px) {
+  .desktopOnly {
+    display: none;
+  }
+}
+
 /* Єдиний контейнер блоку-списку (боржники / слоти / готівка / місця). */
 .block {
   border: 1px solid var(--border);
