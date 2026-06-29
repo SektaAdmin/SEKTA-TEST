@@ -169,7 +169,8 @@ export default function SalesPage() {
               <button className={styles.expenseBtn} onClick={() => setExpenseModal(true)}>
                 + Студійна операція
               </button>
-              <button className="btn-primary" onClick={() => { setEditSale(null); setShowModal(true) }}>
+              {/* Desktop: кнопка в топбарі. Mobile: схована, дублюється FAB нижче. */}
+              <button className={`btn-primary ${styles.saleBtnDesktop}`} onClick={() => { setEditSale(null); setShowModal(true) }}>
                 + Продаж
               </button>
             </div>
@@ -593,6 +594,15 @@ export default function SalesPage() {
             />
           </div>
         )}
+
+        {/* FAB — mobile only, новий продаж (дублює кнопку «+ Продаж» з топбара) */}
+        <button
+          className={styles.fab}
+          onClick={() => { setEditSale(null); setShowModal(true) }}
+          aria-label="Новий продаж"
+        >
+          +
+        </button>
       </main>
 
       {/* Прихований ReceiptCard для html2canvas */}

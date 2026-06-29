@@ -13,6 +13,9 @@
   gap: 8px;
 }
 
+/* FAB — лише mobile (стилі в @media нижче). На desktop прихований. */
+.fab { display: none; }
+
 .expenseBtn {
   height: 32px;
   padding: 0 14px;
@@ -381,6 +384,30 @@
 
   .tableDesktop { display: none; }
   .cardList { display: flex; flex-direction: column; gap: 8px; }
+
+  /* «+ Продаж» з топбара ховаємо — дублюється FAB. */
+  .saleBtnDesktop { display: none; }
+
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--white);
+    font-size: 28px;
+    font-weight: 300;
+    border: none;
+    cursor: pointer;
+    z-index: 150;
+    box-shadow: var(--shadow-overlay);
+    line-height: 1;
+  }
 
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
