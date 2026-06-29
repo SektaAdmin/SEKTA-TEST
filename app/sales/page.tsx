@@ -161,7 +161,7 @@ export default function SalesPage() {
     <div className="page-layout">
       <Sidebar />
       <BottomNav />
-      <main className="page-main">
+      <main className={`page-main ${styles.salesMain}`}>
         <div className="page-head">
           <div className={styles.topbar}>
             <h1 className="page-title">Продажі</h1>

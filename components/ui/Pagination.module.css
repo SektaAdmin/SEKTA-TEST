@@ -75,4 +75,7 @@
   .left { width: 100%; justify-content: space-between; }
   .btns { width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px; }
   .btn { min-width: 44px; min-height: 44px; padding: 0; }
+  /* На телефоні розмір сторінки не міняють — гортають. Перемикач схований,
+     pageSize лишається дефолтним (20). */
+  .sizeSelect { display: none; }
 }

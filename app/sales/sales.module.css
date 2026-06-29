@@ -416,4 +416,22 @@
   .fsTrigger { height: 44px; }
   .feedTabGroup { margin-left: 0; width: 100%; }
   .feedTab { height: 44px; flex: 1; }
+
+  /* Mobile: пагінація не зафіксована — до неї треба доскролити.
+     Замість внутрішнього скролу .page-body робимо скрол-контейнером весь
+     .page-main: head + список + page-foot ідуть одним потоком. */
+  .salesMain {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .salesMain :global(.page-body) {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+  .salesMain :global(.page-foot) {
+    /* у потоці одразу після списку, а не приклеєний до низу вьюпорта;
+       запас знизу, щоб не ховався під FAB над BottomNav */
+    flex: 0 0 auto;
+    padding-bottom: 84px;
+  }
 }
