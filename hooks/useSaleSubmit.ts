@@ -79,7 +79,7 @@ export function useSaleSubmit({
       p_client_id:      formData.client_id,
       p_ticket_id:      formData.ticket_id || null,
       p_trainer_id:     formData.trainer_id || null,
-      p_cash_holder:    formData.payment_method === 'cash' ? (formData.cash_holder || null) : null,
+      p_cash_holder:    formData.payment_method === 'cash' ? (formData.trainer_id || null) : null,
       p_price_paid:     submitPricePaid,
       p_amount_given:   submitAmountGiven,
       p_payment_method: formData.payment_method,
