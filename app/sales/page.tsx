@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { ShoppingBag, TrendingUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -29,6 +30,20 @@ type FeedTab = 'all' | 'sales' | 'expenses'
 type FeedItem =
   | { kind: 'sale'; data: Sale }
   | { kind: 'expense'; data: StudioExpense }
+
+/**
+ * Mobile bottom-sheet фільтрів виноситься в document.body через portal: інакше
+ * fixed-оверлей застряг би в потоці .page-head і BottomNav (теж fixed, але
+ * пізніший сиблінг body) перекривав би його нижні ~56px — недоступна «Готово».
+ * Коли active=false (desktop, або mobile-sheet закритий) діти рендеряться
+ * inline, де desktop-гілка через display:contents вкладає їх назад у .filters.
+ */
+function MaybePortal({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (active && mounted) return createPortal(children, document.body)
+  return <>{children}</>
+}
 
 export default function SalesPage() {
   const { tickets, trainers } = useRefs()
@@ -236,7 +251,9 @@ export default function SalesPage() {
               )}
             </button>
 
-            {/* Розширені фільтри: desktop — у рядку (display:contents); mobile — у bottom-sheet */}
+            {/* Розширені фільтри: desktop — у рядку (display:contents); mobile — у bottom-sheet
+                (через portal у body, коли відкритий, щоб не застрягти під BottomNav). */}
+            <MaybePortal active={filtersOpen}>
             <div className={`${styles.advancedFilters} ${filtersOpen ? styles.advancedFiltersOpen : ''}`}>
               <div className={styles.sheetOverlay} onClick={() => setFiltersOpen(false)} />
               <div className={styles.sheetBody} role="dialog" aria-label="Фільтри" aria-modal="true">
@@ -352,6 +369,7 @@ export default function SalesPage() {
                 </button>
               </div>
             </div>
+            </MaybePortal>
           </div>
         </div>
 
@@ -648,9 +666,10 @@ export default function SalesPage() {
           </div>
         )}
 
-        {/* FAB — mobile only, новий продаж (дублює кнопку «+ Продаж» з топбара) */}
+        {/* FAB — mobile only, новий продаж (дублює кнопку «+ Продаж» з топбара).
+            Ховаємо при відкритому sheet фільтрів, щоб не висів поверх затемнення. */}
         <button
-          className={styles.fab}
+          className={`${styles.fab} ${filtersOpen ? styles.fabHidden : ''}`}
           onClick={() => { setEditSale(null); setShowModal(true) }}
           aria-label="Новий продаж"
         >

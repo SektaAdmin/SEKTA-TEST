@@ -519,6 +519,9 @@
     line-height: 1;
   }
 
+  /* Sheet фільтрів відкритий → FAB не висить поверх затемнення. */
+  .fabHidden { display: none; }
+
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
   .btnEdit, .btnDel, .btnReceipt { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
