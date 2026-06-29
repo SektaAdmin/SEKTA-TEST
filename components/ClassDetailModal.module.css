@@ -11,6 +11,21 @@
 }
 .btnCopy:hover { color: var(--text); }
 
+/* Зручний дотик: хіт-таргет копіювання 44×44 (іконка лишається малою, центрована) */
+@media (max-width: 640px) {
+  .btnCopy {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .btnCopy:hover { border-color: var(--border-hover); }
+}
+
 /* ── Body ────────────────────────────────────────────────────── */
 .body {
   padding: 0;

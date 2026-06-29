@@ -90,4 +90,17 @@
   .footer {
     padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
   }
+
+  /* Зручний дотик: хіт-таргет «Х» 44×44 (іконка лишається 14px, центрована) */
+  .close {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .close:hover { border-color: var(--border-hover); }
 }
