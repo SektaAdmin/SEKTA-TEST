@@ -1600,52 +1600,11 @@
   min-height: 45px;
 }
 
-.mobileTlHallChips {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-}
-.mobileTlHallChips::-webkit-scrollbar { display: none; }
-
-/* Друга смуга чипів — фільтр тренерів (під залами) */
+/* Смуги чипів залів/тренерів — візуал у спільних .filterChips/.filterChip
+   (globals.css). Тут лише schedule-специфіка: розділювач під смугою. */
+.mobileTlHallChips,
 .mobileTlTrainerChips {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  flex-shrink: 0;
   border-bottom: 1px solid var(--border);
-}
-.mobileTlTrainerChips::-webkit-scrollbar { display: none; }
-
-.mobileTlHallChip {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-  color: var(--text-2);
-  font-size: 13px;
-  font-family: var(--font);
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.1s, border-color 0.1s, color 0.1s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobileTlHallChipActive {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: var(--accent);
 }
 
 /* Заглушка тайм-лайну на час завантаження занять — тримає висоту scroll-зони

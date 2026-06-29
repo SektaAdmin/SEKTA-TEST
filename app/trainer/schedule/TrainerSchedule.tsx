@@ -658,11 +658,11 @@ function MobileScheduleTimeline({
       </div>
 
       {/* Filter chips — зали */}
-      <div className={styles.mobileTlHallChips}>
+      <div className={`filterChips ${styles.mobileTlHallChips}`}>
         {chips.map(chip => (
           <button
             key={chip.value}
-            className={[styles.mobileTlHallChip, filterChip === chip.value ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+            className={['filterChip', filterChip === chip.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
             onClick={() => onFilterChip(chip.value)}
           >
             {chip.label}
@@ -675,9 +675,9 @@ function MobileScheduleTimeline({
           тож зсуву не дає; пізно з'являється лише ця смуга тренерів. */}
       <div className={styles.mobileTlTrainerChipsReserve}>
         {activeTrainers.length > 1 && (
-          <div className={styles.mobileTlTrainerChips}>
+          <div className={`filterChips ${styles.mobileTlTrainerChips}`}>
             <button
-              className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              className={['filterChip', !filterTrainer ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
               onClick={() => onTrainerFilter('')}
             >
               Всі тренери
@@ -685,7 +685,7 @@ function MobileScheduleTimeline({
             {activeTrainers.map(t => (
               <button
                 key={t.id}
-                className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                className={['filterChip', filterTrainer === t.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
                 onClick={() => onTrainerFilter(t.id)}
               >
                 {t.name}

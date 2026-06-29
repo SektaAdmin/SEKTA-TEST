@@ -339,6 +339,45 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .fs-item[data-highlighted] { background: var(--bg-3); }
 .fs-item[data-state='checked'] { color: var(--accent); font-weight: 500; }
 
+/* ── Filter chips (shared single-select pill row) ──────────────
+   Горизонтальна смуга чипів-фільтрів. Спільний словник для mobile
+   /sales і /schedule (там через локальні .mobileTl*Chips, що тепер
+   композять ці класи). Один активний чип (single-select); «Всі» = скид. */
+.filterChips {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+.filterChips::-webkit-scrollbar { display: none; }
+
+.filterChip {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-family: var(--font);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filterChipActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
 /* ── Shared page layout ───────────────────────────────────────── */
 
 .page-layout {

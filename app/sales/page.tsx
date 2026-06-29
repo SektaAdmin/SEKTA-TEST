@@ -212,31 +212,35 @@ export default function SalesPage() {
               </div>
             )}
 
-            {/* Метод оплати — тільки для Операції або Всі */}
+            {/* Метод оплати — тільки для Операції або Всі (desktop: dropdown) */}
             {feedTab !== 'sales' && (
-              <FilterSelect
-                value={expenseMethod}
-                onChange={v => setExpenseMethod(v as typeof expenseMethod)}
-                placeholder="Метод"
-                options={[
-                  { value: '', label: 'Всі методи' },
-                  { value: 'cash', label: 'Готівка' },
-                  { value: 'fop', label: 'ФОП' },
-                  { value: 'personal_card', label: 'Картка' },
-                ]}
-              />
+              <div className={styles.filterDesktopOnly}>
+                <FilterSelect
+                  value={expenseMethod}
+                  onChange={v => setExpenseMethod(v as typeof expenseMethod)}
+                  placeholder="Метод"
+                  options={[
+                    { value: '', label: 'Всі методи' },
+                    { value: 'cash', label: 'Готівка' },
+                    { value: 'fop', label: 'ФОП' },
+                    { value: 'personal_card', label: 'Картка' },
+                  ]}
+                />
+              </div>
             )}
 
-            {/* Тренер — завжди */}
-            <FilterSelect
-              value={trainerFilter}
-              onChange={v => { setTrainerFilter(v); setPage(0) }}
-              placeholder="Тренер"
-              options={[
-                { value: '', label: 'Всі тренери' },
-                ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
-              ]}
-            />
+            {/* Тренер — завжди (desktop: dropdown) */}
+            <div className={styles.filterDesktopOnly}>
+              <FilterSelect
+                value={trainerFilter}
+                onChange={v => { setTrainerFilter(v); setPage(0) }}
+                placeholder="Тренер"
+                options={[
+                  { value: '', label: 'Всі тренери' },
+                  ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
+                ]}
+              />
+            </div>
 
             {/* Дати — завжди */}
             <div className={styles.filterDateWrap}>
@@ -254,6 +258,46 @@ export default function SalesPage() {
                 Скинути
               </button>
             )}
+          </div>
+
+          {/* Чипи фільтрів — лише mobile (desktop використовує FilterSelect вище) */}
+          {/* Метод оплати — тільки для Операції або Всі */}
+          {feedTab !== 'sales' && (
+            <div className={`filterChips ${styles.salesChipsMobile}`}>
+              {([
+                { value: '', label: 'Всі методи' },
+                { value: 'cash', label: 'Готівка' },
+                { value: 'fop', label: 'ФОП' },
+                { value: 'personal_card', label: 'Картка' },
+              ] as { value: typeof expenseMethod; label: string }[]).map(o => (
+                <button
+                  key={o.value || 'all'}
+                  className={['filterChip', expenseMethod === o.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+                  onClick={() => setExpenseMethod(o.value)}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Тренер — завжди */}
+          <div className={`filterChips ${styles.salesChipsMobile}`}>
+            <button
+              className={['filterChip', !trainerFilter ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+              onClick={() => { setTrainerFilter(''); setPage(0) }}
+            >
+              Всі тренери
+            </button>
+            {trainers.filter(t => t.is_active).map(t => (
+              <button
+                key={t.id}
+                className={['filterChip', trainerFilter === t.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+                onClick={() => { setTrainerFilter(t.id); setPage(0) }}
+              >
+                {t.name}
+              </button>
+            ))}
           </div>
         </div>
 

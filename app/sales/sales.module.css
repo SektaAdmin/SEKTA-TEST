@@ -83,6 +83,10 @@
 }
 .filterClear:hover { border-color: var(--danger); color: var(--danger); }
 
+/* Desktop: FilterSelect-и видимі, mobile-чипи сховані. Перемикання в @media. */
+.filterDesktopOnly { display: contents; }
+.salesChipsMobile { display: none; }
+
 /* ── Feed tabs (inline in filterbar) ─────────────────────────── */
 .feedTabGroup {
   display: flex;
@@ -359,6 +363,18 @@
 
   .filterClear {
     width: 100%;
+  }
+
+  /* Mobile: ховаємо dropdown-фільтри (метод/тренер), показуємо чипи. */
+  .filterDesktopOnly { display: none; }
+
+  .salesChipsMobile {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    /* зануляємо горизонтальний padding .filterChips під topbar-сітку сторінки */
+    padding: 8px var(--topbar-px);
+    border-bottom: 1px solid var(--border);
   }
 
   .content { padding: 16px; }

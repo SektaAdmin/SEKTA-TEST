@@ -694,9 +694,9 @@ function MobileScheduleTimeline({
       <div className={styles.mobileTlChipsZone}>
         {/* Hall chips */}
         {activeHalls.length > 1 && (
-          <div className={styles.mobileTlHallChips}>
+          <div className={`filterChips ${styles.mobileTlHallChips}`}>
             <button
-              className={[styles.mobileTlHallChip, !filterHall ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              className={['filterChip', !filterHall ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
               onClick={() => onHallFilter('')}
             >
               Всі
@@ -704,7 +704,7 @@ function MobileScheduleTimeline({
             {activeHalls.map(h => (
               <button
                 key={h.id}
-                className={[styles.mobileTlHallChip, filterHall === h.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                className={['filterChip', filterHall === h.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
                 onClick={() => onHallFilter(h.id)}
               >
                 {h.name}
@@ -715,9 +715,9 @@ function MobileScheduleTimeline({
 
         {/* Trainer chips */}
         {activeTrainers.length > 1 && (
-          <div className={styles.mobileTlTrainerChips}>
+          <div className={`filterChips ${styles.mobileTlTrainerChips}`}>
             <button
-              className={[styles.mobileTlHallChip, !filterTrainer ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+              className={['filterChip', !filterTrainer ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
               onClick={() => onTrainerFilter('')}
             >
               Всі тренери
@@ -725,7 +725,7 @@ function MobileScheduleTimeline({
             {activeTrainers.map(t => (
               <button
                 key={t.id}
-                className={[styles.mobileTlHallChip, filterTrainer === t.id ? styles.mobileTlHallChipActive : ''].filter(Boolean).join(' ')}
+                className={['filterChip', filterTrainer === t.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
                 onClick={() => onTrainerFilter(t.id)}
               >
                 {t.name}

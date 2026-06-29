@@ -67,9 +67,11 @@ Shared page layout (всі сторінки крім `/schedule*`):
 - Module.css: мобільна `@media` тільки специфіка (topbar/flex-wrap/padding), НЕ дублювати height/overflow. ⚠️ `@media`-блок завжди в **кінці** файлу.
 
 **Mobile filterbar — 2 патерни:**
-- Стопка (`flex-wrap:wrap`, кожен `width:100%`) — ≤3 поля: `/sales`, `/clients`.
+- Стопка (`flex-wrap:wrap`, кожен `width:100%`) — ≤3 поля: `/clients`.
 - Гориз. скрол (`overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap`) — 4+ кнопок: `/journal`, `/accounting`. `overflow-y:hidden` блокує верт. скрол при touch.
 - Інтерактив: `height:--control-h`.
+
+**Filter chips — спільний словник `.filterChips`/`.filterChip`/`.filterChipActive` (globals.css):** смуга пілюль single-select, гориз. скрол, активний = `--accent-dim`, «Всі»/«Всі тренери» = скид. Використовують `/schedule` mobile (`.mobileTl*Chips` тепер тримають лише `border-bottom`, композять глобальні класи) і `/sales` mobile (метод+тренер). НЕ плодити локальні копії chip-візуалу.
 
 Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, перемикання `display:none/flex`.
 
@@ -135,7 +137,7 @@ View: День/Тиждень/Список. Mobile — форс day.
 Filterbar стопка. Card: ім'я + депозит-бейдж у рядку; phone `<a tel:>` + соцмережі (тільки заповнені). Тап → `/clients/[id]`.
 
 ### /sales
-Filterbar стопка: пошук(100%) + `SalesDateRangePicker`(`.filterDateWrap`,100%) + «Скинути»(при hasFilters). SalesDateRangePicker mobile: bottom sheet, пресети гориз. скрол, 1 місяць. Card: клієнт+дата / операція / оплачено+метод / Δдепозит(якщо ≠0) / тренер / Змінити+Видалити. SaleModal fullScreen. Confirm: `width:calc(100% - 32px); max-width:360px`.
+Filterbar: desktop — таби(Всі/Продажі/Операції) + пошук + FilterSelect метод + FilterSelect тренер + `SalesDateRangePicker` + «Скинути». Mobile — пошук(100%) + `SalesDateRangePicker`(100%) + «Скинути»; FilterSelect метод/тренер сховані (`.filterDesktopOnly` `display:contents`→`none`), натомість 2 смуги чипів `.salesChipsMobile` (глобальні `.filterChips`): метод(при `feedTab!=='sales'`) + тренер. Стан спільний із desktop (`useSales`), тап → `setPage(0)`. SalesDateRangePicker mobile: bottom sheet, пресети гориз. скрол, 1 місяць. Card: клієнт+дата / операція / оплачено+метод / Δдепозит(якщо ≠0) / тренер / Змінити+Видалити. SaleModal fullScreen. Confirm: `width:calc(100% - 32px); max-width:360px`.
 
 ### /journal
 Власний `journal.module.css` (`.layout/.main/.topbar/.stickyHead`), `main{min-width:0}`. `.stickyHead`=topbar+filterBar (desktop sticky/mobile static). Filterbar: DatePicker×2 + FilterSelect×4 (тренер/зал/тип/статус) + ×. Table 20/стор: Дата|Час|Тип|Назва|Тренер|Зал|Записів|Статус. Pagination ‹›+counter. Клік → ClassDetailModal. Query `listPastClasses` (lib/queries/classes.ts): `starts_at<today`, фільтри dateFrom/To/hall/trainer/ticketType/isCancelled → `{data,count,error}`. Mobile: filterbar гориз. скрол; card: тип+дата·час / тренер·зал·N·статус.
