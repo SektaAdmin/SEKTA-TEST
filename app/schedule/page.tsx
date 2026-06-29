@@ -14,7 +14,7 @@ import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
-import { MONTHS_UK_CAP, MONTHS_UK_SHORT, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { MONTHS_UK_CAP, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './schedule.module.css'
@@ -659,7 +659,9 @@ function MobileScheduleTimeline({
     <div className={styles.mobileTlShell}>
       {/* Week strip */}
       <div ref={stripRef} className={styles.mobileTlStripWrap}>
-        <div className={styles.mobileTlMonth}>{monthLabel}</div>
+        <div className={styles.mobileTlMonthRow}>
+          <span className={styles.mobileTlMonth}>{monthLabel}</span>
+        </div>
         <div
           key={weekKey}
           className={[styles.mobileTlDays, animClass].filter(Boolean).join(' ')}
@@ -1114,25 +1116,6 @@ export default function SchedulePage() {
 
         {/* Topbar row 1 — hidden on mobile (MobileScheduleTimeline has its own WeekStrip) */}
         <div className={[styles.topbar, isMobile ? styles.topbarMobileHidden : ''].filter(Boolean).join(' ')}>
-          {/* Mobile nav — date + today icon + calendar icon */}
-          <div className={styles.mobileTopNav}>
-            <div className={styles.mobileDateText}>
-              <span className={styles.mobileDayName}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
-              <span className={styles.mobileDateVal}>{formatDate(baseDate)}</span>
-            </div>
-            <div className={styles.mobileNavIcons}>
-              <button className={styles.todayIconBtn} onClick={() => setBaseDate(new Date())} aria-label="Сьогодні">
-                <span className={styles.todayIconNum}>{today.getDate()}</span>
-              </button>
-              <button className={styles.navIconBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="1" y="2" width="12" height="11" rx="1.5"/>
-                  <path d="M1 6h12M4 1v2M10 1v2"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
           <div className={styles.topbarLeft}>
             <div className={styles.dateChip}>
               <span className={styles.dateChipDay}>{baseDate.getDate()}</span>
@@ -1418,6 +1401,16 @@ export default function SchedulePage() {
         {showMobileCal && (
           <div className={styles.mobileCalOverlay} onClick={() => setShowMobileCal(false)}>
             <div className={styles.mobileCalSheet} onClick={e => e.stopPropagation()}>
+              <div className={styles.mobileCalSheetHeader}>
+                <span className={styles.mobileCalSheetTitle}>Обрати дату</span>
+                <button
+                  type="button"
+                  className={styles.mobileCalTodayBtn}
+                  onClick={() => { setBaseDate(new Date()); setShowMobileCal(false) }}
+                >
+                  Сьогодні
+                </button>
+              </div>
               <ScheduleRightPanel
                 viewYear={calViewMonth.year}
                 viewMonth={calViewMonth.month}
@@ -1438,6 +1431,15 @@ export default function SchedulePage() {
             </div>
           </div>
         )}
+
+        {/* FAB календар — mobile only, відкриває вибір дати (над FAB «+») */}
+        <button
+          className={styles.fabCalendar}
+          onClick={() => setShowMobileCal(true)}
+          aria-label="Обрати дату"
+        >
+          {baseDate.getDate()}
+        </button>
 
         {/* FAB — mobile only, creates new class */}
         <button
