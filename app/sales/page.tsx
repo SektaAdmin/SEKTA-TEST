@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { ShoppingBag, TrendingUp } from 'lucide-react'
@@ -11,12 +11,11 @@ import StudioExpenseModal from '@/components/StudioExpenseModal'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
 import ReceiptCard from '@/components/ReceiptCard'
 import { useRefs } from '@/contexts/RefsContext'
-import { useSales, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
+import { useSalesFeed, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { useReceipt } from '@/hooks/useReceipt'
 import { deleteSale } from '@/lib/queries/sales'
-import { listStudioExpenses } from '@/lib/queries/studio-expenses'
-import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
+import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { paymentLabel, paymentClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
@@ -26,10 +25,6 @@ import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './sales.module.css'
 
 type FeedTab = 'all' | 'sales' | 'expenses'
-
-type FeedItem =
-  | { kind: 'sale'; data: Sale }
-  | { kind: 'expense'; data: StudioExpense }
 
 /**
  * Mobile bottom-sheet фільтрів виноситься в document.body через portal: інакше
@@ -69,39 +64,19 @@ export default function SalesPage() {
   const [dateTo, setDateTo]           = useState('')
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [expenses, setExpenses]           = useState<StudioExpense[]>([])
   const [expenseMethod, setExpenseMethod]   = useState<'cash' | 'fop' | 'personal_card' | ''>('')
   const [trainerFilter, setTrainerFilter]   = useState<string>('')
 
-  const { sales, total, loading, fetchError, refetch } = useSales({ page, pageSize, search, dateFrom, dateTo, trainerId: feedTab !== 'expenses' ? trainerFilter : '' })
+  // Весь feed (sales+expenses) пагінується й фільтрується в БД через
+  // sales_feed_page RPC — без клієнтського злиття/сортування тисяч рядків.
+  const { feed, total, loading, fetchError, refetch } = useSalesFeed({
+    tab: feedTab, page, pageSize, search, dateFrom, dateTo,
+    trainerId: trainerFilter, expenseMethod,
+  })
 
   const { cardRef, renderData, getState: getReceiptState, generateReceipt, copyReceipt } = useReceipt({
     onGenerated: () => { refetch() },
   })
-
-  const fetchExpenses = useCallback(async () => {
-    const from = dateFrom || '2000-01-01'
-    const to   = dateTo   || '2099-12-31'
-    const { data } = await listStudioExpenses(supabase, from, to)
-    setExpenses(data ?? [])
-  }, [dateFrom, dateTo])
-
-  useEffect(() => { fetchExpenses() }, [fetchExpenses])
-
-  // unified feed sorted by created_at desc
-  const feed = useMemo<FeedItem[]>(() => {
-    let filteredExpenses = expenses
-    if (expenseMethod) filteredExpenses = filteredExpenses.filter(e => e.payment_method === expenseMethod)
-    if (trainerFilter) filteredExpenses = filteredExpenses.filter(e => e.trainer_id === trainerFilter)
-    if (feedTab === 'sales')    return sales.map(s => ({ kind: 'sale' as const, data: s }))
-    if (feedTab === 'expenses') return filteredExpenses.map(e => ({ kind: 'expense' as const, data: e }))
-    const items: FeedItem[] = [
-      ...sales.map(s => ({ kind: 'sale' as const, data: s })),
-      ...filteredExpenses.map(e => ({ kind: 'expense' as const, data: e })),
-    ]
-    items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
-    return items
-  }, [feedTab, sales, expenses, expenseMethod, trainerFilter])
 
   const totalPages = Math.ceil(total / pageSize)
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== '' || trainerFilter !== ''
@@ -120,6 +95,7 @@ export default function SalesPage() {
 
   function handleDateFrom(value: string) { setDateFrom(value); setPage(0) }
   function handleDateTo(value: string)   { setDateTo(value);   setPage(0) }
+  function handleExpenseMethod(value: typeof expenseMethod) { setExpenseMethod(value); setPage(0) }
 
   function clearFilters() {
     setSearchInput(''); setSearch(''); setDateFrom(''); setDateTo('')
@@ -153,10 +129,10 @@ export default function SalesPage() {
     if (!deleteExpenseId) return
     setDeletingExpense(true)
     await deleteStudioExpense(supabase, deleteExpenseId)
-    setExpenses(prev => prev.filter(e => e.id !== deleteExpenseId))
     setDeleteExpenseId(null)
     setDeletingExpense(false)
     toast.success('Операцію видалено')
+    refetch()
   }
 
   function handleSaved() {
@@ -169,7 +145,7 @@ export default function SalesPage() {
   function handleExpenseSaved() {
     setExpenseModal(false)
     setEditExpense(null)
-    fetchExpenses()
+    refetch()
   }
 
   function handlePageSize(size: PageSize) {
@@ -177,7 +153,7 @@ export default function SalesPage() {
     setPage(0)
   }
 
-  const showPagination = feedTab !== 'expenses' && !loading && !fetchError && total > 0
+  const showPagination = !loading && !fetchError && total > 0
 
   return (
     <div className="page-layout">
@@ -282,7 +258,7 @@ export default function SalesPage() {
                   <div className={styles.filterDesktopOnly}>
                     <FilterSelect
                       value={expenseMethod}
-                      onChange={v => setExpenseMethod(v as typeof expenseMethod)}
+                      onChange={v => handleExpenseMethod(v as typeof expenseMethod)}
                       placeholder="Метод"
                       options={[
                         { value: '', label: 'Всі методи' },
@@ -319,7 +295,7 @@ export default function SalesPage() {
                       <button
                         key={o.value || 'all'}
                         className={['filterChip', expenseMethod === o.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
-                        onClick={() => setExpenseMethod(o.value)}
+                        onClick={() => handleExpenseMethod(o.value)}
                       >
                         {o.label}
                       </button>

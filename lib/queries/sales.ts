@@ -3,16 +3,8 @@ import type { Db } from '@/lib/queries/_db'
 import { sanitizePostgrestSearch } from './_escape'
 import { callRpc } from '@/lib/rpc'
 import { TRAINER_FK } from '@/lib/queries/_fk'
+import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { kyivDayUtcBounds } from '@/lib/dateUtils'
-
-export interface ListSalesParams {
-  page: number
-  pageSize: number
-  search: string
-  dateFrom: string
-  dateTo: string
-  trainerId: string
-}
 
 // Літерал (НЕ template з ${}) — QueryData парсить embed лише зі статичного
 // рядка. FK із TRAINER_FK.sales вшито вручну; узгодженість тримає тест нижче.
@@ -61,38 +53,93 @@ async function searchClientIdsByName(
   return (matched ?? []).map((c: { id: string }) => c.id)
 }
 
-export async function listSales(
-  supabase: Db,
-  { page, pageSize, search, dateFrom, dateTo, trainerId }: ListSalesParams
-): Promise<{ data: Sale[]; count: number; error: string | null }> {
-  let clientIds: string[] | null = null
+/* ── Уніфікований feed (sales + studio_expenses) для /sales ──
+   Дзеркалить listReconciliationFeedPage: sales_feed_page RPC віддає
+   впорядковані (kind,id) сторінки + total_count; повні рядки з embed
+   дотягуємо через .in('id', …) (лише ≤pageSize id на тип) і
+   перевпорядковуємо за порядком RPC (single source of truth). */
 
-  if (search.trim()) {
+const FEED_EXPENSE_SELECT = `id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!studio_expenses_trainer_id_fkey(name)` as const
+const _feedExpFkCheck: typeof TRAINER_FK.expenses = 'studio_expenses_trainer_id_fkey'
+void _feedExpFkCheck
+
+export type SalesFeedRow =
+  | { kind: 'sale'; data: Sale }
+  | { kind: 'expense'; data: StudioExpense }
+
+export interface SalesFeedParams {
+  /** 'all' | 'sales' | 'expenses' */
+  tab: 'all' | 'sales' | 'expenses'
+  search: string
+  dateFrom: string
+  dateTo: string
+  trainerId: string
+  /** метод оплати — лише для expenses */
+  expenseMethod: string
+  page: number
+  pageSize: number
+}
+
+export async function listSalesFeedPage(
+  supabase: Db,
+  { tab, search, dateFrom, dateTo, trainerId, expenseMethod, page, pageSize }: SalesFeedParams
+): Promise<{ rows: SalesFeedRow[]; count: number; error: string | null }> {
+  // Пошук за іменем застосовний лише до sales (expenses не мають клієнта).
+  // Якщо є пошук і він нічого не знайшов — sales порожні; expenses теж
+  // ховаємо (інакше «Все» показувало б операції попри активний пошук).
+  let clientIds: string[] | null = null
+  let searchHadNoMatch = false
+  if (search.trim() && tab !== 'expenses') {
     const ids = await searchClientIdsByName(supabase, search)
     if (ids !== null) {
-      if (ids.length === 0) return { data: [], count: 0, error: null }
-      clientIds = ids
+      if (ids.length === 0) searchHadNoMatch = true
+      else clientIds = ids
     }
   }
 
-  const rangeFrom = page * pageSize
-  let query = supabase
-    .from('sales')
-    .select(SALE_SELECT, { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(rangeFrom, rangeFrom + pageSize - 1)
+  const includeSales = tab !== 'expenses' && !searchHadNoMatch
+  const includeExpenses = tab !== 'sales' && !search.trim()
 
-  if (clientIds !== null) query = query.in('client_id', clientIds)
-  if (dateFrom)  query = query.gte('created_at', kyivDayUtcBounds(dateFrom).from)
-  if (dateTo)    query = query.lte('created_at', kyivDayUtcBounds(dateTo).to)
-  if (trainerId) query = query.eq('trainer_id', trainerId)
+  if (!includeSales && !includeExpenses) return { rows: [], count: 0, error: null }
 
-  const { data, count, error } = await query
-  return {
-    data: data ?? [],
-    count: count ?? 0,
-    error: error?.message ?? null,
+  const { data: ids, error: feedErr } = await supabase.rpc('sales_feed_page', {
+    p_include_sales: includeSales,
+    p_include_expenses: includeExpenses,
+    p_client_ids: clientIds ?? undefined,
+    p_trainer_id: trainerId || undefined,
+    p_expense_method: expenseMethod || undefined,
+    p_from: dateFrom ? kyivDayUtcBounds(dateFrom).from : undefined,
+    p_to: dateTo ? kyivDayUtcBounds(dateTo).to : undefined,
+    p_limit: pageSize,
+    p_offset: page * pageSize,
+  })
+  if (feedErr) return { rows: [], count: 0, error: feedErr.message }
+
+  const idRows = (ids ?? []) as { kind: 'sale' | 'expense'; id: string; total_count: number }[]
+  const count = idRows[0]?.total_count ?? 0
+  if (idRows.length === 0) return { rows: [], count: 0, error: null }
+
+  const saleIds = idRows.filter(r => r.kind === 'sale').map(r => r.id)
+  const expIds = idRows.filter(r => r.kind === 'expense').map(r => r.id)
+
+  const [salesRes, expRes] = await Promise.all([
+    saleIds.length ? saleListQuery(supabase).in('id', saleIds) : Promise.resolve({ data: [], error: null }),
+    expIds.length ? supabase.from('studio_expenses').select(FEED_EXPENSE_SELECT).in('id', expIds) : Promise.resolve({ data: [], error: null }),
+  ])
+
+  const error = salesRes.error?.message ?? expRes.error?.message ?? null
+  if (error) return { rows: [], count, error }
+
+  const saleMap = new Map((salesRes.data as Sale[]).map(s => [s.id, s]))
+  const expMap = new Map((expRes.data as StudioExpense[]).map(e => [e.id, e]))
+
+  const rows: SalesFeedRow[] = []
+  for (const r of idRows) {
+    if (r.kind === 'sale') { const d = saleMap.get(r.id); if (d) rows.push({ kind: 'sale', data: d }) }
+    else { const d = expMap.get(r.id); if (d) rows.push({ kind: 'expense', data: d }) }
   }
+
+  return { rows, count, error: null }
 }
 
 export async function listSalesForClient(

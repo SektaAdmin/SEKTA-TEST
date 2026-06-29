@@ -1394,6 +1394,24 @@ export type Database = {
           success: boolean
         }[]
       }
+      sales_feed_page: {
+        Args: {
+          p_client_ids?: string[]
+          p_expense_method?: string
+          p_from?: string
+          p_include_expenses?: boolean
+          p_include_sales?: boolean
+          p_limit?: number
+          p_offset?: number
+          p_to?: string
+          p_trainer_id?: string
+        }
+        Returns: {
+          id: string
+          kind: string
+          total_count: number
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       update_client_balance: {
