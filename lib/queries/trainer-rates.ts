@@ -1,6 +1,7 @@
 import type { QueryData } from '@supabase/supabase-js'
 import type { Db } from '@/lib/queries/_db'
 import { TRAINER_FK } from '@/lib/queries/_fk'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 const RATE_SELECT = 'id, trainer_id, ticket_type, hall_id, trainer_rate, studio_rate, valid_from, valid_to, created_at, trainers(name), halls(name)' as const
 function rateQuery(supabase: Db) { return supabase.from('trainer_rates').select(RATE_SELECT) }
@@ -226,16 +227,16 @@ export async function getTrainerCashBalance(
       .select('id, created_at, price_paid, ticket_name, clients(first_name, last_name)')
       .eq('cash_holder', trainerId)
       .eq('payment_method', 'cash')
-      .gte('created_at', `${dateFrom}T00:00:00`)
-      .lte('created_at', `${dateTo}T23:59:59`)
+      .gte('created_at', kyivDayUtcBounds(dateFrom).from)
+      .lte('created_at', kyivDayUtcBounds(dateTo).to)
       .order('created_at'),
     supabase
       .from('studio_expenses')
       .select('id, created_at, amount, description')
       .eq('cash_holder', trainerId)
       .eq('direction', 'expense')
-      .gte('created_at', `${dateFrom}T00:00:00`)
-      .lte('created_at', `${dateTo}T23:59:59`)
+      .gte('created_at', kyivDayUtcBounds(dateFrom).from)
+      .lte('created_at', kyivDayUtcBounds(dateTo).to)
       .order('created_at'),
     supabase
       .from('trainer_payments')

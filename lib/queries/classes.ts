@@ -2,6 +2,7 @@ import type { QueryData } from '@supabase/supabase-js'
 import type { Db, Insert } from '@/lib/queries/_db'
 import type { Class, ClassSeries } from '@/types'
 import { callRpc } from '@/lib/rpc'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 export type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -194,8 +195,8 @@ export async function listPastClasses(
     .select('*, trainers(name), halls(name), enrollments(id, status)', { count: 'exact' })
     .lt('starts_at', cutoffISO)
 
-  if (filters?.dateFrom) query = query.gte('starts_at', filters.dateFrom)
-  if (filters?.dateTo)   query = query.lte('starts_at', filters.dateTo)
+  if (filters?.dateFrom) query = query.gte('starts_at', kyivDayUtcBounds(filters.dateFrom).from)
+  if (filters?.dateTo)   query = query.lte('starts_at', kyivDayUtcBounds(filters.dateTo).to)
   if (filters?.hallId)   query = query.eq('hall_id', filters.hallId)
   if (filters?.trainerId) query = query.eq('trainer_id', filters.trainerId)
   if (filters?.ticketType) query = query.eq('ticket_type', filters.ticketType)

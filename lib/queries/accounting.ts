@@ -4,6 +4,7 @@ import type { PaymentMethod } from '@/types'
 import { TRAINER_FK } from '@/lib/queries/_fk'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import type { TrainerPayment } from '@/lib/queries/trainer-rates'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 /* Запити для звірки (/accounting). Feed = sales + studio_expenses + trainer_payments
    за один рахунок (метод оплати + опційно cash_holder) у діапазоні дат.
@@ -47,18 +48,18 @@ export async function listReconciliationFeed(
 }> {
   let salesQuery = reconSaleQuery(supabase)
     .eq('payment_method', method)
-    .lte('created_at', `${to}T23:59:59`)
+    .lte('created_at', kyivDayUtcBounds(to).to)
     .order('created_at', { ascending: false })
-  if (from) salesQuery = salesQuery.gte('created_at', `${from}T00:00:00`)
+  if (from) salesQuery = salesQuery.gte('created_at', kyivDayUtcBounds(from).from)
   if (holder) salesQuery = salesQuery.eq('cash_holder', holder)
 
   let expQuery = supabase
     .from('studio_expenses')
     .select(RECON_EXP_SELECT)
     .eq('payment_method', method)
-    .lte('created_at', `${to}T23:59:59`)
+    .lte('created_at', kyivDayUtcBounds(to).to)
     .order('created_at', { ascending: false })
-  if (from) expQuery = expQuery.gte('created_at', `${from}T00:00:00`)
+  if (from) expQuery = expQuery.gte('created_at', kyivDayUtcBounds(from).from)
   if (holder) expQuery = expQuery.eq('cash_holder', holder)
 
   let payQuery = supabase

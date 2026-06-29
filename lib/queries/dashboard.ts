@@ -72,8 +72,7 @@ export async function listHallBusyIntervalsForDate(
   supabase: Db,
   date: string
 ): Promise<{ data: HallBusyInterval[]; error: string | null }> {
-  const dayStart = new Date(`${date}T00:00:00`).toISOString()
-  const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
+  const { from: dayStart, to: dayEnd } = kyivDayUtcBounds(date)
 
   type ClassRow = {
     starts_at: string

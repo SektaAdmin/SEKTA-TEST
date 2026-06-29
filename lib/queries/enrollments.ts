@@ -1,5 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
 import { callRpc } from '@/lib/rpc'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 export async function listClassesForDate(
   supabase: Db,
@@ -13,8 +14,7 @@ export async function listClassesForDate(
   }[];
   error: string | null
 }> {
-  const dayStart = new Date(`${date}T00:00:00`).toISOString()
-  const dayEnd = new Date(`${date}T23:59:59.999`).toISOString()
+  const { from: dayStart, to: dayEnd } = kyivDayUtcBounds(date)
 
   type ClassForDate = {
     id: string; ticket_type: string; title: string | null; starts_at: string;

@@ -1,6 +1,7 @@
 import type { QueryData } from '@supabase/supabase-js'
 import type { Db } from '@/lib/queries/_db'
 import { TRAINER_FK } from '@/lib/queries/_fk'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 const EXPENSE_SELECT = `id, amount, direction, payment_method, trainer_id, cash_holder, description, created_at, trainers!studio_expenses_trainer_id_fkey(name)` as const
 const _expFkCheck: typeof TRAINER_FK.expenses = 'studio_expenses_trainer_id_fkey'
@@ -25,8 +26,8 @@ export async function listStudioExpenses(
   dateTo: string
 ): Promise<{ data: StudioExpense[]; error: string | null }> {
   const { data, error } = await expenseQuery(supabase)
-    .gte('created_at', `${dateFrom}T00:00:00`)
-    .lte('created_at', `${dateTo}T23:59:59`)
+    .gte('created_at', kyivDayUtcBounds(dateFrom).from)
+    .lte('created_at', kyivDayUtcBounds(dateTo).to)
     .order('created_at', { ascending: false })
   return { data: (data ?? []) as StudioExpense[], error: error?.message ?? null }
 }
