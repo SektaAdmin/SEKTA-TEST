@@ -137,6 +137,7 @@ View: День/Тиждень/Список. Mobile — форс day.
 Filterbar стопка. Card: ім'я + депозит-бейдж у рядку; phone `<a tel:>` + соцмережі (тільки заповнені). Тап → `/clients/[id]`.
 
 ### /sales
+Topbar: «+ Студійна операція» (завжди) + «+ Продаж» (`.saleBtnDesktop`, схована на mobile). Mobile: FAB `+` справа внизу (`.fab`, патерн /schedule) дублює «+ Продаж».
 Filterbar: desktop — таби(Всі/Продажі/Операції) + пошук + FilterSelect метод + FilterSelect тренер + `SalesDateRangePicker` + «Скинути». Mobile — пошук(100%) + `SalesDateRangePicker`(100%) + «Скинути»; FilterSelect метод/тренер сховані (`.filterDesktopOnly` `display:contents`→`none`), натомість 2 смуги чипів `.salesChipsMobile` (глобальні `.filterChips`): метод(при `feedTab!=='sales'`) + тренер. Стан спільний із desktop (`useSales`), тап → `setPage(0)`. SalesDateRangePicker mobile: bottom sheet, пресети гориз. скрол, 1 місяць. Card: клієнт+дата / операція / оплачено+метод / Δдепозит(якщо ≠0) / тренер / Змінити+Видалити. SaleModal fullScreen. Confirm: `width:calc(100% - 32px); max-width:360px`.
 
 ### /journal
