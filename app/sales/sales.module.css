@@ -119,6 +119,18 @@
   color: var(--accent) !important;
 }
 
+/* ── Mobile filter sheet ──────────────────────────────────────────
+   Desktop: усе прозоро — .advancedFilters=display:contents, діти течуть
+   у .filters як раніше; кнопка «Фільтри» й хром sheet сховані.
+   Mobile (@media ≤640px): .advancedFilters стає bottom-sheet оверлеєм. */
+.filterToggleBtn { display: none; }
+.advancedFilters { display: contents; }
+.sheetBody { display: contents; }
+.tabsMobileSheet { display: none; }
+.sheetOverlay,
+.sheetHeader,
+.sheetDone { display: none; }
+
 /* Mobile expense card accents */
 .cardExpense { background: var(--danger-dim); }
 .cardIncome  { background: var(--success-dim); }
@@ -339,17 +351,18 @@
     gap: 8px;
   }
 
+  /* Хедер: один рядок [пошук] [Фільтри]. Решта — у sheet. */
   .filters {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     padding: 8px var(--topbar-px);
     width: 100%;
     box-sizing: border-box;
+    border-bottom: 1px solid var(--border);
   }
 
   .filterSearch {
-    width: 100%;
-    flex: none;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
@@ -358,15 +371,112 @@
     box-sizing: border-box;
     transition: border-color 0.12s;
   }
-  .filterSearchInput:focus { width: 100%; }
+  .filterSearchInput:focus { width: 100%; transform: none; }
 
-  .filterDateWrap {
-    width: 100%;
+  /* Таби: на desktop у рядку фільтрів, тут ховаємо (живуть у sheet) */
+  .tabsDesktopOnly { display: none; }
+
+  /* Кнопка «Фільтри» — поряд із пошуком */
+  .filterToggleBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    height: var(--control-h);
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-size: 14px;
+    font-family: var(--font);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filterToggleBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
   }
 
-  .filterClear {
-    width: 100%;
+  /* ── Bottom-sheet ── */
+  .advancedFilters { display: none; }
+  .advancedFiltersOpen { display: block; }
+
+  .sheetOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 300;
+    animation: overlayIn var(--motion-fast);
   }
+
+  .sheetBody {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 301;
+    max-height: 88dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px var(--topbar-px) calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    box-shadow: var(--shadow-overlay);
+    animation: bottomSheetIn var(--motion-standard);
+  }
+
+  .sheetHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sheetTitle { font-size: 16px; font-weight: 500; color: var(--text); }
+  .sheetClose {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .sheetDone {
+    display: block;
+    width: 100%;
+    height: 44px;
+    margin-top: 4px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: var(--white);
+    font-size: 15px;
+    font-family: var(--font);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Таби у sheet — повна ширина, рівні частки */
+  .tabsMobileSheet { display: flex; width: 100%; gap: 6px; }
+  .tabsMobileSheet .feedTab { flex: 1; height: 44px; }
+
+  .filterDateWrap { width: 100%; }
+  .filterClear { width: 100%; }
 
   /* Mobile: ховаємо dropdown-фільтри (метод/тренер), показуємо чипи. */
   .filterDesktopOnly { display: none; }
@@ -375,9 +485,9 @@
     display: flex;
     width: 100%;
     box-sizing: border-box;
-    /* зануляємо горизонтальний padding .filterChips під topbar-сітку сторінки */
-    padding: 8px var(--topbar-px);
-    border-bottom: 1px solid var(--border);
+    /* у sheet — без власного padding/border, він уже всередині панелі */
+    padding: 0;
+    border-bottom: none;
   }
 
   .content { padding: 16px; }
@@ -414,8 +524,6 @@
   .btnEdit, .btnDel, .btnReceipt { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
 
   .fsTrigger { height: 44px; }
-  .feedTabGroup { margin-left: 0; width: 100%; }
-  .feedTab { height: 44px; flex: 1; }
 
   /* Mobile: пагінація не зафіксована — до неї треба доскролити.
      Замість внутрішнього скролу .page-body робимо скрол-контейнером весь

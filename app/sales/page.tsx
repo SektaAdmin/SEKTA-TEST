@@ -44,6 +44,7 @@ export default function SalesPage() {
   const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null)
   const [deletingExpense, setDeletingExpense]  = useState(false)
   const [feedTab, setFeedTab]         = useState<FeedTab>('all')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const [page, setPage]               = useState(0)
   const [pageSize, setPageSize]       = useState<PageSize>(20)
@@ -89,6 +90,12 @@ export default function SalesPage() {
 
   const totalPages = Math.ceil(total / pageSize)
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== '' || trainerFilter !== ''
+  // Лічильник для mobile-кнопки «Фільтри» — усе, що сховане в sheet (без пошуку, він видимий завжди).
+  const activeFilterCount =
+    (feedTab !== 'all' ? 1 : 0) +
+    (expenseMethod !== '' ? 1 : 0) +
+    (trainerFilter !== '' ? 1 : 0) +
+    (dateFrom !== '' || dateTo !== '' ? 1 : 0)
 
   function handleSearchInput(value: string) {
     setSearchInput(value)
@@ -177,8 +184,8 @@ export default function SalesPage() {
           </div>
 
           <div className={styles.filters}>
-            {/* Таби — завжди видимі */}
-            <div className={styles.feedTabGroup} role="tablist">
+            {/* Таби — desktop у рядку фільтрів; mobile сховані (живуть у sheet) */}
+            <div className={`${styles.feedTabGroup} ${styles.tabsDesktopOnly}`} role="tablist">
               {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
                 <button
                   key={tab}
@@ -213,92 +220,138 @@ export default function SalesPage() {
               </div>
             )}
 
-            {/* Метод оплати — тільки для Операції або Всі (desktop: dropdown) */}
-            {feedTab !== 'sales' && (
-              <div className={styles.filterDesktopOnly}>
-                <FilterSelect
-                  value={expenseMethod}
-                  onChange={v => setExpenseMethod(v as typeof expenseMethod)}
-                  placeholder="Метод"
-                  options={[
-                    { value: '', label: 'Всі методи' },
-                    { value: 'cash', label: 'Готівка' },
-                    { value: 'fop', label: 'ФОП' },
-                    { value: 'personal_card', label: 'Картка' },
-                  ]}
-                />
-              </div>
-            )}
-
-            {/* Тренер — завжди (desktop: dropdown) */}
-            <div className={styles.filterDesktopOnly}>
-              <FilterSelect
-                value={trainerFilter}
-                onChange={v => { setTrainerFilter(v); setPage(0) }}
-                placeholder="Тренер"
-                options={[
-                  { value: '', label: 'Всі тренери' },
-                  ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
-                ]}
-              />
-            </div>
-
-            {/* Дати — завжди */}
-            <div className={styles.filterDateWrap}>
-              <SalesDateRangePicker
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                onChangeFrom={handleDateFrom}
-                onChangeTo={handleDateTo}
-                onClear={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
-              />
-            </div>
-
-            {hasFilters && (
-              <button className={styles.filterClear} onClick={clearFilters}>
-                Скинути
-              </button>
-            )}
-          </div>
-
-          {/* Чипи фільтрів — лише mobile (desktop використовує FilterSelect вище) */}
-          {/* Метод оплати — тільки для Операції або Всі */}
-          {feedTab !== 'sales' && (
-            <div className={`filterChips ${styles.salesChipsMobile}`}>
-              {([
-                { value: '', label: 'Всі методи' },
-                { value: 'cash', label: 'Готівка' },
-                { value: 'fop', label: 'ФОП' },
-                { value: 'personal_card', label: 'Картка' },
-              ] as { value: typeof expenseMethod; label: string }[]).map(o => (
-                <button
-                  key={o.value || 'all'}
-                  className={['filterChip', expenseMethod === o.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
-                  onClick={() => setExpenseMethod(o.value)}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Тренер — завжди */}
-          <div className={`filterChips ${styles.salesChipsMobile}`}>
+            {/* Mobile-only: кнопка «Фільтри» відкриває bottom-sheet */}
             <button
-              className={['filterChip', !trainerFilter ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
-              onClick={() => { setTrainerFilter(''); setPage(0) }}
+              className={styles.filterToggleBtn}
+              onClick={() => setFiltersOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={filtersOpen}
             >
-              Всі тренери
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="2" y1="4" x2="14" y2="4"/><line x1="4" y1="8" x2="12" y2="8"/><line x1="6" y1="12" x2="10" y2="12"/>
+              </svg>
+              Фільтри
+              {activeFilterCount > 0 && (
+                <span className={styles.filterToggleBadge}>{activeFilterCount}</span>
+              )}
             </button>
-            {trainers.filter(t => t.is_active).map(t => (
-              <button
-                key={t.id}
-                className={['filterChip', trainerFilter === t.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
-                onClick={() => { setTrainerFilter(t.id); setPage(0) }}
-              >
-                {t.name}
-              </button>
-            ))}
+
+            {/* Розширені фільтри: desktop — у рядку (display:contents); mobile — у bottom-sheet */}
+            <div className={`${styles.advancedFilters} ${filtersOpen ? styles.advancedFiltersOpen : ''}`}>
+              <div className={styles.sheetOverlay} onClick={() => setFiltersOpen(false)} />
+              <div className={styles.sheetBody} role="dialog" aria-label="Фільтри" aria-modal="true">
+                <div className={styles.sheetHeader}>
+                  <span className={styles.sheetTitle}>Фільтри</span>
+                  <button className={styles.sheetClose} onClick={() => setFiltersOpen(false)} aria-label="Закрити">✕</button>
+                </div>
+
+                {/* Таби — у sheet на mobile (на desktop сховані тут, видимі вище) */}
+                <div className={`${styles.feedTabGroup} ${styles.tabsMobileSheet}`} role="tablist">
+                  {(['all', 'sales', 'expenses'] as FeedTab[]).map(tab => (
+                    <button
+                      key={tab}
+                      role="tab"
+                      aria-selected={feedTab === tab}
+                      className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
+                      onClick={() => handleTabChange(tab)}
+                    >
+                      {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Метод оплати — тільки для Операції або Всі (desktop: dropdown) */}
+                {feedTab !== 'sales' && (
+                  <div className={styles.filterDesktopOnly}>
+                    <FilterSelect
+                      value={expenseMethod}
+                      onChange={v => setExpenseMethod(v as typeof expenseMethod)}
+                      placeholder="Метод"
+                      options={[
+                        { value: '', label: 'Всі методи' },
+                        { value: 'cash', label: 'Готівка' },
+                        { value: 'fop', label: 'ФОП' },
+                        { value: 'personal_card', label: 'Картка' },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                {/* Тренер — завжди (desktop: dropdown) */}
+                <div className={styles.filterDesktopOnly}>
+                  <FilterSelect
+                    value={trainerFilter}
+                    onChange={v => { setTrainerFilter(v); setPage(0) }}
+                    placeholder="Тренер"
+                    options={[
+                      { value: '', label: 'Всі тренери' },
+                      ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
+                    ]}
+                  />
+                </div>
+
+                {/* Чипи методу — лише mobile (у sheet) */}
+                {feedTab !== 'sales' && (
+                  <div className={`filterChips ${styles.salesChipsMobile}`}>
+                    {([
+                      { value: '', label: 'Всі методи' },
+                      { value: 'cash', label: 'Готівка' },
+                      { value: 'fop', label: 'ФОП' },
+                      { value: 'personal_card', label: 'Картка' },
+                    ] as { value: typeof expenseMethod; label: string }[]).map(o => (
+                      <button
+                        key={o.value || 'all'}
+                        className={['filterChip', expenseMethod === o.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+                        onClick={() => setExpenseMethod(o.value)}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Чипи тренера — лише mobile (у sheet) */}
+                <div className={`filterChips ${styles.salesChipsMobile}`}>
+                  <button
+                    className={['filterChip', !trainerFilter ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+                    onClick={() => { setTrainerFilter(''); setPage(0) }}
+                  >
+                    Всі тренери
+                  </button>
+                  {trainers.filter(t => t.is_active).map(t => (
+                    <button
+                      key={t.id}
+                      className={['filterChip', trainerFilter === t.id ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
+                      onClick={() => { setTrainerFilter(t.id); setPage(0) }}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Дати — завжди */}
+                <div className={styles.filterDateWrap}>
+                  <SalesDateRangePicker
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                    onChangeFrom={handleDateFrom}
+                    onChangeTo={handleDateTo}
+                    onClear={() => { setDateFrom(''); setDateTo(''); setPage(0) }}
+                  />
+                </div>
+
+                {hasFilters && (
+                  <button className={styles.filterClear} onClick={clearFilters}>
+                    Скинути
+                  </button>
+                )}
+
+                {/* «Готово» — лише mobile (закрити sheet) */}
+                <button className={styles.sheetDone} onClick={() => setFiltersOpen(false)}>
+                  Готово
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
