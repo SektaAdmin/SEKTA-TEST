@@ -38,6 +38,34 @@ export function isoToYMD(input: string | Date): string {
   return toYMD(typeof input === 'string' ? new Date(input) : input)
 }
 
+/**
+ * Межі київської календарної доби (РРРР-ММ-ДД) як UTC-ISO-інстанти —
+ * для фільтрів `created_at` (timestamptz) у PostgREST/БД.
+ *
+ * ⚠️ Критично: голий рядок `${date}T00:00:00` PostgREST трактує як UTC, а не
+ * Europe/Kyiv. Влітку Київ = UTC+3, тож «київська доба» в UTC зсунута на −3 год.
+ * Без цього продаж, зроблений у Києві між 00:00–03:00, потрапляв у попередній
+ * день (і навпаки нічний — у наступний). DST враховано через Intl.
+ *
+ * @returns { from, to } — ISO-рядки з суфіксом Z (UTC), напіввідкритий
+ *   інтервал НЕ використовуємо: `to` = остання мить доби (.999), пара під
+ *   `.gte(from).lte(to)`.
+ */
+const KYIV_TZ = 'Europe/Kyiv'
+export function kyivDayUtcBounds(date: string): { from: string; to: string } {
+  // Зсув Europe/Kyiv від UTC (хв) для полудня цієї доби — стабільна точка,
+  // далеко від DST-перемикань о ~03:00, тож валідна для всієї доби.
+  const noonGuess = new Date(`${date}T12:00:00Z`)
+  const f = new Intl.DateTimeFormat('en-US', {
+    timeZone: KYIV_TZ, hour: '2-digit', hour12: false,
+  })
+  const kyivHour = Number(f.formatToParts(noonGuess).find(p => p.type === 'hour')!.value) % 24
+  const offsetH = kyivHour - 12 // напр. влітку 15−12 = +3
+  const fromMs = Date.parse(`${date}T00:00:00Z`) - offsetH * 3_600_000
+  const toMs = Date.parse(`${date}T23:59:59.999Z`) - offsetH * 3_600_000
+  return { from: new Date(fromMs).toISOString(), to: new Date(toMs).toISOString() }
+}
+
 // РРРР-ММ-ДД → Date (local midnight) або null. Split-based, без TZ-ризику new Date(ymd).
 export function parseYMD(ymd: string): Date | null {
   if (!ymd) return null

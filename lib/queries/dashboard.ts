@@ -1,5 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
 import { formatClientName } from '@/lib/formatters'
+import { kyivDayUtcBounds } from '@/lib/dateUtils'
 import { type DebtGroup } from '@/lib/dashboardReport'
 
 /* Запити, специфічні для операційного дашборду (/dashboard).
@@ -20,8 +21,7 @@ export async function getMoneyTotalsForDate(
   supabase: Db,
   date: string
 ): Promise<{ data: MoneyTotals; error: string | null }> {
-  const from = `${date}T00:00:00`
-  const to = `${date}T23:59:59.999`
+  const { from, to } = kyivDayUtcBounds(date)
 
   const [salesRes, expRes] = await Promise.all([
     supabase.from('sales').select('payment_method, price_paid').gte('created_at', from).lte('created_at', to),
@@ -142,13 +142,14 @@ export async function getCashIncomingByHolderForDate(
   supabase: Db,
   date: string
 ): Promise<{ data: Map<string, number>; error: string | null }> {
+  const { from, to } = kyivDayUtcBounds(date)
   const { data, error } = await supabase
     .from('sales')
     .select('cash_holder, price_paid')
     .eq('payment_method', 'cash')
     .not('cash_holder', 'is', null)
-    .gte('created_at', `${date}T00:00:00`)
-    .lte('created_at', `${date}T23:59:59.999`)
+    .gte('created_at', from)
+    .lte('created_at', to)
 
   const byHolder = new Map<string, number>()
   for (const s of (data ?? []) as { cash_holder: string; price_paid: number }[]) {
