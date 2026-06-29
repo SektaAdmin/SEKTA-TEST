@@ -22,6 +22,7 @@ playwright-report/
 .playwright/
 
 # External agent artifacts
+scratchpad/
 .codex/
 .impeccable/
 .codegraph/
