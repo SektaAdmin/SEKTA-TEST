@@ -523,6 +523,29 @@
   border-left: 3px solid var(--danger);
 }
 
+/* «Показати ще» — той самий словник, що .showMore у клієнтському кабінеті. */
+.loadMoreWrap {
+  padding: 12px 0 4px;
+}
+.loadMoreBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.loadMoreBtn:hover {
+  border-color: var(--border-hover);
+}
+.loadMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* ── Mobile overrides ────────────────────────────────────────── */
 @media (max-width: 640px) {
   .topbar {

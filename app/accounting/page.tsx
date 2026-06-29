@@ -4,8 +4,9 @@ import { supabase } from '@/lib/supabase'
 import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { type TrainerPayment } from '@/lib/queries/trainer-rates'
-import { listReconciliationFeed, type ReconSaleRow } from '@/lib/queries/accounting'
+import { getAccountingBalance, listReconciliationFeedPage, type ReconSaleRow, type FeedRow } from '@/lib/queries/accounting'
 import { useRefs } from '@/contexts/RefsContext'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
@@ -19,11 +20,9 @@ import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './accounting.module.css'
 
 type SaleRow = ReconSaleRow
+type FeedItem = FeedRow
 
-type FeedItem =
-  | { kind: 'sale'; data: SaleRow }
-  | { kind: 'expense'; data: StudioExpense }
-  | { kind: 'payment'; data: TrainerPayment }
+const PAGE_SIZE = 50
 
 function clientName(s: SaleRow): string {
   if (!s.clients) return '—'
@@ -52,13 +51,18 @@ function accountToFilter(accountKey: string): { method: PaymentMethod; holder: s
 
 export default function AccountingPage() {
   const { trainers } = useRefs()
+  const isMobile = useIsMobile()
   const [dateFrom,    setDateFrom]    = useState<string>('')
   const [dateTo,      setDateTo]      = useState(getToday)
   const [accountKey,  setAccountKey]  = useState<string>('fop')
-  const [sales,       setSales]       = useState<SaleRow[]>([])
-  const [expenses,    setExpenses]    = useState<StudioExpense[]>([])
-  const [trainerPayments, setTrainerPayments] = useState<TrainerPayment[]>([])
+  const [feed,        setFeed]        = useState<FeedItem[]>([])
+  const [feedCount,   setFeedCount]   = useState(0)
+  const [page,        setPage]        = useState(0)
+  const [income,      setIncome]      = useState(0)
+  const [outcome,     setOutcome]     = useState(0)
+  const [balance,     setBalance]     = useState(0)
   const [loading,     setLoading]     = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error,       setError]       = useState<string | null>(null)
   const [checked,     setChecked]     = useState<Set<string>>(new Set())
 
@@ -70,53 +74,47 @@ export default function AccountingPage() {
     })
   }
 
+  // Перша сторінка + повний баланс (баланс рахує БД за всю історію, не клієнт).
   const fetchData = useCallback(async (from: string, to: string, key: string) => {
     setLoading(true)
     setError(null)
+    setPage(0)
     const { method, holder } = accountToFilter(key)
 
-    const { sales, expenses, payments, error } = await listReconciliationFeed(supabase, { method, holder, from, to })
-    if (error) { setError(error); setLoading(false); return }
-    setSales(sales)
-    setExpenses(expenses)
-    setTrainerPayments(payments)
+    const [bal, feedRes] = await Promise.all([
+      getAccountingBalance(supabase, { method, holder }),
+      listReconciliationFeedPage(supabase, { method, holder, from, to }, 0, PAGE_SIZE),
+    ])
+    const err = bal.error ?? feedRes.error
+    if (err) { setError(err); setLoading(false); return }
+    setIncome(bal.income)
+    setOutcome(bal.outcome)
+    setBalance(bal.balance)
+    setFeed(feedRes.rows)
+    setFeedCount(feedRes.count)
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchData(dateFrom, dateTo, accountKey) }, [dateFrom, dateTo, accountKey, fetchData])
 
-  async function handleDeleteExpense(id: string) {
-    await deleteStudioExpense(supabase, id)
-    setExpenses(prev => prev.filter(e => e.id !== id))
+  async function loadMore() {
+    const next = page + 1
+    setLoadingMore(true)
+    const { method, holder } = accountToFilter(accountKey)
+    const feedRes = await listReconciliationFeedPage(supabase, { method, holder, from: dateFrom, to: dateTo }, next, PAGE_SIZE)
+    if (!feedRes.error) {
+      setFeed(prev => [...prev, ...feedRes.rows])
+      setFeedCount(feedRes.count)
+      setPage(next)
+    }
+    setLoadingMore(false)
   }
 
-  // Build unified sorted feed
-  const feed = useMemo<FeedItem[]>(() => {
-    const items: FeedItem[] = [
-      ...sales.map(s => ({ kind: 'sale' as const, data: s })),
-      ...expenses.map(e => ({ kind: 'expense' as const, data: e })),
-      ...trainerPayments.map(p => ({ kind: 'payment' as const, data: p })),
-    ]
-    items.sort((a, b) => b.data.created_at.localeCompare(a.data.created_at))
-    return items
-  }, [sales, expenses, trainerPayments])
-
-  // Balance calculation
-  const { income, outcome, balance } = useMemo(() => {
-    let income = 0
-    let outcome = 0
-    for (const item of feed) {
-      if (item.kind === 'sale') {
-        income += saleRevenue(item.data)
-      } else if (item.kind === 'expense') {
-        if (item.data.direction === 'expense') outcome += item.data.amount
-        else income += item.data.amount
-      } else {
-        outcome += Number(item.data.paid_amount)
-      }
-    }
-    return { income, outcome, balance: income - outcome }
-  }, [feed])
+  async function handleDeleteExpense(id: string) {
+    await deleteStudioExpense(supabase, id)
+    setFeed(prev => prev.filter(i => i.data.id !== id))
+    setFeedCount(c => Math.max(0, c - 1))
+  }
 
   const saleIds = useMemo(() => feed.filter(i => i.kind === 'sale').map(i => i.data.id), [feed])
   const allChecked = saleIds.length > 0 && saleIds.every(id => checked.has(id))
@@ -183,7 +181,8 @@ export default function AccountingPage() {
               <div className={styles.empty}>{MSG.empty.salesPeriod}</div>
             ) : (
               <>
-                {/* Desktop table */}
+                {/* Desktop table — рендеримо лише на desktop (інакше дублюємо DOM) */}
+                {!isMobile && (
                 <div className={`data-table-wrap ${styles.tableDesktop}`}>
                   <table className="data-table">
                     <thead>
@@ -376,8 +375,10 @@ export default function AccountingPage() {
                     </tbody>
                   </table>
                 </div>
+                )}
 
-                {/* Mobile cards */}
+                {/* Mobile cards — лише на mobile */}
+                {isMobile && (
                 <div className={styles.cardList}>
                   {feed.map(item => {
                     if (item.kind === 'sale') {
@@ -507,6 +508,15 @@ export default function AccountingPage() {
                     }
                   })}
                 </div>
+                )}
+
+                {feed.length < feedCount && (
+                  <div className={styles.loadMoreWrap}>
+                    <button className={styles.loadMoreBtn} onClick={loadMore} disabled={loadingMore}>
+                      {loadingMore ? 'Завантаження…' : `Показати ще (${feedCount - feed.length})`}
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>

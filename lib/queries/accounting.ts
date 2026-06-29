@@ -37,48 +37,79 @@ export interface ReconFilter {
   to: string
 }
 
-export async function listReconciliationFeed(
+/** Повний баланс рахунку за ВСЮ історію — рахує Postgres (`accounting_balance`),
+    клієнт не перебирає тисячі рядків. Незалежний від пагінації списку/дат. */
+export async function getAccountingBalance(
   supabase: Db,
-  { method, holder, from, to }: ReconFilter
-): Promise<{
-  sales: ReconSaleRow[]
-  expenses: StudioExpense[]
-  payments: TrainerPayment[]
-  error: string | null
-}> {
-  let salesQuery = reconSaleQuery(supabase)
-    .eq('payment_method', method)
-    .lte('created_at', kyivDayUtcBounds(to).to)
-    .order('created_at', { ascending: false })
-  if (from) salesQuery = salesQuery.gte('created_at', kyivDayUtcBounds(from).from)
-  if (holder) salesQuery = salesQuery.eq('cash_holder', holder)
-
-  let expQuery = supabase
-    .from('studio_expenses')
-    .select(RECON_EXP_SELECT)
-    .eq('payment_method', method)
-    .lte('created_at', kyivDayUtcBounds(to).to)
-    .order('created_at', { ascending: false })
-  if (from) expQuery = expQuery.gte('created_at', kyivDayUtcBounds(from).from)
-  if (holder) expQuery = expQuery.eq('cash_holder', holder)
-
-  let payQuery = supabase
-    .from('trainer_payments')
-    .select(RECON_PAY_SELECT)
-    .eq('payment_method', method)
-    .lte('payment_date', to)
-    .order('payment_date', { ascending: false })
-  if (from) payQuery = payQuery.gte('payment_date', from)
-  if (holder) payQuery = payQuery.eq('cash_holder', holder)
-
-  const [salesRes, expRes, payRes] = await Promise.all([salesQuery, expQuery, payQuery])
-
-  // expenses/payments: той самий набір колонок, що в модулях-власниках —
-  // union-звуження (direction/payment_method) до доменних StudioExpense/TrainerPayment.
+  { method, holder }: { method: PaymentMethod; holder: string | null }
+): Promise<{ income: number; outcome: number; balance: number; error: string | null }> {
+  const { data, error } = await supabase.rpc('accounting_balance', {
+    p_method: method,
+    p_holder: holder ?? undefined,
+  })
+  const row = (data as { income: number; outcome: number; balance: number }[] | null)?.[0]
   return {
-    sales: (salesRes.data ?? []) as ReconSaleRow[],
-    expenses: (expRes.data ?? []) as StudioExpense[],
-    payments: (payRes.data ?? []) as TrainerPayment[],
-    error: salesRes.error?.message ?? expRes.error?.message ?? payRes.error?.message ?? null,
+    income: row?.income ?? 0,
+    outcome: row?.outcome ?? 0,
+    balance: row?.balance ?? 0,
+    error: error?.message ?? null,
   }
+}
+
+/** Уніфікований feed-рядок зі збереженням типу-власника (kind-дискримінант). */
+export type FeedRow =
+  | { kind: 'sale'; data: ReconSaleRow }
+  | { kind: 'expense'; data: StudioExpense }
+  | { kind: 'payment'; data: TrainerPayment }
+
+/** Сторінка хронологічного feed (sales+expenses+payments). `accounting_feed_page`
+    повертає впорядковані (kind,id) поточної сторінки + total_count; повні рядки з
+    embed дотягуємо тут через .in('id', …) (лише ≤pageSize id на тип) і
+    перевпорядковуємо за порядком RPC. */
+export async function listReconciliationFeedPage(
+  supabase: Db,
+  { method, holder, from, to }: ReconFilter,
+  page: number,
+  pageSize: number
+): Promise<{ rows: FeedRow[]; count: number; error: string | null }> {
+  const { data: ids, error: feedErr } = await supabase.rpc('accounting_feed_page', {
+    p_method: method,
+    p_holder: holder ?? undefined,
+    p_from: from ? kyivDayUtcBounds(from).from : undefined,
+    p_to: to ? kyivDayUtcBounds(to).to : undefined,
+    p_limit: pageSize,
+    p_offset: page * pageSize,
+  })
+  if (feedErr) return { rows: [], count: 0, error: feedErr.message }
+
+  const idRows = (ids ?? []) as { kind: 'sale' | 'expense' | 'payment'; id: string; total_count: number }[]
+  const count = idRows[0]?.total_count ?? 0
+  if (idRows.length === 0) return { rows: [], count: 0, error: null }
+
+  const saleIds = idRows.filter(r => r.kind === 'sale').map(r => r.id)
+  const expIds = idRows.filter(r => r.kind === 'expense').map(r => r.id)
+  const payIds = idRows.filter(r => r.kind === 'payment').map(r => r.id)
+
+  const [salesRes, expRes, payRes] = await Promise.all([
+    saleIds.length ? reconSaleQuery(supabase).in('id', saleIds) : Promise.resolve({ data: [], error: null }),
+    expIds.length ? supabase.from('studio_expenses').select(RECON_EXP_SELECT).in('id', expIds) : Promise.resolve({ data: [], error: null }),
+    payIds.length ? supabase.from('trainer_payments').select(RECON_PAY_SELECT).in('id', payIds) : Promise.resolve({ data: [], error: null }),
+  ])
+
+  const error = salesRes.error?.message ?? expRes.error?.message ?? payRes.error?.message ?? null
+  if (error) return { rows: [], count, error }
+
+  // Мапи id→рядок, щоб відтворити точний порядок із RPC (single source of truth).
+  const saleMap = new Map((salesRes.data as ReconSaleRow[]).map(s => [s.id, s]))
+  const expMap = new Map((expRes.data as StudioExpense[]).map(e => [e.id, e]))
+  const payMap = new Map((payRes.data as TrainerPayment[]).map(p => [p.id, p]))
+
+  const rows: FeedRow[] = []
+  for (const r of idRows) {
+    if (r.kind === 'sale') { const d = saleMap.get(r.id); if (d) rows.push({ kind: 'sale', data: d }) }
+    else if (r.kind === 'expense') { const d = expMap.get(r.id); if (d) rows.push({ kind: 'expense', data: d }) }
+    else { const d = payMap.get(r.id); if (d) rows.push({ kind: 'payment', data: d }) }
+  }
+
+  return { rows, count, error: null }
 }

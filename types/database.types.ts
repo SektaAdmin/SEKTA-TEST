@@ -379,6 +379,7 @@ export type Database = {
           delivered: boolean
           delivered_at: string | null
           delivery_attempts: number
+          dispatched_at: string | null
           enrollment_id: string | null
           event_type: string
           id: string
@@ -389,6 +390,7 @@ export type Database = {
           notify: boolean
           old_status: string | null
           owner_trainer_id: string | null
+          request_id: number | null
           telegram_chat_id: number | null
         }
         Insert: {
@@ -402,6 +404,7 @@ export type Database = {
           delivered?: boolean
           delivered_at?: string | null
           delivery_attempts?: number
+          dispatched_at?: string | null
           enrollment_id?: string | null
           event_type: string
           id?: string
@@ -412,6 +415,7 @@ export type Database = {
           notify?: boolean
           old_status?: string | null
           owner_trainer_id?: string | null
+          request_id?: number | null
           telegram_chat_id?: number | null
         }
         Update: {
@@ -425,6 +429,7 @@ export type Database = {
           delivered?: boolean
           delivered_at?: string | null
           delivery_attempts?: number
+          dispatched_at?: string | null
           enrollment_id?: string | null
           event_type?: string
           id?: string
@@ -435,6 +440,7 @@ export type Database = {
           notify?: boolean
           old_status?: string | null
           owner_trainer_id?: string | null
+          request_id?: number | null
           telegram_chat_id?: number | null
         }
         Relationships: [
@@ -1135,6 +1141,29 @@ export type Database = {
       }
     }
     Functions: {
+      accounting_balance: {
+        Args: { p_holder?: string; p_method: string }
+        Returns: {
+          balance: number
+          income: number
+          outcome: number
+        }[]
+      }
+      accounting_feed_page: {
+        Args: {
+          p_from?: string
+          p_holder?: string
+          p_limit?: number
+          p_method: string
+          p_offset?: number
+          p_to?: string
+        }
+        Returns: {
+          id: string
+          kind: string
+          total_count: number
+        }[]
+      }
       auth_role: { Args: never; Returns: string }
       auto_close_classes: {
         Args: never
@@ -1279,6 +1308,17 @@ export type Database = {
         }[]
       }
       dispatch_telegram_notifications: { Args: never; Returns: undefined }
+      emit_enrollment_event: {
+        Args: {
+          p_class_id: string
+          p_client_id: string
+          p_enrollment_id: string
+          p_event_type: string
+          p_new_status: string
+          p_old_status: string
+        }
+        Returns: undefined
+      }
       generate_week: {
         Args: { p_start_date: string; p_weeks?: number }
         Returns: {
@@ -1319,15 +1359,26 @@ export type Database = {
         }[]
       }
       normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
-      render_enrollment_event_message: {
-        Args: {
-          p_actor_role: string
-          p_class_id: string
-          p_client_id: string
-          p_event_type: string
-        }
-        Returns: string
-      }
+      render_enrollment_event_message:
+        | {
+            Args: {
+              p_actor_role: string
+              p_class_id: string
+              p_client_id: string
+              p_event_type: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_actor_role: string
+              p_class_id: string
+              p_client_id: string
+              p_enrollment_id?: string
+              p_event_type: string
+            }
+            Returns: string
+          }
       restore_class: {
         Args: { p_class_id: string }
         Returns: {
