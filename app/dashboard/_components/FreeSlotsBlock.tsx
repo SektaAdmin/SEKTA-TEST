@@ -20,10 +20,12 @@ function minToStr(min: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
+type Window = { from: number; to: number }
+
 /** Вільні інтервали в межах робочого дня з урахуванням зайнятих. */
-function computeFreeWindows(busy: HallBusyInterval[]): { from: number; to: number }[] {
+function computeFreeWindows(busy: HallBusyInterval[]): Window[] {
   const sorted = [...busy].sort((a, b) => a.startMin - b.startMin)
-  const free: { from: number; to: number }[] = []
+  const free: Window[] = []
   let cursor = DAY_START
 
   for (const b of sorted) {
@@ -36,10 +38,55 @@ function computeFreeWindows(busy: HallBusyInterval[]): { from: number; to: numbe
   return free
 }
 
-function buildHallSlotsText(hallName: string, free: { from: number; to: number }[]): string {
-  if (free.length === 0) return `${hallName}: повністю зайнятий`
-  const slots = free.map(w => `${minToStr(w.from)}–${minToStr(w.to)}`).join(', ')
-  return `${hallName}: ${slots}`
+/** Покриття студії: проміжки, коли в студії хтось є (йде заняття з тренером).
+ * Поза цими проміжками персоналу немає → зал у оренду не пропонуємо. */
+function computeStudioCoverage(busy: HallBusyInterval[]): Window[] {
+  const staffed = busy
+    .filter(b => b.trainer != null)
+    .map(b => ({ from: Math.max(b.startMin, DAY_START), to: Math.min(b.endMin, DAY_END) }))
+    .filter(w => w.to > w.from)
+    .sort((a, b) => a.from - b.from)
+
+  const merged: Window[] = []
+  for (const w of staffed) {
+    const last = merged[merged.length - 1]
+    if (last && w.from <= last.to) last.to = Math.max(last.to, w.to)
+    else merged.push({ ...w })
+  }
+  return merged
+}
+
+/** Перетин вільних вікон залу з покриттям студії. */
+function intersectWindows(free: Window[], coverage: Window[]): Window[] {
+  const out: Window[] = []
+  for (const f of free) {
+    for (const c of coverage) {
+      const from = Math.max(f.from, c.from)
+      const to = Math.min(f.to, c.to)
+      if (to > from) out.push({ from, to })
+    }
+  }
+  return out
+}
+
+const SLOT_STEP = 60   // крок розбиття вікна на окремі слоти, хв
+
+/** Розбиває вільні вікна на погодинні слоти (неповний хвіст лишається як є). */
+function splitIntoHourSlots(free: Window[]): Window[] {
+  const slots: Window[] = []
+  for (const w of free) {
+    for (let from = w.from; from < w.to; from += SLOT_STEP) {
+      slots.push({ from, to: Math.min(from + SLOT_STEP, w.to) })
+    }
+  }
+  return slots
+}
+
+/** Текст для копіювання: кожен слот окремим рядком, щоб клієнт обрав і забронював. */
+function buildHallSlotsText(hallName: string, free: Window[]): string {
+  if (free.length === 0) return `${hallName}: немає вільних слотів`
+  const lines = splitIntoHourSlots(free).map(w => `з ${minToStr(w.from)} до ${minToStr(w.to)}`)
+  return `${hallName}:\n${lines.join('\n')}`
 }
 
 export function FreeSlotsBlock({ date }: { date: string }) {
@@ -55,14 +102,23 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }, [error])
 
   const byHall = useMemo(() => {
+    // Покриття студії = час, коли в студії хтось є (йде заняття з тренером).
+    // Зал можна здати в оренду лише в межах цього часу — є кому впустити/відкрити.
+    const coverage = computeStudioCoverage(busy)
+    if (coverage.length === 0) return []
+
     const activeHalls = halls.filter(h => h.is_active)
-    return activeHalls.map(h => {
-      const hallBusy = busy.filter(b => b.hall === h.name)
-      return { hall: h.name, free: computeFreeWindows(hallBusy) }
-    })
+    return activeHalls
+      .map(h => {
+        const hallBusy = busy.filter(b => b.hall === h.name)
+        const free = intersectWindows(computeFreeWindows(hallBusy), coverage)
+        return { hall: h.name, free }
+      })
+      // Зал без жодного вільного слоту в межах покриття не показуємо взагалі.
+      .filter(h => h.free.length > 0)
   }, [halls, busy])
 
-  function handleCopyHall(hallName: string, free: { from: number; to: number }[]) {
+  function handleCopyHall(hallName: string, free: Window[]) {
     const text = buildHallSlotsText(hallName, free)
     navigator.clipboard.writeText(text)
       .then(() => toast.success(MSG.toast.copied))
@@ -71,11 +127,15 @@ export function FreeSlotsBlock({ date }: { date: string }) {
 
   return (
     <section className={`${styles.block} ${styles.equalBlockSm}`}>
-      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні слоти залів (8:00–22:00)</h2>
+      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Оренда залу</h2>
 
       <div className={styles.scrollBody}>
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
       {error && <BlockError onRetry={refetch} />}
+
+      {!loading && !error && byHall.length === 0 && (
+        <div className={styles.empty}>Сьогодні студія без занять — оренду немає кому відкрити.</div>
+      )}
 
       {!loading && !error && byHall.map(h => (
         <div key={h.hall} className={styles.slotRow}>
@@ -92,13 +152,11 @@ export function FreeSlotsBlock({ date }: { date: string }) {
             </button>
           </div>
           <div className={styles.slotWindows}>
-            {h.free.length === 0
-              ? <span className={styles.slotFull}>Повністю зайнятий</span>
-              : h.free.map(w => (
-                  <span key={w.from} className={styles.slotChip}>
-                    {minToStr(w.from)}–{minToStr(w.to)}
-                  </span>
-                ))}
+            {splitIntoHourSlots(h.free).map(w => (
+              <span key={w.from} className={styles.slotChip}>
+                {minToStr(w.from)}–{minToStr(w.to)}
+              </span>
+            ))}
           </div>
         </div>
       ))}

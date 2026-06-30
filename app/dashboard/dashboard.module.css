@@ -347,11 +347,6 @@
   padding: 3px 8px;
 }
 
-.slotFull {
-  font-size: 13px;
-  color: var(--text-3);
-}
-
 /* ── Блок 4: готівка тренерів ──────────────────────────────── */
 .cashRow {
   display: flex;
