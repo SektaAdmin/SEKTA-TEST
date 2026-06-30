@@ -78,13 +78,13 @@ export default function AccountingPage() {
     ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
   ], [trainers])
 
-  // Баланси ВСІХ рахунків — за всю історію, незалежні від дат і вибраного фільтра.
+  // Баланси ВСІХ рахунків — за вибраний період (без меж дат = вся історія).
   // Рахує БД, по одному виклику на рахунок (паралельно).
-  const fetchBalances = useCallback(async (accounts: { value: string; label: string }[]) => {
+  const fetchBalances = useCallback(async (accounts: { value: string; label: string }[], from: string, to: string) => {
     const results = await Promise.all(
       accounts.map(async a => {
         const { method, holder } = accountToFilter(a.value)
-        const bal = await getAccountingBalance(supabase, { method, holder })
+        const bal = await getAccountingBalance(supabase, { method, holder, from, to })
         return { key: a.value, label: a.label, ...bal }
       })
     )
@@ -93,7 +93,7 @@ export default function AccountingPage() {
     setBalances(results)
   }, [])
 
-  useEffect(() => { fetchBalances(accountOptions) }, [accountOptions, fetchBalances])
+  useEffect(() => { fetchBalances(accountOptions, dateFrom, dateTo) }, [accountOptions, dateFrom, dateTo, fetchBalances])
 
   // Feed — лише для вибраного рахунку; фільтр впливає тільки на контент таблиці.
   const fetchFeed = useCallback(async (from: string, to: string, key: string) => {

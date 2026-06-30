@@ -47,15 +47,18 @@ export interface AccountBalance {
   error: string | null
 }
 
-/** Повний баланс рахунку за ВСЮ історію — рахує Postgres (`accounting_balance`),
-    клієнт не перебирає тисячі рядків. Незалежний від пагінації списку/дат. */
+/** Баланс рахунку за вибраний період — рахує Postgres (`accounting_balance`),
+    клієнт не перебирає тисячі рядків. Без меж дат (from/to = '') — за всю історію.
+    Межі — київська доба (як у feed), щоб баланс і список збігалися. */
 export async function getAccountingBalance(
   supabase: Db,
-  { method, holder }: { method: PaymentMethod; holder: string | null }
+  { method, holder, from, to }: { method: PaymentMethod; holder: string | null; from?: string; to?: string }
 ): Promise<{ income: number; outcome: number; balance: number; error: string | null }> {
   const { data, error } = await supabase.rpc('accounting_balance', {
     p_method: method,
     p_holder: holder ?? undefined,
+    p_from: from ? kyivDayUtcBounds(from).from : undefined,
+    p_to: to ? kyivDayUtcBounds(to).to : undefined,
   })
   const row = (data as { income: number; outcome: number; balance: number }[] | null)?.[0]
   return {
