@@ -86,6 +86,7 @@ function isCovered(from: number, to: number, coverage: Window[]): boolean {
 
 export type UncoveredRental = {
   hall: string
+  clientName: string | null
   startMin: number
   endMin: number
 }
@@ -103,7 +104,7 @@ function computeUncoveredRentals(busy: HallBusyInterval[], coverage: Window[]): 
     const to = Math.min(r.endMin, DAY_END)
     if (to <= from) continue
     if (isCovered(from, to, coverage)) continue
-    out.push({ hall: r.hall, startMin: from, endMin: to })
+    out.push({ hall: r.hall, clientName: r.clientName, startMin: from, endMin: to })
   }
   return out.sort((a, b) => a.startMin - b.startMin)
 }
@@ -146,7 +147,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   const { data: busy, loading, error, refetch } = useListQuery<HallBusyInterval>(
     () => listHallBusyIntervalsForDate(supabase, date),
     [date],
-    { realtime: ['classes'] }
+    { realtime: ['classes', 'enrollments'] }
   )
 
   useEffect(() => {
@@ -189,19 +190,16 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
       {error && <BlockError onRetry={refetch} />}
 
-      {!loading && !error && uncovered.length > 0 && (
-        <div className={styles.slotAlert} role="alert">
+      {!loading && !error && uncovered.map((u, i) => (
+        <div key={i} className={styles.slotAlert} role="alert">
           <WarnTriangleIcon className={styles.slotAlertIcon} />
           <div className={styles.slotAlertBody}>
-            <span className={styles.slotAlertTitle}>Студію нема кому відкрити</span>
-            {uncovered.map((u, i) => (
-              <span key={i} className={styles.slotAlertText}>
-                Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}: у цей час немає заняття з тренером.
-              </span>
-            ))}
+            <span className={styles.slotAlertTitle}>{u.clientName ?? 'Студію нема кому відкрити'}</span>
+            <span className={styles.slotAlertText}>Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}</span>
+            <span className={styles.slotAlertText}>У цей час немає заняття з тренером.</span>
           </div>
         </div>
-      )}
+      ))}
 
       {!loading && !error && byHall.length === 0 && (
         <div className={styles.empty}>Сьогодні студія без занять — оренду немає кому відкрити.</div>

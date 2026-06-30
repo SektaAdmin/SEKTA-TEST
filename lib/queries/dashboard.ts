@@ -62,6 +62,7 @@ export type HallBusyInterval = {
   trainer: string | null
   title: string | null
   ticketType: string
+  clientName: string | null   // клієнт активного запису (для оренди — хто забронював)
   startMin: number   // хвилини від 00:00 (локально)
   endMin: number
   startsAt: string   // ISO
@@ -84,27 +85,33 @@ export async function listHallBusyIntervalsForDate(
     ticket_type: string
     halls: { name: string } | null
     trainers: { name: string } | null
+    enrollments: { status: string; clients: { first_name: string | null; last_name: string | null } | null }[]
   }
 
   const { data, error } = await supabase
     .from('classes')
-    .select('starts_at, duration_min, title, ticket_type, halls(name), trainers(name)')
+    .select('starts_at, duration_min, title, ticket_type, halls(name), trainers(name), enrollments(status, clients(first_name, last_name))')
     .gte('starts_at', dayStart)
     .lte('starts_at', dayEnd)
     .eq('is_cancelled', false)
     .order('starts_at', { ascending: true })
     .returns<ClassRow[]>()
 
+  const ACTIVE_ENROLL = new Set(['enrolled', 'attended', 'waitlist'])
   const intervals: HallBusyInterval[] = (data ?? [])
     .filter(c => c.halls?.name)
     .map(c => {
       const d = new Date(c.starts_at)
       const startMin = d.getHours() * 60 + d.getMinutes()
+      // Ім'я клієнта активного запису (оренду бронює один клієнт).
+      const active = (c.enrollments ?? []).find(e => ACTIVE_ENROLL.has(e.status) && e.clients)
+      const clientName = active?.clients ? formatClientName(active.clients) : null
       return {
         hall: c.halls!.name,
         trainer: c.trainers?.name ?? null,
         title: c.title,
         ticketType: c.ticket_type,
+        clientName,
         startMin,
         endMin: startMin + c.duration_min,
         startsAt: c.starts_at,
