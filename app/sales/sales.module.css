@@ -65,10 +65,9 @@
   font-family: var(--font);
   outline: none;
   width: 200px;
-  transition: border-color 0.12s, transform 0.12s ease-out;
-  transform-origin: left;
+  transition: border-color 0.12s;
 }
-.filterSearchInput:focus { border-color: var(--accent); transform: scaleX(1.2); }
+.filterSearchInput:focus { border-color: var(--accent); }
 .filterSearchInput::placeholder { color: var(--text-3); }
 
 .filterClear {
@@ -371,7 +370,7 @@
     box-sizing: border-box;
     transition: border-color 0.12s;
   }
-  .filterSearchInput:focus { width: 100%; transform: none; }
+  .filterSearchInput:focus { width: 100%; }
 
   /* Таби: на desktop у рядку фільтрів, тут ховаємо (живуть у sheet) */
   .tabsDesktopOnly { display: none; }
