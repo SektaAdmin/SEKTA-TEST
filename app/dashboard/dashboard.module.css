@@ -211,43 +211,7 @@
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
-/* ── Блок: два списки боржників (по сесіях + по депозиту) ───── */
-/* Один слот сітки, поділений на дві колонки порівну; кожна скролить власне тіло. */
-.debtorLists {
-  flex-direction: row;
-  gap: var(--space-xl);
-}
-
-.debtorSub {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.debtorSub + .debtorSub {
-  border-left: 1px solid var(--border);
-  padding-left: var(--space-xl);
-}
-
-.debtorSub .blockTitle {
-  flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .debtorLists {
-    flex-direction: column;
-  }
-  .debtorSub + .debtorSub {
-    border-left: none;
-    padding-left: 0;
-    border-top: 1px solid var(--border);
-    padding-top: var(--space-md);
-  }
-}
-
-/* Таблиця боржників по сесіях: рядок = клієнт, колонки = типи занять. */
+/* Таблиця боржників: рядок = клієнт, колонки = типи занять + Депозит (₴). */
 .debtTable {
   width: 100%;
   border-collapse: collapse;

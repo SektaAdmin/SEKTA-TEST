@@ -25,59 +25,79 @@ export async function listNegativeBalanceClients(
   return { data: rows, error: error?.message ?? null }
 }
 
-export type SessionDebtorColumn = { ticketType: string; label: string }
+/** Колонка таблиці боржників. money=true → грошова (₴, formatMoney);
+    інакше — кількість занять по типу квитка. */
+export type SessionDebtorColumn = { key: string; label: string; money: boolean }
 export type SessionDebtorRow = {
   clientId: string
   name: string
-  /** ticket_type → від'ємний залишок занять (лише типи, де клієнт у мінусі). */
+  /** колонка (ticket_type або 'deposit') → від'ємний баланс. */
   balances: Record<string, number>
 }
 export type SessionDebtorsTable = {
-  columns: SessionDebtorColumn[]   // лише типи, де є хоч один боржник
+  columns: SessionDebtorColumn[]   // типи занять з боржниками + 'deposit' (якщо є)
   rows: SessionDebtorRow[]
 }
 
-/** Усі боржники по сесіях (будь-який тип квитка, не лише сьогодні) у вигляді
-   таблиці: рядок = клієнт, колонки = типи занять (лише ті, де є боржники).
-   Залишок — кількість занять (integer), знак мінус. */
+const DEPOSIT_KEY = 'deposit'
+
+/** Усі боржники у вигляді однієї таблиці: рядок = клієнт (будь-який мінус —
+   по сесіях АБО по депозиту), колонки = типи занять (лише з боржниками) +
+   окрема колонка «Депозит» (₴). Залишок занять — integer (кількість), депозит — ₴. */
 export async function listSessionDebtorsAll(
   supabase: Db
 ): Promise<{ data: SessionDebtorsTable; error: string | null }> {
-  const { data, error } = await supabase
-    .from('client_session_balances')
-    .select('ticket_type, sessions_balance, clients(id, first_name, last_name)')
-    .lt('sessions_balance', 0)
-    .order('ticket_type', { ascending: true })
+  const [sessRes, depRes] = await Promise.all([
+    supabase
+      .from('client_session_balances')
+      .select('ticket_type, sessions_balance, clients(id, first_name, last_name)')
+      .lt('sessions_balance', 0)
+      .order('ticket_type', { ascending: true }),
+    listNegativeBalanceClients(supabase),
+  ])
+  const error = sessRes.error?.message ?? depRes.error ?? null
 
-  type Row = {
+  type SessRow = {
     ticket_type: string
     sessions_balance: number | null
     clients: { id: string; first_name: string | null; last_name: string | null } | null
   }
 
-  const colSet = new Set<string>()
+  const typeCols = new Set<string>()
   const byClient = new Map<string, SessionDebtorRow>()
-  for (const r of ((data ?? []) as Row[])) {
-    if (!r.clients) continue
-    colSet.add(r.ticket_type)
-    let row = byClient.get(r.clients.id)
+  const ensureRow = (id: string, name: string) => {
+    let row = byClient.get(id)
     if (!row) {
-      row = { clientId: r.clients.id, name: formatClientName(r.clients), balances: {} }
-      byClient.set(r.clients.id, row)
+      row = { clientId: id, name, balances: {} }
+      byClient.set(id, row)
     }
-    row.balances[r.ticket_type] = r.sessions_balance ?? 0
+    return row
   }
 
-  const columns = Array.from(colSet)
+  for (const r of ((sessRes.data ?? []) as SessRow[])) {
+    if (!r.clients) continue
+    typeCols.add(r.ticket_type)
+    ensureRow(r.clients.id, formatClientName(r.clients)).balances[r.ticket_type] = r.sessions_balance ?? 0
+  }
+
+  let hasDeposit = false
+  for (const r of depRes.data) {
+    hasDeposit = true
+    ensureRow(r.id, r.name).balances[DEPOSIT_KEY] = r.balance
+  }
+
+  const columns: SessionDebtorColumn[] = Array.from(typeCols)
     .sort()
-    .map(t => ({ ticketType: t, label: ticketTypeShortLabel(t) }))
-  // Найбільші боржники першими (за сумою мінусів по всіх типах).
+    .map(t => ({ key: t, label: ticketTypeShortLabel(t), money: false }))
+  if (hasDeposit) columns.push({ key: DEPOSIT_KEY, label: 'Депозит', money: true })
+
+  // Найбільші боржники першими (за сумою всіх від'ємних балансів).
   const rows = Array.from(byClient.values()).sort((a, b) => {
     const sum = (r: SessionDebtorRow) => Object.values(r.balances).reduce((s, v) => s + v, 0)
     return sum(a) - sum(b)
   })
 
-  return { data: { columns, rows }, error: error?.message ?? null }
+  return { data: { columns, rows }, error }
 }
 
 export type HallBusyInterval = {
