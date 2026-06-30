@@ -211,9 +211,12 @@
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
-/* Таблиця боржників: рядок = клієнт, колонки = типи занять + Депозит (₴). */
+/* Таблиця боржників: рядок = клієнт, колонки = типи занять + Депозит (₴).
+   table-layout:fixed → числові колонки стоять у рівних вертикальних доріжках,
+   не «стрибають» від кількості цифр; «Клієнт» поглинає весь залишок. */
 .debtTable {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -228,12 +231,12 @@
   text-transform: uppercase;
   color: var(--text-3);
   text-align: right;
-  padding: 0 0 var(--space-xs) var(--space-md);
+  padding: 0 var(--space-sm) var(--space-xs);
   border-bottom: 1px solid var(--border);
 }
 
 .debtTable td {
-  padding: var(--space-xs) 0 var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
   border-bottom: 1px solid var(--border);
   text-align: right;
   color: var(--text-2);
@@ -244,14 +247,29 @@
   border-bottom: none;
 }
 
+/* «Клієнт» — гумова колонка: width:auto + table-layout:fixed → забирає весь
+   залишок після фіксованих числових колонок. Текст обрізаємо, не переносимо. */
 .debtTableName {
   text-align: left !important;
   padding-left: 0 !important;
   color: var(--text) !important;
-  width: 100%;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* Числова колонка-заняття: фіксована вузька доріжка під tabular-nums. */
 .debtTableCol {
+  width: 56px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* «Депозит» (₴) — інша одиниця (гроші, не сесії), тож відокремлюємо лівим
+   розділювачем і ширшою доріжкою під суми з ₴. */
+.debtTableMoney {
+  width: 84px;
+  border-left: 1px solid var(--border);
+  padding-left: var(--space-md) !important;
   font-variant-numeric: tabular-nums;
 }
 

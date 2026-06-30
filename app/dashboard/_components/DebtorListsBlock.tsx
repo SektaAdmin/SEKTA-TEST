@@ -40,7 +40,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
               <tr>
                 <th className={styles.debtTableName}>Клієнт</th>
                 {table.columns.map(c => (
-                  <th key={c.key} className={styles.debtTableCol}>{c.label}</th>
+                  <th key={c.key} className={c.money ? styles.debtTableMoney : styles.debtTableCol}>{c.label}</th>
                 ))}
               </tr>
             </thead>
@@ -51,7 +51,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
                   {table.columns.map(c => {
                     const v = r.balances[c.key]
                     return (
-                      <td key={c.key} className={styles.debtTableCol}>
+                      <td key={c.key} className={c.money ? styles.debtTableMoney : styles.debtTableCol}>
                         {v == null
                           ? <span className={styles.debtTableDash}>—</span>
                           : <span className="balance-warn">{c.money ? formatMoney(v) : v}</span>}
