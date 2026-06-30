@@ -17,10 +17,10 @@ import { useRealtime } from '@/lib/useRealtime'
  * екрана (visibilitychange). Обидва — як у `useListQuery`.
  *
  * @example
- *   const { data: t, loading, error } = useAsync(
- *     () => getMoneyTotalsForDate(supabase, date),
- *     [date],
- *     { realtime: ['sales', 'studio_expenses'] }
+ *   const { data, loading, error } = useAsync(
+ *     () => listNegativeBalanceClients(supabase),
+ *     [],
+ *     { realtime: ['balance_transactions'] }
  *   )
  */
 export function useAsync<T>(

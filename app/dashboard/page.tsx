@@ -3,12 +3,10 @@ import { useEffect, useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { toYMD, DOW_LABELS_FULL, MONTHS_UK_FULL } from '@/lib/dateUtils'
-import { MoneyCardsBlock } from './_components/MoneyCardsBlock'
 import { AlertCardsBlock } from './_components/AlertCardsBlock'
 import { SessionDebtBlock } from './_components/SessionDebtBlock'
 import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
 import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
-import { TrainerCashBlock } from './_components/TrainerCashBlock'
 import styles from './dashboard.module.css'
 
 export default function DashboardPage() {
@@ -39,35 +37,21 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          {/* Гроші за день + алерти — дві окремі групи з мітками. На mobile сховано (.desktopOnly). */}
-          <div className={`${styles.statGroups} ${styles.desktopOnly}`}>
-            <div className={styles.statGroup}>
-              <span className={styles.groupLabel}>Гроші сьогодні</span>
-              <div className={styles.groupCards}>
-                <MoneyCardsBlock date={today} />
-              </div>
-            </div>
-            <div className={styles.statGroupDivider} />
-            <div className={styles.statGroup}>
+          {/* Ряд 1: оренда залу (вільні слоти) + вільні місця на заняттях */}
+          <div className={styles.twoCol}>
+            <FreeSlotsBlock date={today} />
+            <FreeSpacesBlock date={today} />
+          </div>
+
+          {/* Ряд 2: алерт-картки (мінус по депозиту + боржники) + список боржників сьогодні */}
+          <div className={styles.twoCol}>
+            <section className={`${styles.block} ${styles.alertBlock}`}>
               <span className={styles.groupLabel}>Потребує уваги</span>
               <div className={styles.groupCards}>
                 <AlertCardsBlock date={today} />
               </div>
-            </div>
-          </div>
-
-          {/* Боржники по сесіях + вільні місця на заняттях */}
-          <div className={styles.twoCol}>
+            </section>
             <SessionDebtBlock date={today} />
-            <FreeSpacesBlock date={today} />
-          </div>
-
-          {/* Розклад: вільні слоти залів + готівка тренерів. Готівка тренерів на mobile сховано (.desktopOnly). */}
-          <div className={styles.twoCol}>
-            <FreeSlotsBlock date={today} />
-            <div className={styles.desktopOnly}>
-              <TrainerCashBlock date={today} />
-            </div>
           </div>
         </div>
       </main>
