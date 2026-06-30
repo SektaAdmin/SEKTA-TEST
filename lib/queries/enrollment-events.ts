@@ -26,6 +26,7 @@ export interface ListEnrollmentEventsParams {
   dateFrom?: string
   dateTo?: string
   trainerId?: string // owner_trainer_id
+  clientId?: string
   actorRole?: string
   eventType?: string
   delivered?: DeliveredFilter
@@ -33,13 +34,14 @@ export interface ListEnrollmentEventsParams {
 
 export async function listEnrollmentEvents(
   supabase: Db,
-  { page, pageSize, dateFrom, dateTo, trainerId, actorRole, eventType, delivered }: ListEnrollmentEventsParams
+  { page, pageSize, dateFrom, dateTo, trainerId, clientId, actorRole, eventType, delivered }: ListEnrollmentEventsParams
 ): Promise<{ data: AuditEventRow[]; count: number; error: string | null }> {
   let query = auditEventsQuery(supabase)
 
   if (dateFrom) query = query.gte('created_at', dateFrom)
   if (dateTo) query = query.lte('created_at', dateTo)
   if (trainerId) query = query.eq('owner_trainer_id', trainerId)
+  if (clientId) query = query.eq('client_id', clientId)
   if (actorRole) query = query.eq('actor_role', actorRole)
   if (eventType) query = query.eq('event_type', eventType)
   if (delivered === 'delivered') query = query.eq('notify', true).eq('delivered', true)

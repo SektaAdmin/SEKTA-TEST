@@ -8,6 +8,7 @@ import { useListQuery } from '@/hooks/useListQuery'
 import { useRefs } from '@/contexts/RefsContext'
 import DatePicker from '@/components/DatePicker'
 import FilterSelect from '@/components/ui/FilterSelect'
+import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import { formatDate, formatTime } from '@/lib/formatters'
 import styles from './audit.module.css'
 
@@ -46,11 +47,13 @@ export default function AuditPage() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [filterTrainer, setFilterTrainer] = useState('')
+  const [filterClient, setFilterClient] = useState('')
+  const [clientKey, setClientKey] = useState(0)
   const [filterActor, setFilterActor] = useState('')
   const [filterEvent, setFilterEvent] = useState('')
   const [filterDelivered, setFilterDelivered] = useState<DeliveredFilter>('')
 
-  const hasFilters = dateFrom || dateTo || filterTrainer || filterActor || filterEvent || filterDelivered
+  const hasFilters = dateFrom || dateTo || filterTrainer || filterClient || filterActor || filterEvent || filterDelivered
 
   const { data, total, loading, error } = useListQuery<AuditEventRow>(
     () => listEnrollmentEvents(supabase, {
@@ -59,11 +62,12 @@ export default function AuditPage() {
       dateFrom: dateFrom ? new Date(dateFrom).toISOString() : undefined,
       dateTo: dateTo ? new Date(dateTo + 'T23:59:59').toISOString() : undefined,
       trainerId: filterTrainer || undefined,
+      clientId: filterClient || undefined,
       actorRole: filterActor || undefined,
       eventType: filterEvent || undefined,
       delivered: filterDelivered || undefined,
     }),
-    [page, dateFrom, dateTo, filterTrainer, filterActor, filterEvent, filterDelivered]
+    [page, dateFrom, dateTo, filterTrainer, filterClient, filterActor, filterEvent, filterDelivered]
   )
 
   useEffect(() => { if (error) toast.error('Помилка завантаження журналу') }, [error])
@@ -72,8 +76,9 @@ export default function AuditPage() {
 
   function clearFilters() {
     setDateFrom(''); setDateTo('')
-    setFilterTrainer(''); setFilterActor(''); setFilterEvent('')
+    setFilterTrainer(''); setFilterClient(''); setFilterActor(''); setFilterEvent('')
     setFilterDelivered('')
+    setClientKey(k => k + 1) // ремонт ClientSearchCombobox, щоб очистити видимий текст
     setPage(0)
   }
 
@@ -144,6 +149,13 @@ export default function AuditPage() {
         </div>
 
         <div className={styles.filterBar}>
+          <div className={styles.clientSearch}>
+            <ClientSearchCombobox
+              key={clientKey}
+              onSelect={c => resetPage(() => setFilterClient(c.id))}
+              onClear={() => resetPage(() => setFilterClient(''))}
+            />
+          </div>
           <DatePicker value={dateFrom} onChange={v => resetPage(() => setDateFrom(v))} placeholder="Від" />
           <DatePicker value={dateTo}   onChange={v => resetPage(() => setDateTo(v))}   placeholder="До" />
           <FilterSelect
