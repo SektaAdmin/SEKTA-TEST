@@ -85,19 +85,15 @@
   padding: 20px;
 }
 
-/* Рівні за висотою блоки зі скролом тіла (боржники / вільні місця).
-   Фіксована висота — щоб обидві колонки в ряду збігались, а довгі списки скролились. */
+/* Рівні за висотою блоки зі скролом тіла (боржники / вільні місця / оренда / потребує уваги).
+   Висота прив'язана до viewport: 2 ряди по 2 блоки мають вміститись на екран MacBook
+   без загального скролу сторінки — довгі списки скролять всередині (.scrollBody).
+   Резерв 150px = хедер (~68px) + padding .body (20+32px) + gap між рядами (24px). */
 .equalBlock {
   display: flex;
   flex-direction: column;
-  height: var(--dashboard-block-h, 520px);
-}
-
-/* Менша фіксована висота для нижнього ряду (слоти залів / готівка). */
-.equalBlockSm {
-  display: flex;
-  flex-direction: column;
-  height: var(--dashboard-block-sm-h, 320px);
+  height: var(--dashboard-block-h, calc((100vh - 150px) / 2));
+  min-height: 260px;
 }
 
 .scrollBody {
@@ -117,11 +113,8 @@
 @media (max-width: 640px) {
   .equalBlock {
     height: auto;
+    min-height: 0;
     max-height: 70vh;
-  }
-  .equalBlockSm {
-    height: auto;
-    max-height: 50vh;
   }
 }
 

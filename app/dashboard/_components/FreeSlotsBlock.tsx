@@ -183,7 +183,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }
 
   return (
-    <section className={`${styles.block} ${styles.equalBlockSm}`}>
+    <section className={`${styles.block} ${styles.equalBlock}`}>
       <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Оренда залу</h2>
 
       <div className={styles.scrollBody}>

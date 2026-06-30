@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
           {/* Ряд 2: алерт-картки (мінус по депозиту + боржники) + список боржників сьогодні */}
           <div className={styles.twoCol}>
-            <section className={`${styles.block} ${styles.alertBlock}`}>
+            <section className={`${styles.block} ${styles.equalBlock} ${styles.alertBlock}`}>
               <span className={styles.groupLabel}>Потребує уваги</span>
               <div className={styles.groupCards}>
                 <AlertCardsBlock date={today} />
