@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { type TrainerPayment } from '@/lib/queries/trainer-rates'
-import { getAccountingBalance, listReconciliationFeedPage, type ReconSaleRow, type FeedRow } from '@/lib/queries/accounting'
+import { getAccountingBalance, listReconciliationFeedPage, type ReconSaleRow, type FeedRow, type AccountBalance } from '@/lib/queries/accounting'
 import { useRefs } from '@/contexts/RefsContext'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import Sidebar from '@/components/Sidebar'
@@ -58,9 +58,7 @@ export default function AccountingPage() {
   const [feed,        setFeed]        = useState<FeedItem[]>([])
   const [feedCount,   setFeedCount]   = useState(0)
   const [page,        setPage]        = useState(0)
-  const [income,      setIncome]      = useState(0)
-  const [outcome,     setOutcome]     = useState(0)
-  const [balance,     setBalance]     = useState(0)
+  const [balances,    setBalances]    = useState<AccountBalance[]>([])
   const [loading,     setLoading]     = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error,       setError]       = useState<string | null>(null)
@@ -74,28 +72,43 @@ export default function AccountingPage() {
     })
   }
 
-  // Перша сторінка + повний баланс (баланс рахує БД за всю історію, не клієнт).
-  const fetchData = useCallback(async (from: string, to: string, key: string) => {
+  const accountOptions = useMemo(() => [
+    { value: 'fop',           label: 'ФОП' },
+    { value: 'personal_card', label: 'Картка' },
+    ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
+  ], [trainers])
+
+  // Баланси ВСІХ рахунків — за всю історію, незалежні від дат і вибраного фільтра.
+  // Рахує БД, по одному виклику на рахунок (паралельно).
+  const fetchBalances = useCallback(async (accounts: { value: string; label: string }[]) => {
+    const results = await Promise.all(
+      accounts.map(async a => {
+        const { method, holder } = accountToFilter(a.value)
+        const bal = await getAccountingBalance(supabase, { method, holder })
+        return { key: a.value, label: a.label, ...bal }
+      })
+    )
+    const failed = results.find(r => r.error)
+    if (failed?.error) { setError(failed.error); return }
+    setBalances(results)
+  }, [])
+
+  useEffect(() => { fetchBalances(accountOptions) }, [accountOptions, fetchBalances])
+
+  // Feed — лише для вибраного рахунку; фільтр впливає тільки на контент таблиці.
+  const fetchFeed = useCallback(async (from: string, to: string, key: string) => {
     setLoading(true)
     setError(null)
     setPage(0)
     const { method, holder } = accountToFilter(key)
-
-    const [bal, feedRes] = await Promise.all([
-      getAccountingBalance(supabase, { method, holder }),
-      listReconciliationFeedPage(supabase, { method, holder, from, to }, 0, PAGE_SIZE),
-    ])
-    const err = bal.error ?? feedRes.error
-    if (err) { setError(err); setLoading(false); return }
-    setIncome(bal.income)
-    setOutcome(bal.outcome)
-    setBalance(bal.balance)
+    const feedRes = await listReconciliationFeedPage(supabase, { method, holder, from, to }, 0, PAGE_SIZE)
+    if (feedRes.error) { setError(feedRes.error); setLoading(false); return }
     setFeed(feedRes.rows)
     setFeedCount(feedRes.count)
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchData(dateFrom, dateTo, accountKey) }, [dateFrom, dateTo, accountKey, fetchData])
+  useEffect(() => { fetchFeed(dateFrom, dateTo, accountKey) }, [dateFrom, dateTo, accountKey, fetchFeed])
 
   async function loadMore() {
     const next = page + 1
@@ -124,12 +137,6 @@ export default function AccountingPage() {
     if (allChecked) setChecked(new Set())
     else setChecked(new Set(saleIds))
   }
-
-  const accountOptions = [
-    { value: 'fop',           label: 'ФОП' },
-    { value: 'personal_card', label: 'Картка' },
-    ...trainers.filter(t => t.is_active).map(t => ({ value: t.id, label: t.name })),
-  ]
 
   return (
     <div className="page-layout">
@@ -162,13 +169,29 @@ export default function AccountingPage() {
         </div>
 
         <div className="page-body">
-          {!loading && !error && (
+          {!error && balances.length > 0 && (
             <div className={styles.balanceBlock}>
-              <div className={`${styles.balanceBig} ${balance > 0 ? styles.balanceBigPos : balance < 0 ? styles.balanceBigNeg : ''}`}>{formatMoney(balance)}</div>
-              <div className={styles.balanceMeta}>
-                <span>Надходження <strong>{formatMoney(income)}</strong></span>
-                <span>Витрати <strong>{formatMoney(outcome)}</strong></span>
-              </div>
+              {balances.map(b => {
+                const active = b.key === accountKey
+                return (
+                  <button
+                    key={b.key}
+                    type="button"
+                    className={`${styles.balanceCard} ${active ? styles.balanceCardActive : ''}`}
+                    onClick={() => setAccountKey(b.key)}
+                    aria-pressed={active}
+                  >
+                    <span className={styles.balanceCardLabel}>{b.label}</span>
+                    <span className={`${styles.balanceCardVal} ${b.balance > 0 ? styles.balanceBigPos : b.balance < 0 ? styles.balanceBigNeg : ''}`}>
+                      {formatMoney(b.balance)}
+                    </span>
+                    <span className={styles.balanceCardMeta}>
+                      <span>+{formatMoney(b.income)}</span>
+                      <span>−{formatMoney(b.outcome)}</span>
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           )}
 

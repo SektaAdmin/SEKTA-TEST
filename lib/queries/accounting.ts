@@ -37,6 +37,16 @@ export interface ReconFilter {
   to: string
 }
 
+/** Баланс одного рахунку з ідентифікатором/назвою — для відображення блоком. */
+export interface AccountBalance {
+  key: string
+  label: string
+  income: number
+  outcome: number
+  balance: number
+  error: string | null
+}
+
 /** Повний баланс рахунку за ВСЮ історію — рахує Postgres (`accounting_balance`),
     клієнт не перебирає тисячі рядків. Незалежний від пагінації списку/дат. */
 export async function getAccountingBalance(

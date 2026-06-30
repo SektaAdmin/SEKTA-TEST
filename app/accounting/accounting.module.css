@@ -196,35 +196,56 @@
 
 /* ── Balance block ───────────────────────────────────────────── */
 .balanceBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 28px var(--topbar-px) 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 20px var(--topbar-px) 24px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
-.balanceBig {
-  font-size: 42px;
+.balanceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+.balanceCard:hover { border-color: var(--border-hover); }
+
+.balanceCardActive {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+.balanceCardLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.balanceCardVal {
+  font-size: 26px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--text);
   line-height: 1;
 }
 .balanceBigPos { color: var(--success); }
 .balanceBigNeg { color: var(--danger); }
 
-.balanceMeta {
+.balanceCardMeta {
   display: flex;
-  gap: 24px;
-  font-size: 14px;
+  gap: 16px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: var(--text-3);
-}
-
-.balanceMeta span strong {
-  color: var(--text-2);
-  font-weight: 500;
 }
 
 /* ── Content ─────────────────────────────────────────────────── */
@@ -591,6 +612,14 @@
   }
 
   .content { padding: 16px 16px; }
+
+  .balanceBlock {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 16px;
+  }
+  .balanceCard { padding: 12px; }
+  .balanceCardVal { font-size: 22px; }
 
   .tableDesktop { display: none; }
   .cardList     { display: flex; flex-direction: column; }
