@@ -2,6 +2,28 @@ import type { Db } from '@/lib/queries/_db'
 import type { Client } from '@/types'
 import { sanitizePostgrestSearch } from './_escape'
 
+/**
+ * Будує PostgREST-фільтр для пошуку клієнта за вільним текстом.
+ * Один токен → ilike по імені/прізвищу/телефону/нікнеймах.
+ * Кілька токенів → перший+решта як ім'я+прізвище в обох порядках
+ * (напр. «Діана К» знайде «Діана Кисільова», «Кисільова Діана» — теж).
+ * Повертає null, якщо запит порожній після санітизації.
+ */
+function buildClientSearchFilter(q: string): string | null {
+  const trimmed = sanitizePostgrestSearch(q)
+  if (!trimmed) return null
+
+  const parts = trimmed.split(/\s+/)
+  if (parts.length === 1) {
+    const p = parts[0]
+    return `first_name.ilike.%${p}%,last_name.ilike.%${p}%,phone.ilike.%${p}%,instagram_username.ilike.%${p}%,telegram_username.ilike.%${p}%`
+  }
+
+  const a = parts[0]
+  const b = parts.slice(1).join(' ')
+  return `and(first_name.ilike.%${a}%,last_name.ilike.%${b}%),and(first_name.ilike.%${b}%,last_name.ilike.%${a}%)`
+}
+
 export interface ListClientsParams {
   search: string
   page: number
@@ -18,13 +40,9 @@ export async function listClients(
     .order('last_name', { ascending: true })
     .order('first_name', { ascending: true })
 
-  if (search.trim()) {
-    const s = sanitizePostgrestSearch(search)
-    if (s) {
-      query = query.or(
-        `first_name.ilike.%${s}%,last_name.ilike.%${s}%,phone.ilike.%${s}%,instagram_username.ilike.%${s}%,telegram_username.ilike.%${s}%`
-      )
-    }
+  const filter = buildClientSearchFilter(search)
+  if (filter) {
+    query = query.or(filter)
   }
 
   const rangeFrom = page * pageSize
@@ -113,42 +131,24 @@ export async function updateClient(
 
 /**
  * Пошук клієнтів для combobox: один токен → ilike по імені/прізвищу/телефону;
- * два токени → ім'я+прізвище в обох порядках (Іван Петров / Петров Іван), dedup.
+ * кілька токенів → ім'я+прізвище в обох порядках (Іван Петров / Петров Іван).
  * Повертає до 10 результатів. Помилки ковтаються (UI-пошук, не критичний).
+ * Використовує той самий фільтр, що й /clients (buildClientSearchFilter).
  */
 export async function searchClientsForCombobox(
   supabase: Db,
   q: string
 ): Promise<Client[]> {
-  const trimmed = sanitizePostgrestSearch(q)
-  if (!trimmed) return []
+  const filter = buildClientSearchFilter(q)
+  if (!filter) return []
 
-  const parts = trimmed.split(/\s+/)
-
-  if (parts.length === 1) {
-    const p = parts[0]
-    const { data } = await supabase
-      .from('clients_with_contacts')
-      .select('id,first_name,last_name,phone')
-      .or(`first_name.ilike.%${p}%,last_name.ilike.%${p}%,phone.ilike.%${p}%`)
-      .order('last_name')
-      .limit(10)
-    return (data ?? []) as Client[]
-  }
-
-  const [a, b] = parts
-  const [r1, r2] = await Promise.all([
-    supabase.from('clients_with_contacts').select('id,first_name,last_name,phone').ilike('first_name', `%${a}%`).ilike('last_name', `%${b}%`).order('last_name').limit(10),
-    supabase.from('clients_with_contacts').select('id,first_name,last_name,phone').ilike('first_name', `%${b}%`).ilike('last_name', `%${a}%`).order('last_name').limit(10),
-  ])
-  const seen = new Set<string>()
-  return [...(r1.data ?? []), ...(r2.data ?? [])].filter(c => {
-    // id з view типізується nullable (left join), але це PK clients — завжди є
-    const cid = c.id as string
-    if (seen.has(cid)) return false
-    seen.add(cid)
-    return true
-  }) as Client[]
+  const { data } = await supabase
+    .from('clients_with_contacts')
+    .select('id,first_name,last_name,phone')
+    .or(filter)
+    .order('last_name')
+    .limit(10)
+  return (data ?? []) as Client[]
 }
 
 /** Грошовий баланс клієнта (₴). null якщо не знайдено. */
