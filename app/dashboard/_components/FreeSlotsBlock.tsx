@@ -54,9 +54,10 @@ function computeFreeWindows(busy: HallBusyInterval[]): Window[] {
  * (їх відкриває персонал іншого заняття, не вони). */
 const RENTAL_TYPES = new Set(['hallrental', 'smallhallrental'])
 
-/** Чи це активне тренерське заняття, яке відкриває студію (не оренда, не скасоване)? */
+/** Чи це тренерське заняття, яке відкриває студію (є тренер, не оренда)?
+ * busy містить лише активні заняття — скасовані/видалені вже відфільтровані. */
 function isStudioStaffing(b: HallBusyInterval): boolean {
-  return b.trainer != null && !b.isCancelled && !RENTAL_TYPES.has(b.ticketType)
+  return b.trainer != null && !RENTAL_TYPES.has(b.ticketType)
 }
 
 /** Покриття студії: проміжки, коли в студії хтось є (йде заняття з тренером).
@@ -89,24 +90,20 @@ export type UncoveredRental = {
   endMin: number
 }
 
-/** Оренди, заброньовані клієнтом, чий час лишився БЕЗ персоналу після скасування
- * тренерського заняття. Тобто: активна оренда + у її час є скасоване тренерське
- * заняття + жодне активне заняття її більше не покриває → студію нема кому відкрити. */
+/** Оренди, заброньовані клієнтом, у час яких немає жодного активного тренерського
+ * заняття-маяка (нема кому відкрити студію). Переосмислений «маяк»: дивимось лише на
+ * ПОТОЧНИЙ стан покриття, тож алерт спрацьовує однаково, чи маяк скасували
+ * (is_cancelled), чи фізично видалили (delete_class) — в обох випадках його просто
+ * немає в покритті. */
 function computeUncoveredRentals(busy: HallBusyInterval[], coverage: Window[]): UncoveredRental[] {
-  const rentals = busy.filter(b => !b.isCancelled && RENTAL_TYPES.has(b.ticketType))
+  const rentals = busy.filter(b => RENTAL_TYPES.has(b.ticketType))
   const out: UncoveredRental[] = []
   for (const r of rentals) {
     const from = Math.max(r.startMin, DAY_START)
     const to = Math.min(r.endMin, DAY_END)
     if (to <= from) continue
     if (isCovered(from, to, coverage)) continue
-    // Без покриття — але алертимо лише якщо причина саме скасування (у цей час було
-    // тренерське заняття, яке тепер скасоване). Інакше це звичайна оренда поза годинами.
-    const hadCancelledStaffing = busy.some(
-      b => b.isCancelled && b.trainer != null && !RENTAL_TYPES.has(b.ticketType) &&
-        b.startMin < to && b.endMin > from
-    )
-    if (hadCancelledStaffing) out.push({ hall: r.hall, startMin: from, endMin: to })
+    out.push({ hall: r.hall, startMin: from, endMin: to })
   }
   return out.sort((a, b) => a.startMin - b.startMin)
 }
@@ -169,8 +166,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
     const activeHalls = halls.filter(h => h.is_active)
     return activeHalls
       .map(h => {
-        // Скасовані заняття зал НЕ займають — виключаємо з розрахунку зайнятості.
-        const hallBusy = busy.filter(b => b.hall === h.name && !b.isCancelled)
+        const hallBusy = busy.filter(b => b.hall === h.name)
         const free = intersectWindows(computeFreeWindows(hallBusy), coverage)
         return { hall: h.name, free }
       })
@@ -200,7 +196,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
             <span className={styles.slotAlertTitle}>Студію нема кому відкрити</span>
             {uncovered.map((u, i) => (
               <span key={i} className={styles.slotAlertText}>
-                Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}: тренерське заняття скасовано.
+                Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}: у цей час немає заняття з тренером.
               </span>
             ))}
           </div>
