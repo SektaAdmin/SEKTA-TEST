@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import { toYMD, DOW_LABELS_FULL, MONTHS_UK_FULL } from '@/lib/dateUtils'
-import { AlertCardsBlock } from './_components/AlertCardsBlock'
+import { DebtorListsBlock } from './_components/DebtorListsBlock'
 import { SessionDebtBlock } from './_components/SessionDebtBlock'
 import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
 import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
@@ -43,14 +43,9 @@ export default function DashboardPage() {
             <FreeSpacesBlock date={today} />
           </div>
 
-          {/* Ряд 2: алерт-картки (мінус по депозиту + боржники) + список боржників сьогодні */}
+          {/* Ряд 2: усі боржники (по сесіях + по депозиту) + список боржників сьогодні */}
           <div className={styles.twoCol}>
-            <section className={`${styles.block} ${styles.equalBlock} ${styles.alertBlock}`}>
-              <span className={styles.groupLabel}>Потребує уваги</span>
-              <div className={styles.groupCards}>
-                <AlertCardsBlock date={today} />
-              </div>
-            </section>
+            <DebtorListsBlock date={today} />
             <SessionDebtBlock date={today} />
           </div>
         </div>

@@ -36,34 +36,6 @@
   padding: 20px var(--topbar-px) 32px;
 }
 
-/* Блок-алерт «Потребує уваги»: мітка над сіткою карток. */
-.alertBlock {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.groupLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  padding: 0 2px;
-}
-
-.groupCards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--space-md);
-}
-
-@media (max-width: 640px) {
-  .groupCards {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 .twoCol {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -237,6 +209,34 @@
   font-size: 14px;
   color: var(--text-2);
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
+}
+
+/* ── Блок: два списки боржників (по сесіях + по депозиту) ───── */
+/* Один слот сітки, поділений на два під-блоки порівну; кожен скролить власне тіло. */
+.debtorLists {
+  gap: var(--space-lg);
+}
+
+.debtorSub {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.debtorSub + .debtorSub {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-md);
+}
+
+.debtorSubTitle {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: var(--space-sm);
 }
 
 

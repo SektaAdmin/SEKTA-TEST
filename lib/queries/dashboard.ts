@@ -1,5 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
 import { formatClientName } from '@/lib/formatters'
+import { ticketTypeNominativeLabel } from '@/lib/badges'
 import { kyivDayUtcBounds } from '@/lib/dateUtils'
 import { type DebtGroup } from '@/lib/dashboardReport'
 
@@ -22,6 +23,45 @@ export async function listNegativeBalanceClients(
     .map(r => ({ id: r.id!, name: formatClientName(r), balance: r.balance ?? 0 }))
 
   return { data: rows, error: error?.message ?? null }
+}
+
+export type SessionDebtorTypeGroup = {
+  ticketType: string
+  typeLabel: string
+  clients: { name: string; balance: number }[]
+}
+
+/** Усі боржники по сесіях (будь-який тип квитка, не лише сьогодні) —
+   клієнти з від'ємним sessions_balance, згруповані по типу квитка.
+   Гроші тут — кількість занять (integer), знак мінус. */
+export async function listSessionDebtorsAll(
+  supabase: Db
+): Promise<{ data: SessionDebtorTypeGroup[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('client_session_balances')
+    .select('ticket_type, sessions_balance, clients(first_name, last_name)')
+    .lt('sessions_balance', 0)
+    .order('ticket_type', { ascending: true })
+    .order('sessions_balance', { ascending: true })
+
+  type Row = {
+    ticket_type: string
+    sessions_balance: number | null
+    clients: { first_name: string | null; last_name: string | null } | null
+  }
+
+  const byType = new Map<string, SessionDebtorTypeGroup>()
+  for (const r of ((data ?? []) as Row[])) {
+    if (!r.clients) continue
+    let group = byType.get(r.ticket_type)
+    if (!group) {
+      group = { ticketType: r.ticket_type, typeLabel: ticketTypeNominativeLabel(r.ticket_type), clients: [] }
+      byType.set(r.ticket_type, group)
+    }
+    group.clients.push({ name: formatClientName(r.clients), balance: r.sessions_balance ?? 0 })
+  }
+
+  return { data: Array.from(byType.values()), error: error?.message ?? null }
 }
 
 export type HallBusyInterval = {
