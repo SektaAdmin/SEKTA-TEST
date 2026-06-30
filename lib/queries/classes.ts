@@ -184,15 +184,23 @@ export async function listPastClasses(
     trainerId?: string
     ticketType?: string
     isCancelled?: boolean
+    clientId?: string
   }
 ): Promise<{ data: ClassWithJoins[]; count: number; error: string | null }> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const cutoffISO = today.toISOString()
 
+  // Пошук по клієнту: окремий aliased inner-join (filt) звужує заняття до тих,
+  // де клієнт має нескасований запис. Основний embed enrollments(id, status)
+  // лишається повним — щоб колонка «Записів» показувала реальну кількість.
+  const clientJoin = filters?.clientId
+    ? ', filt:enrollments!inner(client_id, status)'
+    : ''
+
   let query = supabase
     .from('classes')
-    .select('*, trainers(name), halls(name), enrollments(id, status)', { count: 'exact' })
+    .select(`*, trainers(name), halls(name), enrollments(id, status)${clientJoin}`, { count: 'exact' })
     .lt('starts_at', cutoffISO)
 
   if (filters?.dateFrom) query = query.gte('starts_at', kyivDayUtcBounds(filters.dateFrom).from)
@@ -201,6 +209,11 @@ export async function listPastClasses(
   if (filters?.trainerId) query = query.eq('trainer_id', filters.trainerId)
   if (filters?.ticketType) query = query.eq('ticket_type', filters.ticketType)
   if (filters?.isCancelled !== undefined) query = query.eq('is_cancelled', filters.isCancelled)
+  if (filters?.clientId) {
+    query = query
+      .eq('filt.client_id', filters.clientId)
+      .neq('filt.status', 'cancelled')
+  }
 
   query = query.order('starts_at', { ascending: false })
 
@@ -209,7 +222,9 @@ export async function listPastClasses(
   query = query.range(from, to)
 
   const { data, count, error } = await query
-  return { data: (data ?? []) as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
+  // Динамічний select-рядок (clientJoin) не парситься типовим клієнтом —
+  // звужуємо результат до доменного типу через unknown.
+  return { data: (data ?? []) as unknown as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
 }
 
 // ── Mutations: classes ──────────────────────────────────────────

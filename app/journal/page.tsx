@@ -8,6 +8,7 @@ import { useListQuery } from '@/hooks/useListQuery'
 import type { ClassWithJoins } from '@/lib/queries/classes'
 import { useRefs } from '@/contexts/RefsContext'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
 import DatePicker from '@/components/DatePicker'
 import { formatDate, formatTime } from '@/lib/formatters'
 import { ticketTypeShortLabel } from '@/lib/badges'
@@ -29,10 +30,12 @@ export default function JournalPage() {
   const [filterHall, setFilterHall] = useState('')
   const [filterType, setFilterType] = useState('')
   const [filterCancelled, setFilterCancelled] = useState('all')
+  const [filterClient, setFilterClient] = useState('')
+  const [clientBoxKey, setClientBoxKey] = useState(0)
 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null)
 
-  const hasFilters = dateFrom || dateTo || filterTrainer || filterHall || filterType || filterCancelled !== 'all'
+  const hasFilters = dateFrom || dateTo || filterTrainer || filterHall || filterType || filterCancelled !== 'all' || filterClient
 
   const { data, total, loading, error, refetch } = useListQuery<ClassWithJoins>(
     () => listPastClasses(supabase, page, PAGE_SIZE, {
@@ -42,8 +45,9 @@ export default function JournalPage() {
       trainerId: filterTrainer || undefined,
       ticketType: filterType || undefined,
       isCancelled: filterCancelled === 'cancelled' ? true : undefined,
+      clientId: filterClient || undefined,
     }),
-    [page, dateFrom, dateTo, filterTrainer, filterHall, filterType, filterCancelled]
+    [page, dateFrom, dateTo, filterTrainer, filterHall, filterType, filterCancelled, filterClient]
   )
 
   useEffect(() => { if (error) toast.error('Помилка завантаження журналу') }, [error])
@@ -54,6 +58,8 @@ export default function JournalPage() {
     setDateFrom(''); setDateTo('')
     setFilterTrainer(''); setFilterHall(''); setFilterType('')
     setFilterCancelled('all')
+    setFilterClient('')
+    setClientBoxKey(k => k + 1)
     setPage(0)
   }
 
@@ -85,6 +91,13 @@ export default function JournalPage() {
         </div>
 
         <div className={jStyles.filterBar}>
+          <div className={jStyles.clientFilter}>
+            <ClientSearchCombobox
+              key={clientBoxKey}
+              onSelect={c => resetPage(() => setFilterClient(c.id))}
+              onClear={() => { if (filterClient) resetPage(() => setFilterClient('')) }}
+            />
+          </div>
           <DatePicker value={dateFrom} onChange={v => resetPage(() => setDateFrom(v))} placeholder="Від" />
           <DatePicker value={dateTo}   onChange={v => resetPage(() => setDateTo(v))}   placeholder="До" />
           <FilterSelect

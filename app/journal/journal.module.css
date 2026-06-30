@@ -23,6 +23,11 @@
 }
 
 /* ── Filter controls ─────────────────────────────────────────── */
+.clientFilter {
+  width: 220px;
+  flex-shrink: 0;
+}
+
 .topbarCount {
   font-size: 12px;
   color: var(--text-3);
