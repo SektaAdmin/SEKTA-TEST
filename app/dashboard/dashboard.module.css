@@ -258,16 +258,21 @@
   text-overflow: ellipsis;
 }
 
-/* Числова колонка-заняття: фіксована вузька доріжка під tabular-nums. */
+/* Числова колонка-заняття: width:1% + nowrap у table-layout:fixed → колонка
+   стискається до власного вмісту (заголовка/числа), тож мітки типів
+   («Оренда залу», «Мал. зал») не обрізаються; min-width тримає доріжку
+   рівною під tabular-nums навіть для коротких міток. */
 .debtTableCol {
-  width: 56px;
+  width: 1%;
+  min-width: 56px;
   font-variant-numeric: tabular-nums;
 }
 
 /* «Депозит» (₴) — інша одиниця (гроші, не сесії), тож відокремлюємо лівим
    розділювачем і ширшою доріжкою під суми з ₴. */
 .debtTableMoney {
-  width: 84px;
+  width: 1%;
+  min-width: 84px;
   border-left: 1px solid var(--border);
   padding-left: var(--space-md) !important;
   font-variant-numeric: tabular-nums;
