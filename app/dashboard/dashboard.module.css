@@ -347,6 +347,43 @@
   padding: 3px 8px;
 }
 
+/* Алерт: оренду заброньовано, але тренерське заняття-покриття скасовано →
+   студію нема кому відкрити. Справжній критичний сигнал — danger-токени. */
+.slotAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-sm);
+  background: var(--danger-dim);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+}
+
+.slotAlertIcon {
+  flex-shrink: 0;
+  color: var(--danger);
+  margin-top: 1px;
+}
+
+.slotAlertBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slotAlertTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger-text);
+}
+
+.slotAlertText {
+  font-size: 13px;
+  color: var(--danger-text);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Блок 4: готівка тренерів ──────────────────────────────── */
 .cashRow {
   display: flex;

@@ -61,13 +61,17 @@ export type HallBusyInterval = {
   hall: string
   trainer: string | null
   title: string | null
+  ticketType: string
   startMin: number   // хвилини від 00:00 (локально)
   endMin: number
   startsAt: string   // ISO
   durationMin: number
+  isCancelled: boolean   // заняття скасовано (is_cancelled=true)
 }
 
-/** Зайняті інтервали по залах на дату — для розрахунку вільних вікон. */
+/** Зайняті інтервали по залах на дату — для розрахунку вільних вікон.
+   Повертає і скасовані заняття (isCancelled=true): вони НЕ зайняті, але потрібні
+   для алерту «оренду нема кому відкрити», коли скасували тренерське заняття-покриття. */
 export async function listHallBusyIntervalsForDate(
   supabase: Db,
   date: string
@@ -78,16 +82,17 @@ export async function listHallBusyIntervalsForDate(
     starts_at: string
     duration_min: number
     title: string | null
+    ticket_type: string
+    is_cancelled: boolean
     halls: { name: string } | null
     trainers: { name: string } | null
   }
 
   const { data, error } = await supabase
     .from('classes')
-    .select('starts_at, duration_min, title, halls(name), trainers(name)')
+    .select('starts_at, duration_min, title, ticket_type, is_cancelled, halls(name), trainers(name)')
     .gte('starts_at', dayStart)
     .lte('starts_at', dayEnd)
-    .eq('is_cancelled', false)
     .order('starts_at', { ascending: true })
     .returns<ClassRow[]>()
 
@@ -100,10 +105,12 @@ export async function listHallBusyIntervalsForDate(
         hall: c.halls!.name,
         trainer: c.trainers?.name ?? null,
         title: c.title,
+        ticketType: c.ticket_type,
         startMin,
         endMin: startMin + c.duration_min,
         startsAt: c.starts_at,
         durationMin: c.duration_min,
+        isCancelled: c.is_cancelled,
       }
     })
 

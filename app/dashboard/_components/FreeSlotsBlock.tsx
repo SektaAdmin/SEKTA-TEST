@@ -11,6 +11,18 @@ import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
 /* Блок 3: вільні вікна залів сьогодні (робочий день 8:00–22:00). */
+
+/** Трикутник-попередження для алерту «студію нема кому відкрити». */
+function WarnTriangleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
 const DAY_START = 8 * 60   // 08:00
 const DAY_END = 22 * 60    // 22:00
 
@@ -38,11 +50,20 @@ function computeFreeWindows(busy: HallBusyInterval[]): Window[] {
   return free
 }
 
+/** Типи занять, що самі є орендою залу клієнтом — НЕ дають покриття студії
+ * (їх відкриває персонал іншого заняття, не вони). */
+const RENTAL_TYPES = new Set(['hallrental', 'smallhallrental'])
+
+/** Чи це активне тренерське заняття, яке відкриває студію (не оренда, не скасоване)? */
+function isStudioStaffing(b: HallBusyInterval): boolean {
+  return b.trainer != null && !b.isCancelled && !RENTAL_TYPES.has(b.ticketType)
+}
+
 /** Покриття студії: проміжки, коли в студії хтось є (йде заняття з тренером).
  * Поза цими проміжками персоналу немає → зал у оренду не пропонуємо. */
 function computeStudioCoverage(busy: HallBusyInterval[]): Window[] {
   const staffed = busy
-    .filter(b => b.trainer != null)
+    .filter(isStudioStaffing)
     .map(b => ({ from: Math.max(b.startMin, DAY_START), to: Math.min(b.endMin, DAY_END) }))
     .filter(w => w.to > w.from)
     .sort((a, b) => a.from - b.from)
@@ -54,6 +75,40 @@ function computeStudioCoverage(busy: HallBusyInterval[]): Window[] {
     else merged.push({ ...w })
   }
   return merged
+}
+
+/** Чи інтервал [from,to) повністю покритий хоча б одним вікном покриття? */
+function isCovered(from: number, to: number, coverage: Window[]): boolean {
+  // Покриття вже відсортоване й змерджене (без перекриттів) — досить одного вікна.
+  return coverage.some(c => c.from <= from && c.to >= to)
+}
+
+export type UncoveredRental = {
+  hall: string
+  startMin: number
+  endMin: number
+}
+
+/** Оренди, заброньовані клієнтом, чий час лишився БЕЗ персоналу після скасування
+ * тренерського заняття. Тобто: активна оренда + у її час є скасоване тренерське
+ * заняття + жодне активне заняття її більше не покриває → студію нема кому відкрити. */
+function computeUncoveredRentals(busy: HallBusyInterval[], coverage: Window[]): UncoveredRental[] {
+  const rentals = busy.filter(b => !b.isCancelled && RENTAL_TYPES.has(b.ticketType))
+  const out: UncoveredRental[] = []
+  for (const r of rentals) {
+    const from = Math.max(r.startMin, DAY_START)
+    const to = Math.min(r.endMin, DAY_END)
+    if (to <= from) continue
+    if (isCovered(from, to, coverage)) continue
+    // Без покриття — але алертимо лише якщо причина саме скасування (у цей час було
+    // тренерське заняття, яке тепер скасоване). Інакше це звичайна оренда поза годинами.
+    const hadCancelledStaffing = busy.some(
+      b => b.isCancelled && b.trainer != null && !RENTAL_TYPES.has(b.ticketType) &&
+        b.startMin < to && b.endMin > from
+    )
+    if (hadCancelledStaffing) out.push({ hall: r.hall, startMin: from, endMin: to })
+  }
+  return out.sort((a, b) => a.startMin - b.startMin)
 }
 
 /** Перетин вільних вікон залу з покриттям студії. */
@@ -101,22 +156,27 @@ export function FreeSlotsBlock({ date }: { date: string }) {
     if (error) console.error('[FreeSlotsBlock]', error)
   }, [error])
 
+  // Покриття студії = час, коли в студії хтось є (йде активне заняття з тренером).
+  const coverage = useMemo(() => computeStudioCoverage(busy), [busy])
+
+  // Оренди, що лишились без персоналу після скасування тренерського заняття.
+  const uncovered = useMemo(() => computeUncoveredRentals(busy, coverage), [busy, coverage])
+
   const byHall = useMemo(() => {
-    // Покриття студії = час, коли в студії хтось є (йде заняття з тренером).
-    // Зал можна здати в оренду лише в межах цього часу — є кому впустити/відкрити.
-    const coverage = computeStudioCoverage(busy)
+    // Зал можна здати в оренду лише в межах покриття — є кому впустити/відкрити.
     if (coverage.length === 0) return []
 
     const activeHalls = halls.filter(h => h.is_active)
     return activeHalls
       .map(h => {
-        const hallBusy = busy.filter(b => b.hall === h.name)
+        // Скасовані заняття зал НЕ займають — виключаємо з розрахунку зайнятості.
+        const hallBusy = busy.filter(b => b.hall === h.name && !b.isCancelled)
         const free = intersectWindows(computeFreeWindows(hallBusy), coverage)
         return { hall: h.name, free }
       })
       // Зал без жодного вільного слоту в межах покриття не показуємо взагалі.
       .filter(h => h.free.length > 0)
-  }, [halls, busy])
+  }, [halls, busy, coverage])
 
   function handleCopyHall(hallName: string, free: Window[]) {
     const text = buildHallSlotsText(hallName, free)
@@ -132,6 +192,20 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       <div className={styles.scrollBody}>
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
       {error && <BlockError onRetry={refetch} />}
+
+      {!loading && !error && uncovered.length > 0 && (
+        <div className={styles.slotAlert} role="alert">
+          <WarnTriangleIcon className={styles.slotAlertIcon} />
+          <div className={styles.slotAlertBody}>
+            <span className={styles.slotAlertTitle}>Студію нема кому відкрити</span>
+            {uncovered.map((u, i) => (
+              <span key={i} className={styles.slotAlertText}>
+                Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}: тренерське заняття скасовано.
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!loading && !error && byHall.length === 0 && (
         <div className={styles.empty}>Сьогодні студія без занять — оренду немає кому відкрити.</div>
