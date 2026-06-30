@@ -212,31 +212,87 @@
 }
 
 /* ── Блок: два списки боржників (по сесіях + по депозиту) ───── */
-/* Один слот сітки, поділений на два під-блоки порівну; кожен скролить власне тіло. */
+/* Один слот сітки, поділений на дві колонки порівну; кожна скролить власне тіло. */
 .debtorLists {
-  gap: var(--space-lg);
+  flex-direction: row;
+  gap: var(--space-xl);
 }
 
 .debtorSub {
   flex: 1 1 0;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .debtorSub + .debtorSub {
-  border-top: 1px solid var(--border);
-  padding-top: var(--space-md);
+  border-left: 1px solid var(--border);
+  padding-left: var(--space-xl);
 }
 
-.debtorSubTitle {
+.debtorSub .blockTitle {
   flex-shrink: 0;
-  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .debtorLists {
+    flex-direction: column;
+  }
+  .debtorSub + .debtorSub {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-md);
+  }
+}
+
+/* Таблиця боржників по сесіях: рядок = клієнт, колонки = типи занять. */
+.debtTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.debtTable th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-2);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text-3);
-  margin-bottom: var(--space-sm);
+  text-align: right;
+  padding: 0 0 var(--space-xs) var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.debtTable td {
+  padding: var(--space-xs) 0 var(--space-xs) var(--space-md);
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.debtTable tr:last-child td {
+  border-bottom: none;
+}
+
+.debtTableName {
+  text-align: left !important;
+  padding-left: 0 !important;
+  color: var(--text) !important;
+  width: 100%;
+}
+
+.debtTableCol {
+  font-variant-numeric: tabular-nums;
+}
+
+.debtTableDash {
+  color: var(--text-3);
 }
 
 

@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import {
   listSessionDebtorsAll,
   listNegativeBalanceClients,
-  type SessionDebtorTypeGroup,
+  type SessionDebtorsTable,
 } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { useAsync } from '@/hooks/useAsync'
@@ -12,10 +12,11 @@ import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
 type NegClient = { id: string; name: string; balance: number }
+const EMPTY_TABLE: SessionDebtorsTable = { columns: [], rows: [] }
 
-/* Блок боржників: два списки.
-   1) По сесіях — усі клієнти з від'ємним залишком занять (будь-який тип),
-      згруповано по типу квитка.
+/* Блок боржників: дві колонки.
+   1) По сесіях — таблиця: рядок = клієнт, колонки = типи занять (лише ті,
+      де є боржники), у клітинках від'ємний залишок занять.
    2) По депозиту — клієнти з від'ємним грошовим балансом (на весь час). */
 export function DebtorListsBlock({ date }: { date: string }) {
   const { data, loading, error, refetch } = useAsync(
@@ -26,7 +27,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
       ])
       return {
         data: {
-          sessionGroups: sessRes.data,
+          sessionTable: sessRes.data,
           negClients: negRes.data,
         },
         error: sessRes.error ?? negRes.error ?? null,
@@ -40,53 +41,66 @@ export function DebtorListsBlock({ date }: { date: string }) {
     if (error) console.error('[DebtorListsBlock]', error)
   }, [error])
 
-  const sessionGroups: SessionDebtorTypeGroup[] = data?.sessionGroups ?? []
+  const sessionTable = data?.sessionTable ?? EMPTY_TABLE
   const negClients: NegClient[] = data?.negClients ?? []
 
   return (
     <section className={`${styles.block} ${styles.equalBlock} ${styles.debtorLists}`}>
-      <SubList title="Боржники по сесіях">
-        {loading && <Loader />}
-        {error && <BlockError onRetry={refetch} />}
-        {!loading && !error && sessionGroups.length === 0 && (
-          <div className={styles.empty}>Боржників немає</div>
-        )}
-        {!loading && !error && sessionGroups.map(g => (
-          <div key={g.ticketType} className={styles.debtGroup}>
-            <div className={styles.debtGroupHead}>{g.typeLabel}</div>
-            {g.clients.map((c, i) => (
-              <div key={`${c.name}-${i}`} className={styles.debtClient}>
-                <span>{c.name}</span>
-                <span className="balance-warn">{c.balance}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </SubList>
+      <div className={styles.debtorSub}>
+        <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
+        <div className={styles.scrollBody}>
+          {loading && <Loader />}
+          {error && <BlockError onRetry={refetch} />}
+          {!loading && !error && sessionTable.rows.length === 0 && (
+            <div className={styles.empty}>Боржників немає</div>
+          )}
+          {!loading && !error && sessionTable.rows.length > 0 && (
+            <table className={styles.debtTable}>
+              <thead>
+                <tr>
+                  <th className={styles.debtTableName}>Клієнт</th>
+                  {sessionTable.columns.map(c => (
+                    <th key={c.ticketType} className={styles.debtTableCol}>{c.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sessionTable.rows.map(r => (
+                  <tr key={r.clientId}>
+                    <td className={styles.debtTableName}>{r.name}</td>
+                    {sessionTable.columns.map(c => {
+                      const v = r.balances[c.ticketType]
+                      return (
+                        <td key={c.ticketType} className={styles.debtTableCol}>
+                          {v == null ? <span className={styles.debtTableDash}>—</span> : <span className="balance-warn">{v}</span>}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
 
-      <SubList title="Боржники по депозиту">
-        {loading && <Loader />}
-        {error && <BlockError onRetry={refetch} />}
-        {!loading && !error && negClients.length === 0 && (
-          <div className={styles.empty}>Боржників немає</div>
-        )}
-        {!loading && !error && negClients.map(c => (
-          <div key={c.id} className={styles.debtClient}>
-            <span>{c.name}</span>
-            <span className="balance-warn">{formatMoney(c.balance)}</span>
-          </div>
-        ))}
-      </SubList>
+      <div className={styles.debtorSub}>
+        <h2 className={styles.blockTitle}>Боржники по депозиту</h2>
+        <div className={styles.scrollBody}>
+          {loading && <Loader />}
+          {error && <BlockError onRetry={refetch} />}
+          {!loading && !error && negClients.length === 0 && (
+            <div className={styles.empty}>Боржників немає</div>
+          )}
+          {!loading && !error && negClients.map(c => (
+            <div key={c.id} className={styles.debtClient}>
+              <span>{c.name}</span>
+              <span className="balance-warn">{formatMoney(c.balance)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
-  )
-}
-
-function SubList({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className={styles.debtorSub}>
-      <h3 className={styles.debtorSubTitle}>{title}</h3>
-      <div className={styles.scrollBody}>{children}</div>
-    </div>
   )
 }
 

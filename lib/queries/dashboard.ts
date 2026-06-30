@@ -1,6 +1,6 @@
 import type { Db } from '@/lib/queries/_db'
 import { formatClientName } from '@/lib/formatters'
-import { ticketTypeNominativeLabel } from '@/lib/badges'
+import { ticketTypeShortLabel } from '@/lib/badges'
 import { kyivDayUtcBounds } from '@/lib/dateUtils'
 import { type DebtGroup } from '@/lib/dashboardReport'
 
@@ -25,43 +25,59 @@ export async function listNegativeBalanceClients(
   return { data: rows, error: error?.message ?? null }
 }
 
-export type SessionDebtorTypeGroup = {
-  ticketType: string
-  typeLabel: string
-  clients: { name: string; balance: number }[]
+export type SessionDebtorColumn = { ticketType: string; label: string }
+export type SessionDebtorRow = {
+  clientId: string
+  name: string
+  /** ticket_type → від'ємний залишок занять (лише типи, де клієнт у мінусі). */
+  balances: Record<string, number>
+}
+export type SessionDebtorsTable = {
+  columns: SessionDebtorColumn[]   // лише типи, де є хоч один боржник
+  rows: SessionDebtorRow[]
 }
 
-/** Усі боржники по сесіях (будь-який тип квитка, не лише сьогодні) —
-   клієнти з від'ємним sessions_balance, згруповані по типу квитка.
-   Гроші тут — кількість занять (integer), знак мінус. */
+/** Усі боржники по сесіях (будь-який тип квитка, не лише сьогодні) у вигляді
+   таблиці: рядок = клієнт, колонки = типи занять (лише ті, де є боржники).
+   Залишок — кількість занять (integer), знак мінус. */
 export async function listSessionDebtorsAll(
   supabase: Db
-): Promise<{ data: SessionDebtorTypeGroup[]; error: string | null }> {
+): Promise<{ data: SessionDebtorsTable; error: string | null }> {
   const { data, error } = await supabase
     .from('client_session_balances')
-    .select('ticket_type, sessions_balance, clients(first_name, last_name)')
+    .select('ticket_type, sessions_balance, clients(id, first_name, last_name)')
     .lt('sessions_balance', 0)
     .order('ticket_type', { ascending: true })
-    .order('sessions_balance', { ascending: true })
 
   type Row = {
     ticket_type: string
     sessions_balance: number | null
-    clients: { first_name: string | null; last_name: string | null } | null
+    clients: { id: string; first_name: string | null; last_name: string | null } | null
   }
 
-  const byType = new Map<string, SessionDebtorTypeGroup>()
+  const colSet = new Set<string>()
+  const byClient = new Map<string, SessionDebtorRow>()
   for (const r of ((data ?? []) as Row[])) {
     if (!r.clients) continue
-    let group = byType.get(r.ticket_type)
-    if (!group) {
-      group = { ticketType: r.ticket_type, typeLabel: ticketTypeNominativeLabel(r.ticket_type), clients: [] }
-      byType.set(r.ticket_type, group)
+    colSet.add(r.ticket_type)
+    let row = byClient.get(r.clients.id)
+    if (!row) {
+      row = { clientId: r.clients.id, name: formatClientName(r.clients), balances: {} }
+      byClient.set(r.clients.id, row)
     }
-    group.clients.push({ name: formatClientName(r.clients), balance: r.sessions_balance ?? 0 })
+    row.balances[r.ticket_type] = r.sessions_balance ?? 0
   }
 
-  return { data: Array.from(byType.values()), error: error?.message ?? null }
+  const columns = Array.from(colSet)
+    .sort()
+    .map(t => ({ ticketType: t, label: ticketTypeShortLabel(t) }))
+  // Найбільші боржники першими (за сумою мінусів по всіх типах).
+  const rows = Array.from(byClient.values()).sort((a, b) => {
+    const sum = (r: SessionDebtorRow) => Object.values(r.balances).reduce((s, v) => s + v, 0)
+    return sum(a) - sum(b)
+  })
+
+  return { data: { columns, rows }, error: error?.message ?? null }
 }
 
 export type HallBusyInterval = {
