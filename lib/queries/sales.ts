@@ -267,6 +267,34 @@ export async function getTicketById(
 
 export type SessionBalance = { ticket_type: string; sessions_balance: number }
 
+/** Мінімальний рядок продажу для агрегації нарахувань у квитанції. */
+export type AccrualSale = {
+  ticket_id: string | null
+  ticket_type: string | null
+  ticket_name: string | null
+  sessions: number | null
+  price_paid: number
+  amount_given: number
+}
+
+/**
+ * Усі продажі клієнта, зафіксовані в той самий момент (created_at має хвилинну
+ * гранулярність). Дозволяє квитанції об'єднати оплату кількох абонементів в одне
+ * повідомлення з переліком усіх нарахувань.
+ */
+export async function getSalesAtSameMoment(
+  supabase: Db,
+  clientId: string,
+  createdAt: string
+): Promise<{ data: AccrualSale[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('sales')
+    .select('ticket_id, ticket_type, ticket_name, sessions, price_paid, amount_given')
+    .eq('client_id', clientId)
+    .eq('created_at', createdAt)
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
 /** Залишки сесій по типах для клієнта (для snapshot у квитанції). */
 export async function getClientSessionBalances(
   supabase: Db,
