@@ -61,7 +61,8 @@ export async function POST(req: Request) {
   // 3) Ідентифікатор: телефон (нормалізований) у пріоритеті, інакше email.
   let phone: string | null = null
   if (trainer.phone) {
-    const { data: normRows } = await admin.rpc('normalize_phone_ua', { p_phone: trainer.phone })
+    const { data: normRows, error: normErr } = await admin.rpc('normalize_phone_ua', { p_phone: trainer.phone })
+    if (normErr) return NextResponse.json({ error: normErr.message }, { status: 500 })
     phone = (normRows as unknown as string | null) ?? null
     if (!phone) return NextResponse.json({ error: 'bad_phone' }, { status: 400 })
   }
