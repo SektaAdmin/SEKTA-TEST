@@ -183,8 +183,10 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock}`}>
-      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Оренда залу</h2>
+    <section className={`${styles.block} ${styles.equalBlock} ${styles.bRental}`}>
+      <div className={styles.blockHead}>
+        <h2 className={styles.blockTitle}>Оренда залу</h2>
+      </div>
 
       <div className={styles.scrollBody}>
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}

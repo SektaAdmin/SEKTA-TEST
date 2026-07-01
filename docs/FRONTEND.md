@@ -33,6 +33,8 @@ components/ui/         shadcn: button/calendar/command/dialog/popover/select/tab
 
 Теми: світла `:root` + темна `@media prefers-color-scheme: dark`. У `*.module.css` — **тільки `var()`-токени**, НІ HEX/rgba.
 
+- Шрифт — **Inter** (variable, кирилиця; Geist відпав — кирилиці нема). Токен `--font` ← `--font-inter` з `layout.tsx`. PDF-експорт (`exportSalaryPdf`) лишився на Nunito TTF — окремий артефакт.
+- Нейтраль **холодна** (синій підтон, Vercel-like): `--bg #f6f7f9`. Inline-фон у `layout.tsx` `<body>` міняти синхронно з `--bg`.
 - Фони `--bg/-2/-3` · Текст `--text/-2/-3`
 - Бордери `--border/-hover/-strong` — товщина **скрізь `1px`** (`0.5px` = баг Chrome mobile)
 - Акцент `--accent/-dim/-text/-border*` (зелений) · Стани `--danger/-dim/-border*`, `--success/-dim`, `--warning/-dim`
@@ -78,6 +80,11 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 ---
 
 ## Per-page
+
+### /dashboard
+Операційний пульт. Одна сітка `.grid` 2×2: `FreeSlotsBlock` (оренда) / `FreeSpacesBlock` / `DebtorListsBlock` / `SessionDebtBlock`. Блок = картка `.block` (padding 0, шапка `.blockHead` з border-bottom, дія праворуч — напр. «Скопіювати звіт») + `.equalBlock` (висота `calc((100vh − 96px)/2)`: 2 ряди без скролу сторінки, довгі списки скролить `.scrollBody`).
+- **Колір — лише нейтраль** (`.debtVal` — вага+tabular-nums замість червоних чипів; `.slotChip` сірий). Семантика тільки у `.slotAlert` (непокрита оренда) — єдиний danger на сторінці. `balance-*` чипи тут НЕ використовуються.
+- **Mobile ≤640:** чипи фокусу блоків у `page-head` (`.blockChips` композує глобальні `.filterChips`; «Всі» = всі стопкою). Невибрані блоки ховає `display:none` через `.grid[data-focus=…]` + маркери `.bRental/.bSpaces/.bDebtors/.bToday` — блоки лишаються змонтованими, realtime живий. `.equalBlock` → auto, внутрішнього вертикального скролу нема (лише overflow-x під широку таблицю боржників), sticky-шапка таблиці вимкнена.
 
 ### /schedule
 **Desktop:** scroll-архітектура (не page-layout), `main{height:100svh}`, скролиться `bodyGridWrapper`. Day (всі зали + ScheduleRightPanel календар) / Week (7 дн, right-panel скрита). Константи: `MIN_HOUR=8`, `MAX_HOUR=22`, `HOUR_HEIGHT=83`.

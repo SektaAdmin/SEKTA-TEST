@@ -34,7 +34,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
         },
       },
       {
-        // Google Fonts / Nunito Sans
+        // Google Fonts / Inter
         urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
         handler: 'CacheFirst',
         options: {

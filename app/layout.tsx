@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Nunito_Sans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { RefsProvider } from '@/contexts/RefsContext'
 import './globals.css'
 
-const nunitoSans = Nunito_Sans({
+// Inter (variable) — кирилиця є; Geist кирилиці не має, тому не підходить (UI українською).
+const inter = Inter({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600'],
-  variable: '--font-nunito',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -31,10 +31,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk" className={nunitoSans.variable}>
+    <html lang="uk" className={inter.variable}>
       {/* background вшито inline щоб фон з'явився до завантаження globals.css —
-          прибирає білий спалах при старті PWA (сервер повертає HTML з фоном одразу). */}
-      <body style={{ background: '#f5f5f2' }}>
+          прибирає білий спалах при старті PWA (сервер повертає HTML з фоном одразу).
+          Значення = --bg із globals.css, міняти синхронно. */}
+      <body style={{ background: '#f6f7f9' }}>
         <RefsProvider>{children}</RefsProvider>
         <Toaster position="bottom-right" richColors />
       </body>

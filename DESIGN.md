@@ -3,17 +3,17 @@ name: SEKTA-CRM Design System
 description: Professional studio operations toolkit — calm, efficient, transparent.
 colors:
   professional-black: "#000000"
-  neutral-ink: "#1a1917"
-  neutral-text-secondary: "#525252"
-  neutral-text-tertiary: "#737373"
-  neutral-bg-primary: "#f5f5f2"
+  neutral-ink: "#18181b"
+  neutral-text-secondary: "#52525b"
+  neutral-text-tertiary: "#66676e"
+  neutral-bg-primary: "#f6f7f9"
   neutral-bg-secondary: "#ffffff"
-  neutral-bg-tertiary: "#eeede9"
+  neutral-bg-tertiary: "#eceef2"
   neutral-border-subtle: "rgba(0,0,0,0.08)"
   neutral-border-hover: "rgba(0,0,0,0.16)"
   neutral-border-strong: "rgba(0,0,0,0.14)"
-  neutral-accent-dim: "#f5f5f5"
-  neutral-accent-dim-2: "#ebebeb"
+  neutral-accent-dim: "#f1f2f5"
+  neutral-accent-dim-2: "#e6e8ec"
   neutral-accent-text: "#ffffff"
   brand-50: "#f7f7f7"
   brand-100: "#ededed"
@@ -45,25 +45,25 @@ colors:
   semantic-deposit-dim: "rgba(139,52,212,0.10)"
 typography:
   body:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "normal"
   label:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: "12px"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "0.02em"
   title:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: "16px"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "normal"
   headline:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: "18px"
     fontWeight: 600
     lineHeight: 1.3
@@ -143,17 +143,17 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Professional Black** (#000000): Buttons, text emphasis, primary actions. Used on ≤10% of any screen to maximize signal-to-noise.
 
 ### Neutral
-- **Neutral Ink** (#1a1917): Body text on light backgrounds. Default text color.
-- **Neutral Text Secondary** (#525252): Secondary copy, descriptions, lower-hierarchy labels.
-- **Neutral Text Tertiary** (#737373): Disabled text, placeholders, lowest-hierarchy labels.
-- **Neutral Background Primary** (#f5f5f2): Default page background. Warm off-white, not cold.
+- **Neutral Ink** (#18181b): Body text on light backgrounds. Default text color.
+- **Neutral Text Secondary** (#52525b): Secondary copy, descriptions, lower-hierarchy labels.
+- **Neutral Text Tertiary** (#66676e): Disabled text, placeholders, lowest-hierarchy labels.
+- **Neutral Background Primary** (#f6f7f9): Default page background. Cold neutral with a subtle blue undertone (Vercel-like), not warm.
 - **Neutral Background Secondary** (#ffffff): Cards, containers, modals.
-- **Neutral Background Tertiary** (#eeede9): Form inputs, subtle surface distinction.
+- **Neutral Background Tertiary** (#eceef2): Form inputs, subtle surface distinction.
 - **Neutral Border Subtle** (rgba(0,0,0,0.08)): Dividers, light borders, default stroke.
 - **Neutral Border Hover** (rgba(0,0,0,0.16)): Hover state for interactive elements.
 - **Neutral Border Strong** (rgba(0,0,0,0.14)): Strong dividers, contrast-critical borders.
-- **Neutral Accent Dim** (#f5f5f5): Secondary button background.
-- **Neutral Accent Dim 2** (#ebebeb): Hover or selected state for secondary buttons.
+- **Neutral Accent Dim** (#f1f2f5): Secondary button background.
+- **Neutral Accent Dim 2** (#e6e8ec): Hover or selected state for secondary buttons.
 
 ### Semantic (Grayscale Brand Scale)
 - **Brand 50–950** (`#f7f7f7` to `#000000`): Pure neutral scale for badge backgrounds, subtle layering, and tonal depth.
@@ -179,8 +179,8 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 
 ## 3. Typography
 
-**Display Font:** Nunito Sans (with system sans-serif fallback)
-**Character:** Humanist sans-serif, friendly but structured. Nunito's rounded terminals and generous spacing prevent sterility. Chosen for legibility at all sizes and across variable lighting conditions in a studio environment.
+**Display Font:** Inter (variable, with system sans-serif fallback)
+**Character:** Neo-grotesque UI sans. Strict, product-grade voice (replaced the softer Nunito Sans in 2026-07); tabular numerals and a tall x-height keep dense data legible across variable studio lighting. Cyrillic support is mandatory (UI is Ukrainian) — this is why Geist was rejected.
 
 ### Hierarchy
 - **Body** (14px, 400, 1.5 line-height): Default text for descriptions, table content, labels. Used on light backgrounds; always >= 4.5:1 contrast.
@@ -190,7 +190,7 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 
 ### Named Rules
 
-**The No-Scare Rule.** Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background. **Semantic colors split fill from text:** the vivid token (`--success` / `--danger`) is for fills, borders, icons, and large text (≥18px or bold ≥14px); for semantic *text under 18px* on a light or dim background, use the darker `-text` variant (`--success-text` / `--danger-text`) — the vivid green/red fails 4.5:1 at small sizes. This is exactly the strain the rule exists to prevent, given the studio's variable lighting and older staff.
+**The No-Scare Rule.** Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#52525b) is never lighter than this on any background. **Semantic colors split fill from text:** the vivid token (`--success` / `--danger`) is for fills, borders, icons, and large text (≥18px or bold ≥14px); for semantic *text under 18px* on a light or dim background, use the darker `-text` variant (`--success-text` / `--danger-text`) — the vivid green/red fails 4.5:1 at small sizes. This is exactly the strain the rule exists to prevent, given the studio's variable lighting and older staff.
 
 **The Breathing Room Rule.** Line-height is never less than 1.3. Line length is capped at 65–75ch for body text on full-width surfaces. This reduces cognitive load for busy admins in variable lighting.
 
@@ -255,16 +255,16 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Do** preserve the 4.5:1 contrast ratio for all body text (no muted grays on light backgrounds).
 - **Do** use semantic colors (red for danger, green for success, amber for warning) only for their intended meanings.
 - **Do** keep shadows subtle; they signal state change only, not decoration.
-- **Do** pair fonts from the Nunito family; never introduce a second sans-serif without strong reason.
+- **Do** stay within the Inter family (weights 400–700); never introduce a second sans-serif without strong reason.
 - **Do** embrace white space. A calm interface is spacious, not cramped.
 - **Do** document financial colors by their role (FOP, Card, Deposit) not by hex value; meaning carries the design forward.
 
 ### Don't:
 - **Don't** use dark mode with purple gradients, neon accents, or glassmorphism. This is a business tool, not a gaming interface.
-- **Don't** use muted gray text on tinted backgrounds (e.g., #737373 on #f5f5f2). Gray text on colored bg looks washed out. Use semantic color instead.
+- **Don't** use muted gray text on tinted backgrounds (e.g., light gray on the tinted page bg). Gray text on colored bg looks washed out. Use semantic color instead.
 - **Don't** use more than one primary accent on a single screen. Professional Black is the only primary; semantic colors are secondary.
 - **Don't** apply shadows to surfaces at rest. Shadows signal state; resting surfaces are flat.
 - **Don't** use border-left or border-right stripes as a primary design element. Use full borders, background tints, or leading icons instead.
-- **Don't** pair two similar sans-serifs (e.g., Nunito with Inter). Pair on a contrast axis (serif + sans) or use one family in multiple weights.
+- **Don't** pair two similar sans-serifs (e.g., Inter with Nunito). Pair on a contrast axis (serif + sans) or use one family in multiple weights.
 - **Don't** bury critical information behind scrolling or multiple clicks. Fast operations with minimal friction are the north star.
 - **Don't** introduce decorative gradients, skewed cards, or nested card grids. These are AI slop tells; the design must stay restrained and functional.
