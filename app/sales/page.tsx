@@ -9,7 +9,6 @@ import BottomNav from '@/components/BottomNav'
 import SaleModal from '@/components/SaleModal'
 import StudioExpenseModal from '@/components/StudioExpenseModal'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
-import ReceiptCard from '@/components/ReceiptCard'
 import { useRefs } from '@/contexts/RefsContext'
 import { useSalesFeed, PAGE_SIZES, type PageSize } from '@/hooks/useSales'
 import { useReceipt } from '@/hooks/useReceipt'
@@ -74,9 +73,7 @@ export default function SalesPage() {
     trainerId: trainerFilter, expenseMethod,
   })
 
-  const { cardRef, renderData, getState: getReceiptState, generateReceipt, copyReceipt } = useReceipt({
-    onGenerated: () => { refetch() },
-  })
+  const { getState: getReceiptState, copyReceipt } = useReceipt()
 
   const totalPages = Math.ceil(total / pageSize)
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== '' || trainerFilter !== ''
@@ -473,27 +470,16 @@ export default function SalesPage() {
                           <td className={styles.trainer}>{s.trainers?.name ?? '—'}</td>
                           <td>
                             <div className={styles.actions}>
-                              {s.receipt_url ? (
-                                <button
-                                  className={styles.btnReceipt}
-                                  onClick={() => {
-                                    copyReceipt(s).then(() => toast.success(MSG.toast.copied))
-                                  }}
-                                  disabled={getReceiptState(s.id) === 'copying'}
-                                  title="Копіювати квитанцію в буфер"
-                                >
-                                  {getReceiptState(s.id) === 'copying' ? '…' : '📋'}
-                                </button>
-                              ) : (
-                                <button
-                                  className={styles.btnReceipt}
-                                  onClick={() => generateReceipt(s)}
-                                  disabled={getReceiptState(s.id) === 'generating'}
-                                  title="Згенерувати квитанцію"
-                                >
-                                  {getReceiptState(s.id) === 'generating' ? '…' : '🧾'}
-                                </button>
-                              )}
+                              <button
+                                className={styles.btnReceipt}
+                                onClick={() => {
+                                  copyReceipt(s).then(() => toast.success(MSG.toast.copied))
+                                }}
+                                disabled={getReceiptState(s.id) === 'copying'}
+                                title="Скопіювати повідомлення для клієнта"
+                              >
+                                {getReceiptState(s.id) === 'copying' ? '…' : '📋'}
+                              </button>
                               <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                                 Змінити
                               </button>
@@ -595,25 +581,15 @@ export default function SalesPage() {
                         <div className={styles.cardTrainer}>Тренер: {s.trainers.name}</div>
                       )}
                       <div className={styles.cardActions}>
-                        {s.receipt_url ? (
-                          <button
-                            className={styles.btnReceipt}
-                            onClick={() => {
-                              copyReceipt(s).then(() => toast.success(MSG.toast.copied))
-                            }}
-                            disabled={getReceiptState(s.id) === 'copying'}
-                          >
-                            {getReceiptState(s.id) === 'copying' ? 'Копіюю…' : 'Копіювати квитанцію'}
-                          </button>
-                        ) : (
-                          <button
-                            className={styles.btnReceipt}
-                            onClick={() => generateReceipt(s)}
-                            disabled={getReceiptState(s.id) === 'generating'}
-                          >
-                            {getReceiptState(s.id) === 'generating' ? 'Генерую…' : 'Квитанція'}
-                          </button>
-                        )}
+                        <button
+                          className={styles.btnReceipt}
+                          onClick={() => {
+                            copyReceipt(s).then(() => toast.success(MSG.toast.copied))
+                          }}
+                          disabled={getReceiptState(s.id) === 'copying'}
+                        >
+                          {getReceiptState(s.id) === 'copying' ? 'Копіюю…' : 'Скопіювати клієнту'}
+                        </button>
                         <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                           Змінити
                         </button>
@@ -652,16 +628,6 @@ export default function SalesPage() {
           +
         </button>
       </main>
-
-      {/* Прихований ReceiptCard для html2canvas */}
-      {renderData && (
-        <ReceiptCard
-          ref={cardRef}
-          sale={renderData.sale}
-          balances={renderData.balances}
-          labelMap={renderData.labelMap}
-        />
-      )}
 
       {showModal && (
         <SaleModal

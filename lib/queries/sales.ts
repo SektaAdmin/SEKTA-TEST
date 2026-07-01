@@ -278,17 +278,3 @@ export async function getClientSessionBalances(
     .eq('client_id', clientId)
   return { data: data ?? [], error: error?.message ?? null }
 }
-
-/** Зберігає URL квитанції та snapshot балансу у sales. */
-export async function saveReceiptToSale(
-  supabase: Db,
-  saleId: string,
-  receiptUrl: string,
-  balanceSnapshot: SessionBalance[]
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('sales')
-    .update({ receipt_url: receiptUrl, session_balance_snapshot: balanceSnapshot })
-    .eq('id', saleId)
-  return { error: error?.message ?? null }
-}

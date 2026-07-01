@@ -1,32 +1,23 @@
 'use client'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { formatMoney, formatClientName } from '@/lib/formatters'
 import {
   getClientSessionBalances,
-  saveReceiptToSale,
   type Sale,
-  type SessionBalance,
 } from '@/lib/queries/sales'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 
-type ReceiptState = 'idle' | 'generating' | 'copying' | 'done' | 'error'
+type ReceiptState = 'idle' | 'copying' | 'done' | 'error'
 
-interface UseReceiptOptions {
-  onGenerated?: (updatedSale: Sale & { receipt_url: string }) => void
-}
-
-export interface ReceiptRenderData {
-  sale: Sale
-  balances: SessionBalance[]
-  labelMap: Record<string, string>
-}
-
-export function useReceipt({ onGenerated }: UseReceiptOptions = {}) {
+/**
+ * Формує текстове повідомлення для клієнта про зафіксовану оплату
+ * + повний актуальний стан абонемента, і копіює його в буфер.
+ * Замінило генерацію PNG-квитанції.
+ */
+export function useReceipt() {
   // Стан кожного рядка окремо
   const [rowStates, setRowStates] = useState<Record<string, ReceiptState>>({})
-  // Дані для рендеру прихованого ReceiptCard
-  const [renderData, setRenderData] = useState<ReceiptRenderData | null>(null)
-  const cardRef = useRef<HTMLDivElement | null>(null)
 
   function getState(saleId: string): ReceiptState {
     return rowStates[saleId] ?? 'idle'
@@ -36,90 +27,66 @@ export function useReceipt({ onGenerated }: UseReceiptOptions = {}) {
     setRowStates(s => ({ ...s, [saleId]: st }))
   }
 
-  const generateReceipt = useCallback(async (sale: Sale) => {
-    const id = sale.id
-    setState(id, 'generating')
-    setRenderData(null)
+  const buildMessage = useCallback(async (sale: Sale): Promise<string> => {
+    const [{ data: balances }, { data: labelMap }] = await Promise.all([
+      getClientSessionBalances(supabase, sale.client_id),
+      listTrainingTypeLabels(supabase),
+    ])
 
-    try {
-      const [{ data: balances }, { data: labelMap }] = await Promise.all([
-        getClientSessionBalances(supabase, sale.client_id),
-        listTrainingTypeLabels(supabase),
-      ])
+    const now = new Date().toLocaleString('uk-UA', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Kyiv',
+    })
 
-      // Ставимо дані — React рендерить ReceiptCard в DOM
-      setRenderData({ sale, balances, labelMap })
-
-      // Чекаємо два rAF щоб браузер завершив paint
-      await new Promise<void>(resolve => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-      })
-
-      const el = cardRef.current
-      if (!el) throw new Error('ReceiptCard ref not mounted')
-
-      const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-      })
-
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
-      })
-
-      const fileName = `receipt-${id}-${Date.now()}.png`
-      const { error: uploadError } = await supabase.storage
-        .from('receipts')
-        .upload(fileName, blob, { contentType: 'image/png', upsert: true })
-      if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(fileName)
-      const publicUrl = urlData.publicUrl
-
-      const { error: saveError } = await saveReceiptToSale(supabase, id, publicUrl, balances)
-      if (saveError) throw new Error(saveError)
-
-      setRenderData(null)
-      setState(id, 'done')
-      onGenerated?.({ ...sale, receipt_url: publicUrl, session_balance_snapshot: balances })
-    } catch (err) {
-      console.error('[useReceipt] generate error:', err)
-      setRenderData(null)
-      setState(id, 'error')
+    // Перший рядок: що саме зафіксовано
+    const depDelta = sale.amount_given - sale.price_paid
+    const isDeposit = !sale.ticket_id
+    let paidLine: string
+    if (!isDeposit) {
+      const hours = sale.sessions
+      paidLine = hours != null
+        ? `Зафіксувала оплату абонемента на ${hours} год`
+        : `Зафіксувала оплату абонемента${sale.ticket_name ? ` «${sale.ticket_name}»` : ''}`
+    } else if (depDelta >= 0) {
+      paidLine = `Зафіксувала поповнення депозиту на ${formatMoney(depDelta)}`
+    } else {
+      paidLine = `Зафіксувала списання з депозиту на ${formatMoney(Math.abs(depDelta))}`
     }
-  }, [onGenerated])
+
+    // Повний стан абонементів — тільки ненульові залишки
+    const nonZero = balances.filter(b => b.sessions_balance !== 0)
+    const stateLines = nonZero.length > 0
+      ? nonZero.map(b => `${labelMap[b.ticket_type] ?? b.ticket_type}: ${b.sessions_balance} год`)
+      : ['Залишків немає']
+
+    const clientName = formatClientName(sale.clients)
+
+    return [
+      clientName,
+      '',
+      paidLine,
+      '',
+      `Стан абонементів на ${now}`,
+      ...stateLines,
+    ].join('\n')
+  }, [])
 
   const copyReceipt = useCallback(async (sale: Sale) => {
     const id = sale.id
-
-    // Якщо ще не згенерована — спочатку генеруємо
-    if (!sale.receipt_url) {
-      await generateReceipt(sale)
-      return
-    }
-
     setState(id, 'copying')
     try {
-      const resp = await fetch(sale.receipt_url)
-      const blob = await resp.blob()
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ])
+      const message = await buildMessage(sale)
+      await navigator.clipboard.writeText(message)
       setState(id, 'done')
     } catch (err) {
       console.error('[useReceipt] copy error:', err)
       setState(id, 'error')
     }
-  }, [generateReceipt])
+  }, [buildMessage])
 
   return {
-    cardRef,
-    renderData,
     getState,
-    generateReceipt,
     copyReceipt,
   }
 }
