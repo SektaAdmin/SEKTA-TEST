@@ -1,6 +1,8 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { avatarColor } from '@/lib/avatarColor'
 import { ScheduleIcon, JournalIcon, ClientsIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
@@ -18,6 +20,21 @@ const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
 export default function TrainerHome({ trainerName, telegramConnected, telegramLinkToken }: Props) {
   const router = useRouter()
   const initial = (trainerName.trim()[0] || '?').toUpperCase()
+  const [disconnecting, setDisconnecting] = useState(false)
+
+  async function handleDisconnect() {
+    if (disconnecting) return
+    setDisconnecting(true)
+    try {
+      const res = await fetch('/api/telegram/disconnect', { method: 'POST' })
+      if (!res.ok) throw new Error('failed')
+      toast.success('Сповіщення в Telegram вимкнено')
+      router.refresh() // перечитати серверні props → картка стане «Підключити»
+    } catch {
+      toast.error('Не вдалося відключити. Спробуйте пізніше.')
+      setDisconnecting(false)
+    }
+  }
 
   return (
     <>
@@ -39,7 +56,17 @@ export default function TrainerHome({ trainerName, telegramConnected, telegramLi
           </p>
         </div>
         {telegramConnected ? (
-          <span className={styles.tgConnected}>Підключено ✅</span>
+          <div className={styles.tgConnectedWrap}>
+            <span className={styles.tgConnected}>Підключено ✅</span>
+            <button
+              type="button"
+              className={styles.tgDisconnectBtn}
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+            >
+              {disconnecting ? 'Відключення…' : 'Відключити'}
+            </button>
+          </div>
         ) : BOT_USERNAME ? (
           <a
             className={styles.tgConnectBtn}

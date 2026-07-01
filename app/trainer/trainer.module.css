@@ -104,12 +104,40 @@
   opacity: 0.85;
 }
 
-.tgConnected {
+.tgConnectedWrap {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tgConnected {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-2);
   white-space: nowrap;
+}
+
+.tgDisconnectBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.tgDisconnectBtn:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.tgDisconnectBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* ── Меню-лаунчер ─────────────────────────────────────────────────────────── */
