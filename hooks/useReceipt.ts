@@ -1,13 +1,11 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { formatMoney, formatHours, pluralHoursAccusative } from '@/lib/formatters'
-import { ticketTypeGenitiveLabel, ticketTypeNominativeLabel } from '@/lib/badges'
+import { formatHours } from '@/lib/formatters'
+import { ticketTypeNominativeLabel } from '@/lib/badges'
 import {
   getClientSessionBalances,
-  getSalesAtSameMoment,
   type Sale,
-  type AccrualSale,
 } from '@/lib/queries/sales'
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 
@@ -31,10 +29,9 @@ export function useReceipt() {
   }
 
   const buildMessage = useCallback(async (sale: Sale): Promise<string> => {
-    const [{ data: balances }, { data: labelMap }, { data: siblings }] = await Promise.all([
+    const [{ data: balances }, { data: labelMap }] = await Promise.all([
       getClientSessionBalances(supabase, sale.client_id),
       listTrainingTypeLabels(supabase),
-      getSalesAtSameMoment(supabase, sale.client_id, sale.created_at),
     ])
 
     const now = new Date().toLocaleString('uk-UA', {
@@ -42,48 +39,6 @@ export function useReceipt() {
       hour: '2-digit', minute: '2-digit',
       timeZone: 'Europe/Kyiv',
     })
-
-    // Оплата кількох абонементів = кілька окремих продажів у той самий момент.
-    // Об'єднуємо їх в одне повідомлення: години сумуємо за типом, депозит — окремо.
-    const group: AccrualSale[] = siblings.length > 0 ? siblings : [sale]
-    const bySessionType = new Map<string, { sessions: number; name: string | null }>()
-    let depDelta = 0
-    for (const r of group) {
-      if (r.ticket_id && r.sessions != null) {
-        const key = r.ticket_type ?? ''
-        const cur = bySessionType.get(key) ?? { sessions: 0, name: r.ticket_name }
-        cur.sessions += r.sessions
-        bySessionType.set(key, cur)
-      } else {
-        depDelta += r.amount_given - r.price_paid
-      }
-    }
-
-    // Кожне нарахування як іменникова фраза: «5 годин групових тренувань».
-    const sessionItems = Array.from(bySessionType).map(([type, { sessions, name }]) => {
-      const category = ticketTypeGenitiveLabel(
-        type,
-        (labelMap[type] ?? name ?? '').toLowerCase(),
-      )
-      return `${sessions} ${pluralHoursAccusative(sessions)}${category ? ` ${category}` : ''}`
-    })
-    const depItems: string[] =
-      depDelta > 0 ? [`поповнення депозиту на ${formatMoney(depDelta)}`]
-      : depDelta < 0 ? [`списання з депозиту ${formatMoney(Math.abs(depDelta))}`]
-      : []
-    const allItems = [...sessionItems, ...depItems]
-
-    // Один рядок для однієї позиції (зберігаємо звичну фразу), список — для кількох.
-    let accrualLines: string[]
-    if (allItems.length > 1) {
-      accrualLines = ['Нараховано:', ...allItems.map(i => `— ${i}`)]
-    } else if (sessionItems.length === 1) {
-      accrualLines = [`Нарахували ${sessionItems[0]}.`]
-    } else if (depDelta < 0) {
-      accrualLines = [`Списали з депозиту ${formatMoney(Math.abs(depDelta))}.`]
-    } else {
-      accrualLines = [`Поповнили депозит на ${formatMoney(depDelta)}.`]
-    }
 
     // Клієнтські назви абонементів: узагальнена назва («Групове тренування»),
     // а не бренд-лейбл з training_types («Exotic»). Fallback — лейбл із БД.
@@ -119,7 +74,6 @@ export function useReceipt() {
 
     return [
       'Дякуємо за оплату!',
-      ...accrualLines,
       '',
       `Абонементи станом на ${now}:`,
       ...stateLines,
