@@ -5,15 +5,15 @@
   --space-md: 12px;
   --space-lg: 16px;
   --space-xl: 24px;
+  --space-2xl: 32px;
 }
 
 /* ── Head ──────────────────────────────────────────────────── */
 .head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: var(--space-md);
-  padding: 14px var(--topbar-px);
+  padding: 20px var(--topbar-px);
 }
 
 .title {
@@ -23,70 +23,49 @@
 }
 
 .headDate {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   text-transform: capitalize;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Чипи-фокус блоків — лише mobile. Композять глобальні .filterChips/.filterChip
-   (як .mobileTl*Chips на /schedule): локальний клас тримає видимість і рамку. */
-.blockChips {
-  display: none;
 }
 
 /* ── Body ──────────────────────────────────────────────────── */
 .body {
-  padding: 6px var(--topbar-px) 20px;
-}
-
-/* Одна сітка 2×2 (desktop). Порядок DOM = порядок пріоритету на mobile. */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
-}
-
-/* ── Блок (картка-список) ──────────────────────────────────── */
-/* Vercel-щільність: padding 0, шапка з нижнім розділювачем, тіло зі своїм
-   внутрішнім скролом. min-width:0 — щоб грід не розпирало широкою таблицею. */
-.block {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: var(--space-xl);
+  padding: 20px var(--topbar-px) 32px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Єдиний контейнер блоку-списку (боржники / слоти / місця). */
+.block {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-2);
-  overflow: hidden;
+  padding: 20px;
 }
 
-/* Рівні за висотою блоки: 2 ряди по 2 мають вміститись на екран MacBook без
-   загального скролу сторінки — довгі списки скролять всередині (.scrollBody).
-   Резерв 96px = хедер (~54px) + padding .body (6+20px) + gap між рядами (16px). */
+/* Рівні за висотою блоки зі скролом тіла (боржники / вільні місця / оренда / потребує уваги).
+   Висота прив'язана до viewport: 2 ряди по 2 блоки мають вміститись на екран MacBook
+   без загального скролу сторінки — довгі списки скролять всередині (.scrollBody).
+   Резерв 150px = хедер (~68px) + padding .body (20+32px) + gap між рядами (24px). */
 .equalBlock {
-  height: var(--dashboard-block-h, calc((100vh - 96px) / 2));
-  min-height: 240px;
-}
-
-/* Шапка блоку: заголовок ліворуч, дія (напр., копіювання звіту) праворуч. */
-.blockHead {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-  min-height: 42px;
-  padding: 10px var(--space-lg);
-  border-bottom: 1px solid var(--border);
-}
-
-.blockTitle {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-direction: column;
+  height: var(--dashboard-block-h, calc((100vh - 150px) / 2));
+  min-height: 260px;
 }
 
 .scrollBody {
@@ -94,17 +73,38 @@
   min-height: 0;
   overflow-y: auto;
   /* Горизонтальний скрол: широкі таблиці (боржники з багатьма типами занять)
-     прокручуються вбік, а не стискають колонки. */
+     прокручуються вбік, а не стискають колонки в накладені доріжки. */
   overflow-x: auto;
-  padding: 0 var(--space-lg);
+  /* Відступ під скролбар, щоб він не перекривав бейджи/кнопки праворуч. */
+  padding-right: 12px;
+  margin-right: -8px;
+}
+
+/* Заголовок-шапка у блоці фіксованої висоти (не стискається при скролі тіла). */
+.blockHeadFixed {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .equalBlock {
+    height: auto;
+    min-height: 0;
+    max-height: 70vh;
+  }
 }
 
 /* ── Спільне для блоків ────────────────────────────────────── */
+.blockTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: var(--space-lg);
+}
+
 .empty {
-  padding: 28px var(--space-md);
-  text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
+  padding: var(--space-md) 0;
 }
 
 /* Стан помилки у блоці — нейтральне повідомлення + кнопка повтору */
@@ -116,69 +116,64 @@
 }
 
 .blockErrorMsg {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
   flex: 1;
 }
 
 .blockErrorRetry {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-2);
-  background: transparent;
+  background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  height: 26px;
-  padding: 0 10px;
+  padding: 5px 12px;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 
 .blockErrorRetry:hover {
   border-color: var(--border-hover);
-  background: var(--bg-3);
   color: var(--text);
 }
 
-/* Ghost-кнопка дії в шапці блоку (копіювання звіту). */
+/* ── Блок боржників ────────────────────────────────────────── */
+/* Шапка: заголовок ліворуч, кнопка копіювання звіту праворуч. */
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+  margin-bottom: var(--space-lg);
+}
+
+.blockHead .blockTitle {
+  margin-bottom: 0;
+}
+
 .copyBtn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
-  height: 26px;
-  padding: 0 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-2);
-  background: transparent;
+  background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  padding: 7px 12px;
   cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 
 .copyBtn:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-3);
-  color: var(--text);
+  border-color: var(--text-3);
 }
 
-/* Значення боргу — нейтральне (сірий = спокій): промінентність вагою і
-   табличними цифрами, НЕ кольором. Семантика лишається справжнім алертам. */
-.debtVal {
-  font-weight: 500;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* ── Блок «Боржники» (таблиця клієнт × типи занять + депозит) ─ */
 .debtGroup {
-  padding: var(--space-sm) 0;
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -193,8 +188,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 2px;
+  margin-bottom: var(--space-xs);
 }
 
 .debtHall {
@@ -203,11 +197,11 @@
 }
 
 .debtType {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-2);
   background: var(--bg-3);
-  border-radius: var(--radius-xs);
-  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
 }
 
 .debtClient {
@@ -217,39 +211,37 @@
   gap: var(--space-md);
   font-size: 14px;
   color: var(--text-2);
-  padding: 3px 0 3px 14px;
+  padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
 /* Таблиця боржників: рядок = клієнт, колонки = типи занять + Депозит (₴).
-   Авто-розкладка (НЕ fixed): колонка стає по ширині свого вмісту; при багатьох
-   типах занять сумарна ширина > блоку → .scrollBody дає горизонтальний скрол.
-   border-collapse: separate — щоб нижня межа sticky-шапки їхала разом із нею. */
+   Авто-розкладка (НЕ fixed): кожна колонка стає рівно по ширині свого
+   заголовка/числа, тож при багатьох типах занять колонки не стискаються
+   в накладені доріжки. Якщо сумарна ширина > блоку — .scrollBody дає
+   горизонтальний скрол. min-width:100% тримає таблицю на всю ширину, коли
+   колонок мало. */
 .debtTable {
   min-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   font-size: 14px;
 }
 
-/* Шапка колонок — словник .data-table: 11/500, uppercase, розріджений трекінг. */
 .debtTable th {
   position: sticky;
   top: 0;
-  z-index: 1;
   background: var(--bg-2);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text-3);
   text-align: right;
-  padding: 9px var(--space-sm) 6px;
+  padding: 0 var(--space-sm) var(--space-xs);
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
 }
 
 .debtTable td {
-  padding: 7px var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
   border-bottom: 1px solid var(--border);
   text-align: right;
   color: var(--text-2);
@@ -261,7 +253,8 @@
 }
 
 /* «Клієнт» — гумова колонка: width:100% в авто-розкладці забирає весь залишок,
-   стискаючи числові колонки до вмісту. nowrap — імена в один рядок. */
+   стискаючи числові колонки до їхнього вмісту. nowrap, щоб імена лишались в один
+   рядок (за потреби — горизонтальний скрол блоку). */
 .debtTableName {
   text-align: left !important;
   padding-left: 0 !important;
@@ -271,13 +264,15 @@
   white-space: nowrap;
 }
 
-/* Числова колонка-заняття: hug-to-content; min-width тримає доріжку рівною. */
+/* Числова колонка-заняття: hug-to-content в авто-розкладці; min-width тримає
+   доріжку рівною під tabular-nums навіть для коротких міток/чисел. */
 .debtTableCol {
   min-width: 56px;
   font-variant-numeric: tabular-nums;
 }
 
-/* «Депозит» (₴) — інша одиниця (гроші, не сесії): лівий розділювач колонки. */
+/* «Депозит» (₴) — інша одиниця (гроші, не сесії), тож відокремлюємо лівим
+   розділювачем і ширшою доріжкою під суми з ₴. */
 .debtTableMoney {
   min-width: 84px;
   border-left: 1px solid var(--border);
@@ -289,12 +284,13 @@
   color: var(--text-3);
 }
 
-/* ── Блок: оренда залу (вільні слоти) ──────────────────────── */
+
+/* ── Блок: вільні слоти ────────────────────────────────────── */
 .slotRow {
   display: flex;
   align-items: flex-start;
   gap: var(--space-md);
-  padding: var(--space-sm) 0;
+  padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -304,11 +300,10 @@
 
 .slotHallRow {
   flex-shrink: 0;
-  width: 112px;
+  width: 120px;
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  min-height: 22px;
 }
 
 .slotHall {
@@ -325,14 +320,13 @@
   color: var(--text-3);
   background: transparent;
   border: none;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color var(--motion-fast), background var(--motion-fast);
 }
 
 .slotCopyBtn:hover {
-  color: var(--text);
+  color: var(--text-2);
   background: var(--bg-3);
 }
 
@@ -342,25 +336,23 @@
   gap: var(--space-xs);
 }
 
-/* Слот-чип — нейтральний (це довідка «що вільно», не статус). */
 .slotChip {
   font-size: 13px;
-  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--text-2);
-  background: var(--bg-3);
-  border-radius: var(--radius-xs);
-  padding: 2px 7px;
+  color: var(--success-text);
+  background: var(--success-dim);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
 }
 
-/* Алерт: оренду заброньовано, але тренерського заняття-покриття немає →
-   студію нема кому відкрити. ЄДИНИЙ danger-колір на дашборді. */
+/* Алерт: оренду заброньовано, але тренерське заняття-покриття скасовано →
+   студію нема кому відкрити. Справжній критичний сигнал — danger-токени. */
 .slotAlert {
   display: flex;
   align-items: flex-start;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  margin: var(--space-sm) 0;
+  margin-bottom: var(--space-sm);
   background: var(--danger-dim);
   border: 1px solid var(--danger-border);
   border-radius: var(--radius-sm);
@@ -391,23 +383,25 @@
 }
 
 /* ── Блок: вільні місця на заняттях ────────────────────────── */
-/* Уся стрічка — одна кнопка (відкриває заняття). Анкер — число вільних місць
-   праворуч: розмір і вага, не колір (нейтраль = спокій). */
+/* Уся стрічка — одна кнопка (відкриває заняття). Лідирує число вільних місць
+   праворуч: це питання, на яке адмін шукає відповідь («куди ще можна посадити»).
+   Колір числа — статус наповненості (1 = бурштин «майже немає», 2+ = зелений). */
 .spacesRow {
   display: flex;
   align-items: center;
   gap: var(--space-md);
   width: 100%;
   text-align: left;
-  padding: 8px var(--space-sm) 8px var(--space-xs);
+  padding: 11px var(--space-sm) 11px 4px;
   border: none;
   border-top: 1px solid var(--border);
   background: transparent;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: inherit;
   font: inherit;
-  transition: background var(--motion-fast);
+  /* Тінь розкриває межу між «полем» рядка і фоном лише на hover, не зміщуючи layout. */
+  transition: background 140ms ease, box-shadow 140ms ease;
 }
 
 .spacesRow:first-of-type {
@@ -453,7 +447,7 @@
 .spacesSub {
   font-size: 12px;
   color: var(--text-2);
-  margin-top: 2px;
+  margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -469,7 +463,7 @@
 .spacesChoreo {
   font-size: 12px;
   color: var(--text-3);
-  margin-top: 1px;
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -478,18 +472,20 @@
 .spacesRight {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 10px;
   flex-shrink: 0;
 }
 
-/* Лічильник вільних місць: нейтральна плашка, анкер розміром/вагою. */
+/* Лічильник вільних місць: лише число, нейтральна плашка.
+   Анкер рядка тримають розмір і вага (18px/700), а не колір —
+   адмін звик до спокійного сірого, семантичні кольори тут не лякають. */
 .spacesCount {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 26px;
-  padding: 0 8px;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 9px;
   border-radius: var(--radius-sm);
   line-height: 1;
   background: var(--bg-3);
@@ -497,18 +493,18 @@
 }
 
 .spacesCountNum {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-/* Підказка-афорданс «відкрити»: блідий шеврон, проявляється на hover.
+/* Підказка-афорданс «відкрити»: блідий шеврон, що проявляється на hover.
    Не є ціллю кліку — клікабельна вся стрічка. */
 .spacesChevron {
   color: var(--text-3);
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity var(--motion-fast), transform var(--motion-fast);
+  transition: opacity 140ms ease, transform 140ms ease;
   flex-shrink: 0;
 }
 
@@ -519,7 +515,7 @@
 }
 
 @media (hover: none) {
-  /* На тач-екранах hover немає — шеврон постійно видимий як афорданс. */
+  /* На тач-екранах hover немає — лишаємо шеврон постійно видимим як афорданс. */
   .spacesChevron {
     opacity: 0.5;
     transform: none;
@@ -531,7 +527,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: 8px var(--space-sm) 8px var(--space-xs);
+  padding: 11px var(--space-sm) 11px 4px;
   border-top: 1px solid var(--border);
 }
 
@@ -548,8 +544,8 @@
 }
 
 .spacesSkelLine {
-  height: 10px;
-  border-radius: var(--radius-xs);
+  height: 11px;
+  border-radius: var(--radius-sm);
   background: var(--bg-3);
   position: relative;
   overflow: hidden;
@@ -565,8 +561,8 @@
 }
 
 .spacesSkelCount {
-  width: 32px;
-  height: 26px;
+  width: 34px;
+  height: 30px;
   border-radius: var(--radius-sm);
   background: var(--bg-3);
   flex-shrink: 0;
@@ -589,62 +585,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .spacesRow,
-  .spacesChevron,
-  .copyBtn,
-  .blockErrorRetry,
-  .slotCopyBtn {
+  .spacesChevron {
     transition: none;
   }
   .spacesSkelLine::after,
   .spacesSkelCount::after {
     animation: none;
   }
-}
-
-/* ── Mobile ────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .head {
-    padding: 12px var(--topbar-px);
-  }
-
-  /* Чипи фокусу блоків: «Всі» = всі блоки стопкою. Видимі лише тут. */
-  .blockChips {
-    display: flex;
-    padding: 0 var(--topbar-px) 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .body {
-    padding: 12px var(--topbar-px) 16px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-  }
-
-  /* Без вкладених вертикальних скролів: блок росте на свою висоту, скролиться
-     лише .page-body. overflow-x лишається — широка таблиця боржників їде вбік. */
-  .equalBlock {
-    height: auto;
-    min-height: 0;
-  }
-
-  .scrollBody {
-    overflow-y: visible;
-    overflow-x: auto;
-  }
-
-  /* Вертикального скролу в блоці немає → sticky-шапці таблиці нема до чого
-     липнути, вимикаємо, щоб вона не чіплялась до .page-body. */
-  .debtTable th {
-    position: static;
-  }
-
-  /* Фокус-режим: показуємо лише вибраний блок (display:none не рве realtime —
-     блоки лишаються змонтованими, підписки живі). */
-  .grid[data-focus='rental'] .block:not(.bRental) { display: none; }
-  .grid[data-focus='spaces'] .block:not(.bSpaces) { display: none; }
-  .grid[data-focus='debtors'] .block:not(.bDebtors) { display: none; }
-  .grid[data-focus='today'] .block:not(.bToday) { display: none; }
 }

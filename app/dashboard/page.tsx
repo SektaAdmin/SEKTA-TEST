@@ -9,23 +9,10 @@ import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
 import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
 import styles from './dashboard.module.css'
 
-/* Mobile-фокус: чип показує один блок (або «Всі» стопкою). Ховання через CSS
-   (display:none) — блоки лишаються змонтованими, realtime-підписки живі. */
-const BLOCK_CHIPS = [
-  { key: 'all', label: 'Всі' },
-  { key: 'rental', label: 'Оренда залу' },
-  { key: 'spaces', label: 'Вільні місця' },
-  { key: 'debtors', label: 'Боржники' },
-  { key: 'today', label: 'Сьогодні в мінус' },
-] as const
-
-type BlockFocus = (typeof BLOCK_CHIPS)[number]['key']
-
 export default function DashboardPage() {
   // Дата перераховується при поверненні на вкладку — пульт тримають відкритим весь день,
   // після опівночі має показати новий день, а не той, що був на момент монтування.
   const [today, setToday] = useState(() => toYMD(new Date()))
-  const [focus, setFocus] = useState<BlockFocus>('all')
 
   useEffect(() => {
     const sync = () => setToday(toYMD(new Date()))
@@ -47,25 +34,17 @@ export default function DashboardPage() {
             <h1 className={styles.title}>Дашборд</h1>
             <span className={styles.headDate}>{headerDate}</span>
           </div>
-          <div className={`filterChips ${styles.blockChips}`}>
-            {BLOCK_CHIPS.map(c => (
-              <button
-                key={c.key}
-                type="button"
-                className={`filterChip ${focus === c.key ? 'filterChipActive' : ''}`}
-                aria-pressed={focus === c.key}
-                onClick={() => setFocus(c.key)}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          <div className={styles.grid} data-focus={focus}>
+          {/* Ряд 1: оренда залу (вільні слоти) + вільні місця на заняттях */}
+          <div className={styles.twoCol}>
             <FreeSlotsBlock date={today} />
             <FreeSpacesBlock date={today} />
+          </div>
+
+          {/* Ряд 2: усі боржники (по сесіях + по депозиту) + список боржників сьогодні */}
+          <div className={styles.twoCol}>
             <DebtorListsBlock date={today} />
             <SessionDebtBlock date={today} />
           </div>

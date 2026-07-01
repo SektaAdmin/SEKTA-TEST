@@ -32,7 +32,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
   }, [date, groups])
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock} ${styles.bToday}`}>
+    <section className={`${styles.block} ${styles.equalBlock}`}>
       <div className={styles.blockHead}>
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         {!loading && groups.length > 0 && (
@@ -58,7 +58,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
             {g.clients.map(c => (
               <div key={c.name} className={styles.debtClient}>
                 <span>{c.name}</span>
-                <span className={styles.debtVal}>{c.balance}</span>
+                <span className="balance-warn">{c.balance}</span>
               </div>
             ))}
           </div>

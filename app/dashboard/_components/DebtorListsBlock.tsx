@@ -26,10 +26,8 @@ export function DebtorListsBlock({ date }: { date: string }) {
   const table = data ?? EMPTY_TABLE
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock} ${styles.bDebtors}`}>
-      <div className={styles.blockHead}>
-        <h2 className={styles.blockTitle}>Боржники</h2>
-      </div>
+    <section className={`${styles.block} ${styles.equalBlock}`}>
+      <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
       <div className={styles.scrollBody}>
         {loading && <Loader />}
         {error && <BlockError onRetry={refetch} />}
@@ -56,7 +54,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
                       <td key={c.key} className={c.money ? styles.debtTableMoney : styles.debtTableCol}>
                         {v == null
                           ? <span className={styles.debtTableDash}>—</span>
-                          : <span className={styles.debtVal}>{c.money ? formatMoney(v) : v}</span>}
+                          : <span className="balance-warn">{c.money ? formatMoney(v) : v}</span>}
                       </td>
                     )
                   })}

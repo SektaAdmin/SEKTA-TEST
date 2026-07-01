@@ -7,22 +7,19 @@
 html, body { overscroll-behavior: none; }
 
 :root {
-  /* Нейтраль холодна (синій підтон) — Vercel-подібна світла тема.
-     Теплу пару #f5f5f2/#eeede9 замінено 2026-07: значення інші, ролі ті самі. */
-  --bg: #f6f7f9;
+  --bg: #f5f5f2;
   --bg-2: #ffffff;
-  --bg-3: #eceef2;
+  --bg-3: #eeede9;
   --border: rgba(0,0,0,0.08);
   --border-hover: rgba(0,0,0,0.16);
   --border-strong: rgba(0,0,0,0.14);
-  --text: #18181b;
-  --text-2: #52525b;
-  /* text-3 темніший за старий #737373 — тримає ≥4.5:1 і на --bg-3 (плейсхолдери). */
-  --text-3: #66676e;
+  --text: #1a1917;
+  --text-2: #525252;
+  --text-3: #737373;
   --accent: #000000;
-  --accent-hover: #18181b;
-  --accent-dim: #f1f2f5;
-  --accent-dim-2: #e6e8ec;
+  --accent-hover: #1a1917;
+  --accent-dim: #f5f5f5;
+  --accent-dim-2: #ebebeb;
   --accent-text: #ffffff;
   --danger: #d93535;
   --danger-dim: rgba(217,53,53,0.08);
@@ -33,7 +30,7 @@ html, body { overscroll-behavior: none; }
   --radius-sm: 6px;
   --radius-xs: 4px; /* мікро-радіус — scrollbar, дрібні плашки балансу, ліві кути now-line */
   --radius-full: 999px; /* повна капсула — pill-чипи (дні/фільтри), count-chip */
-  --font: var(--font-inter, 'Inter', sans-serif);
+  --font: var(--font-nunito, 'Nunito Sans', sans-serif);
   --control-h: 32px;
   --topbar-py: 16px;
   --topbar-px: 28px;
