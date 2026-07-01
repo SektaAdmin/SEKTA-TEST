@@ -70,6 +70,23 @@ export function pluralHours(n: number): string {
   return 'годин'
 }
 
+/** Знахідний відмінок «години» для конструкції «Нарахували N ___»:
+ *  1→годину, 2-4→години, 0/5-20/11-14→годин. Відмінюється за модулем. */
+export function pluralHoursAccusative(n: number): string {
+  const abs = Math.abs(n)
+  const m10 = abs % 10, m100 = abs % 100
+  if (m10 === 1 && m100 !== 11) return 'годину'
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'години'
+  return 'годин'
+}
+
+/** «43 години» / «−2 години» — число + відмінена «година».
+ *  Знак — типографський мінус (−), відмінювання за модулем. */
+export function formatHours(n: number): string {
+  const sign = n < 0 ? '−' : ''
+  return `${sign}${Math.abs(n)} ${pluralHours(n)}`
+}
+
 export function formatSaleDatetime(iso: string): string {
   const d = new Date(iso)
   const date = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`

@@ -1,7 +1,8 @@
 'use client'
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { formatMoney, formatClientName } from '@/lib/formatters'
+import { formatMoney, formatHours, pluralHoursAccusative } from '@/lib/formatters'
+import { ticketTypeGenitiveLabel, ticketTypeNominativeLabel } from '@/lib/badges'
 import {
   getClientSessionBalances,
   type Sale,
@@ -39,36 +40,62 @@ export function useReceipt() {
       timeZone: 'Europe/Kyiv',
     })
 
-    // Перший рядок: що саме зафіксовано
+    // Перший рядок: що саме нараховано/зафіксовано (тон «ви», без емодзі).
     const depDelta = sale.amount_given - sale.price_paid
     const isDeposit = !sale.ticket_id
-    let paidLine: string
-    if (!isDeposit) {
-      const hours = sale.sessions
-      paidLine = hours != null
-        ? `Зафіксувала оплату абонемента на ${hours} год`
-        : `Зафіксувала оплату абонемента${sale.ticket_name ? ` «${sale.ticket_name}»` : ''}`
+    let accrualLine: string
+    if (!isDeposit && sale.sessions != null) {
+      // Нарахування годин: «Нарахували 5 годин групових тренувань.»
+      const category = ticketTypeGenitiveLabel(
+        sale.ticket_type ?? '',
+        (labelMap[sale.ticket_type ?? ''] ?? sale.ticket_name ?? '').toLowerCase(),
+      )
+      accrualLine = `Нарахували ${sale.sessions} ${pluralHoursAccusative(sale.sessions)}${category ? ` ${category}` : ''}.`
     } else if (depDelta >= 0) {
-      paidLine = `Зафіксувала поповнення депозиту на ${formatMoney(depDelta)}`
+      accrualLine = `Поповнили депозит на ${formatMoney(depDelta)}.`
     } else {
-      paidLine = `Зафіксувала списання з депозиту на ${formatMoney(Math.abs(depDelta))}`
+      accrualLine = `Списали з депозиту ${formatMoney(Math.abs(depDelta))}.`
     }
 
-    // Повний стан абонементів — тільки ненульові залишки
+    // Клієнтські назви абонементів: узагальнена назва («Групове тренування»),
+    // а не бренд-лейбл з training_types («Exotic»). Fallback — лейбл із БД.
+    const label = (type: string) => {
+      const nom = ticketTypeNominativeLabel(type)
+      return nom === type ? (labelMap[type] ?? type) : nom
+    }
+
+    // Повний стан абонементів — лише ненульові залишки, плюси зверху, мінуси знизу.
     const nonZero = balances.filter(b => b.sessions_balance !== 0)
-    const stateLines = nonZero.length > 0
-      ? nonZero.map(b => `${labelMap[b.ticket_type] ?? b.ticket_type}: ${b.sessions_balance} год`)
+    const positives = nonZero.filter(b => b.sessions_balance > 0)
+    const negatives = nonZero.filter(b => b.sessions_balance < 0)
+    const ordered = [...positives, ...negatives]
+    const stateLines = ordered.length > 0
+      ? ordered.map(b => `${label(b.ticket_type)}: ${formatHours(b.sessions_balance)}`)
       : ['Залишків немає']
 
-    const clientName = formatClientName(sale.clients)
+    // Пояснення до боргу: рядок лише якщо є від'ємні залишки.
+    let debtLines: string[] = []
+    if (negatives.length === 1) {
+      const b = negatives[0]
+      debtLines = [
+        '',
+        `Зверніть увагу: по «${label(b.ticket_type)}» баланс ${formatHours(b.sessions_balance)}.`,
+      ]
+    } else if (negatives.length > 1) {
+      debtLines = [
+        '',
+        'Зверніть увагу: є від’ємний баланс по кількох абонементах:',
+        ...negatives.map(b => `— ${label(b.ticket_type)}: ${formatHours(b.sessions_balance)}`),
+      ]
+    }
 
     return [
-      clientName,
+      'Дякуємо за оплату!',
+      accrualLine,
       '',
-      paidLine,
-      '',
-      `Стан абонементів на ${now}`,
+      `Стан абонементів станом на ${now}:`,
       ...stateLines,
+      ...debtLines,
     ].join('\n')
   }, [])
 
