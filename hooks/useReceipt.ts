@@ -93,7 +93,7 @@ export function useReceipt() {
       'Дякуємо за оплату!',
       accrualLine,
       '',
-      `Стан абонементів станом на ${now}:`,
+      `Абонементи станом на ${now}:`,
       ...stateLines,
       ...debtLines,
     ].join('\n')
