@@ -1,13 +1,14 @@
-/* Geist Copy Button — outline (secondary) стиль: білий фон + 1px рамка,
-   hover → заливка gray-100. Звірено з Vercel_DS/Copy Button. */
+/* Geist Copy Button (Vercel_DS/Copy Button) — outline (secondary) стиль:
+   білий фон + 1px рамка, hover → заливка gray-100. Розмір ТОЧНО як у Geist:
+   --geist-form-height = --geist-space-medium = 40px, іконка 16px. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: var(--control-h);
+  height: 40px;
   padding: 0 12px;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: var(--fw-medium);
   font-family: var(--font);
   line-height: 1;
@@ -23,11 +24,27 @@
 .btn:hover { background: var(--bg-3); border-color: var(--border-hover); }
 .btn:disabled { color: var(--text-3); background: var(--bg-3); border-color: var(--border); cursor: not-allowed; }
 
-.btn svg { flex-shrink: 0; }
+/* Квадратна icon-only — 40×40 (Geist w=h=--geist-form-height), без h-padding. */
+.iconOnly { width: 40px; padding: 0; }
 
-/* Квадратна icon-only (Geist Copy Button = w=h=form-height, без h-padding) */
-.iconOnly { width: var(--control-h); padding: 0; }
+/* Кросфейд Copy↔Check — два накладені шари 16px (Geist: opacity+scale 200ms). */
+.iconWrap {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.iconLayer {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.shown  { opacity: 1; transform: scale(1); }
+.hidden { opacity: 0; transform: scale(0.5); }
 
-/* Стан «скопійовано» — зелена галочка (semantic success = підтверджено) */
-.copied { color: var(--success-text); }
-.copied:hover { background: var(--bg-2); border-color: var(--border); }
+@media (prefers-reduced-motion: reduce) {
+  .iconLayer { transition: none; }
+}
