@@ -20,7 +20,7 @@ export function FormField({ id, label, required, registration, error, hint, chil
       <label htmlFor={id}>
         {label}{required && <span className={styles.required}> *</span>}
       </label>
-      {children ?? (registration && <input id={id} {...registration} />)}
+      {children ?? (registration && <input id={id} aria-invalid={error ? true : undefined} {...registration} />)}
       {error && <p className={styles.errorHint} role="alert">{error.message}</p>}
       {hint && <span className={styles.hint}>{hint}</span>}
     </div>

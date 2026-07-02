@@ -237,26 +237,50 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   color: var(--text);
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: var(--accent-text);
-  border: none;
-  border-radius: var(--radius-sm);
-  height: var(--control-h);
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: opacity 0.12s;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
+/* Button system — shared global utilities, Geist controls.
+   Height --control-h, radius --radius-sm (6px), 14/500. Кожен варіант
+   самодостатній (вживається однією класою): primary (чорний), secondary
+   (сіра заливка), ghost (рамка, як «Скасувати»), danger (червоний).
+   Модифікатор .btn-sm — компактний розмір (settings inline-дії). */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-danger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  height: var(--control-h);
+  padding: 0 14px;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  font-family: var(--font);
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast),
+              color var(--motion-fast), opacity var(--motion-fast);
 }
-.btn-primary:hover { opacity: 0.88; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); color: var(--accent-text); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-secondary { background: var(--accent-dim); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover:not(:disabled) { background: var(--accent-dim-2); border-color: var(--border-hover); }
+
+.btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-hover); }
+.btn-ghost:hover:not(:disabled) { background: var(--accent-dim); border-color: var(--text-3); color: var(--text); }
+
+.btn-danger { background: var(--danger); color: var(--white); }
+.btn-danger:hover:not(:disabled) { opacity: 0.9; }
+
+.btn-sm { height: auto; padding: var(--btn-sm-py) var(--btn-sm-px); font-size: var(--btn-sm-font); }
 
 /* Dot-pulse loading spinner — replaces .loading in 3 page modules */
 .loading-dots {

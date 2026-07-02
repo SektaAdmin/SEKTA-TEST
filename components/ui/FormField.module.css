@@ -17,10 +17,10 @@
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 9px 11px;
+  padding: 8px 12px;
   color: var(--text);
   outline: none;
-  transition: border-color var(--motion-fast);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
   width: 100%;
   font-size: 14px;
   font-family: inherit;
@@ -34,15 +34,31 @@
   padding-bottom: 0;
   line-height: 39px;
 }
+/* Focus — рамка чорніє + м'який glow без кольору (Geist). */
 .field input:focus,
 .field select:focus,
-.field textarea:focus { border-color: var(--accent); }
+.field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+}
 .field input::placeholder,
 .field select::placeholder,
 .field textarea::placeholder { color: var(--text-3); }
+/* Помилка — червона рамка; повідомлення нижче (.errorHint). */
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] { border-color: var(--danger); }
+.field input[aria-invalid='true']:focus,
+.field select[aria-invalid='true']:focus,
+.field textarea[aria-invalid='true']:focus { box-shadow: 0 0 0 3px var(--danger-dim); }
+/* Disabled — темніша рамка (Neutral Border Strong) + приглушений текст. */
 .field input:disabled,
 .field select:disabled,
-.field textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+.field textarea:disabled {
+  border-color: var(--border-strong);
+  color: var(--text-3);
+  cursor: not-allowed;
+}
 
 .required {
   color: var(--accent);
@@ -52,7 +68,7 @@
 
 .errorHint {
   font-size: 11px;
-  color: var(--danger);
+  color: var(--danger-text);
   margin-top: 2px;
 }
 

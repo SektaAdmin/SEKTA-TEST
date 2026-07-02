@@ -1,5 +1,3 @@
-import styles from './ModalFooter.module.css'
-
 interface ModalFooterProps {
   onCancel: () => void
   onSave?: () => void
@@ -25,7 +23,7 @@ export function ModalFooter({
     <>
       <button
         type="button"
-        className={styles.btnCancel}
+        className="btn-ghost"
         onClick={onCancel}
         disabled={loading}
       >
@@ -34,7 +32,7 @@ export function ModalFooter({
       {onSave && (
         <button
           type={saveType}
-          className={danger ? styles.btnDanger : styles.btnSave}
+          className={danger ? 'btn-danger' : 'btn-primary'}
           onClick={saveType === 'button' ? onSave : undefined}
           disabled={loading || disabled}
         >

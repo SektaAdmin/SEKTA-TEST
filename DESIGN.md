@@ -210,18 +210,23 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 ## 5. Components
 
 ### Buttons
-- **Shape:** Rounded corners (12px radius base (Geist material-medium), 6px for controls (Geist material-base), 6px for smaller variants).
-- **Primary:** Professional Black background, white text, 8px vertical × 16px horizontal padding. Hover: stays black (no color shift, only opacity or slight scale).
-- **Secondary:** Neutral Accent Dim background, black text, same shape and padding. Hover: Neutral Accent Dim 2. Used for non-primary actions.
-- **Ghost:** Transparent background, black text, black border (1px). Hover: subtle background lift (Neutral Accent Dim). Used for tertiary actions.
-- **Danger:** Danger color background, white text. Hover: Danger (darkened slightly via opacity). Used for destructive actions only.
-- **States:** Focus ring (2px solid Professional Black, 2px offset) on all interactive states. No blur or glow; clean outlines only.
+
+Shared global utilities in `globals.css`: `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-danger` — each self-contained (used as a single class). Modifier `.btn-sm` for compact inline actions (settings). Common base: height `--control-h` (32px desktop / 44px mobile), radius `--radius-sm` (6px, Geist material-base), 14px / 500 weight, `1px` transparent border baseline, `--motion-fast` transitions, `:disabled` → opacity 0.5.
+
+- **Primary:** Professional Black background (`--accent`), white text. Hover: `--accent-hover` (#171717 — subtle lighten, no color shift). The single primary action.
+- **Secondary:** Neutral Accent Dim fill (`--accent-dim`), Ink text, subtle border. Hover: Accent Dim 2 + Border Hover. Non-primary actions.
+- **Ghost:** Transparent background, secondary text (`--text-2`), `--border-hover` border (1px). Hover: subtle fill (`--accent-dim`) + text darkens to Ink. This is the "Скасувати" look; tertiary actions. *(Border is subtle-neutral, not pure black — a black-bordered ghost would compete with the primary and break the One Voice rule.)*
+- **Danger:** Danger fill (`--danger`), white text. Hover: opacity 0.9. Destructive actions only.
+- **States:** Focus-visible ring (2px solid Professional Black, 2px offset) via the global `:focus-visible` rule. No blur or glow on buttons; clean outlines only.
 
 ### Inputs / Fields
-- **Style:** 1px border (Neutral Border Subtle), Neutral Background Tertiary fill, 8px vertical × 12px horizontal padding, 6px border-radius.
-- **Focus:** Border shifts to Professional Black. Box-shadow: `0 0 0 3px rgba(0,0,0,0.08)` (subtle glow, no color tint).
-- **Error:** Border becomes Danger red. Text error message appears below.
-- **Disabled:** Border becomes Neutral Border Strong (darker). Text and background slightly muted.
+
+Canonical implementation: `components/ui/FormField.tsx` (+ `FormField.module.css`) — label + control + errorHint + hint.
+
+- **Style:** 1px border (`--border`), Neutral Background Tertiary fill (`--bg-3`), 8px vertical × 12px horizontal padding, 6px border-radius (`--radius-sm`).
+- **Focus:** Border shifts to Professional Black. Box-shadow `0 0 0 3px rgba(0,0,0,0.08)` (subtle glow, no color tint).
+- **Error:** `aria-invalid="true"` (set by FormField when an error is present) → Danger red border; focus glow tints to `--danger-dim`. The message below uses `--danger-text` (darker red — clears 4.5:1 at 11px where `--danger` does not).
+- **Disabled:** Border becomes Neutral Border Strong (`--border-strong`, darker), text muted to `--text-3`.
 
 ### Chips / Tags
 - **Default:** Neutral Background Tertiary fill, black text, rounded pill (20px border-radius), 4px vertical × 12px horizontal padding.
