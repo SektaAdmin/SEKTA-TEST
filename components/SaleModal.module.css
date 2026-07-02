@@ -1,40 +1,6 @@
-.field { display: flex; flex-direction: column; gap: 5px; }
-
-.field label {
-  font-size: 11px;
-  color: var(--text-2);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.field select,
-.field input[type="text"],
-.field input[type="number"],
-.field input[type="datetime-local"],
-.field input,
-.field textarea {
-  background: var(--bg-3);
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-sm);
-  padding: 9px 11px;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.12s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.field select:focus,
-.field input:focus,
-.field textarea:focus { border-color: var(--accent); }
-.field input::placeholder,
-.field textarea::placeholder { color: var(--text-3); }
-.field textarea { resize: vertical; min-height: 60px; font-family: inherit; font-size: inherit; line-height: 1.4; }
-.field select:disabled,
-.field input:disabled,
-.field textarea:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.required { color: var(--accent); font-size: 10px; margin-left: 4px; }
+/* Поля форми — примітив FormField (components/ui/FormField). Локальні стилі нижче лишаються
+   тільки для спецвипадків, яких примітив не покриває: банер помилки сабміту, read-only бокс
+   стану депозиту та сегментні кнопки способу оплати (кандидат на майбутній Tabs-примітив). */
 
 .error {
   font-size: 14px;
@@ -42,12 +8,6 @@
   background: var(--danger-dim);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
-}
-
-.errorHint {
-  font-size: 11px;
-  color: var(--danger);
-  margin-top: 2px;
 }
 
 .depositHint {
@@ -64,7 +24,7 @@
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 9px 11px;
+  padding: 8px 12px;
   box-sizing: border-box;
   width: 100%;
   display: flex;

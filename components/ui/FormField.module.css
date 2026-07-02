@@ -4,11 +4,11 @@
   gap: 5px;
 }
 
+/* Geist form-label — 13px normal-case (не uppercase micro-caps). Geist дефолт `capitalize`
+   не годиться для української → беремо варіант «Bypass Casing». Звірено з geist/label. */
 .field label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-2);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .field input,

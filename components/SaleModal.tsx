@@ -108,8 +108,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         </FormField>
 
         {/* Клієнт */}
-        <div className={styles.field}>
-          <label htmlFor="sale-client">Клієнт</label>
+        <FormField id="sale-client" label="Клієнт">
           <ClientSearchCombobox
             inputId="sale-client"
             initialLabel={editSale?.client_name ?? (preselectedClient ? formatClientLabel(preselectedClient) : undefined)}
@@ -123,11 +122,10 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
             error={errors.client_id?.message}
             disabled={busy}
           />
-        </div>
+        </FormField>
 
         {/* Стан депозиту — read-only «поле», завжди видиме. було → стане (±дельта) */}
-        <div className={styles.field}>
-          <label>Депозит</label>
+        <FormField id="sale-deposit" label="Депозит">
           <div className={styles.depositBox}>
             {!clientId || clientBalance === null ? (
               <span className={styles.depositBoxEmpty}>Оберіть клієнта</span>
@@ -138,7 +136,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               </span>
             )}
           </div>
-        </div>
+        </FormField>
 
         {/* Абонемент */}
         <FormField id="sale-ticket" label="Абонемент">
@@ -159,8 +157,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
         </FormField>
 
         {/* Спосіб оплати — кнопки. «З депозиту» доступна лише з абонементом. */}
-        <div className={styles.field}>
-          <label>Спосіб оплати</label>
+        <FormField id="sale-payment" label="Спосіб оплати">
           <div className={styles.paymentTabs}>
             {LIVE_METHODS.map((method) => (
               <button
@@ -189,14 +186,16 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               На депозиті {formatMoney(clientBalance)} — може не вистачити
             </span>
           )}
-        </div>
+        </FormField>
 
         {/* Тренер (тільки для готівки). Цей же тренер = хто прийняв готівку (cash_holder). */}
         {payment === 'cash' && (
-          <div className={styles.field}>
-            <label htmlFor="sale-trainer">
-              Тренер (прийняв готівку) {ticketId && <span className={styles.required}>* обов'язково</span>}
-            </label>
+          <FormField
+            id="sale-trainer"
+            label="Тренер (прийняв готівку)"
+            required={!!ticketId}
+            error={errors.trainer_id}
+          >
             <select
               id="sale-trainer"
               value={trainerId}
@@ -209,16 +208,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               )}
               {trainers.filter(t => t.is_active).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            {errors.trainer_id && (
-              <p className={styles.errorHint} role="alert">{errors.trainer_id.message}</p>
-            )}
-          </div>
+          </FormField>
         )}
 
         {/* Ціна списання з депозиту */}
         {ticketId && fromDeposit && (
-          <div className={styles.field}>
-            <label htmlFor="sale-price-paid">Сума списання (₴)</label>
+          <FormField id="sale-price-paid" label="Сума списання (₴)">
             <input
               id="sale-price-paid"
               type="number"
@@ -230,13 +225,12 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               step={1}
               disabled={busy}
             />
-          </div>
+          </FormField>
         )}
 
         {/* Ціна абонемента (жива оплата) — редагований номінал */}
         {ticketId && !fromDeposit && (
-          <div className={styles.field}>
-            <label htmlFor="sale-price-paid">Ціна абонемента (₴)</label>
+          <FormField id="sale-price-paid" label="Ціна абонемента (₴)">
             <input
               id="sale-price-paid"
               type="number"
@@ -248,34 +242,30 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               step={1}
               disabled={busy}
             />
-          </div>
+          </FormField>
         )}
 
         {/* Сума від клієнта (жива оплата) / операція з депозитом без абонемента */}
-        {!fromDeposit && <div className={styles.field}>
-          <label htmlFor="sale-amount-given">
-            {ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
-          </label>
-          <input
+        {!fromDeposit && (
+          <FormField
             id="sale-amount-given"
-            type="number"
-            value={amountGiven$.text}
-            onFocus={e => e.target.select()}
-            onChange={e => amountGiven$.onChange(e, n => setValue('amount_given', n))}
-            onBlur={() => amountGiven$.onBlur(n => setValue('amount_given', n))}
-            min={ticketId ? 0 : undefined}
-            step={1}
-            disabled={busy}
-          />
-          {errors.amount_given && (
-            <p className={styles.errorHint} role="alert">{errors.amount_given.message}</p>
-          )}
-          {!ticketId && (
-            <span className={styles.depositHint} style={{ color: 'var(--text-3)' }}>
-              Позитивне — поповнення, негативне — списання
-            </span>
-          )}
-        </div>}
+            label={ticketId ? 'Сума від клієнта (₴)' : 'Сума (₴)'}
+            error={errors.amount_given}
+            hint={!ticketId ? 'Позитивне — поповнення, негативне — списання' : undefined}
+          >
+            <input
+              id="sale-amount-given"
+              type="number"
+              value={amountGiven$.text}
+              onFocus={e => e.target.select()}
+              onChange={e => amountGiven$.onChange(e, n => setValue('amount_given', n))}
+              onBlur={() => amountGiven$.onBlur(n => setValue('amount_given', n))}
+              min={ticketId ? 0 : undefined}
+              step={1}
+              disabled={busy}
+            />
+          </FormField>
+        )}
 
         {/* Коментар / Причина */}
         <FormField id="sale-notes" label="Коментар" error={errors.notes}>
