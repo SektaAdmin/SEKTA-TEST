@@ -6,21 +6,27 @@
 
 Джерело істини по значеннях/шкалах — `DESIGN.md`. Історія й технічні перевірки (шрифт, кирилиця, PDF) — memory `project_redesign_vercel`.
 
-## Джерело дизайну — `Vercel_DS/` (звірка з бандлом Geist)
+## Джерело дизайну — `docs/geist/` (витягнуто з повного дампу Geist)
 
-**Ми НЕ вигадуємо значення на око — ми копіюємо їх з автентичного Geist.** Перед кожною сесією юзер зберігає потрібні сторінки з **https://vercel.com/geist** (меню `Components` / `Getting Started`) через «Зберегти сторінку повністю» у теку **`Vercel_DS/`**. Виходить `<Компонент>.html` + `<Компонент>_files/` з CSS-бандлами й JS.
+**Ми НЕ вигадуємо значення на око — ми копіюємо їх з автентичного Geist.**
 
-**Робочий цикл звірки (як робилось у Сесіях 0–1):**
-1. Юзер кладе сторінку(и) сесії у `Vercel_DS/` (напр. `Button.html`, `Typography.html`, `Grid.html`).
-2. Я `grep` по `Vercel_DS/**/*.css` (і за потреби по HTML на inline-класи `geist-new-*`/`.geist-*`) → дістаю **точні** значення: розміри, радіуси, кольори (Geist gray = HSL 0,0%), font-size/line-height/weight/tracking, spacing-рампу, тіні, стани (hover/active/disabled/focus).
-3. Оцифровую в токени `globals.css` + примітив; фіксую в `DESIGN.md` з приміткою «звірено з `Vercel_DS/<Компонент>`».
-4. Хардкоди значень (не «на око») — тільки ті, що знайдено в бандлі.
+**🔑 Нове джерело (з 2026-07-03): `Vercel_raw/geist-docs/` → `docs/geist/`.** Юзер зберіг **повний дамп** усього vercel.com/geist (78 сторінок компонентів, гідратований HTML + 3 CSS-бандли). На відміну від старого `Vercel_DS/` — тут розмітка компонентів **Є в HTML** (server-rendered/hydrated), тож `data-slot`/класи дістаються напряму, без копання в JS-чанках (див. готчу нижче — вона знята). Дамп великий і gitignored, тож з нього **одноразово згенеровано легкі markdown-довідники** у `docs/geist/` (комітяться, ~350 КБ проти 23 МБ сирцю):
 
-**`Vercel_DS/` — gitignored, НЕ комітити** (важкі HTML/JS, лише робочий референс). Якщо потрібної сторінки в теці нема — я зупиняюсь і прошу юзера підвантажити її перед звіркою, а не апроксимую.
+- **`docs/geist/tokens.md`** — 405 токенів (колір light/dark у hex, spacing, radius, shadow, typography, motion). Ґенерує `scripts/geist/extract-tokens.mjs` (grep CSS-бандлів).
+- **`docs/geist/components/<name>.md`** — 77 компонентів: розділи сторінки + DOM-контракт (`data-slot`→класи) + варіанти (згруповані за формою) + крос-реф токенів. Ґенерує `scripts/geist/extract-components.mjs`.
+- **`docs/geist/theming.md`** — themed-система варіантів (кольори компонентів): `.geist-new-<color>` × модифікатор (`base`/`-fill`/`-contrast`/`-dark`) × light/dark → `--themed-bg/fg/border`. **Закриває кольори 🟡 «тонких» компонентів** (Button/Toast/Note/Alert…). Ґенерує `scripts/geist/extract-theming.mjs`.
+- **`docs/geist/README.md`** — індекс з чесним покриттям: 🟢 структура/варіанти з HTML · 🟡 «тонкий» (кольори варіантів — у `theming.md`, структура — single-instance utility-класи в HTML).
 
-Наявне в теці зараз: `Button`, `Copy Button`, `Typography`, `Grid` (Сесії 0–1), `Table`, `Badge`, `Status Dot`, `Pagination` (Сесія 2).
+**Робочий цикл звірки (з Сесії 3):**
+1. Дивлюсь `docs/geist/components/<Компонент>.md` (НЕ сирий HTML — це вбиває ліміт). Там автентичні класи Geist.
+2. Значення класів (gray-400, py-2.5, rounded-full…) → шукаю в `docs/geist/tokens.md`.
+3. Оцифровую в токени `globals.css` + примітив; фіксую в `DESIGN.md`.
+4. **Компонент 🟡 «тонкий»?** Кольори його варіантів — у `docs/geist/theming.md` (`.geist-new-<color>` → `--themed-*`). Структуру (розмір/радіус/відступи) бери зі single-instance utility-класів у HTML сторінки. Значення токенів — у `tokens.md`.
+5. Регенерація за потреби: `npm run geist:docs` (tokens + theming + components).
 
-**⚠️ Готча зі збереженими сторінками:** демо-компоненти на vercel.com/geist (Table/Badge/Status Dot/Pagination) рендеряться **клієнтом (JS)**, тож у статичному `<Компонент>.html` їхньої розмітки НЕМА, а скомпільований CSS не потрапляє в `*_files/*.css` як іменовані класи. Точні значення дістаються з **JS-чанків** (`*_files/*.js`): шукати cva-визначення (`badgeVariants`, `p_=cva(...)`) та рядки `data-slot`/`className` компонента. Так у Сесії 2 знято автентичні: Table (`data-slot` th `h-10 px-2 font-medium`, td `px-2 py-2.5`, hover `bg-gray-100`), Badge (`badgeVariants` sm: `rounded-full h-5 px-1.5 gap-1 text-[11px] tracking-[0.2px] tabular-nums`, low-contrast `-200/-900`), StatusDot (`size-2.5 rounded-full`), Pagination (Geist = лише prev/next nav, номерного пейджера нема).
+**`Vercel_raw/` і `Vercel_DS/` — gitignored, НЕ комітити.** Якщо потрібного компонента нема в `docs/geist/` — перегенерувати зі скрипта; якщо нема в дампі — попросити юзера підвантажити, не апроксимувати.
+
+**✅ Готчу знято:** у старому `Vercel_DS/` демо рендерились клієнтом, тож розмітки в HTML не було — доводилось копати cva з JS-чанків. У повному дампі `Vercel_raw/geist-docs` HTML **гідратований**, розмітка є → Table (`data-slot` th `h-10 px-2 font-medium`, td `px-2 py-2.5`, hover `bg-gray-100`), Badge (3 розміри × 17 варіантів fill/subtle/outline), StatusDot (`size-2.5 rounded-full`) знято прямо з HTML. themed-компоненти (Button/Select/Modal/Tabs/Toast…) тримають кольори варіантів у CSS, не в класах HTML → їхні кольори витягнуто окремим CSS-проходом у `theming.md` (🟡 у `.md` = структура з HTML + посилання на `theming.md`).
 
 ## Принцип
 
