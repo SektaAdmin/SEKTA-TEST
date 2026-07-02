@@ -56,14 +56,14 @@ export async function exportSalaryPdf(opts: {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
   const [regularB64, boldB64] = await Promise.all([
-    loadFont('/fonts/NunitoSans-Regular.ttf'),
-    loadFont('/fonts/NunitoSans-SemiBold.ttf'),
+    loadFont('/fonts/Geist-Regular.ttf'),
+    loadFont('/fonts/Geist-SemiBold.ttf'),
   ])
-  doc.addFileToVFS('NunitoSans-Regular.ttf', regularB64)
-  doc.addFont('NunitoSans-Regular.ttf', 'NunitoSans', 'normal')
-  doc.addFileToVFS('NunitoSans-SemiBold.ttf', boldB64)
-  doc.addFont('NunitoSans-SemiBold.ttf', 'NunitoSans', 'bold')
-  doc.setFont('NunitoSans', 'normal')
+  doc.addFileToVFS('Geist-Regular.ttf', regularB64)
+  doc.addFont('Geist-Regular.ttf', 'Geist', 'normal')
+  doc.addFileToVFS('Geist-SemiBold.ttf', boldB64)
+  doc.addFont('Geist-SemiBold.ttf', 'Geist', 'bold')
+  doc.setFont('Geist', 'normal')
 
   // A4 landscape: 297 × 210 mm
   const pageW = 297
@@ -98,11 +98,11 @@ export async function exportSalaryPdf(opts: {
   let y = mT
 
   // ── Header row ───────────────────────────────────────────────────
-  doc.setFont('NunitoSans', 'bold')
+  doc.setFont('Geist', 'bold')
   doc.setFontSize(14)
   doc.text(`Зарплата: ${opts.trainerName}`, mL, y)
 
-  doc.setFont('NunitoSans', 'normal')
+  doc.setFont('Geist', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(...colGray)
   doc.text(`Період: ${formatDate(opts.dateFrom)} – ${formatDate(opts.dateTo)}`, mL, y + 5)
@@ -122,8 +122,8 @@ export async function exportSalaryPdf(opts: {
     head: [summaryItems.map(s => s.label)],
     body: [summaryItems.map(s => s.value)],
     theme: 'grid',
-    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, halign: 'center', cellPadding: 2, lineWidth: 0.1, lineColor: [180, 180, 180] },
-    bodyStyles: { font: 'NunitoSans', fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 3, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    headStyles: { font: 'Geist', fontSize: 8, fillColor: colHead, textColor: 255, halign: 'center', cellPadding: 2, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    bodyStyles: { font: 'Geist', fontSize: 11, fontStyle: 'bold', halign: 'center', cellPadding: 3, lineWidth: 0.1, lineColor: [180, 180, 180] },
     columnStyles: {
       0: { cellWidth: (pageW - mL - mR) / 4 },
       1: { cellWidth: (pageW - mL - mR) / 4 },
@@ -174,8 +174,8 @@ export async function exportSalaryPdf(opts: {
     head: [['Дата', ...ticketTypes.map(tt => ticketTypeShortLabel(tt)), 'Нараховано']],
     body: classBody,
     theme: 'striped',
-    headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
-    styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    headStyles: { font: 'Geist', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+    styles: { font: 'Geist', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
     columnStyles: {
       0: { cellWidth: dateColW },
       ...Object.fromEntries(ticketTypes.map((_, i) => [i + 1, { cellWidth: typeColW, halign: 'right' }])),
@@ -252,8 +252,8 @@ export async function exportSalaryPdf(opts: {
       head: [['Дата', 'Клієнт / Опис', 'Сума']],
       body: cashBody,
       theme: 'striped',
-      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
-      styles: { font: 'NunitoSans', fontSize: 7.5, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      headStyles: { font: 'Geist', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      styles: { font: 'Geist', fontSize: 7.5, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
       columnStyles: {
         0: { cellWidth: 28 },
         1: { cellWidth: descW },
@@ -275,7 +275,7 @@ export async function exportSalaryPdf(opts: {
       y = paymentsY
     }
 
-    doc.setFont('NunitoSans', 'bold')
+    doc.setFont('Geist', 'bold')
     doc.setFontSize(10)
     doc.text('Виплати', mL, y)
     y += 4
@@ -293,8 +293,8 @@ export async function exportSalaryPdf(opts: {
         p.notes ?? '',
       ]),
       theme: 'striped',
-      headStyles: { font: 'NunitoSans', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
-      styles: { font: 'NunitoSans', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      headStyles: { font: 'Geist', fontSize: 8, fillColor: colHead, textColor: 255, lineWidth: 0.1, lineColor: [180, 180, 180] },
+      styles: { font: 'Geist', fontSize: 8, cellPadding: 1.5, lineWidth: 0.1, lineColor: [180, 180, 180] },
       columnStyles: {
         4: { halign: 'right' },
         5: { halign: 'right', fontStyle: 'bold' },
@@ -307,7 +307,7 @@ export async function exportSalaryPdf(opts: {
   const pageCount = (doc as any).internal.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
-    doc.setFont('NunitoSans', 'normal')
+    doc.setFont('Geist', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(...colGray)
     doc.text(`${i} / ${pageCount}`, pageW - mR, pageH - 5, { align: 'right' })
