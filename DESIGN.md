@@ -143,12 +143,12 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Professional Black** (#000000): Buttons, text emphasis, primary actions. Used on ≤10% of any screen to maximize signal-to-noise.
 
 ### Neutral
-- **Neutral Ink** (#171717): Body text on light backgrounds. Default text color. Cool near-black (Geist gray-1000); Professional Black (#000) stays reserved for the primary accent.
+- **Neutral Ink** (#171717): Body text on light backgrounds. Default text color. Pure-neutral near-black — an exact match for Geist gray-1000; Professional Black (#000) stays reserved for the primary accent.
 - **Neutral Text Secondary** (#525252): Secondary copy, descriptions, lower-hierarchy labels.
 - **Neutral Text Tertiary** (#737373): Disabled text, placeholders, lowest-hierarchy labels.
-- **Neutral Background Primary** (#fafafa): Default page background. Cool near-white (Geist gray-100 / Vercel accents-1) — light, achromatic, not warm.
-- **Neutral Background Secondary** (#ffffff): Cards, containers, modals. Sit a hair above the page; separated by a subtle border.
-- **Neutral Background Tertiary** (#f2f2f2): Form inputs, subtle surface distinction. Cool gray.
+- **Neutral Background Primary** (#fafafa): Default page background. Exact match for Geist `--ds-background-200` — pure-neutral near-white, achromatic, not warm.
+- **Neutral Background Secondary** (#ffffff): Cards, containers, modals — Geist `--ds-background-100`. Sit a hair above the page; separated by a subtle border.
+- **Neutral Background Tertiary** (#f2f2f2): Form inputs, subtle surface distinction. Exact match for Geist gray-100.
 - **Neutral Border Subtle** (rgba(0,0,0,0.08)): Dividers, light borders, default stroke.
 - **Neutral Border Hover** (rgba(0,0,0,0.16)): Hover state for interactive elements.
 - **Neutral Border Strong** (rgba(0,0,0,0.14)): Strong dividers, contrast-critical borders.
@@ -156,7 +156,7 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Neutral Accent Dim 2** (#ebebeb): Hover or selected state for secondary buttons.
 
 ### Semantic (Grayscale Brand Scale)
-- **Brand 50–950** (`#f7f7f7` to `#000000`): Pure neutral (achromatic) scale — the digitized Geist gray ramp — for badge backgrounds, subtle layering, and tonal depth.
+- **Brand 50–950**: Pure neutral (achromatic, HSL 0,0%) scale — the authentic Geist light gray ramp verified against Vercel's CSS bundle — for badge backgrounds, subtle layering, and tonal depth. Values map to Geist `--ds-gray-*`: `50=#fafafa` (bg-200), `100=#f2f2f2` (gray-100), `200=#ebebeb`, `300=#e6e6e6`, `400=#c9c9c9` (gray-500), `500=#a8a8a8`, `600=#8f8f8f` (gray-700), `700=#7d7d7d`, `800=#4d4d4d` (gray-900), `900=#171717` (gray-1000), `950=#000000`. **Contrast caveat:** Geist's own mid-grays fail 4.5:1 for small text on white (gray-700 `#8f8f8f` ≈ 3.0:1, gray-800 `#7d7d7d` ≈ 3.5:1) — use them for fills/borders/large text only; small text takes the darker Ink/Secondary/Tertiary tokens below.
 
 ### Semantic Status Colors
 - **Danger** (#d93535): Error states, destructive actions. Used for fills, borders, icons, and large text (≥18px or bold ≥14px). Always paired with Danger Dim for backgrounds.

@@ -7,16 +7,16 @@
 html, body { overscroll-behavior: none; }
 
 :root {
-  /* Нейтралі — шкала Geist (Vercel): холодні, майже ахроматичні сірі.
-     Було тепле off-white (#f5f5f2/#eeede9/#1a1917); Geist-курс = холодний тон,
-     сторінка світліша (ближче до білого), картки лишаються чисто-білими. */
-  --bg: #fafafa;   /* сторінка — Geist --ds-background-200 (звірено з vercel.com/geist) */
+  /* Нейтралі — шкала Geist (Vercel), звірено з CSS-бандлом vercel.com/geist:
+     Geist gray = ЧИСТО АХРОМАТИЧНИЙ (HSL 0,0% — не «холодний»). Було тепле
+     off-white (#f5f5f2/#eeede9/#1a1917) → прибрано теплий підтон, чисті сірі. */
+  --bg: #fafafa;   /* сторінка — Geist --ds-background-200 (точний збіг) */
   --bg-2: #ffffff; /* картки/модалки — Geist --ds-background-100 */
-  --bg-3: #f2f2f2; /* заливки полів, tertiary-поверхня — холодний сірий */
-  --border: rgba(0,0,0,0.08);
+  --bg-3: #f2f2f2; /* заливки полів — Geist gray-100 (точний збіг) */
+  --border: rgba(0,0,0,0.08); /* ≈ Geist gray-alpha-200 (#00000014) */
   --border-hover: rgba(0,0,0,0.16);
   --border-strong: rgba(0,0,0,0.14);
-  --text: #171717;  /* холодний near-black (Geist gray-1000); accent #000 лишається для кнопок/акценту */
+  --text: #171717;  /* Geist gray-1000 (точний збіг); accent #000 лишається для кнопок/акценту */
   --text-2: #525252;
   --text-3: #737373;
   --accent: #000000;
@@ -77,17 +77,20 @@ html, body { overscroll-behavior: none; }
   --deposit: #8b34d4;
   --deposit-dim: rgba(139,52,212,0.10);
 
-  /* Brand scale (neutral gray — mono accent) */
-  --brand-50:  #f7f7f7;
-  --brand-100: #ededed;
-  --brand-200: #e0e0e0;
-  --brand-300: #c4c4c4;
-  --brand-400: #9e9e9e;
-  --brand-500: #6b6b6b;
-  --brand-600: #2e2e2e;
-  --brand-700: #1a1a1a;
-  --brand-800: #121212;
-  --brand-900: #0a0a0a;
+  /* Нейтральна сіра шкала — аутентична рампа Geist gray (light, HSL 0,0%),
+     звірена з CSS-бандлом vercel.com/geist. Монотонна (пропущено non-monotonic
+     Geist gray-400). ⚠️ Кроки 600–900 (#8f8f8f…#4d4d4d) НЕ проходять 4.5:1 для
+     дрібного тексту на білому — для тексту брати --text/--text-2/--text-3. */
+  --brand-50:  #fafafa; /* Geist --ds-background-200 */
+  --brand-100: #f2f2f2; /* Geist gray-100 */
+  --brand-200: #ebebeb; /* Geist gray-200 */
+  --brand-300: #e6e6e6; /* Geist gray-300 */
+  --brand-400: #c9c9c9; /* Geist gray-500 */
+  --brand-500: #a8a8a8; /* Geist gray-600 */
+  --brand-600: #8f8f8f; /* Geist gray-700 */
+  --brand-700: #7d7d7d; /* Geist gray-800 */
+  --brand-800: #4d4d4d; /* Geist gray-900 */
+  --brand-900: #171717; /* Geist gray-1000 */
   --brand-950: #000000;
 
   /* Accent з різними прозорістю */
