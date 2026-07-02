@@ -10,8 +10,8 @@ html, body { overscroll-behavior: none; }
   /* Нейтралі — шкала Geist (Vercel): холодні, майже ахроматичні сірі.
      Було тепле off-white (#f5f5f2/#eeede9/#1a1917); Geist-курс = холодний тон,
      сторінка світліша (ближче до білого), картки лишаються чисто-білими. */
-  --bg: #fafafa;   /* сторінка — Geist gray-100 (accents-1) */
-  --bg-2: #ffffff; /* картки/модалки */
+  --bg: #fafafa;   /* сторінка — Geist --ds-background-200 (звірено з vercel.com/geist) */
+  --bg-2: #ffffff; /* картки/модалки — Geist --ds-background-100 */
   --bg-3: #f2f2f2; /* заливки полів, tertiary-поверхня — холодний сірий */
   --border: rgba(0,0,0,0.08);
   --border-hover: rgba(0,0,0,0.16);
