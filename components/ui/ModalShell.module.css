@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: var(--overlay-bg);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,7 +12,8 @@
 
 .modal {
   background: var(--bg-2);
-  border: 1px solid var(--border-hover);
+  /* Geist: контур модалки = layered shadow (перший шар = 1px ring), не CSS-рамка */
+  box-shadow: var(--shadow-modal);
   border-radius: var(--radius);
   max-height: 90vh;
   display: flex;

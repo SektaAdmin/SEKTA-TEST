@@ -203,7 +203,9 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Shadow Small** (`0 1px 4px rgba(0,0,0,0.08)`): Subtle lift on input focus, faint hover glow under buttons.
 - **Shadow Medium** (`0 4px 16px rgba(0,0,0,0.12)`): Dropdown menus, popover lift, secondary modals.
 - **Shadow Large** (`0 8px 32px rgba(0,0,0,0.14)`): Primary modals, overlays, top-level UI.
-- **Shadow Overlay** (`0 16px 48px rgba(0,0,0,0.18)`): Modal backdrop shadow; signals maximum elevation.
+- **Shadow Overlay** (`0 16px 48px rgba(0,0,0,0.18)`): Legacy overlay shadow.
+- **Shadow Menu** (`--shadow-menu`): authentic Geist `--ds-shadow-menu` — a four-layer soft shadow whose first layer is a `0 0 0 1px rgba(0,0,0,0.08)` ring (≈ `--border`). Used by dropdown/select popovers (`.fs-content`). The ring replaces a CSS border.
+- **Shadow Modal** (`--shadow-modal`): authentic Geist `--ds-shadow-modal` — same shape, larger blur radii for top-level dialogs (`ModalShell`). First layer is the 1px ring, so modals carry **no** CSS border.
 
 ### Named Rules
 
@@ -277,6 +279,21 @@ Global `.status-dot` (+ state modifiers, `.status-dot-item` for the labelled for
 
 ### Pagination
 `components/ui/Pagination.tsx` — numbered pager (page-size select · range · page buttons). Geist's own `Pagination` is only a previous/next nav, so the numbered pager is an **app composition** built from the Session-1 button tokens (`--control-h`, `--radius-sm`, `--border`). Prev/next use lucide `ChevronLeft`/`ChevronRight` (16px); the active page uses the Neutral Accent Dim state.
+
+### Modals / Overlays
+`components/ui/ModalShell.tsx` (+ `.module.css`) — the canonical dialog shell (header · scrollable body · footer). Two desktop widths (`form` 440px / `detail` 760px); on mobile ≤640px every modal becomes a bottom-sheet.
+- **Backdrop:** authentic Geist `--ds-overlay-backdrop-color` = background-200 (`#fafafa`) at 0.8 opacity → a **light frosted veil**, not a dark scrim (`--modal-backdrop`, kept separate from `--overlay-bg` because that token also feeds shadow-color consumers). `backdrop-filter: blur(2px)` retained.
+- **Card:** white (`--bg-2`), 12px radius (Geist material-medium), elevation via **Shadow Modal** (the 1px ring in that shadow is the only border — no CSS border).
+- **Footer:** buttons right-aligned — cancel = `.btn-secondary`, save = `.btn-primary` (or `.btn-danger`). `ModalFooter.tsx` composes the Session-1 button classes. (Geist's own modal footer is a full-width bordered action bar; right-aligned buttons are a project choice, set in Session 1.)
+
+### Filter Select / Dropdown
+`components/ui/FilterSelect.tsx` (Radix Select) styled by `.fs-*` in `globals.css`. Trigger: `--control-h` tall, 1px border, `--radius-sm`, chevron; open/checked state uses the Neutral Accent Dim.
+- **Popover (`.fs-content`):** 12px radius + 4px inner padding, elevation via **Shadow Menu** (ring replaces border). Verified against authentic **Geist Menu** (`docs/geist/components/menu.md`; the popover itself is portal-rendered, so its shadow comes from the `--ds-shadow-menu` token).
+- **Item (`.fs-item`):** `rounded-md` (`--radius-sm`), 8×10px padding, 10px gap (Geist menu item `rounded-md px-3 gap-2.5`). Hover → gray-100 (`--bg-3`). **Selected → neutral** (`--accent-dim` fill + 500 weight, **not** a colored accent) — mirrors Geist's `bg-gray-alpha-100 text-gray-1000` selected state.
+- **Deviation:** Geist menu items are 40px tall (`h-10`); ours are ~36px for CRM density (same rationale as the table cells).
+
+### Filter Chips
+`.filterChips` / `.filterChip` / `.filterChipActive` (`globals.css`) — single-select pill row shared by mobile `/sales` and `/schedule`. 28px tall, full-radius pill, 500 weight. Inactive hover: `--border-hover` + Ink text. Active: Neutral Accent Dim fill + `--accent-border` + Ink (neutral, per the `--accent: #000` model). Closest Geist analog is the *secondary* Tabs pill; the chip row is an app composition.
 
 ## 6. Do's and Don'ts
 

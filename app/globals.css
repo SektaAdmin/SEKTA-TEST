@@ -85,6 +85,10 @@ html, body { overscroll-behavior: none; }
      Заливки/бордери/іконки лишаються на --warning; текст ≤18px бере --warning-text. */
   --warning-text: #805600;
   --overlay-bg: rgba(0,0,0,0.35);
+  /* Бекдроп модалок — автентичний Geist: --ds-overlay-backdrop-color = background-200
+     (#fafafa) при opacity .8 → світлий фрост, не темний. Окремий токен, бо --overlay-bg
+     переплетено зі споживачами-тінями (HallModal/Combobox). */
+  --modal-backdrop: rgba(250,250,250,0.8);
   --white: #ffffff;
 
   /* Тіні */
@@ -92,6 +96,10 @@ html, body { overscroll-behavior: none; }
   --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
   --shadow-overlay: 0 16px 48px rgba(0,0,0,0.18);
+  /* Автентичні Geist layered-тіні (значення alpha з бандла: #00000005/0a/0f).
+     Перший шар = border-base ring (0 0 0 1px, ≈ --border) — замінює CSS-рамку. */
+  --shadow-menu: 0 0 0 1px rgba(0,0,0,0.08), 0px 1px 1px #00000005, 0px 4px 8px -4px #0000000a, 0px 16px 24px -8px #0000000f; /* Geist --ds-shadow-menu (поповери/дропдауни) */
+  --shadow-modal: 0 0 0 1px rgba(0,0,0,0.08), 0px 1px 1px #00000005, 0px 8px 16px -4px #0000000a, 0px 24px 32px -8px #0000000f; /* Geist --ds-shadow-modal */
 
   /* Кольори методів оплати */
   --fop: #2d78d6;
@@ -388,9 +396,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .fs-content {
   background: var(--bg-2);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  /* Geist: поповер-меню = --ds-shadow-menu (перший шар = 1px ring), радіус medium,
+     внутрішній p-1 щоб rounded-пункти дихали від країв */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-menu);
+  padding: 4px;
   z-index: 500;
   min-width: var(--radix-select-trigger-width);
   max-height: 400px;
@@ -400,7 +410,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .fs-item {
   display: flex;
   align-items: center;
-  padding: 7px 12px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: var(--font);
   color: var(--text);
@@ -411,7 +423,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .fs-item:hover,
 .fs-item[data-highlighted] { background: var(--bg-3); }
-.fs-item[data-state='checked'] { color: var(--accent); font-weight: 500; }
+/* Geist selected = нейтральний (bg-gray-alpha-100 + gray-1000), не кольоровий акцент */
+.fs-item[data-state='checked'] { background: var(--accent-dim); font-weight: 500; }
 
 /* ── Filter chips (shared single-select pill row) ──────────────
    Горизонтальна смуга чипів-фільтрів. Спільний словник для mobile
@@ -445,6 +458,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   transition: background 0.1s, border-color 0.1s, color 0.1s;
   -webkit-tap-highlight-color: transparent;
 }
+/* Неактивний чип: hover-фідбек (Geist — інтерактив завжди реагує) */
+.filterChip:hover:not(.filterChipActive) { border-color: var(--border-hover); color: var(--text); }
 
 .filterChipActive {
   background: var(--accent-dim);
