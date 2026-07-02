@@ -1,6 +1,6 @@
 /* Rate-specific table columns */
 .numCol { text-align: right !important; }
-.rateCell { text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
+.rateCell { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; }
 .grayCell { color: var(--text-3); font-size: 13px; }
 .globalCell { color: var(--text-3); font-style: italic; }
 .dateCell { color: var(--text-2); font-size: 13px; white-space: nowrap; }

@@ -1,14 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import { Nunito_Sans } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import { Toaster } from 'sonner'
 import { RefsProvider } from '@/contexts/RefsContext'
 import './globals.css'
-
-const nunitoSans = Nunito_Sans({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600'],
-  variable: '--font-nunito',
-})
 
 export const metadata: Metadata = {
   title: 'Sekta CRM',
@@ -31,7 +26,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk" className={nunitoSans.variable}>
+    <html lang="uk" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       {/* background вшито inline щоб фон з'явився до завантаження globals.css —
           прибирає білий спалах при старті PWA (сервер повертає HTML з фоном одразу). */}
       <body style={{ background: '#f5f5f2' }}>

@@ -30,7 +30,9 @@ html, body { overscroll-behavior: none; }
   --radius-sm: 6px;
   --radius-xs: 4px; /* мікро-радіус — scrollbar, дрібні плашки балансу, ліві кути now-line */
   --radius-full: 999px; /* повна капсула — pill-чипи (дні/фільтри), count-chip */
-  --font: var(--font-nunito, 'Nunito Sans', sans-serif);
+  --font: var(--font-geist-sans, 'Geist', sans-serif);
+  /* Mono — ТІЛЬКИ для вирівнювання по стовпцю: суми в таблицях і телефони. */
+  --font-mono: var(--font-geist-mono, ui-monospace, 'SF Mono', monospace);
   --control-h: 32px;
   --topbar-py: 16px;
   --topbar-px: 28px;
@@ -353,7 +355,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .filterChip {
   height: 28px;
   padding: 0 12px;
-  border-radius: 14px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--bg-2);
   color: var(--text-2);
@@ -485,10 +487,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Session balance chips (schedule, dashboard, client cabinet).
    balance-ok = >0 (green), balance-zero = 0 (yellow), balance-warn = <0 (red).
    Used for both money (₴) and session counts. */
-.balance-ok   { font-size: 14px; color: var(--success-text); background: var(--success-dim); padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
-.balance-zero { font-size: 14px; color: var(--warning-text); background: var(--warning-dim); padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
-.balance-warn { font-size: 14px; color: var(--danger-text);  background: var(--danger-dim);  padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
-.balance-muted{ font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }
+.balance-ok   { font-family: var(--font-mono); font-size: 14px; color: var(--success-text); background: var(--success-dim); padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
+.balance-zero { font-family: var(--font-mono); font-size: 14px; color: var(--warning-text); background: var(--warning-dim); padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
+.balance-warn { font-family: var(--font-mono); font-size: 14px; color: var(--danger-text);  background: var(--danger-dim);  padding: 2px 8px; border-radius: var(--radius-xs); font-variant-numeric: tabular-nums; }
+.balance-muted{ font-family: var(--font-mono); font-size: 14px; color: var(--text-3);                                                    font-variant-numeric: tabular-nums; }
 
 /* Count pill — small numeric counter next to a label */
 .count-chip        { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-3); }

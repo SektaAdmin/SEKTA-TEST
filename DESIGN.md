@@ -45,25 +45,25 @@ colors:
   semantic-deposit-dim: "rgba(139,52,212,0.10)"
 typography:
   body:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "normal"
   label:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "12px"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "0.02em"
   title:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "16px"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "normal"
   headline:
-    fontFamily: "Nunito Sans, sans-serif"
+    fontFamily: "Geist, sans-serif"
     fontSize: "18px"
     fontWeight: 600
     lineHeight: 1.3
@@ -179,8 +179,10 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 
 ## 3. Typography
 
-**Display Font:** Nunito Sans (with system sans-serif fallback)
-**Character:** Humanist sans-serif, friendly but structured. Nunito's rounded terminals and generous spacing prevent sterility. Chosen for legibility at all sizes and across variable lighting conditions in a studio environment.
+**Display Font:** Geist Sans (with system sans-serif fallback)
+**Character:** Neutral, grotesque sans-serif with tall x-height and tight spacing tuned for UI text. Chosen for legibility at all sizes and across variable lighting conditions in a studio environment. Loaded via `geist/font/sans` (variable, weights 400/500/600 in use), token `--font`.
+
+**Mono Font:** Geist Mono (`geist/font/mono`, token `--font-mono`). Used **only for column alignment**: money amounts in tables and phone numbers. Never for headings, labels, body text, or any other surface — mono exists to line up digits, not to decorate.
 
 ### Hierarchy
 - **Body** (14px, 400, 1.5 line-height): Default text for descriptions, table content, labels. Used on light backgrounds; always >= 4.5:1 contrast.
@@ -255,7 +257,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Do** preserve the 4.5:1 contrast ratio for all body text (no muted grays on light backgrounds).
 - **Do** use semantic colors (red for danger, green for success, amber for warning) only for their intended meanings.
 - **Do** keep shadows subtle; they signal state change only, not decoration.
-- **Do** pair fonts from the Nunito family; never introduce a second sans-serif without strong reason.
+- **Do** pair weights from the Geist family; never introduce a second sans-serif without strong reason.
 - **Do** embrace white space. A calm interface is spacious, not cramped.
 - **Do** document financial colors by their role (FOP, Card, Deposit) not by hex value; meaning carries the design forward.
 
@@ -265,6 +267,6 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Don't** use more than one primary accent on a single screen. Professional Black is the only primary; semantic colors are secondary.
 - **Don't** apply shadows to surfaces at rest. Shadows signal state; resting surfaces are flat.
 - **Don't** use border-left or border-right stripes as a primary design element. Use full borders, background tints, or leading icons instead.
-- **Don't** pair two similar sans-serifs (e.g., Nunito with Inter). Pair on a contrast axis (serif + sans) or use one family in multiple weights.
+- **Don't** pair two similar sans-serifs (e.g., Geist with Helvetica). Pair on a contrast axis (serif + sans) or use one family in multiple weights.
 - **Don't** bury critical information behind scrolling or multiple clicks. Fast operations with minimal friction are the north star.
 - **Don't** introduce decorative gradients, skewed cards, or nested card grids. These are AI slop tells; the design must stay restrained and functional.

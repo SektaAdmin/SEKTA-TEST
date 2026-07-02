@@ -34,7 +34,7 @@
 
 .numCol { text-align: right !important; }
 .numCell { text-align: right; font-variant-numeric: tabular-nums; }
-.amtCell { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+.amtCell { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
 .grayCell { color: var(--text-3); }
 .totalRow { font-weight: 500; }
 .totalAmt { text-align: right; font-weight: 600; font-size: 15px; }

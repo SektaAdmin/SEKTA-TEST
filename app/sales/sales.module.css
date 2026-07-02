@@ -148,10 +148,10 @@
 }
 
 .date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; font-size: 14px !important; }
-.price { font-variant-numeric: tabular-nums; font-size: 14px !important; }
+.price { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px !important; }
 .trainer { color: var(--text-2) !important; }
 
-.deposit { font-variant-numeric: tabular-nums; font-size: 14px !important; white-space: nowrap; }
+.deposit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px !important; white-space: nowrap; }
 .depositPos { color: var(--success); font-weight: 500; }
 .depositNeg { color: var(--danger); font-weight: 500; }
 .depositZero { color: var(--text-3); }

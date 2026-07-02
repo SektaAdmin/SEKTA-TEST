@@ -130,6 +130,7 @@
 }
 
 .cardPhone {
+  font-family: var(--font-mono);
   color: var(--text-2);
   text-decoration: none;
 }
@@ -177,6 +178,7 @@
 .name { font-weight: 500; }
 
 .phone {
+  font-family: var(--font-mono);
   font-size: 14px !important;
 }
 

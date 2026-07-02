@@ -297,6 +297,7 @@
 
 .priceCell {
   text-align: right;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   white-space: nowrap;
@@ -375,6 +376,7 @@
 
 .depositCell {
   text-align: right;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   white-space: nowrap;
@@ -387,6 +389,7 @@
 
 .amtCell {
   text-align: right;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   font-size: 14px;
@@ -446,6 +449,7 @@
 }
 
 .cardAmt {
+  font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;

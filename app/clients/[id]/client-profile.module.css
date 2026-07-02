@@ -531,7 +531,7 @@ a.msContact:hover svg { color: var(--accent); }
 
 
 /* ── Table number cells ─────────────────────────────────────── */
-.numCell { font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
+.numCell { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
 
 /* ── Deposit delta & balance-after ─────────────────────────── */
 .deltaPos  { color: var(--success); font-weight: 500; }
