@@ -70,7 +70,7 @@ typography:
     letterSpacing: "normal"
 rounded:
   xs: "4px"
-  base: "8px"
+  base: "12px"
   sm: "6px"
   badge: "20px"
   full: "999px"
@@ -213,7 +213,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 ## 5. Components
 
 ### Buttons
-- **Shape:** Rounded corners (8px radius base, 6px for smaller variants).
+- **Shape:** Rounded corners (12px radius base (Geist material-medium), 6px for controls (Geist material-base), 6px for smaller variants).
 - **Primary:** Professional Black background, white text, 8px vertical × 16px horizontal padding. Hover: stays black (no color shift, only opacity or slight scale).
 - **Secondary:** Neutral Accent Dim background, black text, same shape and padding. Hover: Neutral Accent Dim 2. Used for non-primary actions.
 - **Ghost:** Transparent background, black text, black border (1px). Hover: subtle background lift (Neutral Accent Dim). Used for tertiary actions.
@@ -232,7 +232,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Semantic (Status/Role):** When a chip represents a status (e.g., "Attended", "Cancelled") or financial role (e.g., "FOP", "Deposit"), the background uses the semantic color at Dim intensity (e.g., Danger Dim for danger status), with semantic text color.
 
 ### Cards / Containers
-- **Corner Style:** 8px border-radius (base).
+- **Corner Style:** 12px border-radius (Geist material-medium). Small controls (buttons, inputs, chips) use 6px (Geist material-base).
 - **Background:** Neutral Background Secondary (white) for content cards. Neutral Background Tertiary for secondary or grouped cards.
 - **Shadow Strategy:** Card at rest: no shadow. On hover: Shadow Small. Modal card: Shadow Large.
 - **Border:** Neutral Border Subtle (1px) for separation, or none if background contrast is sufficient.

@@ -29,9 +29,13 @@ html, body { overscroll-behavior: none; }
   /* Текст danger на світлому (білий/dim) — темніший за заливку, щоб тримати ≥4.5:1.
      Заливки/бордери/іконки лишаються на --danger; текст ≤18px бере --danger-text. */
   --danger-text: #b32020;
-  --radius: 8px;   /* база — Geist md; було 10px, тепер тісніше/щільніше під Vercel */
-  --radius-sm: 6px;
-  --radius-xs: 4px; /* мікро-радіус — scrollbar, дрібні плашки балансу, ліві кути now-line */
+  /* Радіуси — шкала Geist materials (vercel.com/geist/materials):
+     material-base/small/tooltip = 6px, material-medium/large/menu/modal = 12px,
+     material-fullscreen = 16px. Мапимо: --radius-sm = Geist base (6),
+     --radius = Geist medium (12, картки/модалки/меню). 16px поки не токенізуємо. */
+  --radius: 12px;  /* Geist medium — контейнери, картки, модалки, поповери */
+  --radius-sm: 6px; /* Geist base/small — контроли: кнопки, поля, чипи, тултіпи */
+  --radius-xs: 4px; /* мікро (app-specific, нижче за Geist base) — scrollbar, дрібні плашки, ліві кути now-line */
   --radius-full: 999px; /* повна капсула — pill-чипи (дні/фільтри), count-chip */
   --font: var(--font-geist-sans, 'Geist', sans-serif);
   /* Mono — ТІЛЬКИ для вирівнювання по стовпцю: суми в таблицях і телефони. */
