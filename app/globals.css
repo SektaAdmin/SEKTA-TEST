@@ -72,7 +72,6 @@ html, body { overscroll-behavior: none; }
   --btn-sm-px: 10px;
   --btn-sm-font: 12px;
   --table-hover-bg: var(--bg-3);
-  --badge-radius: 20px;
 
   /* Семантичні кольори */
   --success: #00a544;
@@ -334,29 +333,32 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   font-size: 14px;
 }
 
-.data-table thead tr { background: var(--bg-3); }
-
+/* Заголовок — БЕЗ заливки (Geist thead = лише нижня рамка), normal-case 14/500.
+   Звірено з Vercel_DS/Table (data-slot): th = `h-10 px-2 font-medium text-gray-900
+   text-left` — не uppercase, не 11px-мікрокапс. Висота Geist h-10=40px. */
 .data-table th {
-  padding: 10px 16px;
+  height: 40px;
+  padding: 0 12px; /* Geist th=px-2 (8px) borderless; у картці-обгортці 12px — дихання від рамки */
   text-align: left;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  vertical-align: middle;
 }
 
+/* Geist td = `px-2 py-2.5` → верт. 10px (точно), гориз. 12px (як th, для картки) */
 .data-table td {
-  padding: 12px 16px;
+  padding: 10px 12px;
   color: var(--text);
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
 .data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover td { background: var(--bg-3); }
+/* Geist interactive: hover-рядок = gray-100 (=--bg-3, точний збіг) */
+.data-table tbody tr:hover td { background: var(--table-hover-bg); }
 
 /* ── FilterSelect (shared Radix select for filterbars) ────────── */
 .fs-trigger {
@@ -521,14 +523,23 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Single source of truth for all badges. Modifier classes set color + border. */
 /* Usage: className="badge badge-cash"  or  className={paymentClass(method)}   */
 
+/* Геометрія звірена з автентичним Geist Badge (Vercel_DS/Badge, cva `badgeVariants`,
+   розмір `sm`): rounded-full, font-medium, tabular-nums, tracking 0.2px, h-5=20px,
+   gap-1=4px. Geist badge БЕЗ рамки — але ми лишаємо 1px (кольори-модифікатори нижче),
+   щоб бліді семантичні заливки читалися без ретинту палітри (семантику заморожено в
+   Сесії 0). Модель кольору = Geist low-contrast: бліда заливка + насичений текст. */
 .badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 3px 9px;
-  border-radius: var(--badge-radius);
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   border: 1px solid transparent;
 }
@@ -570,3 +581,17 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Count pill — small numeric counter next to a label */
 .count-chip        { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-3); }
 .count-chip-danger { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; padding: 1px 8px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--danger) 12%, transparent); border-radius: var(--radius-full); color: var(--danger-text); }
+
+/* ── Status dot ──────────────────────────────────────────────────────────────
+   Кольоровий кружечок-індикатор стану. Звірено з Geist StatusDot (Vercel_DS/Status
+   Dot, cva `size-2.5 rounded-full` = 10px коло) + мітка `text-label-14 ml-2` (14px,
+   відступ 8px). Стани мапляться на семантичну палітру застосунку (Geist: neutral→
+   accents-2, building→warning, ready→cyan, error→error). */
+.status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--brand-500); }
+.status-dot-neutral { background: var(--brand-500); }
+.status-dot-success { background: var(--success); }
+.status-dot-warning { background: var(--warning); }
+.status-dot-danger  { background: var(--danger); }
+.status-dot-info    { background: var(--fop); }
+/* Мітка поряд із крапкою: 14px, вертикальне центрування, 8px відступ (Geist ml-2). */
+.status-dot-item { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; line-height: 16px; color: var(--text); }

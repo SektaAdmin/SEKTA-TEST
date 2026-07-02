@@ -252,10 +252,31 @@ Canonical implementation: `components/ui/FormField.tsx` (+ `FormField.module.css
 - **Mobile (≤640px):** Control height becomes 44px (touch-target minimum). Top bar padding reduces to 12px vertical × 16px horizontal.
 
 ### Tables
-- **Row Hover:** Hover state applies Neutral Background Tertiary to the entire row.
-- **Border:** 1px Neutral Border Subtle between rows.
-- **Header:** Bold text (500 weight), Neutral Text Secondary color, Neutral Background Tertiary fill.
-- **Padding:** 12px cell padding (vertical 8px, horizontal 12px).
+
+Shared global utility `.data-table` (+ `.data-table-wrap`) in `globals.css`. Verified against the authentic **Geist Table** (`Vercel_DS/Table`, `data-slot` primitives — the demo is JS-rendered, so values were read from the component's compiled class strings in the page bundle).
+
+- **Header (`th`):** Geist `h-10 px-2 font-medium text-gray-900 text-left` — a **normal-case** cell, **not** the uppercase micro-caps pattern. So: 40px tall (`h-10`), 14px / 500 weight, Ink text, **no background fill** (thead carries only a bottom border), left-aligned.
+- **Cell (`td`):** Geist `px-2 py-2.5` → 10px vertical (exact). Horizontal padding is 12px (Geist's borderless table uses `px-2`=8px; we keep the bordered-card wrapper, so 12px gives the edge cells breathing room from the border).
+- **Row hover:** Neutral Background Tertiary (`--bg-3` = Geist gray-100, exact) on the whole row (Geist `interactive` → `bg-gray-100`).
+- **Border:** 1px Neutral Border Subtle between rows (≈ Geist gray-400 `#eaeaea`); last row has none.
+- **Wrapper:** app composition — white card (`--bg-2`), 1px border, 12px radius, `overflow-x:auto`. (Geist's own `TableRoot` is borderless `relative w-full overflow-x-auto`; the card is a project choice for standalone table pages.)
+- **Deviation:** Geist auto-right-aligns the **last** column (`last:text-right`, assumes an actions/amount column). We do **not** apply this globally — app tables have varied last-column content; alignment stays per-page.
+
+### Badges
+
+Shared global `.badge` + `.badge-*` modifiers (`globals.css`); labels/classes via `lib/badges.ts`. Geometry verified against the authentic **Geist Badge** (`Vercel_DS/Badge`, cva `badgeVariants`, size `sm`).
+
+- **Geometry:** `inline-flex` centered, `rounded-full` (pill, `--radius-full`), 20px tall (Geist `h-5`), 8px horizontal padding, 4px gap (Geist `gap-1`), 11px / 500 weight, `letter-spacing: 0.2px` (Geist sm tracking), `font-variant-numeric: tabular-nums`.
+- **Color model:** Geist *low-contrast* — a pale fill + a saturated darker text of the same hue. The project keeps its **own semantic palette** (frozen in Session 0) rather than re-tinting to Geist's exact `-200/-900` pairs, so badge colors stay coherent with icons, borders, and balance chips elsewhere.
+- **Deviation:** Geist badges are **borderless**. We retain a 1px semantic border so the project's paler Dim fills stay legible without re-tinting the palette. A conscious divergence (same spirit as keeping `--accent: #000` in Session 1).
+
+### Status Dot
+Global `.status-dot` (+ state modifiers, `.status-dot-item` for the labelled form). Verified against **Geist StatusDot** (`Vercel_DS/Status Dot`, cva `size-2.5 rounded-full`).
+- **Dot:** 10px circle (`size-2.5`), `border-radius: 50%`. State → semantic color (`-neutral` gray / `-success` / `-warning` / `-danger` / `-info` blue). Geist maps neutral→accents-2, building→warning, ready→cyan, error→error.
+- **Labelled:** `.status-dot-item` — dot + 14px label, 8px gap (Geist `text-label-14 ml-2`).
+
+### Pagination
+`components/ui/Pagination.tsx` — numbered pager (page-size select · range · page buttons). Geist's own `Pagination` is only a previous/next nav, so the numbered pager is an **app composition** built from the Session-1 button tokens (`--control-h`, `--radius-sm`, `--border`). Prev/next use lucide `ChevronLeft`/`ChevronRight` (16px); the active page uses the Neutral Accent Dim state.
 
 ## 6. Do's and Don'ts
 

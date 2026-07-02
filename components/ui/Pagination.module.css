@@ -38,17 +38,20 @@
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 5px 0;
+  height: var(--control-h);
+  padding: 0;
   color: var(--text);
   font-size: 14px;
   font-family: var(--font);
   cursor: pointer;
   min-width: 32px;
-  text-align: center;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 .btn:hover:not(:disabled) {
   border-color: var(--border-hover);

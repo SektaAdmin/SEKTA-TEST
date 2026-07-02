@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './Pagination.module.css'
 
 const PAGE_SIZES = [20, 50, 100] as const
@@ -60,7 +61,7 @@ export default function Pagination({
             onClick={() => onPage(page - 1)}
             disabled={page === 0}
             aria-label="Попередня сторінка"
-          >←</button>
+          ><ChevronLeft size={16} /></button>
 
           {getPageRange(page, totalPages).map((p, i) =>
             p === '...'
@@ -78,7 +79,7 @@ export default function Pagination({
             onClick={() => onPage(page + 1)}
             disabled={page >= totalPages - 1}
             aria-label="Наступна сторінка"
-          >→</button>
+          ><ChevronRight size={16} /></button>
         </div>
       ) : <div />}
     </div>
