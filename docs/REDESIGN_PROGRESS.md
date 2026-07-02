@@ -57,8 +57,11 @@
 
 У Фазі B примітиви вже готові (звірені в A) — Geist-сторінки тут потрібні лише для **композиційних** патернів (layout, відступи між блоками, тулбари, порожні стани). Якщо новий примітив не потрібен — нову сторінку в `Vercel_DS/` можна не тягнути.
 
-- [ ] **Сесія 4 — 🎯 Пілот: /sales.** Найщільніша таблична сторінка, калібрує всю Фазу A.
-  📥 **Geist:** `Grid` (вже є), за потреби `Input`/`Select` для тулбара фільтрів.
+- [x] **Сесія 4 — 🎯 Пілот: /sales.** Найщільніша таблична сторінка — прогнав крізь неї всю Фазу A, замінив локальні реімплементації примітивів. Гілка `redesign/session-4-sales-pilot`.
+  **Мігровано на примітиви:** `.expenseBtn` → `.btn-secondary`; кнопки обох confirm-діалогів → `.btn-secondary`/`.btn-danger` (видалено локальні `.expenseBtn`/`.btnCancel`/`.btnConfirmDel`, ~50 рядків CSS). **Confirm-діалоги** переведено на токени Сесії 3: бекдроп `--overlay-bg` → `--modal-backdrop` (світлий фрост), картка `border` → `box-shadow: --shadow-modal` (1px-ring у тіні). `.confirmError` колір `--danger` → `--danger-text` (4.5:1). **Прибрано мертві оверрайди:** `font-size: 14px !important` з клітинок `.date/.price/.deposit/.sessions/.opTopup/.opDeduction/.depositLabel` — базовий 14px тепер дає примітив `.data-table` (сторінка більше не дублює розмір).
+  **Що вже було на примітивах (лише звірено, що тримає щільність):** таблиця `.data-table`, платіжні бейджі `paymentClass()`→`.badge-*`, `Pagination`, `FilterSelect`, mobile `.filterChip`.
+  **Калібраційні знахідки (gaps Фази A) — лишено локальним, це НЕ борг:** (1) сегментні таби фіду (`.feedTab`/`.feedTabActive`) — у Фазі A нема tabs-примітива (Session 3 зробив лише chip); тримаються локально на токенах, активний стан нейтральний (`--accent-dim`). (2) inline-дії таблиці (`.btnEdit`/`.btnDel`/`.btnReceipt`) — навмисно локальні: спільна база на `--btn-sm-*`, але з семантичним hover (del→danger, receipt→accent), чого `.btn-*` не покривають; це свідомий патерн «тонкі inline-actions», не реімплементація. (3) `.filterSearchInput` (пошук з іконкою), `.sheetDone`/`.filterToggleBtn` (mobile-хром із `display:none`-на-desktop, застосування `.btn-*` крихке через конфлікт `display`) — лишено. tsc чистий; build не ганяв (dev на :3000, .next-готча) — скрін-перевірка на Vercel preview гілки.
+  📥 **Geist:** `Grid` (вже є), за потреби `Input`/`Select` для тулбара фільтрів. ✅
 - [ ] **Сесія 5 — /accounting** (+ `/accounting/trainers`, `/rates`, `/salary`, `StudioExpenseModal`).
   📥 **Geist:** з A; за потреби `Tabs`, `Description List`.
 - [ ] **Сесія 6 — /clients + /clients/[id]** (+ `ClientModal`).

@@ -16,18 +16,8 @@
 /* FAB — лише mobile (стилі в @media нижче). На desktop прихований. */
 .fab { display: none; }
 
-.expenseBtn {
-  height: 32px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-2);
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast);
-}
-.expenseBtn:hover { background: var(--bg-3); color: var(--text); }
+/* «+ Студійна операція» / «Скасувати» / «Видалити» тепер на глобальних
+   .btn-secondary / .btn-danger (Сесія 4 — пілот /sales). */
 
 /* ── Filters bar ─────────────────────────────────────────────── */
 .filters {
@@ -147,18 +137,20 @@
   gap: 12px;
 }
 
-.date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; font-size: 14px !important; }
-.price { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px !important; }
+/* Клітинкові оверрайди: колір/mono/tabular. Базовий розмір (14px) дає
+   примітив .data-table — сторінка більше не дублює font-size (Сесія 4). */
+.date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; }
+.price { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .trainer { color: var(--text-2) !important; }
 
-.deposit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px !important; white-space: nowrap; }
+.deposit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .depositPos { color: var(--success); font-weight: 500; }
 .depositNeg { color: var(--danger); font-weight: 500; }
 .depositZero { color: var(--text-3); }
-.depositLabel { color: var(--text-3); font-style: italic; font-size: 14px; }
-.opTopup     { color: var(--success); font-size: 14px; }
-.opDeduction { color: var(--danger); font-size: 14px; }
-.sessions    { font-variant-numeric: tabular-nums; font-size: 14px !important; }
+.depositLabel { color: var(--text-3); font-style: italic; }
+.opTopup     { color: var(--success); }
+.opDeduction { color: var(--danger); }
+.sessions    { font-variant-numeric: tabular-nums; }
 
 
 .actions { display: flex; gap: 6px; }
@@ -179,11 +171,14 @@
 .btnReceipt:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 .btnReceipt:disabled { opacity: 0.5; cursor: wait; }
 
-/* ── Confirm dialog ──────────────────────────────────────────── */
+/* ── Confirm dialog ──────────────────────────────────────────────
+   Модалка-підтвердження на токенах Сесії 3: світлий фрост-бекдроп
+   (--modal-backdrop) + --shadow-modal (перший шар = 1px ring, тож
+   без CSS-рамки). Кнопки — глобальні .btn-secondary/.btn-danger. */
 .confirmOverlay {
   position: fixed;
   inset: 0;
-  background: var(--overlay-bg);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,8 +188,8 @@
 
 .confirmBox {
   background: var(--bg-2);
-  border: 1px solid var(--border-hover);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-modal);
   padding: 24px;
   width: 300px;
 }
@@ -214,7 +209,7 @@
 
 .confirmError {
   font-size: 14px;
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
   padding: 7px 10px;
   border-radius: var(--radius-sm);
@@ -222,32 +217,6 @@
 }
 
 .confirmBtns { display: flex; gap: 8px; justify-content: flex-end; }
-
-.btnCancel {
-  background: transparent;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.12s;
-}
-.btnCancel:hover { color: var(--text); }
-
-.btnConfirmDel {
-  background: var(--danger);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.12s;
-}
-.btnConfirmDel:hover    { opacity: 0.85; }
-.btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Desktop/mobile table toggle ─────────────────────────────── */
 .tableDesktop { display: block; }

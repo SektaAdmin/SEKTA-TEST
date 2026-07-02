@@ -161,7 +161,7 @@ export default function SalesPage() {
           <div className={styles.topbar}>
             <h1 className="page-title">Продажі</h1>
             <div className={styles.topbarBtns}>
-              <button className={styles.expenseBtn} onClick={() => setExpenseModal(true)}>
+              <button className="btn-secondary" onClick={() => setExpenseModal(true)}>
                 + Студійна операція
               </button>
               {/* Desktop: кнопка в топбарі. Mobile: схована, дублюється FAB нижче. */}
@@ -670,8 +670,8 @@ export default function SalesPage() {
             <p>Цю дію неможливо скасувати.</p>
             {deleteError && <p className={styles.confirmError}>{deleteError}</p>}
             <div className={styles.confirmBtns}>
-              <button className={styles.btnCancel} onClick={() => { setDeleteId(null); setDeleteError('') }}>Скасувати</button>
-              <button className={styles.btnConfirmDel} onClick={handleDelete} disabled={deleting}>
+              <button className="btn-secondary" onClick={() => { setDeleteId(null); setDeleteError('') }}>Скасувати</button>
+              <button className="btn-danger" onClick={handleDelete} disabled={deleting}>
                 {deleting ? 'Видалення...' : 'Видалити'}
               </button>
             </div>
@@ -685,8 +685,8 @@ export default function SalesPage() {
             <h3>Видалити операцію?</h3>
             <p>Цю дію неможливо скасувати.</p>
             <div className={styles.confirmBtns}>
-              <button className={styles.btnCancel} onClick={() => setDeleteExpenseId(null)}>Скасувати</button>
-              <button className={styles.btnConfirmDel} onClick={handleDeleteExpense} disabled={deletingExpense}>
+              <button className="btn-secondary" onClick={() => setDeleteExpenseId(null)}>Скасувати</button>
+              <button className="btn-danger" onClick={handleDeleteExpense} disabled={deletingExpense}>
                 {deletingExpense ? 'Видалення...' : 'Видалити'}
               </button>
             </div>

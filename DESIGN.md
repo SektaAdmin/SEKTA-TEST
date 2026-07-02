@@ -285,6 +285,7 @@ Global `.status-dot` (+ state modifiers, `.status-dot-item` for the labelled for
 - **Backdrop:** authentic Geist `--ds-overlay-backdrop-color` = background-200 (`#fafafa`) at 0.8 opacity → a **light frosted veil**, not a dark scrim (`--modal-backdrop`, kept separate from `--overlay-bg` because that token also feeds shadow-color consumers). `backdrop-filter: blur(2px)` retained.
 - **Card:** white (`--bg-2`), 12px radius (Geist material-medium), elevation via **Shadow Modal** (the 1px ring in that shadow is the only border — no CSS border).
 - **Footer:** buttons right-aligned — cancel = `.btn-secondary`, save = `.btn-primary` (or `.btn-danger`). `ModalFooter.tsx` composes the Session-1 button classes. (Geist's own modal footer is a full-width bordered action bar; right-aligned buttons are a project choice, set in Session 1.)
+- **Lightweight confirm dialogs** (page-local delete confirmations, not `ModalShell`) reuse the same elevation tokens: backdrop `--modal-backdrop`, card `box-shadow: var(--shadow-modal)` with **no** CSS border, cancel = `.btn-secondary` / confirm = `.btn-danger`. Established on `/sales` in Session 4.
 
 ### Filter Select / Dropdown
 `components/ui/FilterSelect.tsx` (Radix Select) styled by `.fs-*` in `globals.css`. Trigger: `--control-h` tall, 1px border, `--radius-sm`, chevron; open/checked state uses the Neutral Accent Dim.
