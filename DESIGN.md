@@ -44,30 +44,19 @@ colors:
   semantic-deposit: "#8b34d4"
   semantic-deposit-dim: "rgba(139,52,212,0.10)"
 typography:
-  body:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: "normal"
-  label:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "12px"
-    fontWeight: 500
-    lineHeight: 1.4
-    letterSpacing: "0.02em"
-  title:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "16px"
-    fontWeight: 500
-    lineHeight: 1.4
-    letterSpacing: "normal"
-  headline:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "18px"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "normal"
+  fontFamily: "Geist, sans-serif"
+  weights: { normal: 400, medium: 500, semibold: 600 }
+  # Шкала Geist (vercel.com/geist/typography), звірено з CSS-бандлом. Кожен розмір
+  # у парі з line-height (px). Заголовки — semibold + негативний tracking (підпис
+  # Geist); текст (copy/label) — tracking normal. Токени --fs-*/--lh-*/--tracking-*.
+  scale:
+    xs:   { fontSize: "12px", lineHeight: "16px", role: "label — бейджі, дрібні мітки" }
+    sm:   { fontSize: "13px", lineHeight: "18px", role: "copy — другорядний текст" }
+    base: { fontSize: "14px", lineHeight: "20px", role: "body — таблиці, поля, дефолт" }
+    md:   { fontSize: "16px", lineHeight: "24px", role: "заголовки секцій, суми" }
+    lg:   { fontSize: "20px", lineHeight: "26px", tracking: "-0.4px", role: "L1 — заголовки сторінок/модалок" }
+    xl:   { fontSize: "24px", lineHeight: "32px", tracking: "-0.96px", role: "heading" }
+    "2xl":{ fontSize: "32px", lineHeight: "40px", tracking: "-1.28px", role: "великі числа дашборда" }
 rounded:
   xs: "4px"
   base: "12px"
@@ -185,16 +174,24 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 **Mono Font:** Geist Mono (`geist/font/mono`, token `--font-mono`). Used **only for column alignment**: money amounts in tables and phone numbers. Never for headings, labels, body text, or any other surface — mono exists to line up digits, not to decorate.
 
 ### Hierarchy
-- **Body** (14px, 400, 1.5 line-height): Default text for descriptions, table content, labels. Used on light backgrounds; always >= 4.5:1 contrast.
-- **Title** (16px, 500, 1.4 line-height): Section headings, card titles, list item labels. Medium emphasis.
-- **Headline** (18px, 600, 1.3 line-height): Page titles, modal headlines, top-level information. Highest hierarchy below display.
-- **Label** (12px, 500, letter-spacing 0.02em, 1.4 line-height): Form labels, badges, secondary navigation, captions. Small, distinct from body.
+
+Digitized from the **Geist type scale** (`vercel.com/geist/typography`, verified against the CSS bundle). Each step pairs a font-size with a line-height in px; tokens `--fs-*` / `--lh-*`. Weights: `--fw-normal` 400 (text) · `--fw-medium` 500 (controls/buttons) · `--fw-semibold` 600 (headings).
+
+- **xs** (12/16, 400): Badges, small captions, `count-chip`. → `--fs-xs`
+- **sm** (13/18, 400): Secondary / helper text. → `--fs-sm`
+- **base** (14/20, 400): Default UI text — tables, fields, descriptions. → `--fs-base`
+- **md** (16/24, 500–600): Section headings, card titles, prominent sums. → `--fs-md`
+- **lg** (20/26, 600, tracking −0.4px): L1 — page & modal titles. → `--fs-lg`
+- **xl** (24/32, 600, tracking −0.96px): Large headings. → `--fs-xl`
+- **2xl** (32/40, 600, tracking −1.28px): Big dashboard numbers. → `--fs-2xl`
+
+**Geist signature — negative tracking on headings.** Semibold headings tighten with a negative letter-spacing (`--tracking-lg/xl/2xl`, ≈ −0.06 × size); body **copy/label** text stays at normal tracking. Apply `--tracking-*` only to the semibold heading steps.
 
 ### Named Rules
 
 **The No-Scare Rule.** Body text must achieve 4.5:1 contrast against its background. Placeholder text must also hit 4.5:1 (not the faded gray that ships by default). Secondary text (#525252) is never lighter than this on any background. **Semantic colors split fill from text:** the vivid token (`--success` / `--danger`) is for fills, borders, icons, and large text (≥18px or bold ≥14px); for semantic *text under 18px* on a light or dim background, use the darker `-text` variant (`--success-text` / `--danger-text`) — the vivid green/red fails 4.5:1 at small sizes. This is exactly the strain the rule exists to prevent, given the studio's variable lighting and older staff.
 
-**The Breathing Room Rule.** Line-height is never less than 1.3. Line length is capped at 65–75ch for body text on full-width surfaces. This reduces cognitive load for busy admins in variable lighting.
+**The Breathing Room Rule.** For **body / multi-line text** (steps xs–md) line-height is never less than 1.3× — the Geist scale honours this (base 14/20 = 1.43, md 16/24 = 1.5). Large single-line **headings** (lg–2xl) run tighter by design (2xl 32/40 = 1.25) — that tightness is the display look, not a body-text setting. Line length is capped at 65–75ch for body text on full-width surfaces. This reduces cognitive load for busy admins in variable lighting.
 
 ## 4. Elevation
 

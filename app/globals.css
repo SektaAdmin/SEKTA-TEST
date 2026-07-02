@@ -40,6 +40,31 @@ html, body { overscroll-behavior: none; }
   --font: var(--font-geist-sans, 'Geist', sans-serif);
   /* Mono — ТІЛЬКИ для вирівнювання по стовпцю: суми в таблицях і телефони. */
   --font-mono: var(--font-geist-mono, ui-monospace, 'SF Mono', monospace);
+
+  /* Типографіка — шкала Geist (vercel.com/geist/typography), звірено з CSS-бандлом
+     (класи .text-heading/.text-copy/.text-label/.text-button). Ваги: 400 текст,
+     500 контроли/кнопки, 600 заголовки. Кожен розмір іде в парі з line-height.
+     Підпис Geist: заголовки (semibold) мають НЕГАТИВНИЙ tracking (--tracking-*),
+     що стискає великий текст; текст (copy/label) — tracking normal. */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  --fs-xs:   12px; --lh-xs:   16px; /* Geist label-12 — бейджі, дрібні мітки, count-chip */
+  --fs-sm:   13px; --lh-sm:   18px; /* Geist copy-13 — другорядний/допоміжний текст */
+  --fs-base: 14px; --lh-base: 20px; /* Geist copy-14 — базовий UI-текст, таблиці, поля */
+  --fs-md:   16px; --lh-md:   24px; /* Geist copy-16 / heading-16 — заголовки секцій, суми */
+  --fs-lg:   20px; --lh-lg:   26px; /* Geist heading-20 — L1-заголовки сторінок/модалок */
+  --fs-xl:   24px; --lh-xl:   32px; /* Geist heading-24 */
+  --fs-2xl:  32px; --lh-2xl:  40px; /* Geist heading-32 — великі числа дашборда */
+
+  /* Негативний tracking заголовків Geist (застосовувати ЛИШЕ до semibold-заголовків
+     на цих розмірах; до copy/label — ні). Пропорція ≈ -0.06 × font-size. */
+  --tracking-md:  -0.32px; /* 16px */
+  --tracking-lg:  -0.4px;  /* 20px */
+  --tracking-xl:  -0.96px; /* 24px */
+  --tracking-2xl: -1.28px; /* 32px */
+
   --control-h: 32px;
   --topbar-py: 16px;
   --topbar-px: 28px;
