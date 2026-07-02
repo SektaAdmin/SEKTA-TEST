@@ -237,11 +237,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   color: var(--text);
 }
 
-/* Button system — shared global utilities, Geist controls.
-   Height --control-h, radius --radius-sm (6px), 14/500. Кожен варіант
-   самодостатній (вживається однією класою): primary (чорний), secondary
-   (сіра заливка), ghost (рамка, як «Скасувати»), danger (червоний).
-   Модифікатор .btn-sm — компактний розмір (settings inline-дії). */
+/* Button system — shared global utilities, звірено з автентичним Geist Button
+   (Vercel_DS/Button, клас `geist-new-*`). Height --control-h (= Geist small
+   32px), radius --radius-sm (6px = Geist rounded-md), 14/500. Кожен варіант
+   самодостатній (вживається однією класою). Модель Geist: 4 варіанти —
+   primary (default, чорна заливка), secondary (білий фон + рамка = outline),
+   ghost (tertiary — прозорий, БЕЗ рамки у спокої, fill на hover), danger
+   (error, червона заливка). Disabled = приглушені кольори (gray-100 фон /
+   gray-700 текст), НЕ opacity. Модифікатор .btn-sm — компактні inline-дії. */
 .btn-primary,
 .btn-secondary,
 .btn-ghost,
@@ -263,20 +266,33 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   transition: background var(--motion-fast), border-color var(--motion-fast),
               color var(--motion-fast), opacity var(--motion-fast);
 }
+/* Disabled — приглушені кольори Geist (не прозорість): текст --text-3,
+   фон gray-100 (--bg-3), рамка --border. */
 .btn-primary:disabled,
 .btn-secondary:disabled,
 .btn-ghost:disabled,
-.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-danger:disabled {
+  background: var(--bg-3);
+  color: var(--text-3);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
 
+/* Primary (Geist default) — чорна заливка, hover світлішає. */
 .btn-primary { background: var(--accent); color: var(--accent-text); }
 .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
-.btn-secondary { background: var(--accent-dim); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover:not(:disabled) { background: var(--accent-dim-2); border-color: var(--border-hover); }
+/* Secondary (Geist secondary) — білий фон + 1px рамка (≈ gray-400),
+   hover → заливка gray-100 + темніша рамка. Природна пара до primary. */
+.btn-secondary { background: var(--bg-2); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover:not(:disabled) { background: var(--bg-3); border-color: var(--border-hover); }
 
-.btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-hover); }
-.btn-ghost:hover:not(:disabled) { background: var(--accent-dim); border-color: var(--text-3); color: var(--text); }
+/* Ghost (Geist tertiary) — прозорий, рамки НЕМА у спокої; на hover
+   з'являється subtle-заливка + рамка. Для inline/toolbar-дій. */
+.btn-ghost { background: transparent; color: var(--text); border-color: transparent; }
+.btn-ghost:hover:not(:disabled) { background: var(--accent-dim); border-color: var(--border); }
 
+/* Danger (Geist error) — червона заливка, білий текст. */
 .btn-danger { background: var(--danger); color: var(--white); }
 .btn-danger:hover:not(:disabled) { opacity: 0.9; }
 

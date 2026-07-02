@@ -71,22 +71,24 @@ components:
   button-primary:
     backgroundColor: "{colors.professional-black}"
     textColor: "{colors.neutral-accent-text}"
-    rounded: "{rounded.base}"
+    rounded: "{rounded.sm}"
     padding: "8px 16px"
   button-secondary:
-    backgroundColor: "{colors.neutral-accent-dim}"
-    textColor: "{colors.professional-black}"
-    rounded: "{rounded.base}"
+    backgroundColor: "{colors.neutral-bg-secondary}"
+    border: "1px solid {colors.neutral-border-subtle}"
+    textColor: "{colors.neutral-ink}"
+    rounded: "{rounded.sm}"
     padding: "8px 16px"
   button-ghost:
     backgroundColor: "transparent"
-    textColor: "{colors.professional-black}"
-    rounded: "{rounded.base}"
+    border: "none"
+    textColor: "{colors.neutral-ink}"
+    rounded: "{rounded.sm}"
     padding: "8px 16px"
   button-danger:
     backgroundColor: "{colors.danger}"
     textColor: "{colors.neutral-accent-text}"
-    rounded: "{rounded.base}"
+    rounded: "{rounded.sm}"
     padding: "8px 16px"
   input-field:
     backgroundColor: "{colors.neutral-bg-tertiary}"
@@ -211,13 +213,16 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 
 ### Buttons
 
-Shared global utilities in `globals.css`: `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-danger` — each self-contained (used as a single class). Modifier `.btn-sm` for compact inline actions (settings). Common base: height `--control-h` (32px desktop / 44px mobile), radius `--radius-sm` (6px, Geist material-base), 14px / 500 weight, `1px` transparent border baseline, `--motion-fast` transitions, `:disabled` → opacity 0.5.
+Shared global utilities in `globals.css`: `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-danger` — each self-contained (used as a single class). Modifier `.btn-sm` for compact inline actions (settings). Verified against the authentic **Geist Button** (`Vercel_DS/Button`, `geist-new-*` classes). Common base: height `--control-h` (32px desktop = Geist *small* / 44px mobile), radius `--radius-sm` (6px = Geist `rounded-md`), 14px / 500 weight, `1px` transparent border baseline, `--motion-fast` transitions.
 
-- **Primary:** Professional Black background (`--accent`), white text. Hover: `--accent-hover` (#171717 — subtle lighten, no color shift). The single primary action.
-- **Secondary:** Neutral Accent Dim fill (`--accent-dim`), Ink text, subtle border. Hover: Accent Dim 2 + Border Hover. Non-primary actions.
-- **Ghost:** Transparent background, secondary text (`--text-2`), `--border-hover` border (1px). Hover: subtle fill (`--accent-dim`) + text darkens to Ink. This is the "Скасувати" look; tertiary actions. *(Border is subtle-neutral, not pure black — a black-bordered ghost would compete with the primary and break the One Voice rule.)*
-- **Danger:** Danger fill (`--danger`), white text. Hover: opacity 0.9. Destructive actions only.
-- **States:** Focus-visible ring (2px solid Professional Black, 2px offset) via the global `:focus-visible` rule. No blur or glow on buttons; clean outlines only.
+The Geist model has **four** variants — a primary fill, a bordered *secondary* (outline), a borderless *tertiary* (ghost), and an *error* (danger):
+
+- **Primary** (Geist *default*): Professional Black fill (`--accent`; Geist's own base is gray-1000 #171717, but the project takes pure #000 per One Voice), white text. Hover: `--accent-hover` #171717 — a subtle lighten (Geist lightens the fill on hover).
+- **Secondary** (Geist *secondary*): white fill (`--bg-2`) + 1px border (`--border` ≈ Geist gray-400 #eaeaea), Ink text. Hover: gray-100 fill (`--bg-3`) + `--border-hover`. The natural counterpart to a primary — this is the **"Скасувати"** button in `ModalFooter`.
+- **Ghost** (Geist *tertiary*): transparent, **no border at rest**, Ink text. Hover: subtle fill (`--accent-dim`) + a `--border` outline appears. For inline / toolbar actions.
+- **Danger** (Geist *error*): Danger fill (`--danger`), white text. Hover: opacity 0.9. Destructive actions only.
+- **Disabled** (all variants): muted colors, not opacity — gray-100 fill (`--bg-3`), muted text (`--text-3`), `--border` border (mirrors Geist `disabled:bg-gray-100 disabled:text-gray-700`).
+- **Focus:** focus-visible ring (2px solid Professional Black, 2px offset) via the global `:focus-visible` rule. (Geist rings in blue-700; the project keeps the ring black per One Voice.) No blur or glow on buttons.
 
 ### Inputs / Fields
 

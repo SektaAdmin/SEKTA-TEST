@@ -23,7 +23,7 @@ export function ModalFooter({
     <>
       <button
         type="button"
-        className="btn-ghost"
+        className="btn-secondary"
         onClick={onCancel}
         disabled={loading}
       >
