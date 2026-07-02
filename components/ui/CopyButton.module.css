@@ -1,0 +1,33 @@
+/* Geist Copy Button — outline (secondary) стиль: білий фон + 1px рамка,
+   hover → заливка gray-100. Звірено з Vercel_DS/Copy Button. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-h);
+  padding: 0 12px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  font-family: var(--font);
+  line-height: 1;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
+}
+.btn:hover { background: var(--bg-3); border-color: var(--border-hover); }
+.btn:disabled { color: var(--text-3); background: var(--bg-3); border-color: var(--border); cursor: not-allowed; }
+
+.btn svg { flex-shrink: 0; }
+
+/* Квадратна icon-only (Geist Copy Button = w=h=form-height, без h-padding) */
+.iconOnly { width: var(--control-h); padding: 0; }
+
+/* Стан «скопійовано» — зелена галочка (semantic success = підтверджено) */
+.copied { color: var(--success-text); }
+.copied:hover { background: var(--bg-2); border-color: var(--border); }

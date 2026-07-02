@@ -154,23 +154,6 @@
   margin-bottom: 0;
 }
 
-.copyBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-2);
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 12px;
-  cursor: pointer;
-}
-
-.copyBtn:hover {
-  border-color: var(--text-3);
-}
 
 .debtGroup {
   padding: var(--space-md) 0;
@@ -312,23 +295,6 @@
   color: var(--text);
 }
 
-.slotCopyBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px;
-  color: var(--text-3);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.slotCopyBtn:hover {
-  color: var(--text-2);
-  background: var(--bg-3);
-}
 
 .slotWindows {
   display: flex;

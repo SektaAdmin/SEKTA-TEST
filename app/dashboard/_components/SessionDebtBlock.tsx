@@ -1,11 +1,9 @@
 'use client'
-import { useCallback, useEffect } from 'react'
-import { toast } from 'sonner'
-import { MSG } from '@/lib/messages'
+import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsForDate } from '@/lib/queries/dashboard'
 import { buildDebtReportText, type DebtGroup } from '@/lib/dashboardReport'
-import { CopyIcon } from '@/components/icons/navigation'
+import { CopyButton } from '@/components/ui/CopyButton'
 import { useListQuery } from '@/hooks/useListQuery'
 import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
@@ -24,21 +22,16 @@ export function SessionDebtBlock({ date }: { date: string }) {
     if (error) console.error('[SessionDebtBlock]', error)
   }, [error])
 
-  const handleCopy = useCallback(() => {
-    const text = buildDebtReportText(new Date(`${date}T00:00:00`), groups)
-    navigator.clipboard.writeText(text)
-      .then(() => toast.success('Звіт скопійовано'))
-      .catch(() => toast.error(MSG.toast.copyFailed))
-  }, [date, groups])
-
   return (
     <section className={`${styles.block} ${styles.equalBlock}`}>
       <div className={styles.blockHead}>
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         {!loading && groups.length > 0 && (
-          <button type="button" className={styles.copyBtn} onClick={handleCopy}>
-            <CopyIcon /> Скопіювати звіт
-          </button>
+          <CopyButton
+            label="Скопіювати звіт"
+            copiedLabel="Звіт скопійовано"
+            text={() => buildDebtReportText(new Date(`${date}T00:00:00`), groups)}
+          />
         )}
       </div>
 

@@ -28,6 +28,7 @@ components/ui/         shadcn: button/calendar/command/dialog/popover/select/tab
 - **ActionSelect** (`ui/ActionSelect.tsx`) — Radix SelectPrimitive + CSS Modules (НЕ shadcn Select — тягне Tailwind-vars, яких нема). У ClassDetailModal для зміни статусу.
 - **FilterSelect** (`ui/FilterSelect.tsx`) — inline Radix для фільтрів. ⚠️ Radix не приймає `value=""` → пусте мапиться в sentinel `'__all__'`.
 - **Pagination** (`ui/Pagination.tsx`) — page size 20/50/100 + range з «…» + Prev/Next.
+- **CopyButton** (`ui/CopyButton.tsx`) — Geist Copy Button (outline-стиль). Props: `text` (string | `() => string` — ліниво), `label?` (без нього → квадратна icon-only), `copiedLabel?`, `title?`, `ariaLabel?`, `className?`. Копіює в буфер, інлайн-фідбек Copy→Check (зелена галочка 1.5с), помилка → `toast.error`. Єдина копі-кнопка: ClassDetailModal header, dashboard (SessionDebtBlock/FreeSlotsBlock). НЕ плодити локальні `.copyBtn`/`.btnCopy`.
 
 ## CSS токени (globals.css)
 

@@ -1,12 +1,10 @@
 'use client'
 import { useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
-import { MSG } from '@/lib/messages'
 import { supabase } from '@/lib/supabase'
 import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queries/dashboard'
 import { useRefs } from '@/contexts/RefsContext'
 import { useListQuery } from '@/hooks/useListQuery'
-import { CopyIcon } from '@/components/icons/navigation'
+import { CopyButton } from '@/components/ui/CopyButton'
 import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
@@ -175,13 +173,6 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       .filter(h => h.free.length > 0)
   }, [halls, busy, coverage])
 
-  function handleCopyHall(hallName: string, free: Window[]) {
-    const text = buildHallSlotsText(hallName, free)
-    navigator.clipboard.writeText(text)
-      .then(() => toast.success(MSG.toast.copied))
-      .catch(() => toast.error(MSG.toast.copyFailed))
-  }
-
   return (
     <section className={`${styles.block} ${styles.equalBlock}`}>
       <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Оренда залу</h2>
@@ -209,15 +200,11 @@ export function FreeSlotsBlock({ date }: { date: string }) {
         <div key={h.hall} className={styles.slotRow}>
           <div className={styles.slotHallRow}>
             <span className={styles.slotHall}>{h.hall}</span>
-            <button
-              type="button"
-              className={styles.slotCopyBtn}
-              onClick={() => handleCopyHall(h.hall, h.free)}
+            <CopyButton
+              text={() => buildHallSlotsText(h.hall, h.free)}
               title="Скопіювати слоти"
-              aria-label={`Скопіювати слоти залу ${h.hall}`}
-            >
-              <CopyIcon />
-            </button>
+              ariaLabel={`Скопіювати слоти залу ${h.hall}`}
+            />
           </div>
           <div className={styles.slotWindows}>
             {splitIntoHourSlots(h.free).map(w => (

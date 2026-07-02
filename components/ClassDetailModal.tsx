@@ -16,7 +16,7 @@ import {
 import { listTrainingTypeLabels } from '@/lib/queries/training-types'
 import ClassModal from '@/components/ClassModal'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
-import { CopyIcon } from '@/components/icons/navigation'
+import { CopyButton } from '@/components/ui/CopyButton'
 import { formatClientName, formatSaleDatetime } from '@/lib/formatters'
 import { typeColor } from '@/lib/typeColor'
 import { getActiveCount } from '@/lib/scheduleMetrics'
@@ -77,7 +77,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
   const [deletingClass, setDeletingClass] = useState(false)
   const [confirmReverseId, setConfirmReverseId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
 
   const [choreoDraft, setChoreoDraft] = useState('')
   const [savingChoreo, setSavingChoreo] = useState(false)
@@ -343,30 +342,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
     return lines.join('\n')
   }
 
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(buildCopyText())
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {}
-  }
-
   const headerActions = !loading && cls ? (
-    <button
-      className={styles.btnCopy}
-      onClick={handleCopy}
-      title={copied ? 'Скопійовано!' : 'Копіювати'}
-      aria-label="Копіювати деталі заняття"
-      type="button"
-    >
-      {copied ? (
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-          <polyline points="2 8 6 12 14 4"/>
-        </svg>
-      ) : (
-        <CopyIcon />
-      )}
-    </button>
+    <CopyButton text={buildCopyText} ariaLabel="Копіювати деталі заняття" />
   ) : null
 
   return (
