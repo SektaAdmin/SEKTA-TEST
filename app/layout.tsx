@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="uk" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       {/* background вшито inline щоб фон з'явився до завантаження globals.css —
           прибирає білий спалах при старті PWA (сервер повертає HTML з фоном одразу). */}
-      <body style={{ background: '#f5f5f2' }}>
+      <body style={{ background: '#fafafa' }}>
         <RefsProvider>{children}</RefsProvider>
         <Toaster position="bottom-right" richColors />
       </body>

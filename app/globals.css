@@ -7,17 +7,20 @@
 html, body { overscroll-behavior: none; }
 
 :root {
-  --bg: #f5f5f2;
-  --bg-2: #ffffff;
-  --bg-3: #eeede9;
+  /* Нейтралі — шкала Geist (Vercel): холодні, майже ахроматичні сірі.
+     Було тепле off-white (#f5f5f2/#eeede9/#1a1917); Geist-курс = холодний тон,
+     сторінка світліша (ближче до білого), картки лишаються чисто-білими. */
+  --bg: #fafafa;   /* сторінка — Geist gray-100 (accents-1) */
+  --bg-2: #ffffff; /* картки/модалки */
+  --bg-3: #f2f2f2; /* заливки полів, tertiary-поверхня — холодний сірий */
   --border: rgba(0,0,0,0.08);
   --border-hover: rgba(0,0,0,0.16);
   --border-strong: rgba(0,0,0,0.14);
-  --text: #1a1917;
+  --text: #171717;  /* холодний near-black (Geist gray-1000); accent #000 лишається для кнопок/акценту */
   --text-2: #525252;
   --text-3: #737373;
   --accent: #000000;
-  --accent-hover: #1a1917;
+  --accent-hover: #171717;
   --accent-dim: #f5f5f5;
   --accent-dim-2: #ebebeb;
   --accent-text: #ffffff;
@@ -26,7 +29,7 @@ html, body { overscroll-behavior: none; }
   /* Текст danger на світлому (білий/dim) — темніший за заливку, щоб тримати ≥4.5:1.
      Заливки/бордери/іконки лишаються на --danger; текст ≤18px бере --danger-text. */
   --danger-text: #b32020;
-  --radius: 10px;
+  --radius: 8px;   /* база — Geist md; було 10px, тепер тісніше/щільніше під Vercel */
   --radius-sm: 6px;
   --radius-xs: 4px; /* мікро-радіус — scrollbar, дрібні плашки балансу, ліві кути now-line */
   --radius-full: 999px; /* повна капсула — pill-чипи (дні/фільтри), count-chip */

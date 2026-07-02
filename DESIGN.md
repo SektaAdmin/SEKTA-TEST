@@ -3,12 +3,12 @@ name: SEKTA-CRM Design System
 description: Professional studio operations toolkit — calm, efficient, transparent.
 colors:
   professional-black: "#000000"
-  neutral-ink: "#1a1917"
+  neutral-ink: "#171717"
   neutral-text-secondary: "#525252"
   neutral-text-tertiary: "#737373"
-  neutral-bg-primary: "#f5f5f2"
+  neutral-bg-primary: "#fafafa"
   neutral-bg-secondary: "#ffffff"
-  neutral-bg-tertiary: "#eeede9"
+  neutral-bg-tertiary: "#f2f2f2"
   neutral-border-subtle: "rgba(0,0,0,0.08)"
   neutral-border-hover: "rgba(0,0,0,0.16)"
   neutral-border-strong: "rgba(0,0,0,0.14)"
@@ -70,7 +70,7 @@ typography:
     letterSpacing: "normal"
 rounded:
   xs: "4px"
-  base: "10px"
+  base: "8px"
   sm: "6px"
   badge: "20px"
   full: "999px"
@@ -143,12 +143,12 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Professional Black** (#000000): Buttons, text emphasis, primary actions. Used on ≤10% of any screen to maximize signal-to-noise.
 
 ### Neutral
-- **Neutral Ink** (#1a1917): Body text on light backgrounds. Default text color.
+- **Neutral Ink** (#171717): Body text on light backgrounds. Default text color. Cool near-black (Geist gray-1000); Professional Black (#000) stays reserved for the primary accent.
 - **Neutral Text Secondary** (#525252): Secondary copy, descriptions, lower-hierarchy labels.
 - **Neutral Text Tertiary** (#737373): Disabled text, placeholders, lowest-hierarchy labels.
-- **Neutral Background Primary** (#f5f5f2): Default page background. Warm off-white, not cold.
-- **Neutral Background Secondary** (#ffffff): Cards, containers, modals.
-- **Neutral Background Tertiary** (#eeede9): Form inputs, subtle surface distinction.
+- **Neutral Background Primary** (#fafafa): Default page background. Cool near-white (Geist gray-100 / Vercel accents-1) — light, achromatic, not warm.
+- **Neutral Background Secondary** (#ffffff): Cards, containers, modals. Sit a hair above the page; separated by a subtle border.
+- **Neutral Background Tertiary** (#f2f2f2): Form inputs, subtle surface distinction. Cool gray.
 - **Neutral Border Subtle** (rgba(0,0,0,0.08)): Dividers, light borders, default stroke.
 - **Neutral Border Hover** (rgba(0,0,0,0.16)): Hover state for interactive elements.
 - **Neutral Border Strong** (rgba(0,0,0,0.14)): Strong dividers, contrast-critical borders.
@@ -156,7 +156,7 @@ The palette is restrained: tinted neutrals carry 90%+ of the surface, with seman
 - **Neutral Accent Dim 2** (#ebebeb): Hover or selected state for secondary buttons.
 
 ### Semantic (Grayscale Brand Scale)
-- **Brand 50–950** (`#f7f7f7` to `#000000`): Pure neutral scale for badge backgrounds, subtle layering, and tonal depth.
+- **Brand 50–950** (`#f7f7f7` to `#000000`): Pure neutral (achromatic) scale — the digitized Geist gray ramp — for badge backgrounds, subtle layering, and tonal depth.
 
 ### Semantic Status Colors
 - **Danger** (#d93535): Error states, destructive actions. Used for fills, borders, icons, and large text (≥18px or bold ≥14px). Always paired with Danger Dim for backgrounds.
@@ -213,7 +213,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 ## 5. Components
 
 ### Buttons
-- **Shape:** Rounded corners (10px radius base, 6px for smaller variants).
+- **Shape:** Rounded corners (8px radius base, 6px for smaller variants).
 - **Primary:** Professional Black background, white text, 8px vertical × 16px horizontal padding. Hover: stays black (no color shift, only opacity or slight scale).
 - **Secondary:** Neutral Accent Dim background, black text, same shape and padding. Hover: Neutral Accent Dim 2. Used for non-primary actions.
 - **Ghost:** Transparent background, black text, black border (1px). Hover: subtle background lift (Neutral Accent Dim). Used for tertiary actions.
@@ -232,7 +232,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 - **Semantic (Status/Role):** When a chip represents a status (e.g., "Attended", "Cancelled") or financial role (e.g., "FOP", "Deposit"), the background uses the semantic color at Dim intensity (e.g., Danger Dim for danger status), with semantic text color.
 
 ### Cards / Containers
-- **Corner Style:** 10px border-radius.
+- **Corner Style:** 8px border-radius (base).
 - **Background:** Neutral Background Secondary (white) for content cards. Neutral Background Tertiary for secondary or grouped cards.
 - **Shadow Strategy:** Card at rest: no shadow. On hover: Shadow Small. Modal card: Shadow Large.
 - **Border:** Neutral Border Subtle (1px) for separation, or none if background contrast is sufficient.
@@ -263,7 +263,7 @@ This system uses subtle shadows for spatial depth. There are no strong drop shad
 
 ### Don't:
 - **Don't** use dark mode with purple gradients, neon accents, or glassmorphism. This is a business tool, not a gaming interface.
-- **Don't** use muted gray text on tinted backgrounds (e.g., #737373 on #f5f5f2). Gray text on colored bg looks washed out. Use semantic color instead.
+- **Don't** use muted gray text on tinted backgrounds (e.g., #737373 on #fafafa). Gray text on colored bg looks washed out. Use semantic color instead.
 - **Don't** use more than one primary accent on a single screen. Professional Black is the only primary; semantic colors are secondary.
 - **Don't** apply shadows to surfaces at rest. Shadows signal state; resting surfaces are flat.
 - **Don't** use border-left or border-right stripes as a primary design element. Use full borders, background tints, or leading icons instead.
