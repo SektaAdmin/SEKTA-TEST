@@ -1165,11 +1165,11 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           </div>
 
           <div className={styles.topbarRight}>
-            <div className={styles.viewToggle}>
-              <button className={`${styles.viewBtn} ${viewMode === 'day' ? styles.viewBtnActive : ''}`} onClick={() => setViewMode('day')}>
+            <div className="tabs-segmented">
+              <button className={`tab-seg ${viewMode === 'day' ? 'tab-seg-active' : ''}`} onClick={() => setViewMode('day')}>
                 День
               </button>
-              <button className={`${styles.viewBtn} ${styles.viewBtnWeek} ${viewMode === 'week' ? styles.viewBtnActive : ''}`} onClick={handleSetWeekMode}>
+              <button className={`tab-seg ${viewMode === 'week' ? 'tab-seg-active' : ''}`} onClick={handleSetWeekMode}>
                 Тиждень
               </button>
             </div>

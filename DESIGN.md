@@ -297,6 +297,13 @@ Global `.status-dot` (+ state modifiers, `.status-dot-item` for the labelled for
 ### Filter Chips
 `.filterChips` / `.filterChip` / `.filterChipActive` (`globals.css`) — single-select pill row shared by mobile `/sales` and `/schedule`. 28px tall, full-radius pill, 500 weight. Inactive hover: `--border-hover` + Ink text. Active: Neutral Accent Dim fill + `--accent-border` + Ink (neutral, per the `--accent: #000` model). Closest Geist analog is the *secondary* Tabs pill; the chip row is an app composition.
 
+### Tabs
+Session 12 found the same tab/segmented-toggle box model reimplemented independently across 6+ pages (feed tabs on `/sales`, view toggle on `/schedule` + `/schedule/templates` — the two had **drifted**, one missing `font-weight: 500` — client detail tabs, settings salary type toggle). Two shared primitives in `globals.css` replace the discrete-page copies:
+
+- **`.tabs-segmented` / `.tab-seg` / `.tab-seg-active`:** a bordered row of buttons sharing one outer `1px solid var(--border)` + `--radius-sm`, with `border-left` dividers between buttons (no gap). Height `--control-h`, 14px/500, inactive `--text-2` → hover `--bg-3` fill, active `--accent-dim` fill + `--accent` text. Used by: `/sales` feed tabs (Всі/Продажі/Операції), `/schedule` + `/schedule/templates` view toggle (День/Тиждень/Список).
+- **`.tabs-underline` / `.tab-underline` / `.tab-underline-active`:** a borderless row under a shared `border-bottom`, each tab getting its own 2px bottom border that lights up `--accent` when active (`margin-bottom: -1px` to sit on the shared line). Height 40px, 14px, inactive `--text-3` → hover `--text-2`, active `--text` + accent underline. Used by: `/clients/[id]` (Зведена стрічка/Продажі).
+- **Left local by design (different intent, not a drift bug):** `SaleModal`'s payment-method picker and `/settings/salary/calculations`'s type toggle both use a `flex: 1` equal-width row of individually-bordered pills (own border+radius per button, gap between) rather than one continuous outer border — a genuinely different container shape, and `SaleModal`'s solid `--accent` fill on the selected payment method is a deliberate higher-emphasis affordance for a money-flow choice, not an accent-dim oversight. The client-cabinet `.visitTab` (Майбутні/Історія) is a mobile-tuned variant of the underline shape (13px, `flex: 1`, sticky positioning) — same family, kept local rather than force-fit to desktop pixel values without visual QA. `/settings`'s boolean true/false switch and `ClassModal`'s padded-track scope picker are **not** tabs (different semantics: a 2-state toggle and a neutral-active segmented picker) and stay fully local.
+
 ## 6. Do's and Don'ts
 
 ### Do:

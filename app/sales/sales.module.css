@@ -87,26 +87,7 @@
   flex-shrink: 0;
 }
 
-.feedTab {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  height: var(--control-h);
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-2);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-  font-family: var(--font);
-}
-.feedTab:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.feedTabActive {
-  background: var(--accent-dim) !important;
-  border-color: var(--accent-border-hover) !important;
-  color: var(--accent) !important;
-}
+/* .feedTab/.feedTabActive → глобальні .tab-seg/.tab-seg-active (Сесія 12) */
 
 /* ── Mobile filter sheet ──────────────────────────────────────────
    Desktop: усе прозоро — .advancedFilters=display:contents, діти течуть
@@ -383,7 +364,8 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--modal-backdrop);
+    backdrop-filter: blur(2px);
     z-index: 300;
     animation: overlayIn var(--motion-fast);
   }

@@ -112,34 +112,7 @@
   flex-shrink: 0;
 }
 
-/* ── View toggle (Week / Day) ────────────────────────────────── */
-.viewToggle {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.viewBtn {
-  background: transparent;
-  border: none;
-  padding: 0 12px;
-  height: var(--control-h);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-2);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: color var(--motion-fast), background var(--motion-fast);
-}
-.viewBtn + .viewBtn {
-  border-left: 1px solid var(--border);
-}
-.viewBtn:hover { color: var(--text); background: var(--bg-3); }
-.viewBtnActive {
-  color: var(--accent);
-  background: var(--accent-dim);
-}
+/* .viewToggle/.viewBtn → глобальні .tabs-segmented/.tab-seg (Сесія 12) */
 
 /* Смуга чипів залів на десктопі кабінету тренера — візуал у спільних
    .filterChips/.filterChip (globals.css), тут лише відступ під топбар. */
@@ -989,13 +962,13 @@
 }
 
 .mobileWeekDayToday .mobileWeekDayNum {
-  background: var(--danger, #d93535);
+  background: var(--danger);
   color: #fff;
   font-weight: 600;
 }
 
 .mobileWeekDayToday .mobileWeekDayLabel {
-  color: var(--danger, #d93535);
+  color: var(--danger);
 }
 
 .mobileWeekDaySelected:not(.mobileWeekDayToday) .mobileWeekDayNum {
@@ -1342,13 +1315,13 @@
 }
 
 .mobileTlDayToday .mobileTlDayNum {
-  background: var(--danger, #d93535);
+  background: var(--danger);
   color: #fff;
   font-weight: 600;
 }
 
 .mobileTlDayToday .mobileTlDayLabel {
-  color: var(--danger, #d93535);
+  color: var(--danger);
 }
 
 .mobileTlDaySelected:not(.mobileTlDayToday) .mobileTlDayNum {
@@ -1466,7 +1439,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--danger, #d93535);
+  background: var(--danger);
   margin-left: -4px;
   flex-shrink: 0;
 }
@@ -1474,7 +1447,7 @@
 .mobileTlNowLineLine {
   flex: 1;
   height: 2px;
-  background: var(--danger, #d93535);
+  background: var(--danger);
 }
 
 /* ── Class card (flow, не absolute) ─────────────────────── */

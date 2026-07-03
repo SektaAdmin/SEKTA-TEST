@@ -1140,11 +1140,11 @@
 
 /* Сьогодні — червоне коло (пріоритет над вибраним, як .mobileTlDayToday). */
 .bookDayToday .bookDayNum {
-  background: var(--danger, #d93535);
+  background: var(--danger);
   color: #fff;
   font-weight: 600;
 }
-.bookDayToday .bookDayDow { color: var(--danger, #d93535); }
+.bookDayToday .bookDayDow { color: var(--danger); }
 
 /* Вибраний день (не сьогодні) — коло заливається акцентом. */
 .bookDayOn:not(.bookDayToday) .bookDayNum {

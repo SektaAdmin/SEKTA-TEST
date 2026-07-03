@@ -461,26 +461,7 @@ a.msContact:hover svg { color: var(--accent); }
   padding: 0 24px;
 }
 
-.tabBar {
-  display: flex;
-  gap: 0;
-}
-
-.tab {
-  height: 40px;
-  padding: 0 16px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-3);
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color var(--motion-fast), border-color var(--motion-fast);
-  margin-bottom: -1px;
-}
-.tab:hover { color: var(--text-2); }
-.tabActive { color: var(--text) !important; border-bottom-color: var(--accent); }
+/* .tabBar/.tab/.tabActive → глобальні .tabs-underline/.tab-underline (Сесія 12) */
 
 .tabActions {
   display: flex;

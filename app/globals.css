@@ -467,6 +467,57 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   color: var(--accent);
 }
 
+/* ── Tabs (Session 12): 2 патерни, знайдені у 6+ дублях по сторінках ──
+   Segmented control — рядок дискретних кнопок з рамкою (перемикач виду/
+   методу/фіду): .feedTab (/sales), .viewToggle (schedule×2, драйфнули —
+   один без font-weight:500), .typeToggle (salary/calculations),
+   .paymentTabs (SaleModal, мав вирок --accent замість --accent-dim).
+   Underline tab row — таби без фону, підкреслення знизу акцентом:
+   .tab (/clients/[id]), .visitTab (кабінет клієнта). */
+.tabs-segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.tab-seg {
+  height: var(--control-h);
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color var(--motion-fast), background var(--motion-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-seg + .tab-seg { border-left: 1px solid var(--border); }
+.tab-seg:hover:not(.tab-seg-active) { color: var(--text); background: var(--bg-3); }
+.tab-seg-active { background: var(--accent-dim); color: var(--accent); cursor: default; }
+
+.tabs-underline {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.tab-underline {
+  height: 40px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-underline:hover:not(.tab-underline-active) { color: var(--text-2); }
+.tab-underline-active { color: var(--text); border-bottom-color: var(--accent); }
+
 /* ── Shared page layout ───────────────────────────────────────── */
 
 .page-layout {

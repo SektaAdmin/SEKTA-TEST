@@ -85,40 +85,7 @@
   gap: 8px;
 }
 
-/* ── View toggle ─────────────────────────────────────────── */
-.viewToggle {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.toggleBtn {
-  height: var(--control-h);
-  padding: 0 12px;
-  background: transparent;
-  border: none;
-  color: var(--text-2);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: color var(--motion-fast), background var(--motion-fast);
-}
-.toggleBtn + .toggleBtn { border-left: 1px solid var(--border); }
-.toggleBtn:hover { color: var(--text); background: var(--bg-3); }
-
-.toggleActive {
-  height: var(--control-h);
-  padding: 0 12px;
-  background: var(--accent-dim);
-  border: none;
-  color: var(--accent);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: default;
-}
-.toggleActive + .toggleBtn,
-.toggleBtn + .toggleActive { border-left: 1px solid var(--border); }
+/* .viewToggle/.toggleBtn/.toggleActive → глобальні .tabs-segmented/.tab-seg (Сесія 12) */
 
 .deleteWarning {
   font-size: 14px;

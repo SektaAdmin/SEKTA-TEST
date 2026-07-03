@@ -219,21 +219,21 @@ export default function TemplatesPage() {
           )}
         </div>
         <div className={styles.topbarRight}>
-          <div className={styles.viewToggle}>
+          <div className="tabs-segmented">
             <button
-              className={viewMode === 'day' ? styles.toggleActive : styles.toggleBtn}
+              className={`tab-seg ${viewMode === 'day' ? 'tab-seg-active' : ''}`}
               onClick={() => setViewMode('day')}
             >
               День
             </button>
             <button
-              className={viewMode === 'week' ? styles.toggleActive : styles.toggleBtn}
+              className={`tab-seg ${viewMode === 'week' ? 'tab-seg-active' : ''}`}
               onClick={() => setViewMode('week')}
             >
               Тиждень
             </button>
             <button
-              className={viewMode === 'list' ? styles.toggleActive : styles.toggleBtn}
+              className={`tab-seg ${viewMode === 'list' ? 'tab-seg-active' : ''}`}
               onClick={() => setViewMode('list')}
             >
               Список

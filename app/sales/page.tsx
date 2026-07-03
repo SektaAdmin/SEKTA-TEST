@@ -181,7 +181,7 @@ export default function SalesPage() {
                   role="tab"
                   aria-selected={feedTab === tab}
                   aria-controls={`panel-${tab}`}
-                  className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
+                  className={`tab-seg ${feedTab === tab ? 'tab-seg-active' : ''}`}
                   onClick={() => handleTabChange(tab)}
                 >
                   {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}
@@ -243,7 +243,7 @@ export default function SalesPage() {
                       key={tab}
                       role="tab"
                       aria-selected={feedTab === tab}
-                      className={`${styles.feedTab} ${feedTab === tab ? styles.feedTabActive : ''}`}
+                      className={`tab-seg ${feedTab === tab ? 'tab-seg-active' : ''}`}
                       onClick={() => handleTabChange(tab)}
                     >
                       {tab === 'all' ? 'Всі' : tab === 'sales' ? 'Продажі' : 'Операції'}

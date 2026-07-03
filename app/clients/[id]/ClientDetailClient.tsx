@@ -632,15 +632,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
           <section className={styles.card}>
             <div className={styles.tabHeader}>
-              <div className={styles.tabBar}>
+              <div className="tabs-underline">
                 <button
-                  className={activeTab === 'feed' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                  className={`tab-underline ${activeTab === 'feed' ? 'tab-underline-active' : ''}`}
                   onClick={() => setActiveTab('feed')}
                 >
                   Зведена стрічка
                 </button>
                 <button
-                  className={activeTab === 'sales' ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                  className={`tab-underline ${activeTab === 'sales' ? 'tab-underline-active' : ''}`}
                   onClick={() => setActiveTab('sales')}
                 >
                   Продажі
