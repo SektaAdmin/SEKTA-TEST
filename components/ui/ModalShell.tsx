@@ -41,7 +41,16 @@ export function ModalShell({ title, onClose, footer, children, size = 'form', mo
           <h2 id={titleId}>{title}</h2>
           <div className={styles.headerRight}>
             {headerActions}
-            <button className={styles.close} onClick={onClose} aria-label="Закрити">✕</button>
+            <button className={styles.close} onClick={onClose} aria-label="Закрити">
+              <svg viewBox="0 0 16 16" width={16} height={16} aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M3.28 2.22 2.22 3.28 6.94 8l-4.72 4.72 1.06 1.06L8 9.06l4.72 4.72 1.06-1.06L9.06 8l4.72-4.72-1.06-1.06L8 6.94z"
+                />
+              </svg>
+            </button>
           </div>
         </div>
         <div className={[styles.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>

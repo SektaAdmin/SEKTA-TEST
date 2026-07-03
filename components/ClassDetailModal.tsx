@@ -62,6 +62,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [addingClient, setAddingClient] = useState(false)
+  const addFormRef = useRef<HTMLDivElement>(null)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [clientBalance, setClientBalance] = useState<number | null>(null)
   const [selectedHours, setSelectedHours] = useState<number[]>([1, 2])
@@ -84,6 +85,10 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
   // (інакше кожна буква → новий loadAll → useEffect → перезавантаження модалки).
   const choreoDraftRef = useRef('')
   useEffect(() => { choreoDraftRef.current = choreoDraft }, [choreoDraft])
+
+  useEffect(() => {
+    if (addingClient) addFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [addingClient])
 
   // true = глядач може редагувати (staff або тренер цього заняття)
   const canManage = isStaff || (!!viewerTrainerId && !!cls && cls.trainer_id === viewerTrainerId)
@@ -467,72 +472,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
               <div className={styles.enrollmentSection}>
                 <div className={styles.enrollmentHeader}>
                   <h2 className={styles.enrollmentTitle}>Записані клієнти</h2>
-                  {!addingClient && cls?.ticket_type !== 'self_training' && canManage && (
-                    <button className="btn-primary btn-sm" onClick={() => { setAddingClient(true); setEnrollError(null) }}>
-                      + Записати
-                    </button>
-                  )}
                 </div>
-
-                {addingClient && (
-                  <div className={styles.addForm}>
-                    <ClientSearchCombobox
-                      inputId="enroll-client"
-                      onSelect={handleClientSelect}
-                      onClear={() => { setSelectedClient(null); setClientBalance(null) }}
-                    />
-                    {selectedClient && (
-                      <div className={styles.clientPreview}>
-                        <span className={styles.clientName}>{formatClientName(selectedClient)}</span>
-                        {clientBalance != null && (() => {
-                          // Баланс, яким стане після цього запису (як в обліку адміна).
-                          const cost = isTwoHour(cls) ? Math.max(selectedHours.length, 1) : 1
-                          const after = clientBalance - cost
-                          return (
-                            <span className={balanceClass(after)}>
-                              Баланс після запису: {after}
-                            </span>
-                          )
-                        })()}
-                      </div>
-                    )}
-                    {isTwoHour(cls) && (
-                      <div className={styles.hoursSelect}>
-                        {[1, 2].map(hour => {
-                          const d = new Date(new Date(cls.starts_at).getTime() + (hour - 1) * 60 * 60000)
-                          return (
-                            <label key={hour} className={styles.hoursLabel}>
-                              <input
-                                type="checkbox"
-                                checked={selectedHours.includes(hour)}
-                                onChange={e => setSelectedHours(prev =>
-                                  e.target.checked ? [...prev, hour].sort() : prev.filter(h => h !== hour)
-                                )}
-                              />
-                              {formatTime(d)}
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )}
-                    {enrollError && <p className={styles.enrollError}>{enrollError}</p>}
-                    <div className={styles.addFormActions}>
-                      <button
-                        className="btn-secondary"
-                        onClick={() => { setAddingClient(false); setSelectedClient(null); setClientBalance(null); setEnrollError(null) }}
-                      >
-                        Скасувати
-                      </button>
-                      <button
-                        className="btn-primary"
-                        onClick={handleEnroll}
-                        disabled={!selectedClient || enrolling}
-                      >
-                        {enrolling ? 'Записую...' : 'Записати'}
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {mainEnrollments.length === 0 ? (
                   <div className={styles.empty}>Нікого не записано</div>
@@ -630,6 +570,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                                       ] : []),
                                       ...(e.status === 'attended' ? [
                                         { value: 'reverse', label: 'Скасувати відвідування' },
+                                        { value: 'noshow', label: enrollmentStatusLabel('noshow') },
                                       ] : []),
                                       ...((e.status === 'cancelled' || e.status === 'noshow') ? [
                                         { value: 'reenroll', label: 'Повернути' },
@@ -707,6 +648,75 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                           })}
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+                )}
+
+                {!addingClient && cls?.ticket_type !== 'self_training' && canManage && (
+                  <button
+                    className={`btn-primary btn-sm ${styles.addTrigger}`}
+                    onClick={() => { setAddingClient(true); setEnrollError(null) }}
+                  >
+                    + Записати
+                  </button>
+                )}
+
+                {addingClient && (
+                  <div className={styles.addForm} ref={addFormRef}>
+                    <ClientSearchCombobox
+                      inputId="enroll-client"
+                      onSelect={handleClientSelect}
+                      onClear={() => { setSelectedClient(null); setClientBalance(null) }}
+                    />
+                    {selectedClient && (
+                      <div className={styles.clientPreview}>
+                        <span className={styles.clientName}>{formatClientName(selectedClient)}</span>
+                        {clientBalance != null && (() => {
+                          // Баланс, яким стане після цього запису (як в обліку адміна).
+                          const cost = isTwoHour(cls) ? Math.max(selectedHours.length, 1) : 1
+                          const after = clientBalance - cost
+                          return (
+                            <span className={balanceClass(after)}>
+                              Баланс після запису: {after}
+                            </span>
+                          )
+                        })()}
+                      </div>
+                    )}
+                    {isTwoHour(cls) && (
+                      <div className={styles.hoursSelect}>
+                        {[1, 2].map(hour => {
+                          const d = new Date(new Date(cls.starts_at).getTime() + (hour - 1) * 60 * 60000)
+                          return (
+                            <label key={hour} className={styles.hoursLabel}>
+                              <input
+                                type="checkbox"
+                                checked={selectedHours.includes(hour)}
+                                onChange={e => setSelectedHours(prev =>
+                                  e.target.checked ? [...prev, hour].sort() : prev.filter(h => h !== hour)
+                                )}
+                              />
+                              {formatTime(d)}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                    {enrollError && <p className={styles.enrollError}>{enrollError}</p>}
+                    <div className={styles.addFormActions}>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => { setAddingClient(false); setSelectedClient(null); setClientBalance(null); setEnrollError(null) }}
+                      >
+                        Скасувати
+                      </button>
+                      <button
+                        className="btn-primary"
+                        onClick={handleEnroll}
+                        disabled={!selectedClient || enrolling}
+                      >
+                        {enrolling ? 'Записую...' : 'Записати'}
+                      </button>
                     </div>
                   </div>
                 )}

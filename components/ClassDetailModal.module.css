@@ -207,6 +207,10 @@
   margin: 0;
 }
 
+.addTrigger {
+  align-self: flex-start;
+}
+
 /* ── Add client form ─────────────────────────────────────────── */
 .addForm {
   background: var(--bg-2);
