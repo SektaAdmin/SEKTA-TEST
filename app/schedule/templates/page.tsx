@@ -204,13 +204,13 @@ export default function TemplatesPage() {
           <h1 className="page-title">Шаблони тижня</h1>
           {viewMode === 'day' && (
             <div className={styles.dayNav}>
-              <button className={styles.navBtn} onClick={goPrevDay} aria-label="Попередній день">
+              <button className={`btn-secondary ${styles.navBtn}`} onClick={goPrevDay} aria-label="Попередній день">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M9 2L4 7l5 5"/>
                 </svg>
               </button>
               <span className={styles.dayNavLabel}>{DOW_LABELS_FULL[activeDow]}</span>
-              <button className={styles.navBtn} onClick={goNextDay} aria-label="Наступний день">
+              <button className={`btn-secondary ${styles.navBtn}`} onClick={goNextDay} aria-label="Наступний день">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 2l5 5-5 5"/>
                 </svg>
@@ -240,7 +240,7 @@ export default function TemplatesPage() {
             </button>
           </div>
           <div className={styles.generateWrap} ref={generateWrapRef}>
-            <button className={styles.btnGenerate} onClick={openGenerateDialog}>
+            <button className="btn-secondary" onClick={openGenerateDialog}>
               Виставити тиждень
             </button>
             <MiniCalendar
@@ -253,10 +253,10 @@ export default function TemplatesPage() {
               toggleMonday={toggleMonday}
               footer={
                 <div className={styles.generateRow}>
-                  <button className={styles.btnCancel} onClick={() => setShowGenerate(false)} disabled={generating}>
+                  <button className="btn-secondary" onClick={() => setShowGenerate(false)} disabled={generating}>
                     Скасувати
                   </button>
-                  <button className={styles.btnConfirm} onClick={handleGenerate} disabled={generating || selectedMondays.length === 0}>
+                  <button className="btn-primary" onClick={handleGenerate} disabled={generating || selectedMondays.length === 0}>
                     {generating ? 'Генерую...' : `Виставити${selectedMondays.length > 1 ? ` (${selectedMondays.length})` : ''}`}
                   </button>
                 </div>
@@ -264,7 +264,7 @@ export default function TemplatesPage() {
             />
           </div>
           <div className={styles.generateWrap} ref={deleteWrapRef}>
-            <button className={styles.btnDeleteSchedule} onClick={openDeleteDialog}>
+            <button className="btn-ghost" onClick={openDeleteDialog}>
               Видалити розклад
             </button>
             <MiniCalendar
@@ -281,10 +281,10 @@ export default function TemplatesPage() {
                     Буде видалено заняття з шаблонів та записи клієнтів. Ручні заняття залишаться.
                   </p>
                   <div className={styles.generateRow}>
-                    <button className={styles.btnCancel} onClick={() => setShowDelete(false)} disabled={deleting}>
+                    <button className="btn-secondary" onClick={() => setShowDelete(false)} disabled={deleting}>
                       Скасувати
                     </button>
-                    <button className={styles.btnDelete} onClick={handleDelete} disabled={deleting || selectedMondays.length === 0}>
+                    <button className="btn-danger" onClick={handleDelete} disabled={deleting || selectedMondays.length === 0}>
                       {deleting ? 'Видаляю...' : `Видалити${selectedMondays.length > 1 ? ` (${selectedMondays.length})` : ''}`}
                     </button>
                   </div>
@@ -438,7 +438,7 @@ export default function TemplatesPage() {
                         </td>
                         <td className={styles.actions}>
                           <button
-                            className={styles.btnEdit}
+                            className={styles.btnRowEdit}
                             onClick={() => setEditingSeries(series)}
                           >
                             Редагувати
@@ -446,13 +446,13 @@ export default function TemplatesPage() {
                           {deletingId === series.id ? (
                             <span className={styles.deleteConfirm}>
                               Шаблон буде видалено. Вже створені заняття залишаться.{' '}
-                              <button className={styles.btnDanger} onClick={() => deleteTemplate(series.id)}>Так, видалити</button>
+                              <button className={styles.btnRowDel} onClick={() => deleteTemplate(series.id)}>Так, видалити</button>
                               {' '}
-                              <button className={styles.btnCancel} onClick={() => setDeletingId(null)}>Скасувати</button>
+                              <button className={styles.btnRowEdit} onClick={() => setDeletingId(null)}>Скасувати</button>
                             </span>
                           ) : (
                             <button
-                              className={styles.btnDanger}
+                              className={styles.btnRowDel}
                               onClick={() => setDeletingId(series.id)}
                             >
                               Видалити
@@ -610,7 +610,7 @@ function NoResultsState({ onReset }: { onReset: () => void }) {
       <p className={styles.stateText}>
         Жоден шаблон не підходить під обрані фільтри. Спробуйте змінити або скинути їх.
       </p>
-      <button className={styles.btnEdit} onClick={onReset}>Скинути фільтри</button>
+      <button className="btn-secondary" onClick={onReset}>Скинути фільтри</button>
     </div>
   )
 }

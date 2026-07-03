@@ -1126,7 +1126,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
 
         <div className={styles.topbar} style={{ height: '48px' }}>
           <div className={styles.topbarLeft} style={{ flex: 'none', gap: 0 }}>
-            <button className={styles.navBtn} onClick={() => router.push('/trainer')} aria-label="Меню">
+            <button className={`btn-secondary ${styles.navBtn}`} onClick={() => router.push('/trainer')} aria-label="Меню">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
@@ -1136,7 +1136,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
 
           <div className={styles.topbarLeft} style={{ flex: 1, justifyContent: 'center' }}>
             <div className={styles.desktopNav}>
-              <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
+              <button className={`btn-secondary ${styles.navBtn}`} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M9 2L4 7l5 5"/>
                 </svg>
@@ -1149,12 +1149,12 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                   <span className={styles.dayLabel}>{WEEKDAYS_FULL[dowMondayIndex(baseDate)].toLowerCase()}</span>
                 )}
               </div>
-              <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+              <button className={`btn-secondary ${styles.navBtn}`} onClick={goNext} aria-label="Вперед">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 2l5 5-5 5"/>
                 </svg>
               </button>
-              <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>Сьогодні</button>
+              <button className="btn-secondary" onClick={() => setBaseDate(new Date())}>Сьогодні</button>
               <button className={styles.navIconBtn} onClick={() => setShowMobileCal(true)} aria-label="Календар">
                 <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <rect x="1" y="2" width="12" height="11" rx="1.5"/>

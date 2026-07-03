@@ -62,25 +62,8 @@
   gap: 6px;
 }
 
-.navBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  color: var(--text-2);
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-  flex-shrink: 0;
-}
-.navBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
+/* Квадратний size-модифікатор поверх глобального .btn-secondary */
+.navBtn { width: 28px; height: 28px; padding: 0; flex-shrink: 0; }
 
 .dayNavLabel {
   font-size: 14px;
@@ -96,53 +79,11 @@
   position: relative;
 }
 
-.generateDialog {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: var(--bg-2);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  min-width: 320px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.generateLabel {
-  font-size: 14px;
-  color: var(--text-2);
-  margin: 0;
-}
-
 .generateRow {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
-.generateInput {
-  width: 60px;
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  color: var(--text);
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color var(--motion-fast);
-}
-.generateInput:focus { border-color: var(--accent); }
-
-.generateUnit {
-  font-size: 14px;
-  color: var(--text-3);
-  flex: 1;
-}
-
 
 /* ── View toggle ─────────────────────────────────────────── */
 .viewToggle {
@@ -179,94 +120,12 @@
 .toggleActive + .toggleBtn,
 .toggleBtn + .toggleActive { border-left: 1px solid var(--border); }
 
-/* ── Buttons ─────────────────────────────────────────────── */
-.btnGenerate {
-  height: var(--control-h);
-  padding: 0 14px;
-  background: transparent;
-  border: 1px solid var(--accent-border);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--motion-fast), background var(--motion-fast);
-  white-space: nowrap;
-}
-.btnGenerate:hover { border-color: var(--accent-border-hover); background: var(--accent-dim); }
-
-.btnDeleteSchedule {
-  height: var(--control-h);
-  padding: 0 14px;
-  background: transparent;
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  color: var(--danger);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--motion-fast), background var(--motion-fast);
-  white-space: nowrap;
-}
-.btnDeleteSchedule:hover { background: var(--danger-dim); }
-
 .deleteWarning {
   font-size: 14px;
   color: var(--danger);
   margin: 0;
   opacity: 0.8;
 }
-
-.btnDelete {
-  height: var(--control-h);
-  padding: 0 14px;
-  background: var(--danger-dim);
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  color: var(--danger);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background var(--motion-fast);
-  white-space: nowrap;
-}
-.btnDelete:hover { background: var(--danger-border); }
-.btnDelete:disabled { opacity: 0.5; cursor: not-allowed; }
-
-
-.btnCancel {
-  height: var(--control-h);
-  padding: 0 12px;
-  background: transparent;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast);
-  white-space: nowrap;
-}
-.btnCancel:hover { border-color: var(--text-3); color: var(--text); }
-.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btnConfirm {
-  height: var(--control-h);
-  padding: 0 14px;
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--accent-text);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity var(--motion-fast);
-  white-space: nowrap;
-}
-.btnConfirm:hover { opacity: 0.88; }
-.btnConfirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Filter bar ──────────────────────────────────────────── */
 .filterBar {
@@ -471,16 +330,18 @@
   font-size: 14px;
 }
 
+/* Geist Table geometry (Сесія 2/globals.css .data-table): normal-case 14/500,
+   не uppercase-мікрокапс. */
 .table th {
+  height: 40px;
   text-align: left;
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 14px;
+  color: var(--text);
   font-weight: 500;
-  padding: 0 12px 10px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .table th:first-child { padding-left: 0; }
@@ -505,33 +366,22 @@
   white-space: nowrap;
 }
 
-.btnEdit {
+/* "Тонкий inline-actions" патерн з /sales (Сесія 4): спільна база --btn-sm-*,
+   семантичний hover (del→danger), .btn-* цього не покриває. */
+.btnRowEdit, .btnRowDel {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
+  padding: var(--btn-sm-py) var(--btn-sm-px);
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--btn-sm-font);
   font-family: inherit;
   cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast);
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
   white-space: nowrap;
 }
-.btnEdit:hover { border-color: var(--border-hover); color: var(--text); }
-
-.btnDanger {
-  background: transparent;
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  color: var(--danger);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background var(--motion-fast);
-  white-space: nowrap;
-}
-.btnDanger:hover { background: var(--danger-dim); }
+.btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); }
+.btnRowDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
 
 .deleteConfirm {
   font-size: 14px;

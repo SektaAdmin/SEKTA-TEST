@@ -468,7 +468,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                 <div className={styles.enrollmentHeader}>
                   <h2 className={styles.enrollmentTitle}>Записані клієнти</h2>
                   {!addingClient && cls?.ticket_type !== 'self_training' && canManage && (
-                    <button className={styles.btnAdd} onClick={() => { setAddingClient(true); setEnrollError(null) }}>
+                    <button className="btn-primary btn-sm" onClick={() => { setAddingClient(true); setEnrollError(null) }}>
                       + Записати
                     </button>
                   )}
@@ -518,13 +518,13 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                     {enrollError && <p className={styles.enrollError}>{enrollError}</p>}
                     <div className={styles.addFormActions}>
                       <button
-                        className={styles.btnCancelAdd}
+                        className="btn-secondary"
                         onClick={() => { setAddingClient(false); setSelectedClient(null); setClientBalance(null); setEnrollError(null) }}
                       >
                         Скасувати
                       </button>
                       <button
-                        className={styles.btnConfirmEnroll}
+                        className="btn-primary"
                         onClick={handleEnroll}
                         disabled={!selectedClient || enrolling}
                       >
@@ -600,15 +600,15 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                               <td className={styles.actionsCell}>
                                 {confirmReverseId === e.id ? (
                                   <div className={styles.actions}>
-                                    <button autoFocus className={styles.btnEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
-                                    <button className={styles.btnCancelAdd} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
+                                    <button autoFocus className={styles.btnRowEdit} onClick={() => handleReverseAttendance(e)} disabled={isLoading}>Так</button>
+                                    <button className={styles.btnRowEdit} onClick={() => setConfirmReverseId(null)} disabled={isLoading}>Ні</button>
                                   </div>
                                 ) : confirmDeleteId === e.id ? (
                                   <div className={styles.deleteConfirm}>
                                     <span className={styles.deleteHint}>Видалити назавжди?{e.sessions_used > 0 ? ' Сесію буде повернуто.' : ''}</span>
                                     <div className={styles.actions}>
-                                      <button autoFocus className={styles.btnDelete} onClick={() => handleDeleteEnrollment(e)} disabled={isLoading}>Видалити</button>
-                                      <button className={styles.btnCancelAdd} onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>Ні</button>
+                                      <button autoFocus className={styles.btnRowDel} onClick={() => handleDeleteEnrollment(e)} disabled={isLoading}>Видалити</button>
+                                      <button className={styles.btnRowEdit} onClick={() => setConfirmDeleteId(null)} disabled={isLoading}>Ні</button>
                                     </div>
                                   </div>
                                 ) : canManage ? (
@@ -715,19 +715,19 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
               {/* Footer actions — лише для тренера цього заняття або staff */}
               {canManage && (
                 <div className={styles.footerActions}>
-                  <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
+                  <button className="btn-secondary" onClick={() => setShowEditModal(true)}>
                     Редагувати
                   </button>
                   {cls.is_cancelled ? (
-                    <button className={styles.btnRestore} onClick={() => setShowRestoreConfirm(true)} disabled={cancellingClass}>
+                    <button className="btn-secondary" onClick={() => setShowRestoreConfirm(true)} disabled={cancellingClass}>
                       Відновити
                     </button>
                   ) : (
-                    <button className={styles.btnCancel} onClick={() => setShowCancelConfirm(true)} disabled={cancellingClass}>
+                    <button className="btn-danger" onClick={() => setShowCancelConfirm(true)} disabled={cancellingClass}>
                       Скасувати заняття
                     </button>
                   )}
-                  <button className={styles.btnDeleteGhost} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
+                  <button className={`btn-ghost ${styles.btnDeleteGhost}`} onClick={() => setShowDeleteConfirm(true)} disabled={cancellingClass || deletingClass}>
                     Видалити
                   </button>
                 </div>
@@ -739,8 +739,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                   <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
                     <p className={styles.confirmText}>Скасувати заняття? Сесії повернуться клієнтам, які відвідали.</p>
                     <div className={styles.confirmActions}>
-                      <button className={styles.btnEdit} onClick={() => setShowCancelConfirm(false)} disabled={cancellingClass}>Назад</button>
-                      <button autoFocus className={styles.btnCancel} onClick={handleCancelClass} disabled={cancellingClass}>
+                      <button className="btn-secondary" onClick={() => setShowCancelConfirm(false)} disabled={cancellingClass}>Назад</button>
+                      <button autoFocus className="btn-danger" onClick={handleCancelClass} disabled={cancellingClass}>
                         {cancellingClass ? 'Скасування…' : 'Скасувати заняття'}
                       </button>
                     </div>
@@ -754,8 +754,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                   <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
                     <p className={styles.confirmText}>Відновити заняття? Статуси клієнтів повернуться як були.</p>
                     <div className={styles.confirmActions}>
-                      <button className={styles.btnEdit} onClick={() => setShowRestoreConfirm(false)} disabled={cancellingClass}>Назад</button>
-                      <button autoFocus className={styles.btnRestore} onClick={handleRestoreClass} disabled={cancellingClass}>
+                      <button className="btn-secondary" onClick={() => setShowRestoreConfirm(false)} disabled={cancellingClass}>Назад</button>
+                      <button autoFocus className="btn-primary" onClick={handleRestoreClass} disabled={cancellingClass}>
                         {cancellingClass ? 'Відновлення…' : 'Відновити'}
                       </button>
                     </div>
@@ -772,8 +772,8 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                       {cls.series_id && ' Увага: заняття з постійного шаблону — може з’явитися знову при повторному «виставити тиждень».'}
                     </p>
                     <div className={styles.confirmActions}>
-                      <button className={styles.btnEdit} onClick={() => setShowDeleteConfirm(false)} disabled={deletingClass}>Назад</button>
-                      <button autoFocus className={styles.btnDeleteClass} onClick={handleDeleteClass} disabled={deletingClass}>
+                      <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)} disabled={deletingClass}>Назад</button>
+                      <button autoFocus className="btn-danger" onClick={handleDeleteClass} disabled={deletingClass}>
                         {deletingClass ? 'Видалення…' : 'Видалити заняття'}
                       </button>
                     </div>

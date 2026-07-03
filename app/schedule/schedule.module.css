@@ -30,61 +30,9 @@
 }
 
 
-.navBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  color: var(--text-2);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-}
-.navBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-
-.todayBtn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-  font-size: 14px;
-  color: var(--text-2);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-}
-.todayBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-
-.btnTemplates {
-  height: var(--control-h);
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-2);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-}
-.btnTemplates:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
+/* Квадратний size-модифікатор поверх глобального .btn-secondary
+   (база кольору/рамки/hover — токени Сесії 1). */
+.navBtn { width: 30px; height: 30px; padding: 0; }
 
 /* ── Date chip + title block ────────────────────────────────── */
 .dateChip {
@@ -132,35 +80,6 @@
   white-space: nowrap;
 }
 
-/* ── View label ─────────────────────────────────────────────── */
-.viewLabel {
-  font-size: 14px;
-  color: var(--text-2);
-  white-space: nowrap;
-  padding: 0 8px;
-}
-
-/* ── Icon button (search) ────────────────────────────────────── */
-.iconBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  cursor: pointer;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-}
-
-.iconBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-
 /* ── Content row layout ─────────────────────────────────────── */
 .contentRow {
   display: flex;
@@ -191,35 +110,6 @@
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-}
-
-.tabs {
-  display: flex;
-  padding-right: 12px;
-  border-right: 1px solid var(--border);
-  margin-right: 4px;
-}
-
-.tab {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 0 12px;
-  height: var(--control-h);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-2);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: color var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
-  display: flex;
-  align-items: center;
-}
-.tab:hover { color: var(--text); background: var(--bg-3); border-color: var(--border); }
-.tabActive {
-  color: var(--accent);
-  border-color: var(--accent-border);
-  background: var(--accent-dim);
 }
 
 /* ── View toggle (Week / Day) ────────────────────────────────── */
@@ -264,96 +154,6 @@
   position: sticky;
   top: var(--topbar-h);
   z-index: 8;
-}
-
-/* ── Filter select (Radix) ──────────────────────────────────── */
-.filterGroup {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.filterDivider {
-  width: 1px;
-  background: var(--border);
-  align-self: stretch;
-  margin: 0 4px;
-  flex-shrink: 0;
-}
-
-.filterBtn {
-  height: 26px;
-  padding: 0 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-  white-space: nowrap;
-}
-.filterBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-.filterBtnActive {
-  border-color: var(--accent-border);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-.filterBtnActive:hover {
-  border-color: var(--accent-border-hover);
-  background: var(--accent-dim);
-}
-
-/* ── Archive list ────────────────────────────────────────────── */
-.archiveList {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 20px var(--topbar-px);
-}
-
-.archiveEmpty {
-  text-align: center;
-  color: var(--text-3);
-  font-size: 14px;
-  padding: 48px 0;
-}
-
-.archiveRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  font-family: var(--font);
-  transition: border-color var(--motion-fast), background var(--motion-fast);
-}
-.archiveRow:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-3);
-}
-
-.archiveDate { font-size: 14px; color: var(--text-2); min-width: 80px; }
-.archiveTime { font-size: 14px; color: var(--text-2); min-width: 100px; }
-.archiveType { font-size: 14px; font-weight: 500; flex: 1; }
-.archiveMeta { font-size: 14px; color: var(--text-2); white-space: nowrap; }
-.archiveMetaSep { font-size: 14px; color: var(--text-3); }
-.archiveCount {
-  font-size: 14px;
-  color: var(--text-3);
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-left: auto;
 }
 
 /* ── Sticky header group ────────────────────────────────────── */
@@ -582,7 +382,8 @@
     display: flex;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--modal-backdrop);
+    backdrop-filter: blur(2px);
     z-index: 300;
     align-items: flex-end;
   }
@@ -613,18 +414,8 @@
     font-weight: 600;
     color: var(--text);
   }
-  .mobileCalTodayBtn {
-    height: 32px;
-    padding: 0 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-3);
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color var(--motion-fast), background var(--motion-fast);
-  }
+  /* Size-модифікатор поверх глобального .btn-secondary */
+  .mobileCalTodayBtn { height: 32px; font-size: 13px; }
   .mobileCalTodayBtn:active { background: var(--accent-dim); border-color: var(--accent-border); }
 }
 
@@ -639,7 +430,6 @@
   /* Layout */
   .main { margin-left: 0; height: 100svh; overflow: hidden; }
   .topbar { height: auto; min-height: 0; overflow: visible; padding: 10px 16px; }
-  .btnTemplates { display: none; }
 
   /* Topbar — hide desktop left/right (mobile uses MobileScheduleTimeline's own week strip) */
   .topbarLeft { display: none; }

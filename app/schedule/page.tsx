@@ -1133,15 +1133,15 @@ export default function SchedulePage() {
 
           <div className={styles.topbarRight}>
             <div className={styles.desktopNav}>
-            <button className={styles.navBtn} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
+            <button className={`btn-secondary ${styles.navBtn}`} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
             </button>
-            <button className={styles.todayBtn} onClick={() => setBaseDate(new Date())}>
+            <button className="btn-secondary" onClick={() => setBaseDate(new Date())}>
               Сьогодні
             </button>
-            <button className={styles.navBtn} onClick={goNext} aria-label="Вперед">
+            <button className={`btn-secondary ${styles.navBtn}`} onClick={goNext} aria-label="Вперед">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 2l5 5-5 5"/>
               </svg>
@@ -1405,7 +1405,7 @@ export default function SchedulePage() {
                 <span className={styles.mobileCalSheetTitle}>Обрати дату</span>
                 <button
                   type="button"
-                  className={styles.mobileCalTodayBtn}
+                  className={`btn-secondary ${styles.mobileCalTodayBtn}`}
                   onClick={() => { setBaseDate(new Date()); setShowMobileCal(false) }}
                 >
                   Сьогодні

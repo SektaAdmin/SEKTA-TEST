@@ -207,20 +207,6 @@
   margin: 0;
 }
 
-.btnAdd {
-  background: var(--accent);
-  color: var(--accent-text);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 7px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.12s;
-  white-space: nowrap;
-}
-.btnAdd:hover { opacity: 0.88; }
-
 /* ── Add client form ─────────────────────────────────────────── */
 .addForm {
   background: var(--bg-2);
@@ -260,33 +246,6 @@
   justify-content: flex-end;
 }
 
-.btnCancelAdd {
-  background: transparent;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: border-color 0.12s, color 0.12s;
-}
-.btnCancelAdd:hover { border-color: var(--text-3); color: var(--text); }
-
-.btnConfirmEnroll {
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 7px 16px;
-  color: var(--accent-text);
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 14px;
-  transition: opacity 0.12s;
-}
-.btnConfirmEnroll:hover { opacity: 0.88; }
-.btnConfirmEnroll:disabled { opacity: 0.5; cursor: not-allowed; }
-
 /* ── Empty ───────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
@@ -309,29 +268,29 @@
   font-size: 14px;
 }
 
-.table thead tr { background: var(--bg-3); }
-
+/* Geist Table geometry (Сесія 2/globals.css .data-table): thead БЕЗ заливки,
+   th normal-case 14/500 h-40px, td py-10px — не uppercase-мікрокапс. */
 .table th {
-  padding: 10px 16px;
+  height: 40px;
+  padding: 0 16px;
   text-align: left;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .table td {
-  padding: 12px 16px;
+  padding: 10px 16px;
   color: var(--text);
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
 .table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover td { background: var(--bg-3); }
+.table tbody tr:hover td { background: var(--table-hover-bg); }
 
 .thRight { text-align: right; }
 
@@ -386,23 +345,6 @@
 }
 
 /* ── Row actions ─────────────────────────────────────────────── */
-.actionSelect {
-  height: 30px;
-  padding: 0 6px;
-  font-size: 13px;
-  font-family: var(--font);
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  cursor: pointer;
-  outline: none;
-  transition: border-color var(--motion-fast);
-  width: 100%;
-}
-.actionSelect:focus { border-color: var(--accent); }
-.actionSelect:disabled { opacity: 0.4; cursor: not-allowed; }
-
 .actions {
   display: flex;
   gap: 6px;
@@ -411,61 +353,28 @@
   flex-wrap: nowrap;
 }
 
-.btnAttend, .btnNoshow, .btnCancelEnroll, .btnReEnroll, .btnEdit, .btnCancelAdd {
+/* "Тонкий inline-actions" патерн з /sales (Сесія 4) і /clients/[id] (Сесія 6):
+   спільна база --btn-sm-*, семантичний hover (del→danger). */
+.btnRowEdit, .btnRowDel {
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--btn-sm-font);
   font-family: var(--font);
   cursor: pointer;
   border: 1px solid var(--border);
   background: transparent;
-  color: var(--text-3);
+  color: var(--text-2);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
   flex-shrink: 0;
-  padding: 0 10px;
-  min-width: auto;
+  padding: 0 var(--btn-sm-px);
 }
-
-.btnAttend, .btnNoshow, .btnCancelEnroll {
-  width: 32px;
-  padding: 0;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.btnAttend:hover:not(:disabled) {
-  background: var(--accent-dim);
-  border-color: var(--accent-border-hover);
-  color: var(--accent);
-}
-
-.btnNoshow:hover:not(:disabled) {
-  background: var(--danger-dim);
-  border-color: var(--danger-border-hover);
-  color: var(--danger);
-}
-
-.btnCancelEnroll:hover:not(:disabled) {
-  border-color: var(--border-hover);
-  color: var(--text-2);
-}
-
-.btnReEnroll:hover:not(:disabled) {
-  background: var(--fop-dim);
-  border-color: var(--fop-border);
-  color: var(--fop);
-}
-
-.btnAttend:disabled,
-.btnNoshow:disabled,
-.btnCancelEnroll:disabled,
-.btnReEnroll:disabled,
-.btnEdit:disabled,
-.btnCancelAdd:disabled { opacity: 0.4; cursor: not-allowed; }
+.btnRowEdit:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
+.btnRowDel:hover:not(:disabled)  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnRowEdit:disabled, .btnRowDel:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .rowError {
   font-size: 11px;
@@ -487,45 +396,6 @@
   justify-content: flex-end;
 }
 
-.btnEdit {
-  background: transparent;
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: border-color 0.12s, color 0.12s;
-}
-.btnEdit:hover:not(:disabled) { border-color: var(--text-3); color: var(--text); }
-
-.btnCancel {
-  background: transparent;
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--danger);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: background 0.12s;
-}
-.btnCancel:hover:not(:disabled) { background: var(--danger-dim); }
-
-.btnRestore {
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--accent);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: opacity 0.12s;
-}
-.btnRestore:hover:not(:disabled) { opacity: 0.8; }
-
 /* ── Inline delete confirm (рядок enrollment) ────────────────── */
 .deleteConfirm {
   display: flex;
@@ -538,62 +408,22 @@
   color: var(--text-3);
   white-space: nowrap;
 }
-.btnDelete {
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-family: var(--font);
-  cursor: pointer;
-  border: 1px solid var(--danger-border);
-  background: transparent;
-  color: var(--danger);
-  transition: background 0.12s;
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding: 0 10px;
-}
-.btnDelete:hover:not(:disabled) { background: var(--danger-dim); }
 
-/* Видалення заняття (footer + confirm) */
-.btnDeleteClass {
-  background: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--white);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: opacity 0.12s;
-}
-.btnDeleteClass:hover:not(:disabled) { opacity: 0.85; }
-.btnDeleteClass:disabled { opacity: 0.6; cursor: default; }
-
-/* Видалення у ФУТЕРІ — найтихіша дія (рідкісна + небезпечна): текст-кнопка без
-   заливки/рамки, небезпеку проявляє лише на hover/press. Solid-варіант
-   (.btnDeleteClass) лишається для фінального підтвердження в діалозі. */
-.btnDeleteGhost {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: 7px 14px;
-  color: var(--text-3);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: var(--font);
-  transition: color 0.12s, background 0.12s;
-}
+/* Видалення заняття у ФУТЕРІ — найтихіша дія (рідкісна + небезпечна):
+   layout-модифікатор поверх глобального .btn-ghost (той не має compact-padding
+   тут; небезпеку .btn-ghost вже проявляє на hover через --accent-dim, тому колір
+   лишаємо приглушеним у спокої й тонуємо в danger лише на hover нижче). */
+.btnDeleteGhost { color: var(--text-3); }
 .btnDeleteGhost:hover:not(:disabled) { color: var(--danger); background: var(--danger-dim); }
-.btnDeleteGhost:disabled { opacity: 0.6; cursor: default; }
 
-/* ── Confirm dialogs ─────────────────────────────────────────── */
+/* ── Confirm dialogs — токени Elevation Сесії 3, той самий еталон що
+   /sales (Сесія 4) і /clients/[id] (Сесія 6): світлий фрост-бекдроп +
+   --shadow-modal замість CSS-рамки. ─────────────────────────────── */
 .confirmOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--modal-backdrop);
+  backdrop-filter: blur(2px);
   z-index: 10;
   display: flex;
   align-items: flex-end;
@@ -601,8 +431,8 @@
 }
 .confirmDialog {
   width: 100%;
-  background: var(--bg);
-  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  box-shadow: var(--shadow-modal);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -674,10 +504,9 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  /* Перший ряд: Редагувати + Скасувати/Відновити */
-  .footerActions .btnEdit,
-  .footerActions .btnCancel,
-  .footerActions .btnRestore {
+  /* Перший ряд: Редагувати + Скасувати/Відновити (глобальні .btn-*) */
+  .footerActions :global(.btn-secondary),
+  .footerActions :global(.btn-danger) {
     flex: 1 1 auto;
     min-width: 0;
     font-size: 13px;
@@ -798,9 +627,7 @@
     padding: 0 !important;
   }
   .actions { gap: 6px; justify-content: flex-end; }
-  .btnAttend, .btnNoshow, .btnCancelEnroll { width: 44px; height: 44px; font-size: 15px; }
-  .btnReEnroll, .btnCancelAdd, .btnDelete { height: 44px; padding: 0 12px; font-size: 14px; }
-  .actions .btnEdit { height: 44px; padding: 0 12px; font-size: 14px; }
+  .btnRowEdit, .btnRowDel { height: 44px; padding: 0 12px; font-size: 14px; }
   .deleteConfirm { align-items: stretch; }
   .deleteHint { white-space: normal; text-align: right; }
 
