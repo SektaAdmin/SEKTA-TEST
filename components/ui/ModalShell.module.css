@@ -99,10 +99,4 @@
   .footer {
     padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
   }
-
-  /* Зручний дотик: хіт-таргет «Х» 44×44 */
-  .close {
-    width: 44px;
-    height: 44px;
-  }
 }
