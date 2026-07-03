@@ -31,7 +31,7 @@ export default function DashboardPage() {
       <main className={`page-main ${styles.dashboard}`}>
         <div className="page-head">
           <div className={styles.head}>
-            <h1 className={styles.title}>Дашборд</h1>
+            <h1 className="page-title">Дашборд</h1>
             <span className={styles.headDate}>{headerDate}</span>
           </div>
         </div>

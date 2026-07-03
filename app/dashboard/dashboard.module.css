@@ -16,12 +16,6 @@
   padding: 20px var(--topbar-px);
 }
 
-.title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-}
-
 .headDate {
   font-size: 14px;
   color: var(--text-2);
@@ -95,8 +89,8 @@
 
 /* ── Спільне для блоків ────────────────────────────────────── */
 .blockTitle {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   color: var(--text);
   margin-bottom: var(--space-lg);
 }
@@ -119,24 +113,6 @@
   font-size: 14px;
   color: var(--text-3);
   flex: 1;
-}
-
-.blockErrorRetry {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-2);
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 5px 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.blockErrorRetry:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
 }
 
 /* ── Блок боржників ────────────────────────────────────────── */
@@ -213,11 +189,9 @@
   position: sticky;
   top: 0;
   background: var(--bg-2);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--text-3);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: var(--text);
   text-align: right;
   padding: 0 var(--space-sm) var(--space-xs);
   border-bottom: 1px solid var(--border);

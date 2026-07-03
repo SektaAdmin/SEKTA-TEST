@@ -11,7 +11,7 @@ export function BlockError({ onRetry }: Props) {
   return (
     <div className={styles.blockError}>
       <span className={styles.blockErrorMsg}>Не вдалося завантажити дані</span>
-      <button type="button" className={styles.blockErrorRetry} onClick={onRetry}>
+      <button type="button" className="btn-secondary btn-sm" onClick={onRetry}>
         Спробувати ще раз
       </button>
     </div>
