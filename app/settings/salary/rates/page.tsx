@@ -18,6 +18,7 @@ import { toYMD } from '@/lib/dateUtils'
 import { ticketTypeShortLabel } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { MSG } from '@/lib/messages'
 import ss from '@/app/settings/settings.module.css'
 import styles from './rates.module.css'
@@ -365,68 +366,62 @@ export default function SalaryRatesPage() {
             </p>
           )}
 
-          <div className={styles.formField}>
-            <label className={styles.label}>Тип заняття</label>
-            <select className={styles.select} value={formTicketType} onChange={e => setFormTicketType(e.target.value)}>
+          <FormField id="rate-ticket-type" label="Тип заняття">
+            <select id="rate-ticket-type" value={formTicketType} onChange={e => setFormTicketType(e.target.value)}>
               <option value="">— Оберіть —</option>
               {trainingTypes.map(t => (
                 <option key={t.code} value={t.code}>{t.label} ({t.code})</option>
               ))}
             </select>
-          </div>
+          </FormField>
 
-          <div className={styles.formField}>
-            <label className={styles.label}>Тренер</label>
-            <select className={styles.select} value={formTrainerId} onChange={e => setFormTrainerId(e.target.value)}>
+          <FormField id="rate-trainer" label="Тренер">
+            <select id="rate-trainer" value={formTrainerId} onChange={e => setFormTrainerId(e.target.value)}>
               <option value="">Глобальна (для всіх)</option>
               {trainers.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
-          </div>
+          </FormField>
 
-          <div className={styles.formField}>
-            <label className={styles.label}>Зал (необов'язково)</label>
-            <select className={styles.select} value={formHallId} onChange={e => setFormHallId(e.target.value)}>
+          <FormField id="rate-hall" label="Зал (необов'язково)">
+            <select id="rate-hall" value={formHallId} onChange={e => setFormHallId(e.target.value)}>
               <option value="">Будь-який зал</option>
               {halls.map(h => (
                 <option key={h.id} value={h.id}>{h.name}</option>
               ))}
             </select>
-          </div>
+          </FormField>
 
           <div className={styles.rateRow}>
-            <div className={styles.rateField}>
-              <label className={styles.label}>Ставка тренера ₴/год</label>
+            <FormField id="rate-trainer-rate" label="Ставка тренера ₴/год" className={styles.rateField}>
               <input
-                className={styles.input}
+                id="rate-trainer-rate"
                 type="number" min="0" step="10"
                 value={formTrainerRate}
                 onChange={e => setFormTrainerRate(e.target.value)}
                 placeholder="напр. 90"
               />
-            </div>
-            <div className={styles.rateField}>
-              <label className={styles.label}>Ставка студії ₴/год</label>
+            </FormField>
+            <FormField id="rate-studio-rate" label="Ставка студії ₴/год" className={styles.rateField}>
               <input
-                className={styles.input}
+                id="rate-studio-rate"
                 type="number" min="0" step="10"
                 value={formStudioRate}
                 onChange={e => setFormStudioRate(e.target.value)}
                 placeholder="напр. 90"
               />
-            </div>
+            </FormField>
           </div>
 
-          <div className={styles.formField}>
-            <label className={styles.label}>Діє з дати</label>
+          <FormField id="rate-valid-from" label="Діє з дати">
             <input
-              className={styles.input}
+              id="rate-valid-from"
               type="date"
               value={formValidFrom}
               onChange={e => setFormValidFrom(e.target.value)}
             />
-          </div>
+          </FormField>
 
           {error && <div className={styles.errorMsg}>{error}</div>}
         </ModalShell>

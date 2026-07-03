@@ -46,32 +46,11 @@
   flex-wrap: wrap;
 }
 
-/* Modal form fields */
-.formField { display: flex; flex-direction: column; gap: 4px; }
-
-.label { font-size: 13px; color: var(--text-2); }
-
-.select, .input {
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  font-family: var(--font);
-  outline: none;
-  box-sizing: border-box;
-}
-.select:focus, .input:focus { border-color: var(--accent); }
-
 .rateRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.rateField { display: flex; flex-direction: column; gap: 4px; }
 
 .errorMsg { color: var(--danger); font-size: 13px; }
 

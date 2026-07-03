@@ -8,50 +8,6 @@
   border-bottom: 1px solid var(--border);
 }
 
-.topbarActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.addExpenseBtn {
-  display: inline-flex;
-  align-items: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  height: var(--control-h);
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-2);
-  cursor: pointer;
-  font-family: var(--font);
-  white-space: nowrap;
-  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
-}
-.addExpenseBtn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-  background: var(--bg-3);
-}
-
-.trainerReportLink {
-  display: inline-flex;
-  align-items: center;
-  background: var(--accent);
-  color: var(--accent-text);
-  text-decoration: none;
-  border-radius: var(--radius-sm);
-  height: var(--control-h);
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  transition: opacity 0.12s;
-}
-.trainerReportLink:hover { opacity: 0.88; }
-
 /* ── Filters ─────────────────────────────────────────────────── */
 .filters {
   display: flex;
@@ -108,91 +64,6 @@
   color: var(--text);
   background: var(--bg-3);
 }
-
-.preset {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  height: var(--control-h);
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-2);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-  font-family: var(--font);
-}
-.preset:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.presetActive {
-  background: var(--accent-dim) !important;
-  border-color: var(--accent-border-hover) !important;
-  color: var(--accent) !important;
-}
-
-.dateLabel {
-  font-size: 14px;
-  color: var(--text-3);
-}
-
-/* ── Totals cards ────────────────────────────────────────────── */
-.totalsBar {
-  display: flex;
-  gap: 12px;
-  padding: 16px var(--topbar-px);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.totalsInner {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.summaryCard {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  flex: 1;
-  min-width: 0;
-}
-
-.summaryCardTotal {
-  border-color: var(--border-strong);
-  background: var(--bg-3);
-}
-
-.summaryLabel {
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.summaryValue {
-  font-size: 20px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-  letter-spacing: -0.02em;
-}
-
-.summaryZero {
-  color: var(--text-3);
-}
-
-.valCash    { color: var(--accent); }
-.valFop     { color: var(--fop); }
-.valCard    { color: var(--card); }
-.valDeposit { color: var(--text-2); }
-.valNeg     { color: var(--danger); }
 
 /* ── Balance block ───────────────────────────────────────────── */
 .balanceBlock {
@@ -286,10 +157,8 @@
 .iconOtherIncome { color: var(--success); }
 .thClient  { width: 160px; }
 .thTicket  { width: 170px; }
-.thTrainer { width: 100px; }
 .thPrice   { width: 100px; text-align: right !important; }
 
-.trainerCell { color: var(--text-2); font-size: 13px; }
 .trainerName { color: var(--text-2); font-size: 13px; }
 .thDeposit { width: 110px; text-align: right !important; }
 .thAmt     { width: 100px; text-align: right !important; }
@@ -350,12 +219,6 @@
 .dateTime {
   font-size: 14px;
   color: var(--text-3);
-}
-
-.clientCell {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
 }
 
 .clientName {
@@ -589,30 +452,6 @@
     gap: 8px;
     width: 100%;
     box-sizing: border-box;
-  }
-
-  .totalsBar {
-    padding: 8px 16px;
-    gap: 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    flex-wrap: nowrap;
-  }
-
-  .totalsInner {
-    flex-wrap: nowrap;
-    gap: 8px;
-    width: auto;
-  }
-
-  .summaryCard {
-    flex: 0 0 130px;
-    min-width: 0;
-    padding: 10px 12px;
-  }
-
-  .summaryValue {
-    font-size: 16px;
   }
 
   .content { padding: 16px 16px; }

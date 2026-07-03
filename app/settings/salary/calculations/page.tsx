@@ -22,6 +22,7 @@ import { toYMD, isoToYMD, DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
+import { FormField } from '@/components/ui/FormField'
 import { Pencil, Trash2, Download } from 'lucide-react'
 import { exportSalaryPdf } from '@/lib/exportSalaryPdf'
 import { toast } from 'sonner'
@@ -685,10 +686,9 @@ export default function SalaryCalculationsPage() {
           </div>
 
           {paymentMethod === 'cash' && (
-            <div>
-              <label className={styles.fieldLabel}>З чиєї готівки</label>
+            <FormField id="pay-cash-holder" label="З чиєї готівки">
               <select
-                className={styles.modalInput}
+                id="pay-cash-holder"
                 value={paymentCashHolder}
                 onChange={e => setPaymentCashHolder(e.target.value)}
               >
@@ -697,7 +697,7 @@ export default function SalaryCalculationsPage() {
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
-            </div>
+            </FormField>
           )}
 
           <div>
@@ -714,37 +714,34 @@ export default function SalaryCalculationsPage() {
             </div>
           </div>
 
-          <div>
-            <label className={styles.fieldLabel}>Виплачено ₴</label>
+          <FormField id="pay-amount" label="Виплачено ₴">
             <input
-              className={styles.modalInput}
+              id="pay-amount"
               type="number" min="0" step="10"
               value={paymentAmount}
               onChange={e => setPaymentAmount(e.target.value)}
               autoFocus
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className={styles.fieldLabel}>Дата виплати</label>
+          <FormField id="pay-date" label="Дата виплати">
             <input
-              className={styles.modalInput}
+              id="pay-date"
               type="date"
               value={paymentDate}
               onChange={e => setPaymentDate(e.target.value)}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className={styles.fieldLabel}>Примітка</label>
+          <FormField id="pay-notes" label="Примітка">
             <input
-              className={styles.modalInput}
+              id="pay-notes"
               type="text"
               value={paymentNotes}
               onChange={e => setPaymentNotes(e.target.value)}
               placeholder="необов'язково"
             />
-          </div>
+          </FormField>
 
           {paymentError && <div className={styles.errorMsg}>{paymentError}</div>}
         </ModalShell>
