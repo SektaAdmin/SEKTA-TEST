@@ -198,14 +198,14 @@ export function FreeSlotsBlock({ date }: { date: string }) {
 
       {!loading && !error && byHall.map(h => (
         <div key={h.hall} className={styles.slotRow}>
-          <div className={styles.slotHallRow}>
-            <span className={styles.slotHall}>{h.hall}</span>
-            <CopyButton
-              text={() => buildHallSlotsText(h.hall, h.free)}
-              title="Скопіювати слоти"
-              ariaLabel={`Скопіювати слоти залу ${h.hall}`}
-            />
-          </div>
+          <CopyButton
+            className={styles.slotHallBtn}
+            label={h.hall}
+            copiedLabel="Скопійовано"
+            text={() => buildHallSlotsText(h.hall, h.free)}
+            title="Скопіювати слоти"
+            ariaLabel={`Скопіювати слоти залу ${h.hall}`}
+          />
           <div className={styles.slotWindows}>
             {splitIntoHourSlots(h.free).map(w => (
               <span key={w.from} className={styles.slotChip}>

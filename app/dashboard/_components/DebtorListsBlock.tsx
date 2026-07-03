@@ -1,9 +1,10 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsAll, type SessionDebtorsTable } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
 import { useAsync } from '@/hooks/useAsync'
+import { useRefs } from '@/contexts/RefsContext'
 import { BlockError } from './BlockError'
 import styles from '../dashboard.module.css'
 
@@ -18,10 +19,19 @@ export function DebtorListsBlock({ date }: { date: string }) {
     [date],
     { realtime: ['client_session_balances', 'balance_transactions'] }
   )
+  const { trainingTypes } = useRefs()
 
   useEffect(() => {
     if (error) console.error('[DebtorListsBlock]', error)
   }, [error])
+
+  // Повні бренд-назви з довідника (замість скорочень) — колонки заповнюють
+  // простір, що інакше йде в порожнечу поряд з іменами клієнтів.
+  const typeLabels = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const t of trainingTypes) map[t.code] = t.label
+    return map
+  }, [trainingTypes])
 
   const table = data ?? EMPTY_TABLE
 
@@ -40,7 +50,9 @@ export function DebtorListsBlock({ date }: { date: string }) {
               <tr>
                 <th className={styles.debtTableName}>Клієнт</th>
                 {table.columns.map(c => (
-                  <th key={c.key} className={c.money ? styles.debtTableMoney : styles.debtTableCol}>{c.label}</th>
+                  <th key={c.key} className={c.money ? styles.debtTableMoney : styles.debtTableCol}>
+                    {typeLabels[c.key] ?? c.label}
+                  </th>
                 ))}
               </tr>
             </thead>

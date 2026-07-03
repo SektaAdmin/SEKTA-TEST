@@ -193,6 +193,7 @@
   font-weight: var(--fw-medium);
   color: var(--text);
   text-align: right;
+  white-space: nowrap;
   padding: 0 var(--space-sm) var(--space-xs);
   border-bottom: 1px solid var(--border);
 }
@@ -245,7 +246,7 @@
 /* ── Блок: вільні слоти ────────────────────────────────────── */
 .slotRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-md);
   padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
@@ -255,18 +256,21 @@
   border-top: none;
 }
 
-.slotHallRow {
+/* Зал + копіювання злиті в одну кнопку (Geist CopyButton з label):
+   уся зона клікабельна, а не лише вузька іконка поряд з назвою.
+   Подвоєний клас .slotHallBtn.slotHallBtn піднімає специфічність над
+   CopyButton.module.css (.btn), інакше justify-content там переможе. */
+.slotHallBtn.slotHallBtn {
   flex-shrink: 0;
-  width: 120px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+  width: 132px;
+  justify-content: flex-start;
+  overflow: hidden;
 }
 
-.slotHall {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
+.slotHallBtn.slotHallBtn span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 
