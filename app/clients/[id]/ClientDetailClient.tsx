@@ -302,7 +302,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               {clientName || <span className={styles.noName}>Клієнт без імені</span>}
             </h1>
           </div>
-          <button className={styles.btnEdit} onClick={() => setShowEditModal(true)}>
+          <button className="btn-secondary" onClick={() => setShowEditModal(true)}>
             Редагувати
           </button>
         </div>
@@ -330,7 +330,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   <span className="badge badge-completed">Кабінет</span>
                 ) : (
                   <button
-                    className={styles.btnEdit}
+                    className="btn-secondary"
                     onClick={() => { setLoginError(''); setResetMode(false); setShowLoginConfirm(true) }}
                     disabled={!client.phone}
                     title={client.phone ? '' : 'Додайте номер телефону, щоб створити кабінет'}
@@ -378,12 +378,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </div>
 
             <div className={styles.msActions}>
-              <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
+              <button className="btn-primary" onClick={() => setShowSaleModal(true)}>
                 Записати продаж
               </button>
               {client.user_id && (
                 <button
-                  className={styles.btnEdit}
+                  className="btn-secondary"
                   onClick={() => { setLoginError(''); setResetMode(true); setShowLoginConfirm(true) }}
                 >
                   Скинути пароль
@@ -401,7 +401,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   <div className={styles.cabinetActions}>
                     <span className="badge badge-completed">Кабінет активний</span>
                     <button
-                      className={styles.btnEdit}
+                      className="btn-secondary"
                       onClick={() => { setLoginError(''); setResetMode(true); setShowLoginConfirm(true) }}
                     >
                       Скинути пароль
@@ -409,7 +409,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   </div>
                 ) : (
                   <button
-                    className={styles.btnPrimary}
+                    className="btn-primary"
                     onClick={() => { setLoginError(''); setResetMode(false); setShowLoginConfirm(true) }}
                     disabled={!client.phone}
                     title={client.phone ? '' : 'Додайте номер телефону, щоб створити кабінет'}
@@ -472,7 +472,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.sectionTitle}>Залишок занять</h2>
-                <button className={styles.btnPrimary} onClick={() => setShowSaleModal(true)}>
+                <button className="btn-primary" onClick={() => setShowSaleModal(true)}>
                   Записати продаж
                 </button>
               </div>
@@ -505,7 +505,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <h2 className={styles.sectionTitle}>Постійні записи</h2>
-              <button className={styles.btnPrimary} onClick={() => router.push('/schedule/templates')}>
+              <button className="btn-primary" onClick={() => router.push('/schedule/templates')}>
                 Шаблони →
               </button>
             </div>
@@ -537,7 +537,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <section className={styles.card}>
             <div className={styles.cardHeader}>
               <h2 className={styles.sectionTitle}>Майбутні записи</h2>
-              <button className={styles.btnPrimary} onClick={() => setShowEnrollModal(true)}>
+              <button className="btn-primary" onClick={() => setShowEnrollModal(true)}>
                 Записати на заняття
               </button>
             </div>
@@ -876,7 +876,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   )}
 
                   {!feedShowAll && items.length > FEED_PAGE && (
-                    <button className={styles.btnLoadMore} onClick={() => setFeedShowAll(true)}>
+                    <button className={`btn-secondary ${styles.loadMoreBtn}`} onClick={() => setFeedShowAll(true)}>
                       Показати всі ({items.length - FEED_PAGE} більше)
                     </button>
                   )}
@@ -1058,7 +1058,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                   )}
 
                   {sales.length < salesTotal && (
-                    <button className={styles.btnLoadMore} onClick={handleLoadMore}>
+                    <button className={`btn-secondary ${styles.loadMoreBtn}`} onClick={handleLoadMore}>
                       Завантажити ще ({salesTotal - sales.length})
                     </button>
                   )}
@@ -1127,13 +1127,13 @@ export default function ClientDetailClient({ id }: { id: string }) {
             {loginError && <p className={styles.confirmError}>{loginError}</p>}
             <div className={styles.confirmBtns}>
               <button
-                className={styles.btnConfirmCancel}
+                className="btn-secondary"
                 onClick={() => { setShowLoginConfirm(false); setLoginError('') }}
               >
                 Скасувати
               </button>
               <button
-                className={styles.btnPrimary}
+                className="btn-primary"
                 onClick={handleCreateLogin}
                 disabled={creatingLogin}
               >
@@ -1150,15 +1150,15 @@ export default function ClientDetailClient({ id }: { id: string }) {
             <h3>{createdCreds.reset ? 'Пароль скинуто' : 'Кабінет створено'}</h3>
             <p>Надішліть ці дані клієнту в Instagram або Telegram:</p>
             <pre style={{
-              whiteSpace: 'pre-wrap', background: 'var(--bg-2)', border: '1px solid var(--border)',
-              borderRadius: 8, padding: 12, fontSize: 14, margin: '8px 0',
+              whiteSpace: 'pre-wrap', background: 'var(--bg-3)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: 12, fontSize: 14, margin: '8px 0',
             }}>{credsText()}</pre>
             {loginError && <p className={styles.confirmError}>{loginError}</p>}
             <div className={styles.confirmBtns}>
-              <button className={styles.btnConfirmCancel} onClick={() => setCreatedCreds(null)}>
+              <button className="btn-secondary" onClick={() => setCreatedCreds(null)}>
                 Закрити
               </button>
-              <button className={styles.btnPrimary} onClick={copyCreds}>
+              <button className="btn-primary" onClick={copyCreds}>
                 {credsCopied ? 'Скопійовано ✓' : 'Скопіювати'}
               </button>
             </div>
@@ -1174,13 +1174,13 @@ export default function ClientDetailClient({ id }: { id: string }) {
             {deleteError && <p className={styles.confirmError}>{deleteError}</p>}
             <div className={styles.confirmBtns}>
               <button
-                className={styles.btnConfirmCancel}
+                className="btn-secondary"
                 onClick={() => { setDeleteId(null); setDeleteError('') }}
               >
                 Скасувати
               </button>
               <button
-                className={styles.btnConfirmDel}
+                className="btn-danger"
                 onClick={handleDelete}
                 disabled={deleting}
               >

@@ -66,21 +66,6 @@
 }
 .searchClear:hover { color: var(--text-2); }
 
-/* ── Page-size select ────────────────────────────────────────── */
-.pageSizeSelect {
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  height: var(--control-h); padding: 0 10px;
-  color: var(--text-2);
-  font-size: 14px;
-  font-family: var(--font);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.12s;
-}
-.pageSizeSelect:focus { border-color: var(--accent); }
-
 /* ── Content ─────────────────────────────────────────────────── */
 .content { padding: 24px 28px; }
 

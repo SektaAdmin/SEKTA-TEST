@@ -362,122 +362,56 @@ a.msContact:hover svg { color: var(--accent); }
   line-height: 1.35;
 }
 
-/* ── Buttons ────────────────────────────────────────────────── */
-.btnEdit {
-  height: 32px;
-  padding: 0 14px;
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.15s, background 0.15s;
-}
-.btnEdit:hover { border-color: var(--border-hover); background: var(--bg-3); }
+/* ── Load more — layout modifier поверх глобального .btn-secondary ─ */
+.loadMoreBtn { display: block; width: 100%; margin-top: 12px; }
 
-.btnSecondary {
-  height: 28px;
-  padding: 0 12px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.15s, color 0.15s;
-}
-.btnSecondary:hover { border-color: var(--border-hover); color: var(--text); }
-
-.btnPrimary {
-  height: 32px;
-  padding: 0 14px;
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--accent-text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.15s;
-}
-.btnPrimary:hover { opacity: 0.88; }
-
-.btnLoadMore {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
-  padding: 8px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-.btnLoadMore:hover { border-color: var(--border-hover); color: var(--text); }
-
-/* ── Row actions (edit/delete in table) ─────────────────────── */
+/* ── Row actions (edit/delete in table) — "тонкий inline-actions"
+   патерн з /sales (Сесія 4/5): спільна база --btn-sm-*, семантичний
+   hover (del→danger), .btn-* цього не покриває. ─────────────────── */
 .actions {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-.btnRowEdit {
-  height: 26px;
-  padding: 0 10px;
-  background: none;
+.btnRowEdit, .btnRowDel {
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  padding: var(--btn-sm-py) var(--btn-sm-px);
+  font-size: var(--btn-sm-font);
+  cursor: pointer;
   color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
   white-space: nowrap;
-  transition: border-color 0.15s, color 0.15s;
 }
-.btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); }
+.btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
+.btnRowDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
 
-.btnRowDel {
-  height: 26px;
-  padding: 0 10px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--danger);
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.15s, background 0.15s;
-}
-.btnRowDel:hover { border-color: var(--danger); background: var(--danger-dim); }
-
-/* ── Delete confirmation overlay ────────────────────────────── */
+/* ── Delete confirmation overlay — токени Elevation Сесії 3
+   (світлий фрост-бекдроп + --shadow-modal, без CSS-рамки),
+   той самий еталон, що /sales (Сесія 4). ───────────────────────── */
 .confirmOverlay {
   position: fixed;
   inset: 0;
-  background: var(--overlay-bg);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 250;
+  backdrop-filter: blur(2px);
 }
 
 .confirmBox {
   background: var(--bg-2);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px 28px;
-  max-width: 360px;
-  width: 100%;
+  box-shadow: var(--shadow-modal);
+  padding: 24px;
+  width: 300px;
 }
 
 .confirmBox h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
   margin: 0 0 8px;
@@ -486,12 +420,15 @@ a.msContact:hover svg { color: var(--accent); }
 .confirmBox p {
   font-size: 14px;
   color: var(--text-2);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
 
 .confirmError {
   font-size: 14px;
-  color: var(--danger);
+  color: var(--danger-text);
+  background: var(--danger-dim);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
   margin: 0 0 12px;
 }
 
@@ -500,34 +437,6 @@ a.msContact:hover svg { color: var(--accent); }
   justify-content: flex-end;
   gap: 8px;
 }
-
-.btnConfirmCancel {
-  height: 32px;
-  padding: 0 14px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-.btnConfirmCancel:hover { border-color: var(--border-hover); color: var(--text); }
-
-.btnConfirmDel {
-  height: 32px;
-  padding: 0 14px;
-  background: var(--danger);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.btnConfirmDel:hover { opacity: 0.85; }
-.btnConfirmDel:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
 /* ── Table number cells ─────────────────────────────────────── */
