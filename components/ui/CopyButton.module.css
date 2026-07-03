@@ -27,6 +27,12 @@
 /* Квадратна icon-only — 40×40 (Geist w=h=--geist-form-height), без h-padding. */
 .iconOnly { width: 40px; padding: 0; }
 
+/* Компактний варіант для щільних рядків таблиць (поруч з .btn-sm сусідами) —
+   висота/padding як у --btn-sm-*, а не Geist form-height. */
+.sm { height: 26px; }
+.sm.iconOnly { width: 26px; }
+.sm .iconWrap { width: 14px; height: 14px; }
+
 /* Кросфейд Copy↔Check — два накладені шари 16px (Geist: opacity+scale 200ms). */
 .iconWrap {
   position: relative;

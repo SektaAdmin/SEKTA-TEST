@@ -21,6 +21,7 @@ import { MSG } from '@/lib/messages'
 import type { Sale, PaymentMethod } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import FilterSelect from '@/components/ui/FilterSelect'
+import { CopyButton } from '@/components/ui/CopyButton'
 import styles from './sales.module.css'
 
 type FeedTab = 'all' | 'sales' | 'expenses'
@@ -73,7 +74,7 @@ export default function SalesPage() {
     trainerId: trainerFilter, expenseMethod,
   })
 
-  const { getState: getReceiptState, copyReceipt } = useReceipt()
+  const { prepareReceipt } = useReceipt()
 
   const totalPages = Math.ceil(total / pageSize)
   const hasFilters = search.trim() !== '' || dateFrom !== '' || dateTo !== '' || expenseMethod !== '' || trainerFilter !== ''
@@ -470,16 +471,12 @@ export default function SalesPage() {
                           <td className={styles.trainer}>{s.trainers?.name ?? '—'}</td>
                           <td>
                             <div className={styles.actions}>
-                              <button
-                                className={styles.btnReceipt}
-                                onClick={() => {
-                                  copyReceipt(s).then(() => toast.success(MSG.toast.copied))
-                                }}
-                                disabled={getReceiptState(s.id) === 'copying'}
+                              <CopyButton
+                                size="sm"
+                                text={() => prepareReceipt(s)}
+                                onCopied={() => toast.success(MSG.toast.copied)}
                                 title="Скопіювати повідомлення для клієнта"
-                              >
-                                {getReceiptState(s.id) === 'copying' ? '…' : '📋'}
-                              </button>
+                              />
                               <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                                 Змінити
                               </button>
@@ -581,15 +578,12 @@ export default function SalesPage() {
                         <div className={styles.cardTrainer}>Тренер: {s.trainers.name}</div>
                       )}
                       <div className={styles.cardActions}>
-                        <button
-                          className={styles.btnReceipt}
-                          onClick={() => {
-                            copyReceipt(s).then(() => toast.success(MSG.toast.copied))
-                          }}
-                          disabled={getReceiptState(s.id) === 'copying'}
-                        >
-                          {getReceiptState(s.id) === 'copying' ? 'Копіюю…' : 'Скопіювати клієнту'}
-                        </button>
+                        <CopyButton
+                          text={() => prepareReceipt(s)}
+                          onCopied={() => toast.success(MSG.toast.copied)}
+                          title="Скопіювати повідомлення для клієнта"
+                          ariaLabel="Скопіювати клієнту"
+                        />
                         <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                           Змінити
                         </button>

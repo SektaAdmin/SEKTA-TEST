@@ -155,7 +155,7 @@
 
 .actions { display: flex; gap: 6px; }
 
-.btnEdit, .btnDel, .btnReceipt {
+.btnEdit, .btnDel {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -168,8 +168,6 @@
 }
 .btnEdit:hover    { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
 .btnDel:hover     { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
-.btnReceipt:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-.btnReceipt:disabled { opacity: 0.5; cursor: wait; }
 
 /* ── Confirm dialog ──────────────────────────────────────────────
    Модалка-підтвердження на токенах Сесії 3: світлий фрост-бекдроп
@@ -492,7 +490,7 @@
 
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
-  .btnEdit, .btnDel, .btnReceipt { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
+  .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
 
   .fsTrigger { height: 44px; }
 

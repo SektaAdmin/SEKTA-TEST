@@ -81,21 +81,23 @@ export function useReceipt() {
     ].join('\n')
   }, [])
 
-  const copyReceipt = useCallback(async (sale: Sale) => {
+  // Для CopyButton: сам лише будує текст (без запису в буфер) і виставляє per-row стан.
+  const prepareReceipt = useCallback(async (sale: Sale): Promise<string> => {
     const id = sale.id
     setState(id, 'copying')
     try {
       const message = await buildMessage(sale)
-      await navigator.clipboard.writeText(message)
       setState(id, 'done')
+      return message
     } catch (err) {
-      console.error('[useReceipt] copy error:', err)
+      console.error('[useReceipt] build error:', err)
       setState(id, 'error')
+      throw err
     }
   }, [buildMessage])
 
   return {
     getState,
-    copyReceipt,
+    prepareReceipt,
   }
 }
