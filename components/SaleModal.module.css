@@ -32,8 +32,8 @@
   gap: 8px;
   min-height: 39px;
 }
-.depositBoxNext { font-size: 15px; font-weight: 600; }
-.depositBoxEmpty { font-size: 13px; color: var(--text-3); }
+.depositBoxNext { font-size: 14px; font-weight: 600; }
+.depositBoxEmpty { font-size: 14px; color: var(--text-3); }
 
 .paymentTabs {
   display: flex;

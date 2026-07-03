@@ -89,6 +89,7 @@ export default function ClientSearchCombobox({ inputId, initialLabel = '', onSel
         aria-autocomplete="list"
         aria-controls={listboxId}
         aria-activedescendant={activeIndex >= 0 ? `csc-opt-${activeIndex}` : undefined}
+        aria-invalid={error ? true : undefined}
         disabled={disabled}
       />
       {isOpen && search.trim() && (

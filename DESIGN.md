@@ -233,7 +233,7 @@ Canonical implementation: `components/ui/FormField.tsx` (+ `FormField.module.css
 - **Label:** 13px, normal weight, `--text-2`, **normal-case** — not uppercase micro-caps. Verified against Geist `label` (form label = `text-[13px] text-gray-900`, default `capitalize`; we take the **Bypass Casing** variant because Ukrainian is not title-cased). Matches the normal-case decision made for table headers — forms and tables share one casing model.
 - **Style:** 1px border (`--border`), Neutral Background Tertiary fill (`--bg-3`), 8px vertical × 12px horizontal padding, 6px border-radius (`--radius-sm`).
 - **Focus:** Border shifts to Professional Black. Box-shadow `0 0 0 3px rgba(0,0,0,0.08)` (subtle glow, no color tint).
-- **Error:** `aria-invalid="true"` (set by FormField when an error is present) → Danger red border; focus glow tints to `--danger-dim`. The message below uses `--danger-text` (darker red — clears 4.5:1 at 11px where `--danger` does not).
+- **Error:** `aria-invalid="true"` (set by FormField when an error is present) → Danger red border; focus glow tints to `--danger-dim`. The message below is 13px (matches Geist `data-geist-error`, `text-[13px]`) and uses `--danger-text` (darker red — clears 4.5:1 where `--danger` does not).
 - **Disabled:** Border becomes Neutral Border Strong (`--border-strong`, darker), text muted to `--text-3`.
 
 ### Chips / Tags

@@ -67,7 +67,7 @@
 }
 
 .errorHint {
-  font-size: 11px;
+  font-size: var(--fs-sm);
   color: var(--danger-text);
   margin-top: 2px;
 }

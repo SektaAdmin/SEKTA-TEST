@@ -30,8 +30,10 @@
 }
 
 .header h2 {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  font-weight: 600;
+  letter-spacing: -0.4px;
   color: var(--text);
 }
 
