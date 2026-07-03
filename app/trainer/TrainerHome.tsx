@@ -69,7 +69,7 @@ export default function TrainerHome({ trainerName, telegramConnected, telegramLi
           </div>
         ) : BOT_USERNAME ? (
           <a
-            className={styles.tgConnectBtn}
+            className={`btn-primary ${styles.tgConnectBtn}`}
             href={`https://t.me/${BOT_USERNAME}?start=${telegramLinkToken}`}
             target="_blank"
             rel="noopener noreferrer"

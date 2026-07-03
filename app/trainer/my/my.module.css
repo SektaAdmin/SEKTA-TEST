@@ -176,35 +176,6 @@
   color: var(--accent);
 }
 
-/* ── Tab bar ─────────────────────────────────────────────────────────────── */
-.tabBar {
-  display: flex;
-  gap: 0;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.tab {
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-2);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  margin-bottom: -1px;
-  transition: color 0.12s, border-color 0.12s;
-}
-
-.tab:hover { color: var(--text); }
-
-.tabActive {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
 /* ── Scroll area ─────────────────────────────────────────────────────────── */
 .scroll {
   flex: 1;

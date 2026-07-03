@@ -1181,19 +1181,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 <button
                   key={chip.value}
                   onClick={() => setFilterChip(chip.value)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid',
-                    borderColor: filterChip === chip.value ? 'var(--accent)' : 'var(--border)',
-                    background: filterChip === chip.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
-                    color: filterChip === chip.value ? 'var(--accent)' : 'var(--text-2)',
-                    fontSize: 13,
-                    fontWeight: filterChip === chip.value ? 600 : 400,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.12s',
-                  }}
+                  className={['filterChip', filterChip === chip.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
                 >
                   {chip.label}
                 </button>
@@ -1205,7 +1193,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           </div>
         </div>
 
-        <div className={styles.filterBar} style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '6px var(--topbar-px)' }}>
+        <div className={`filterChips ${styles.trainerFilterBar}`}>
           {[
             { value: 'all', label: 'Всі' },
             ...activeHalls.map(h => ({ value: h.id, label: h.name })),
@@ -1213,20 +1201,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
             <button
               key={chip.value}
               onClick={() => setFilterChip(chip.value)}
-              style={{
-                padding: '4px 12px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid',
-                borderColor: filterChip === chip.value ? 'var(--accent)' : 'var(--border)',
-                background: filterChip === chip.value ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--bg-2)',
-                color: filterChip === chip.value ? 'var(--accent)' : 'var(--text-2)',
-                fontSize: 13,
-                fontWeight: filterChip === chip.value ? 600 : 400,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                transition: 'all 0.12s',
-              }}
+              className={['filterChip', filterChip === chip.value ? 'filterChipActive' : ''].filter(Boolean).join(' ')}
             >
               {chip.label}
             </button>

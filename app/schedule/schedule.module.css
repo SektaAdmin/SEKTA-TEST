@@ -141,6 +141,12 @@
   background: var(--accent-dim);
 }
 
+/* Смуга чипів залів на десктопі кабінету тренера — візуал у спільних
+   .filterChips/.filterChip (globals.css), тут лише відступ під топбар. */
+.trainerFilterBar {
+  padding: 6px var(--topbar-px);
+}
+
 /* ── Filter bar ─────────────────────────────────────────────── */
 .filterBar {
   display: flex;

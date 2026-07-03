@@ -42,7 +42,7 @@ export default function CabinetHeader({
     <header className={styles.header}>
       <div className={styles.left}>
         {backHref && (
-          <button type="button" onClick={handleBack} className={styles.back} aria-label="Назад">
+          <button type="button" onClick={handleBack} className={`btn-secondary ${styles.back}`} aria-label="Назад">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" focusable="false">
               <path d="M12.5 4 7 10l5.5 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -58,7 +58,7 @@ export default function CabinetHeader({
       {action
         ? action
         : !hideLogout && (
-            <button type="button" className={styles.logout} onClick={() => signOutAndRedirect(router)} aria-label="Вийти">
+            <button type="button" className="btn-secondary" onClick={() => signOutAndRedirect(router)} aria-label="Вийти">
               <LogoutIcon />
               <span>Вийти</span>
             </button>

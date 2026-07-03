@@ -21,67 +21,35 @@
 }
 
 .back {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   width: var(--control-h);
   height: var(--control-h);
   padding: 0;
-  cursor: pointer;
-  appearance: none;
-  color: var(--text-2);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.back:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
+  flex-shrink: 0;
 }
 
 .logo {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
   letter-spacing: 0.12em;
   color: var(--text-3);
 }
 
 .title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
   color: var(--text);
   margin-top: 4px;
 }
 
 .address {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   margin-top: 3px;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   margin-top: 2px;
 }
 
-.logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: var(--control-h);
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-2);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.logout:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
-}
