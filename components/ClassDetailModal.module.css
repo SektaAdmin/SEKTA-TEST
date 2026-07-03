@@ -208,7 +208,7 @@
 }
 
 .addTrigger {
-  align-self: flex-start;
+  align-self: flex-end;
 }
 
 /* ── Add client form ─────────────────────────────────────────── */
@@ -526,6 +526,11 @@
     padding: 10px 8px;
     text-align: center;
     height: auto;
+  }
+
+  /* Найчастіша дія модалки — full-width у bottom-sheet, повний touch-target */
+  .addTrigger {
+    align-self: stretch;
   }
 
   /* ── Card-layout: рядок = картка (замість тісної table) ──────────

@@ -654,7 +654,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
 
                 {!addingClient && cls?.ticket_type !== 'self_training' && canManage && (
                   <button
-                    className={`btn-primary btn-sm ${styles.addTrigger}`}
+                    className={`btn-primary ${styles.addTrigger}`}
                     onClick={() => { setAddingClient(true); setEnrollError(null) }}
                   >
                     + Записати
