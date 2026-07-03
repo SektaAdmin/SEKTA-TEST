@@ -309,7 +309,7 @@ export default function ClientVisits({
   const bothEmpty = upcomingSorted.length === 0 && pastSorted.length === 0
 
   const errorBanner = (
-    <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+    <p className={styles.sectionError}>
       Помилка завантаження. Спробуйте оновити сторінку.
     </p>
   )

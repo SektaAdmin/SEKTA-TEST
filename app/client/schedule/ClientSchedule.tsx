@@ -305,7 +305,7 @@ export default function ClientSchedule({
 
   if (classesError) {
     return wrap(
-      <p className="badge-danger" style={{ padding: '10px 12px', borderRadius: 8 }}>
+      <p className={styles.sectionError}>
         Помилка завантаження. Спробуйте оновити сторінку.
       </p>
     )

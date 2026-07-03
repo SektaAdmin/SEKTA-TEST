@@ -141,29 +141,6 @@
   border-radius: var(--radius);
 }
 
-/* ── Hero «Наступне заняття» (перший fold) ──────────────────────────
-   Та сама картка, що у списках (.item), щоб не було стилістичного розбою.
-   Виділення «героя» — лейбл зверху + повна акцентна рамка з тонким кільцем
-   (не ліва-смуга: side-stripe — AI-патерн; повна рамка + ring читаються як
-   «активна/поточна картка» без штампу). */
-.hero {
-  margin-bottom: 16px;
-}
-
-.heroLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 8px;
-}
-
-.hero .item {
-  border-color: color-mix(in srgb, var(--accent, var(--text)) 40%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--text)) 22%, transparent);
-}
-
 /* ── Блок балансів ───────────────────────────────────────────────
    Ієрархія: ГОЛОВНЕ — залишок занять (год), бо клієнт відкриває екран
    щоб дізнатись «скільки лишилось записатись». Кількість — крупна цифра,
@@ -288,119 +265,7 @@
 .depositValueZero { color: var(--text-2); }
 .depositValueNeg { color: var(--danger-text); }
 
-/* ── Вкладки (Майбутні / Архів / Покупки) ───────────────────────── */
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin: 24px 0 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.tab {
-  flex: 1;
-  min-height: var(--control-h);
-  padding: 10px 8px;
-  font-size: 14px;
-  color: var(--text-3);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  cursor: pointer;
-}
-
-.tabActive {
-  color: var(--text);
-  font-weight: 500;
-  border-bottom-color: var(--text);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.monthHeader {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  padding: 4px 0 6px;
-  margin-top: 8px;
-}
-
-.monthList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.cancelled {
-  opacity: 0.55;
-}
-
-.date {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-}
-
-.day {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1;
-}
-
-.month {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-
-/* Відносна мітка («Сьогодні»/«Завтра») замість числа+місяця у вузькій колонці дати. */
-.relDay {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  text-align: center;
-  line-height: 1.15;
-}
-
-.info {
-  flex: 1;
-  min-width: 0;
-}
-
-.title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.meta {
-  font-size: 13px;
-  color: var(--text-2);
-  margin-top: 2px;
-}
-
+/* Inline-бейдж «Заняття скасовано» (VisitDetail hero, /client/visits/[id]). */
 .badge {
   font-size: 12px;
   color: var(--danger);
@@ -498,45 +363,6 @@
   color: var(--danger-text);
 }
 
-/* ── Профіль (read-only) ────────────────────────────────────────── */
-.profile {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-  margin-top: 24px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.profileHeader {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.profileRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.profileLabel {
-  font-size: 13px;
-  color: var(--text-3);
-}
-
-.profileValue {
-  font-size: 14px;
-  color: var(--text);
-  text-align: right;
-  word-break: break-word;
-}
-
 .hint {
   font-size: 12px;
   color: var(--text-3);
@@ -549,16 +375,6 @@
   padding-right: 0;
   padding-bottom: 0;
   line-height: 1.4;
-}
-
-/* Сидить на сторінковому --bg (#fafafa), не на білій картці: --text-3 там
-   дає ~4.1:1 → нижче AA для 12px. --text-2 (#525252) = ~6.7:1, проходить.
-   No-Scare Rule: дрібний службовий рядок теж має бути читабельним. */
-.listFooterNote {
-  font-size: 12px;
-  color: var(--text-2);
-  text-align: center;
-  padding: 8px 0 2px;
 }
 
 /* ── Історія покупок: групи по місяцях + «Показати ще» ──────────── */
@@ -788,13 +604,7 @@
   scroll-margin-top: 40px;
 }
 
-/* Минулі візити — колір за статусом (узгоджено з badge-* у globals.css). */
-.visitTimerPast {
-  color: var(--text-2);
-  background: var(--bg-3);
-  border-color: var(--border);
-}
-
+/* Візити — колір за статусом (узгоджено з badge-* у globals.css). */
 .visitTimerAttended {
   color: var(--success);
   background: var(--success-dim);
@@ -813,19 +623,6 @@
   border-color: var(--danger-border);
 }
 
-/* Плашка «Стан абонемента» знизу карточки — відступ зверху від тренера, без margin-bottom. */
-.visitTimerBottom {
-  margin-top: 12px;
-  margin-bottom: 0;
-}
-
-/* Майбутнє заняття скасоване студією — danger (відрізняється від cancelled-статусу). */
-.visitTimerClassCancelled {
-  color: var(--danger);
-  background: var(--danger-dim);
-  border-color: var(--danger-border);
-}
-
 .visitWhen {
   font-size: 15px;
   font-weight: 500;
@@ -836,13 +633,6 @@
   font-size: 13px;
   color: var(--text-2);
   margin-top: 4px;
-}
-
-.visitTrainer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
 }
 
 .visitTrainerTop {
@@ -1070,14 +860,6 @@
   color: var(--text);
 }
 
-.detailPrice {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
 .detailRowSub {
   font-size: 13px;
   color: var(--text-2);
@@ -1250,32 +1032,7 @@
   border-radius: var(--radius-sm);
 }
 
-.confirmInfo {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-2);
-  margin-top: 12px;
-  padding: 8px 12px;
-  background: var(--bg-3);
-  border-radius: var(--radius-sm);
-}
-
 /* ── Запис на заняття: дати → фільтр тренера → список занять дня ─── */
-
-/* Залишок занять (банер під списком занять). */
-.bookBalanceBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--text-2);
-}
 
 /* Дні — горизонтальний скрол міні-тайлів (число + день тижня). */
 /* Місяць активного дня — над стрічкою (вікно 30 днів перетинає межу місяця),
