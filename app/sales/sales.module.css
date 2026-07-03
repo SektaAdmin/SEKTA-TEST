@@ -272,24 +272,6 @@
   margin-top: 4px;
 }
 
-.depositInfo {
-  color: var(--text);
-  font-size: 14px;
-  display: block;
-  margin-top: 4px;
-}
-
-.depositWarning {
-  color: var(--warning);
-  font-size: 14px;
-  display: block;
-  margin-top: 4px;
-  background: var(--warning-dim);
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-}
-
-
 /* ── Mobile overrides ────────────────────────────────────────── */
 @media (max-width: 640px) {
   .topbar {
@@ -474,8 +456,6 @@
   .confirmBox { width: calc(100% - 32px); max-width: 360px; }
 
   .btnEdit, .btnDel { min-height: 44px; padding: var(--btn-sm-py) var(--btn-sm-px); }
-
-  .fsTrigger { height: 44px; }
 
   /* Mobile: пагінація не зафіксована — до неї треба доскролити.
      Замість внутрішнього скролу .page-body робимо скрол-контейнером весь

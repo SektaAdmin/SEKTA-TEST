@@ -40,14 +40,6 @@
   overflow-x: auto;
 }
 
-.historyTitle {
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 10px;
-}
-
 .historyEmpty {
   font-size: 14px;
   color: var(--text-3);

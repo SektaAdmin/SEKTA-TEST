@@ -1,57 +1,8 @@
-/* overrides ModalShell defaults */
-.modal {
-  max-width: 440px;
-  margin: 16px;
-  box-shadow: 0 24px 64px var(--overlay-bg);
-}
-
-.field { display: flex; flex-direction: column; gap: 6px; }
-
-.label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.input {
-  padding: 9px 11px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.12s;
-  width: 100%;
-}
-.input:focus { border-color: var(--accent); }
-.input::placeholder { color: var(--text-3); }
-
-.textarea {
-  padding: 9px 11px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.12s;
-  width: 100%;
-  resize: vertical;
-  font-family: var(--font);
-  line-height: 1.5;
-}
-.textarea:focus { border-color: var(--accent); }
-.textarea::placeholder { color: var(--text-3); }
-
 .error {
   font-size: 14px;
-  color: var(--danger);
+  color: var(--danger-text);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--danger-dim);
   border: 1px solid var(--danger-border);
 }
-

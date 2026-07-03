@@ -45,7 +45,7 @@
 
 /* Popover */
 .popover {
-  z-index: 9999;
+  z-index: 400; /* над модалкою (300) */
   display: flex;
   background: var(--bg-2);
   border: 1px solid var(--border-strong);

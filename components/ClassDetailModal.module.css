@@ -111,14 +111,14 @@
 .capacityBar {
   flex: 1;
   height: 5px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-full);
   background: var(--bg-2);
   overflow: hidden;
 }
 
 .capacityBarFill {
   height: 100%;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-full);
 }
 
 /* Нотатки — інлайн «підпис · значення», як рядок «Місця» (єдиний ритм картки) */

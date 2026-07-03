@@ -66,8 +66,6 @@
 .tableDesktop { display: block; }
 .cardList     { display: none; }
 
-.muted { color: var(--text-3); }
-
 .deliveredCell {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

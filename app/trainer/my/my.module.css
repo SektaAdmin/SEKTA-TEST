@@ -61,7 +61,7 @@
   height: 52px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   border: none;
   cursor: pointer;
   display: flex;
@@ -157,7 +157,7 @@
 /* Сьогодні — червоний кружок (як iOS) */
 .weekDayToday .weekDayNum {
   background: var(--danger);
-  color: #fff;
+  color: var(--white);
   font-weight: 600;
 }
 
@@ -168,7 +168,7 @@
 /* Вибраний день — акцентний кружок */
 .weekDaySelected:not(.weekDayToday) .weekDayNum {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   font-weight: 600;
 }
 

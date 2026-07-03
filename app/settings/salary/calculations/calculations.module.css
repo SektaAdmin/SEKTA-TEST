@@ -100,13 +100,6 @@
   font-size: 15px;
 }
 
-.summaryStudio {
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-  color: var(--text-2);
-  font-size: 13px;
-}
-
 .toPayAmt { color: var(--accent); }
 .cashAmt { color: var(--success); }
 .amtNegative { color: var(--danger); }

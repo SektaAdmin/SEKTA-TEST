@@ -100,6 +100,8 @@ html, body { overscroll-behavior: none; }
      Перший шар = border-base ring (0 0 0 1px, ≈ --border) — замінює CSS-рамку. */
   --shadow-menu: 0 0 0 1px rgba(0,0,0,0.08), 0px 1px 1px #00000005, 0px 4px 8px -4px #0000000a, 0px 16px 24px -8px #0000000f; /* Geist --ds-shadow-menu (поповери/дропдауни) */
   --shadow-modal: 0 0 0 1px rgba(0,0,0,0.08), 0px 1px 1px #00000005, 0px 8px 16px -4px #0000000a, 0px 24px 32px -8px #0000000f; /* Geist --ds-shadow-modal */
+  /* Фокус-glow полів (Сесія 1): один літерал для globals/FormField/Combobox. */
+  --focus-glow: 0 0 0 3px rgba(0,0,0,0.08);
 
   /* Кольори методів оплати */
   --fop: #2d78d6;
@@ -165,7 +167,7 @@ input, select, textarea { border: 1px solid var(--border); background: var(--bg-
 input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+  box-shadow: var(--focus-glow);
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }

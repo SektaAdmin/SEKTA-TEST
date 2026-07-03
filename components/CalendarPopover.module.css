@@ -1,7 +1,7 @@
 /* Elevation Сесії 3: Shadow Menu (перший шар = 1px ring — заміняє CSS-рамку),
    той самий еталон що .fs-content (FilterSelect). */
 .popover {
-  z-index: 9999;
+  z-index: 400; /* над модалкою (300) */
   width: 256px;
   background: var(--bg-2);
   border-radius: var(--radius);

@@ -463,36 +463,9 @@ a.msContact:hover svg { color: var(--accent); }
 
 /* .tabBar/.tab/.tabActive → глобальні .tabs-underline/.tab-underline (Сесія 12) */
 
-.tabActions {
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px 0 4px;
-}
-
-
 /* ── Session delta in feed ──────────────────────────────────── */
 .sessionsNeg { color: var(--danger); font-weight: 500; }
 .sessionsPos { color: var(--success); font-weight: 500; }
-
-/* ── Accordion ──────────────────────────────────────────────── */
-.accordionToggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.accordionIcon {
-  font-size: 10px;
-  color: var(--text-3);
-}
 
 /* ── Upcoming enrollments desktop/mobile toggle ─────────────── */
 .upcomingTableDesktop { display: block; }
@@ -538,7 +511,7 @@ a.msContact:hover svg { color: var(--accent); }
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--accent-dim, var(--bg-3));
+    background: var(--accent-dim);
     color: var(--text);
     font-size: 14px;
     font-weight: 600;

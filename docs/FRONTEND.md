@@ -22,7 +22,7 @@ components/ui/         shadcn: button/calendar/command/dialog/popover/select/tab
 - **ModalShell** (`ui/ModalShell.tsx`) — обгортка ВСІХ модалок (overlay+header+body+footer). Props: `title`, `onClose`, `footer`, `children`, `size`('form'|'detail'), `modalClassName`, `bodyClassName`, `headerActions`.
   - Ширина — **лише 2 токени** (`SIZE_WIDTH`): `form`=440 (дефолт), `detail`=760 (лише ClassDetailModal). Довільний `width` НЕ передавати.
   - ≤640px → **bottom sheet** (`max-height:92dvh`, `width:100%`, анім `bottomSheetIn`, footer `safe-area-inset-bottom`). `mobileFullScreen` видалено.
-  - z-index: overlay `300` > BottomNav `200`.
+  - z-index: overlay `300` > BottomNav `200`. Поповери дат (CalendarPopover/SalesDateRangePicker) і hover-тултіп розкладу — `400` (над модалкою; НЕ `9999`).
 - **ModalFooter** (`ui/ModalFooter.tsx`) — Скасувати/Зберегти. Props: `onCancel`, `onSave?`, `saveLabel`, `cancelLabel`, `loading`, `saveType`('button'|'submit'), `disabled`. Save лише при `onSave`.
 - **FormField** (`ui/FormField.tsx`) — label+control+errorHint+hint. ⚠️ `input[type=time]` нормалізовано `height:39px; padding-top/bottom:0`.
 - **ActionSelect** (`ui/ActionSelect.tsx`) — Radix SelectPrimitive + CSS Modules (НЕ shadcn Select — тягне Tailwind-vars, яких нема). У ClassDetailModal для зміни статусу.
