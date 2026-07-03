@@ -421,6 +421,7 @@ export default function SalesPage() {
                             <td className={styles.trainer}>{e.trainers?.name ?? '—'}</td>
                             <td>
                               <div className={styles.actions}>
+                                <span className={styles.actionsSpacer} aria-hidden="true" />
                                 <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
                                   Змінити
                                 </button>

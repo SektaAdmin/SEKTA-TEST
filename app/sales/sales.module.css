@@ -154,6 +154,7 @@
 
 
 .actions { display: flex; gap: 6px; }
+.actionsSpacer { width: 26px; flex: 0 0 auto; }
 
 .btnEdit, .btnDel {
   background: transparent;
