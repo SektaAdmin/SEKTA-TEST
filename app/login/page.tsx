@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { FormField } from '@/components/ui/FormField'
 import styles from './login.module.css'
 
 /**
@@ -50,10 +51,9 @@ export default function LoginPage() {
         <div className={styles.logo}>SEKTA</div>
         <p className={styles.sub}>CRM система</p>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label className={styles.label}>Email або телефон</label>
+          <FormField id="login-identifier" label="Email або телефон">
             <input
-              className={styles.input}
+              id="login-identifier"
               type="text"
               inputMode="text"
               value={identifier}
@@ -62,11 +62,10 @@ export default function LoginPage() {
               required
               autoComplete="username"
             />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Пароль</label>
+          </FormField>
+          <FormField id="login-password" label="Пароль">
             <input
-              className={styles.input}
+              id="login-password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -74,9 +73,9 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
-          </div>
+          </FormField>
           {error && <p className={styles.error}>{error}</p>}
-          <button className={styles.btn} type="submit" disabled={loading}>
+          <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'Вхід...' : 'Увійти'}
           </button>
         </form>
