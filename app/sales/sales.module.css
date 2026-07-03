@@ -370,8 +370,8 @@
     border-radius: var(--radius-full);
     background: var(--accent);
     color: var(--white);
-    font-size: 11px;
-    font-weight: 600;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
     line-height: 1;
   }
 
@@ -412,12 +412,12 @@
     align-items: center;
     justify-content: space-between;
   }
-  .sheetTitle { font-size: 16px; font-weight: 500; color: var(--text); }
+  .sheetTitle { font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--text); }
   .sheetClose {
     background: transparent;
     border: none;
     color: var(--text-3);
-    font-size: 18px;
+    font-size: var(--fs-md);
     line-height: 1;
     cursor: pointer;
     padding: 4px;
@@ -432,9 +432,9 @@
     border-radius: var(--radius-sm);
     background: var(--accent);
     color: var(--white);
-    font-size: 15px;
+    font-size: var(--fs-base);
     font-family: var(--font);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
     cursor: pointer;
   }
 
@@ -477,8 +477,8 @@
     border-radius: 50%;
     background: var(--accent);
     color: var(--white);
-    font-size: 28px;
-    font-weight: 300;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-normal);
     border: none;
     cursor: pointer;
     z-index: 150;
