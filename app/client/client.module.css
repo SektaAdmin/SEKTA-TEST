@@ -854,6 +854,11 @@
   gap: 12px;
 }
 
+/* У центрованій картці (Адреса) єдиний рядок «SEKTA» центрується. */
+.detailCardCenter .detailRow {
+  justify-content: center;
+}
+
 .detailRowMain {
   font-size: 15px;
   font-weight: 500;
