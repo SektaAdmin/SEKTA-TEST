@@ -74,11 +74,6 @@
   margin-right: -8px;
 }
 
-/* Заголовок-шапка у блоці фіксованої висоти (не стискається при скролі тіла). */
-.blockHeadFixed {
-  flex-shrink: 0;
-}
-
 @media (max-width: 640px) {
   .equalBlock {
     height: auto;
@@ -115,19 +110,84 @@
   flex: 1;
 }
 
-/* ── Блок боржників ────────────────────────────────────────── */
-/* Шапка: заголовок ліворуч, кнопка копіювання звіту праворуч. */
-.blockHead {
+/* ── Geist-набір (спільний для всіх блоків) ────────────────────
+   Копія еталонних токенів з ClassDetailModal.module.css (Vercel Overview).
+   Ізольована локально від модалки — DRY-виніс поза об'ємом задачі. */
+
+/* Єдина шапка блоку: заголовок ліворуч + опційний right-slot праворуч.
+   flex-shrink:0 — не стискається при скролі тіла блоку. */
+.cardHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  margin-bottom: var(--space-lg);
 }
 
-.blockHead .blockTitle {
+.cardHead .blockTitle {
   margin-bottom: 0;
+}
+
+/* Description-List підпис (Geist <dt>) — лише для карток-обзорів,
+   НЕ для рядків списку. 14/14 --text-2, стабільна висота. */
+.fieldLabel {
+  font-size: var(--fs-base);
+  line-height: 14px;
+  min-height: 14px;
+  color: var(--text-2);
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+/* Description-List значення (Geist <dd>) — 14/16 font-weight:500 --text. */
+.fieldValue {
+  font-size: var(--fs-base);
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 0;
+}
+
+.fieldNum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Geist badge — нейтральна плашка (число, мітка). Success-варіант для
+   вільних слотів (позитивний сигнал «можна здати»). */
+.geistBadge {
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.geistBadgeSuccess {
+  background: var(--success-dim);
+  color: var(--success-text);
+}
+
+/* Geist list-item мета — приглушений рядок (тренер · зал), БЕЗ dl-підписів.
+   Патерн списку деплойментів Vercel: значення в --text-2, розділювач ·. */
+.metaInline {
+  font-size: var(--fs-base);
+  line-height: 16px;
+  color: var(--text-2);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metaDot {
+  color: var(--text-3);
+  margin: 0 5px;
 }
 
 
@@ -140,13 +200,14 @@
   border-top: none;
 }
 
+/* Заголовок групи (час · тренер) — Geist <dt>-типографіка: 14/--text-2,
+   приглушений над рядками клієнтів. Це підпис групи, не рядок-мета. */
 .debtGroupHead {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
+  font-size: var(--fs-base);
+  color: var(--text-2);
   margin-bottom: var(--space-xs);
 }
 
@@ -163,13 +224,17 @@
   padding: 2px 8px;
 }
 
+/* Рядок клієнт → баланс. Ім'я — Geist <dd> (14/500 --text), сума лишається
+   в balance-warn (семантика боргу). */
 .debtClient {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  font-size: 14px;
-  color: var(--text-2);
+  font-size: var(--fs-base);
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--text);
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
@@ -280,15 +345,6 @@
   gap: var(--space-xs);
 }
 
-.slotChip {
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--success-text);
-  background: var(--success-dim);
-  border-radius: var(--radius-sm);
-  padding: 3px 8px;
-}
-
 /* Алерт: оренду заброньовано, але тренерське заняття-покриття скасовано →
    студію нема кому відкрити. Справжній критичний сигнал — danger-токени. */
 .slotAlert {
@@ -388,21 +444,6 @@
   text-overflow: ellipsis;
 }
 
-.spacesSub {
-  font-size: 12px;
-  color: var(--text-2);
-  margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Розділювач зал · тренер тонший і блідіший за самі значення. */
-.spacesDot {
-  color: var(--text-3);
-  margin: 0 5px;
-}
-
 /* Етап хореографії — третій, найтихіший рядок (довідково, не операційно). */
 .spacesChoreo {
   font-size: 12px;
@@ -418,28 +459,6 @@
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-}
-
-/* Лічильник вільних місць: лише число, нейтральна плашка.
-   Анкер рядка тримають розмір і вага (18px/700), а не колір —
-   адмін звик до спокійного сірого, семантичні кольори тут не лякають. */
-.spacesCount {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  height: 30px;
-  padding: 0 9px;
-  border-radius: var(--radius-sm);
-  line-height: 1;
-  background: var(--bg-3);
-  color: var(--text);
-}
-
-.spacesCountNum {
-  font-size: 18px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Підказка-афорданс «відкрити»: блідий шеврон, що проявляється на hover.
@@ -505,8 +524,8 @@
 }
 
 .spacesSkelCount {
-  width: 34px;
-  height: 30px;
+  width: 28px;
+  height: 20px;
   border-radius: var(--radius-sm);
   background: var(--bg-3);
   flex-shrink: 0;

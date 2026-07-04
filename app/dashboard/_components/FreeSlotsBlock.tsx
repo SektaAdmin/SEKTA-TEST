@@ -175,7 +175,9 @@ export function FreeSlotsBlock({ date }: { date: string }) {
 
   return (
     <section className={`${styles.block} ${styles.equalBlock}`}>
-      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Оренда залу</h2>
+      <div className={styles.cardHead}>
+        <h2 className={styles.blockTitle}>Оренда залу</h2>
+      </div>
 
       <div className={styles.scrollBody}>
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
@@ -208,7 +210,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
           />
           <div className={styles.slotWindows}>
             {splitIntoHourSlots(h.free).map(w => (
-              <span key={w.from} className={styles.slotChip}>
+              <span key={w.from} className={`${styles.geistBadge} ${styles.geistBadgeSuccess}`}>
                 {minToStr(w.from)}–{minToStr(w.to)}
               </span>
             ))}

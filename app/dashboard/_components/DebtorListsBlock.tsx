@@ -37,7 +37,9 @@ export function DebtorListsBlock({ date }: { date: string }) {
 
   return (
     <section className={`${styles.block} ${styles.equalBlock}`}>
-      <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
+      <div className={styles.cardHead}>
+        <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
+      </div>
       <div className={styles.scrollBody}>
         {loading && <Loader />}
         {error && <BlockError onRetry={refetch} />}

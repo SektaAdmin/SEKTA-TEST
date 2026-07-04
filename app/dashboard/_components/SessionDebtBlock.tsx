@@ -24,7 +24,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
 
   return (
     <section className={`${styles.block} ${styles.equalBlock}`}>
-      <div className={styles.blockHead}>
+      <div className={styles.cardHead}>
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         {!loading && groups.length > 0 && (
           <CopyButton

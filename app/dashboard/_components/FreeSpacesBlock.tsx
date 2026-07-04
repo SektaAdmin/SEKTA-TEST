@@ -69,7 +69,9 @@ export function FreeSpacesBlock({ date }: { date: string }) {
 
   return (
     <section className={`${styles.block} ${styles.equalBlock}`} data-impeccable-wrap="FreeSpacesBlock">
-      <h2 className={`${styles.blockTitle} ${styles.blockHeadFixed}`}>Вільні місця на заняттях сьогодні</h2>
+      <div className={styles.cardHead}>
+        <h2 className={styles.blockTitle}>Вільні місця на заняттях сьогодні</h2>
+      </div>
 
       <div className={styles.scrollBody}>
       {loading && (
@@ -107,10 +109,10 @@ export function FreeSpacesBlock({ date }: { date: string }) {
                 <span className={styles.spacesType}>{type}</span>
               </div>
               {meta.length > 0 && (
-                <div className={styles.spacesSub}>
+                <div className={styles.metaInline}>
                   {meta.map((m, i) => (
                     <span key={i}>
-                      {i > 0 && <span className={styles.spacesDot}>·</span>}
+                      {i > 0 && <span className={styles.metaDot}>·</span>}
                       {m}
                     </span>
                   ))}
@@ -119,9 +121,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
               {r.choreo && <div className={styles.spacesChoreo}>{r.choreo}</div>}
             </div>
             <div className={styles.spacesRight}>
-              <span className={styles.spacesCount}>
-                <span className={styles.spacesCountNum}>{r.free}</span>
-              </span>
+              <span className={styles.geistBadge}>{r.free}</span>
               <ArrowRightIcon className={styles.spacesChevron} />
             </div>
           </button>
