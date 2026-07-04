@@ -24,6 +24,62 @@ interface Props {
 
 const REVERT_MS = 1500
 
+/**
+ * Копіює текст у буфер обміну надійно на мобільних (iOS Safari).
+ *
+ * Пастка: iOS Safari дозволяє `clipboard.writeText` ЛИШЕ синхронно всередині
+ * user-gesture. Якщо текст будується асинхронно (тут — DB-запити в
+ * prepareReceipt), то до моменту `writeText` gesture вже «згорів» → відмова.
+ * Рішення: для Promise-тексту передаємо у `clipboard.write()` `ClipboardItem`
+ * з Promise всередині — Safari тримає gesture, поки Promise не зарезолвиться.
+ * Fallback — legacy textarea + execCommand('copy') (синхронний, gesture-safe).
+ */
+async function copyToClipboard(value: string | Promise<string>): Promise<void> {
+  // Синхронний текст — звичайний writeText.
+  if (typeof value === 'string') {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return
+    }
+    legacyCopy(value)
+    return
+  }
+
+  // Асинхронний текст: ClipboardItem з Promise зберігає gesture в iOS Safari.
+  if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+    try {
+      const item = new ClipboardItem({
+        'text/plain': value.then(t => new Blob([t], { type: 'text/plain' })),
+      })
+      await navigator.clipboard.write([item])
+      return
+    } catch {
+      // Deno/старі WebView не підтримують Promise-у ClipboardItem — падаємо у fallback.
+    }
+  }
+
+  // Fallback: чекаємо текст, далі синхронний legacy-копіювальник.
+  legacyCopy(await value)
+}
+
+/** Синхронне копіювання через приховану textarea + execCommand — працює без Clipboard API. */
+function legacyCopy(text: string): void {
+  const ta = document.createElement('textarea')
+  ta.value = text
+  ta.setAttribute('readonly', '')
+  ta.style.position = 'fixed'
+  ta.style.top = '0'
+  ta.style.left = '0'
+  ta.style.opacity = '0'
+  document.body.appendChild(ta)
+  ta.focus()
+  ta.select()
+  ta.setSelectionRange(0, text.length)
+  const ok = document.execCommand('copy')
+  document.body.removeChild(ta)
+  if (!ok) throw new Error('execCommand copy failed')
+}
+
 // Точні іконки Geist (Vercel_DS/Copy Button) — заливні, viewBox 0 0 16 16.
 const CopyGlyph = ({ size = 16 }: { size?: number }) => (
   <svg viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
@@ -60,14 +116,16 @@ export function CopyButton({ text, label, copiedLabel = 'Скопійовано'
 
   async function handleClick() {
     const value = typeof text === 'function' ? text() : text
-    setLoading(value instanceof Promise)
+    const isAsync = value instanceof Promise
+    setLoading(isAsync)
     try {
-      await navigator.clipboard.writeText(await value)
+      await copyToClipboard(value)
       setCopied(true)
       onCopied?.()
       clearTimeout(timer.current)
       timer.current = setTimeout(() => setCopied(false), REVERT_MS)
-    } catch {
+    } catch (err) {
+      console.error('[CopyButton] copy failed:', err)
       toast.error(MSG.toast.copyFailed)
     } finally {
       setLoading(false)
