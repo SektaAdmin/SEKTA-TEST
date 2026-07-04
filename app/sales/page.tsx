@@ -377,10 +377,10 @@ export default function SalesPage() {
                       <th>Дата</th>
                       <th>Клієнт</th>
                       <th>Операція</th>
-                      <th className={styles.numHead}>Занять</th>
-                      <th className={styles.numHead}>Ціна</th>
-                      <th className={styles.numHead}>Оплачено</th>
-                      <th className={styles.numHead}>Δ Депозит</th>
+                      <th>Занять</th>
+                      <th>Ціна</th>
+                      <th>Оплачено</th>
+                      <th>Δ Депозит</th>
                       <th>Оплата</th>
                       <th>Тренер</th>
                       <th></th>
@@ -394,25 +394,25 @@ export default function SalesPage() {
                         return (
                           <tr key={`exp-${e.id}`}>
                             <td className={styles.date}>{formatSaleDatetime(e.created_at)}</td>
-                            <td className={styles.trainer}>
-                              <span className={styles.opTypeCell}>
-                                <span className={styles.opTypeIcon}>
+                            <td style={{ color: 'var(--text-2)' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
                                   {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
                                 </span>
                                 {isExpense ? 'Витрата студії' : 'Дохід студії'}
                               </span>
                             </td>
-                            <td className={styles.trainer}>
+                            <td style={{ color: 'var(--text-2)' }}>
                               {e.description || '—'}
                             </td>
-                            <td className={styles.sessions}>—</td>
-                            <td className={styles.price}>—</td>
+                            <td>—</td>
+                            <td>—</td>
                             <td className={styles.price}>
                               <span className={isExpense ? styles.depositNeg : styles.depositPos}>
                                 {isExpense ? '−' : '+'}{formatMoney(e.amount)}
                               </span>
                             </td>
-                            <td className={styles.deposit}>—</td>
+                            <td>—</td>
                             <td>
                               <span className={paymentClass(e.payment_method)}>
                                 {paymentLabel(e.payment_method)}
@@ -503,8 +503,8 @@ export default function SalesPage() {
                       <div key={`exp-${e.id}`} className={`${styles.card} ${isExpense ? styles.cardExpense : styles.cardIncome}`}>
                         <div className={styles.cardRow}>
                           <span className={styles.cardClient}>
-                            <span className={styles.opTypeCell}>
-                              <span className={styles.opTypeIcon}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
                                 {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
                               </span>
                               {isExpense ? 'Витрата студії' : 'Дохід студії'}

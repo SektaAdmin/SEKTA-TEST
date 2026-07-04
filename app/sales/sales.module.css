@@ -135,16 +135,6 @@
 .opDeduction { color: var(--danger); }
 .sessions    { font-variant-numeric: tabular-nums; }
 
-/* Числові колонки — вирівнювання по правому краю (Geist фінанс-таблиця):
-   розряди сум збігаються по вертикалі, суми легко звіряти між рядками.
-   .numHead — на <th>, клітинкові класи (.sessions/.price/.deposit) — на <td>. */
-.numHead { text-align: right; }
-.sessions, .price, .deposit { text-align: right; }
-
-/* Іконка типу студійної операції (ShoppingBag/TrendingUp) — винесено з інлайн-
-   стилів JSX у клас (спільно desktop-рядок + mobile-картка). */
-.opTypeCell { display: inline-flex; align-items: center; gap: 5px; color: var(--text-2); }
-.opTypeIcon { display: inline-flex; align-items: center; color: var(--text-3); }
 
 .actions { display: flex; gap: 6px; }
 .actionsSpacer { width: 26px; flex: 0 0 auto; }
