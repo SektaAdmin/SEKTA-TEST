@@ -321,8 +321,6 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
   }
 
   const activeCount = cls ? getActiveCount(enrollments) : 0
-  const isFull = cls && cls.capacity != null && activeCount >= cls.capacity
-  const fillPctValue = cls && cls.capacity != null ? Math.min((activeCount / cls.capacity) * 100, 100) : 0
   const waitlist = enrollments.filter(e => e.status === 'waitlist')
   const mainEnrollments = enrollments.filter(e => e.status !== 'waitlist')
   const stillEnrolled = enrollments.filter(e => e.status === 'enrolled')
@@ -385,64 +383,59 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                 </div>
               )}
 
-              {/* Class details card */}
+              {/* Class details card — Geist Description-List (Vercel Overview):
+                  пари підпис→значення у сітці 2 колонки. */}
               <div className={styles.detailsCard}>
-                {/* Дата · час (+ бейдж скасування справа) */}
-                <div className={styles.metaRow}>
-                  <span className={styles.metaWhen}>
+                {/* Ряд 1: Тренер | Зал (половини) */}
+                <dl className={`${styles.field} ${styles.fieldHalf}`}>
+                  <dt className={styles.fieldLabel}>Тренер</dt>
+                  <dd className={styles.fieldValue}>{cls.trainers?.name ?? '—'}</dd>
+                </dl>
+
+                <dl className={`${styles.field} ${styles.fieldHalf}`}>
+                  <dt className={styles.fieldLabel}>Зал</dt>
+                  <dd className={styles.fieldValue}>{cls.halls?.name ?? '—'}</dd>
+                </dl>
+
+                {/* Ряд 2: Дата | Час | Місця (третини) */}
+                <dl className={`${styles.field} ${styles.fieldThird}`}>
+                  <dt className={styles.fieldLabel}>Дата</dt>
+                  <dd className={styles.fieldValue}>
                     {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
-                    {' · '}
-                    <span className={styles.metaTime}>{timeRange}</span>
-                  </span>
-                  {cls.is_cancelled && (
-                    <span className="badge badge-class-cancelled">скасовано</span>
-                  )}
-                </div>
+                    {cls.is_cancelled && (
+                      <span className="badge badge-class-cancelled" style={{ marginLeft: 8 }}>скасовано</span>
+                    )}
+                  </dd>
+                </dl>
 
-                {/* Тренер · зал */}
-                {(cls.trainers || cls.halls) && (
-                  <div className={styles.metaSub}>
-                    {[cls.trainers?.name, cls.halls?.name].filter(Boolean).join(' · ')}
-                  </div>
-                )}
+                <dl className={`${styles.field} ${styles.fieldThird}`}>
+                  <dt className={styles.fieldLabel}>Час</dt>
+                  <dd className={`${styles.fieldValue} ${styles.fieldNum}`}>{timeRange}</dd>
+                </dl>
 
-                {/* Місця + бар в одну строку */}
-                <div className={styles.capacityRow}>
-                  <span className={styles.capacityLabel}>Місця</span>
-                  <span className={styles.capacityCount}>
-                    <strong>{activeCount}</strong>
-                    {cls.capacity != null && <span> / {cls.capacity}</span>}
-                  </span>
-                  <div className={styles.capacityBar}>
-                    <div
-                      className={styles.capacityBarFill}
-                      style={{
-                        width: `${fillPctValue}%`,
-                        // Повний зал — очікувано, не помилка: нейтральний accent замість
-                        // тривожного червоного. Є місця → green («можна записати»).
-                        backgroundColor: isFull ? 'var(--accent)' : 'var(--success)',
-                      }}
-                    />
-                  </div>
-                </div>
+                <dl className={`${styles.field} ${styles.fieldThird} ${styles.fieldPlaces}`}>
+                  <dt className={styles.fieldLabel}>Місця</dt>
+                  <dd className={`${styles.fieldValue} ${styles.fieldNum}`}>
+                    {activeCount}{cls.capacity != null && ` / ${cls.capacity}`}
+                  </dd>
+                </dl>
 
                 {cls.notes && (
-                  <div className={styles.notesRow}>
-                    <span className={styles.notesLabel}>Нотатки</span>
-                    <span className={styles.notesValue}>{cls.notes}</span>
-                  </div>
+                  <dl className={`${styles.field} ${styles.fieldWide}`}>
+                    <dt className={styles.fieldLabel}>Нотатки</dt>
+                    <dd className={styles.fieldValue}>{cls.notes}</dd>
+                  </dl>
                 )}
 
                 {/* Етап хореографії: staff бачить компактне поле (rows=1, росте при
                     потребі); read-only глядач — лише як текст, а порожнє поле взагалі
                     ховаємо, щоб не їсти перший екран під списком клієнтів. */}
                 {(canManage || cls.choreo_stage) && (
-                  <>
-                    <div className={styles.detailsDivider} />
-                    <div className={styles.choreoRow}>
-                      <span className={styles.notesLabel}>Етап хореографії</span>
+                  <dl className={`${styles.field} ${styles.fieldWide}`}>
+                    <dt className={styles.fieldLabel}>Етап хореографії</dt>
+                    <dd className={styles.fieldValue}>
                       {canManage ? (
-                        <>
+                        <div className={styles.choreoRow}>
                           <textarea
                             className={styles.choreoInput}
                             value={choreoDraft}
@@ -459,12 +452,12 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                               {savingChoreo ? 'Збереження…' : 'Зберегти'}
                             </button>
                           )}
-                        </>
+                        </div>
                       ) : (
-                        <span className={styles.notesValue}>{cls.choreo_stage}</span>
+                        cls.choreo_stage
                       )}
-                    </div>
-                  </>
+                    </dd>
+                  </dl>
                 )}
               </div>
 
