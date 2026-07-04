@@ -174,12 +174,12 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   }, [halls, busy, coverage])
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock}`}>
+    <section className={styles.block}>
       <div className={styles.cardHead}>
         <h2 className={styles.blockTitle}>Оренда залу</h2>
       </div>
 
-      <div className={styles.scrollBody}>
+      <div className={styles.opsScroll}>
       {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
       {error && <BlockError onRetry={refetch} />}
 

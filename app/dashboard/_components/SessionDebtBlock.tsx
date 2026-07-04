@@ -23,7 +23,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
   }, [error])
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock}`}>
+    <section className={styles.fullBlock}>
       <div className={styles.cardHead}>
         <h2 className={styles.blockTitle}>Боржники по сесіях сьогодні</h2>
         {!loading && groups.length > 0 && (
@@ -35,7 +35,7 @@ export function SessionDebtBlock({ date }: { date: string }) {
         )}
       </div>
 
-      <div className={styles.scrollBody}>
+      <div>
         {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
         {error && <BlockError onRetry={refetch} />}
         {!loading && !error && groups.length === 0 && (

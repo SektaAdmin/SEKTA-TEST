@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { listSessionDebtorsAll, type SessionDebtorsTable } from '@/lib/queries/dashboard'
 import { formatMoney } from '@/lib/formatters'
@@ -20,6 +20,8 @@ export function DebtorListsBlock({ date }: { date: string }) {
     { realtime: ['client_session_balances', 'balance_transactions'] }
   )
   const { trainingTypes } = useRefs()
+  // За замовчуванням згорнутий — це довідковий блок, розкривають за потреби.
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (error) console.error('[DebtorListsBlock]', error)
@@ -36,17 +38,32 @@ export function DebtorListsBlock({ date }: { date: string }) {
   const table = data ?? EMPTY_TABLE
 
   return (
-    <section className={`${styles.block} ${styles.equalBlock}`}>
-      <div className={styles.cardHead}>
+    <section className={styles.fullBlock}>
+      <button
+        type="button"
+        className={styles.collapseHead}
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+      >
+        <span className={`${styles.collapseChevron} ${open ? styles.collapseChevronOpen : ''}`} aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M2.5 4.5l3.5 3.5 3.5-3.5" />
+          </svg>
+        </span>
         <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
-      </div>
-      <div className={styles.scrollBody}>
-        {loading && <Loader />}
-        {error && <BlockError onRetry={refetch} />}
-        {!loading && !error && table.rows.length === 0 && (
+      </button>
+
+      {/* Loading/error видно завжди, навіть коли блок згорнутий — інакше можна
+          пропустити збій завантаження. Таблиця розкривається лише при open. */}
+      {loading && <Loader />}
+      {error && <BlockError onRetry={refetch} />}
+
+      {open && !loading && !error && (
+      <div className={styles.debtTableWrap}>
+        {table.rows.length === 0 && (
           <div className={styles.empty}>Боржників немає</div>
         )}
-        {!loading && !error && table.rows.length > 0 && (
+        {table.rows.length > 0 && (
           <table className={styles.debtTable}>
             <thead>
               <tr>
@@ -78,6 +95,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
           </table>
         )}
       </div>
+      )}
     </section>
   )
 }

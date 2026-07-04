@@ -37,17 +37,18 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
-          {/* Ряд 1: оренда залу (вільні слоти) + вільні місця на заняттях */}
-          <div className={styles.twoCol}>
+          {/* Операційний ряд: що можна здати (оренда) + куди посадити (вільні місця).
+              Danger-алерт «нема кому відкрити зал» живе всередині FreeSlotsBlock. */}
+          <div className={styles.opsRow}>
             <FreeSlotsBlock date={today} />
             <FreeSpacesBlock date={today} />
           </div>
 
-          {/* Ряд 2: усі боржники (по сесіях + по депозиту) + список боржників сьогодні */}
-          <div className={styles.twoCol}>
-            <DebtorListsBlock date={today} />
-            <SessionDebtBlock date={today} />
-          </div>
+          {/* Довідковий шар — на всю ширину. Спершу оперативний звіт боржників
+              сьогодні (завжди розгорнутий), нижче — повна таблиця боржників по
+              сесіях (складається; за замовчуванням згорнута). */}
+          <SessionDebtBlock date={today} />
+          <DebtorListsBlock date={today} />
         </div>
       </main>
     </div>

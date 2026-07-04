@@ -17,20 +17,26 @@
 }
 
 .headDate {
-  font-size: 14px;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
   color: var(--text-2);
   text-transform: capitalize;
 }
 
-/* ── Body ──────────────────────────────────────────────────── */
+/* ── Body ──────────────────────────────────────────────────────
+   Приоритетный поток: страница скроллится целиком (.page-body дає
+   overflow-y:auto), блоки ростуть по контенту. Жодних viewport-висот
+   і вкладених скролів — «оренда/місця» операційним рядом угорі, боржники
+   довідковим шаром на всю ширину нижче. */
 .body {
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
-  padding: 20px var(--topbar-px) 32px;
+  padding: 20px var(--topbar-px) 40px;
 }
 
-.twoCol {
+/* Операційний ряд: два парні питання поруч (що можна здати / куди посадити). */
+.opsRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-xl);
@@ -38,12 +44,14 @@
 }
 
 @media (max-width: 640px) {
-  .twoCol {
+  .opsRow {
     grid-template-columns: 1fr;
   }
 }
 
-/* Єдиний контейнер блоку-списку (боржники / слоти / місця). */
+/* ── Geist-картка блоку ────────────────────────────────────────
+   Neutral Background Secondary + 1px рамка + 12px радіус (Geist
+   material-medium). Тінь у спокої відсутня (Subtle Layering Rule). */
 .block {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -51,47 +59,94 @@
   padding: 20px;
 }
 
-/* Рівні за висотою блоки зі скролом тіла (боржники / вільні місця / оренда / потребує уваги).
-   Висота прив'язана до viewport: 2 ряди по 2 блоки мають вміститись на екран MacBook
-   без загального скролу сторінки — довгі списки скролять всередині (.scrollBody).
-   Резерв 150px = хедер (~68px) + padding .body (20+32px) + gap між рядами (24px). */
-.equalBlock {
-  display: flex;
-  flex-direction: column;
-  height: var(--dashboard-block-h, calc((100vh - 150px) / 2));
-  min-height: 260px;
+/* Full-width блок (боржники) — той самий контейнер, семантичний клас
+   для читабельності page.tsx. */
+.fullBlock {
+  composes: block;
 }
 
-.scrollBody {
-  flex: 1;
-  min-height: 0;
+/* Тіло операційних карток (оренда / вільні місця) в парному ряду.
+   Довгий список не роздуває картку до кілометра — обмежуємо висоту й
+   даємо власний скрол лише тут. Full-width блоки нижче ростуть вільно
+   разом зі сторінкою. */
+.opsScroll {
+  max-height: 46vh;
   overflow-y: auto;
-  /* Горизонтальний скрол: широкі таблиці (боржники з багатьма типами занять)
-     прокручуються вбік, а не стискають колонки в накладені доріжки. */
-  overflow-x: auto;
   /* Відступ під скролбар, щоб він не перекривав бейджи/кнопки праворуч. */
   padding-right: 12px;
   margin-right: -8px;
 }
 
 @media (max-width: 640px) {
-  .equalBlock {
-    height: auto;
-    min-height: 0;
-    max-height: 70vh;
+  .opsScroll {
+    max-height: none;
   }
 }
 
-/* ── Спільне для блоків ────────────────────────────────────── */
+/* ── Спільна шапка блоку ───────────────────────────────────────
+   Заголовок ліворуч + опційний right-slot (CopyButton) праворуч,
+   під ним роздільник. */
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Складана шапка (Geist Collapse) ───────────────────────────
+   Заголовок як кнопка: шеврон + назва, по кліку розкриває тіло блоку.
+   Роздільник НЕ тут (інакше висить під згорнутим блоком) — його дає
+   border-top у .debtTableWrap лише коли тіло відрендерене. */
+.collapseHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.collapseHead:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.collapseChevron {
+  display: inline-flex;
+  color: var(--text-3);
+  transition: transform var(--motion-standard);
+}
+
+.collapseChevronOpen {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapseChevron {
+    transition: none;
+  }
+}
+
+/* Заголовок секції — Geist heading-16 (md, 600). */
 .blockTitle {
   font-size: var(--fs-md);
-  font-weight: var(--fw-medium);
+  line-height: var(--lh-md);
+  font-weight: var(--fw-semibold);
   color: var(--text);
-  margin-bottom: var(--space-lg);
 }
 
 .empty {
-  font-size: 14px;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
   color: var(--text-3);
   padding: var(--space-md) 0;
 }
@@ -105,64 +160,20 @@
 }
 
 .blockErrorMsg {
-  font-size: 14px;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
   color: var(--text-3);
   flex: 1;
 }
 
-/* ── Geist-набір (спільний для всіх блоків) ────────────────────
-   Копія еталонних токенів з ClassDetailModal.module.css (Vercel Overview).
-   Ізольована локально від модалки — DRY-виніс поза об'ємом задачі. */
-
-/* Єдина шапка блоку: заголовок ліворуч + опційний right-slot праворуч.
-   flex-shrink:0 — не стискається при скролі тіла блоку. */
-.cardHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding-bottom: var(--space-md);
-  margin-bottom: var(--space-md);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.cardHead .blockTitle {
-  margin-bottom: 0;
-}
-
-/* Description-List підпис (Geist <dt>) — лише для карток-обзорів,
-   НЕ для рядків списку. 14/14 --text-2, стабільна висота. */
-.fieldLabel {
-  font-size: var(--fs-base);
-  line-height: 14px;
-  min-height: 14px;
-  color: var(--text-2);
-  white-space: nowrap;
-  margin-bottom: 8px;
-}
-
-/* Description-List значення (Geist <dd>) — 14/16 font-weight:500 --text. */
-.fieldValue {
-  font-size: var(--fs-base);
-  line-height: 16px;
-  font-weight: 500;
-  color: var(--text);
-  min-width: 0;
-}
-
-.fieldNum {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Geist badge — нейтральна плашка (число, мітка). Success-варіант для
-   вільних слотів (позитивний сигнал «можна здати»). */
+/* ── Geist badge — нейтральна плашка (число, мітка) ─────────────
+   Success-варіант для вільних слотів (позитивний сигнал «можна здати»). */
 .geistBadge {
   border-radius: var(--radius-sm);
   padding: 2px 8px;
   font-size: 13px;
   line-height: 16px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   font-variant-numeric: tabular-nums;
   background: var(--bg-3);
   color: var(--text);
@@ -173,8 +184,7 @@
   color: var(--success-text);
 }
 
-/* Geist list-item мета — приглушений рядок (тренер · зал), БЕЗ dl-підписів.
-   Патерн списку деплойментів Vercel: значення в --text-2, розділювач ·. */
+/* Geist list-item мета — приглушений рядок (тренер · зал), БЕЗ dl-підписів. */
 .metaInline {
   font-size: var(--fs-base);
   line-height: 16px;
@@ -190,7 +200,8 @@
   margin: 0 5px;
 }
 
-
+/* ── Блок: боржники сьогодні (звіт) ────────────────────────────
+   Групи «час · тренер», під ними рядки клієнт → баланс. */
 .debtGroup {
   padding: var(--space-md) 0;
   border-top: 1px solid var(--border);
@@ -198,86 +209,94 @@
 
 .debtGroup:first-of-type {
   border-top: none;
+  padding-top: 0;
 }
 
-/* Заголовок групи (час · тренер) — Geist <dt>-типографіка: 14/--text-2,
-   приглушений над рядками клієнтів. Це підпис групи, не рядок-мета. */
 .debtGroupHead {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   font-size: var(--fs-base);
+  line-height: var(--lh-base);
   color: var(--text-2);
   margin-bottom: var(--space-xs);
 }
 
 .debtHall {
   color: var(--text-3);
-  font-weight: 400;
+  font-weight: var(--fw-normal);
 }
 
 .debtType {
-  font-size: 12px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
   color: var(--text-2);
   background: var(--bg-3);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
 }
 
-/* Рядок клієнт → баланс. Ім'я — Geist <dd> (14/500 --text), сума лишається
-   в balance-warn (семантика боргу). */
+/* Рядок клієнт → баланс. Ім'я — Geist copy-14/500 --text, сума в balance-warn. */
 .debtClient {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
   font-size: var(--fs-base);
-  line-height: 16px;
-  font-weight: 500;
+  line-height: var(--lh-base);
+  font-weight: var(--fw-medium);
   color: var(--text);
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
-/* Таблиця боржників: рядок = клієнт, колонки = типи занять + Депозит (₴).
-   Авто-розкладка (НЕ fixed): кожна колонка стає рівно по ширині свого
-   заголовка/числа, тож при багатьох типах занять колонки не стискаються
-   в накладені доріжки. Якщо сумарна ширина > блоку — .scrollBody дає
-   горизонтальний скрол. min-width:100% тримає таблицю на всю ширину, коли
-   колонок мало. */
+/* ── Таблиця боржників по сесіях ───────────────────────────────
+   Full-width блок: рядок = клієнт, колонки = типи занять + Депозит (₴).
+   Авто-розкладка (НЕ fixed): кожна колонка по ширині свого вмісту. При
+   багатьох типах занять — горизонтальний скрол лише самої таблиці. */
+.debtTableWrap {
+  overflow-x: auto;
+  /* Роздільник над таблицею — з'являється лише коли блок розкрито (тіло
+     рендериться при open), тож під згорнутою шапкою лінії немає. */
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
 .debtTable {
   min-width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .debtTable th {
-  position: sticky;
-  top: 0;
-  background: var(--bg-2);
   font-size: var(--fs-base);
+  line-height: var(--lh-base);
   font-weight: var(--fw-medium);
   color: var(--text);
   text-align: right;
   white-space: nowrap;
-  padding: 0 var(--space-sm) var(--space-xs);
+  padding: 0 var(--space-sm) var(--space-sm);
   border-bottom: 1px solid var(--border);
 }
 
 .debtTable td {
-  padding: var(--space-xs) var(--space-sm);
+  padding: 10px var(--space-sm);
   border-bottom: 1px solid var(--border);
   text-align: right;
   color: var(--text-2);
   white-space: nowrap;
 }
 
+.debtTable tbody tr:hover {
+  background: var(--bg-3);
+}
+
 .debtTable tr:last-child td {
   border-bottom: none;
 }
 
-/* «Клієнт» — гумова колонка: width:100% в авто-розкладці забирає весь залишок,
-   стискаючи числові колонки до їхнього вмісту. nowrap, щоб імена лишались в один
-   рядок (за потреби — горизонтальний скрол блоку). */
+/* «Клієнт» — гумова колонка: width:100% забирає весь залишок, стискаючи
+   числові колонки до їхнього вмісту. */
 .debtTableName {
   text-align: left !important;
   padding-left: 0 !important;
@@ -287,15 +306,14 @@
   white-space: nowrap;
 }
 
-/* Числова колонка-заняття: hug-to-content в авто-розкладці; min-width тримає
-   доріжку рівною під tabular-nums навіть для коротких міток/чисел. */
+/* Числова колонка-заняття: hug-to-content; min-width тримає доріжку рівною. */
 .debtTableCol {
   min-width: 56px;
   font-variant-numeric: tabular-nums;
 }
 
-/* «Депозит» (₴) — інша одиниця (гроші, не сесії), тож відокремлюємо лівим
-   розділювачем і ширшою доріжкою під суми з ₴. */
+/* «Депозит» (₴) — інша одиниця (гроші): відокремлюємо лівим роздільником
+   і ширшою доріжкою під суми з ₴. */
 .debtTableMoney {
   min-width: 84px;
   border-left: 1px solid var(--border);
@@ -307,8 +325,7 @@
   color: var(--text-3);
 }
 
-
-/* ── Блок: вільні слоти ────────────────────────────────────── */
+/* ── Блок: вільні слоти (оренда залу) ──────────────────────────── */
 .slotRow {
   display: flex;
   align-items: center;
@@ -319,12 +336,11 @@
 
 .slotRow:first-of-type {
   border-top: none;
+  padding-top: 0;
 }
 
-/* Зал + копіювання злиті в одну кнопку (Geist CopyButton з label):
-   уся зона клікабельна, а не лише вузька іконка поряд з назвою.
-   Подвоєний клас .slotHallBtn.slotHallBtn піднімає специфічність над
-   CopyButton.module.css (.btn), інакше justify-content там переможе. */
+/* Зал + копіювання злиті в одну кнопку (Geist CopyButton з label). Подвоєний
+   клас піднімає специфічність над CopyButton.module.css (.btn). */
 .slotHallBtn.slotHallBtn {
   flex-shrink: 0;
   width: 132px;
@@ -337,7 +353,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 
 .slotWindows {
   display: flex;
@@ -371,21 +386,22 @@
 }
 
 .slotAlertTitle {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-semibold);
   color: var(--danger-text);
 }
 
 .slotAlertText {
-  font-size: 13px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
   color: var(--danger-text);
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Блок: вільні місця на заняттях ────────────────────────── */
-/* Уся стрічка — одна кнопка (відкриває заняття). Лідирує число вільних місць
-   праворуч: це питання, на яке адмін шукає відповідь («куди ще можна посадити»).
-   Колір числа — статус наповненості (1 = бурштин «майже немає», 2+ = зелений). */
+/* ── Блок: вільні місця на заняттях ────────────────────────────
+   Уся стрічка — одна кнопка (відкриває заняття). Лідирує число вільних
+   місць праворуч: питання «куди ще можна посадити». */
 .spacesRow {
   display: flex;
   align-items: center;
@@ -400,7 +416,6 @@
   cursor: pointer;
   color: inherit;
   font: inherit;
-  /* Тінь розкриває межу між «полем» рядка і фоном лише на hover, не зміщуючи layout. */
   transition: background 140ms ease, box-shadow 140ms ease;
 }
 
@@ -429,24 +444,25 @@
 }
 
 .spacesTime {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--text);
   flex-shrink: 0;
 }
 
 .spacesType {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Етап хореографії — третій, найтихіший рядок (довідково, не операційно). */
+/* Етап хореографії — третій, найтихіший рядок (довідково). */
 .spacesChoreo {
-  font-size: 12px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
   color: var(--text-3);
   margin-top: 2px;
   white-space: nowrap;
@@ -461,8 +477,7 @@
   flex-shrink: 0;
 }
 
-/* Підказка-афорданс «відкрити»: блідий шеврон, що проявляється на hover.
-   Не є ціллю кліку — клікабельна вся стрічка. */
+/* Підказка-афорданс «відкрити»: блідий шеврон, проявляється на hover. */
 .spacesChevron {
   color: var(--text-3);
   opacity: 0;
@@ -478,7 +493,6 @@
 }
 
 @media (hover: none) {
-  /* На тач-екранах hover немає — лишаємо шеврон постійно видимим як афорданс. */
   .spacesChevron {
     opacity: 0.5;
     transform: none;
