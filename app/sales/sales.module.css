@@ -101,11 +101,9 @@
 .sheetHeader,
 .sheetDone { display: none; }
 
-/* Mobile expense/income card — контейнер нейтральний (Geist не заливає плашку
-   семантичним кольором); знак операції несе ±сума в .cardMeta. Лівий 2px-акцент
-   лишає легкий сигнал доходу/витрати без «крикливої» заливки. */
-.cardExpense { box-shadow: inset 2px 0 0 var(--danger); }
-.cardIncome  { box-shadow: inset 2px 0 0 var(--success); }
+/* Mobile expense card accents */
+.cardExpense { background: var(--danger-dim); }
+.cardIncome  { background: var(--success-dim); }
 
 .content { padding: 24px 28px; }
 
@@ -204,12 +202,7 @@
 .tableDesktop { display: block; }
 .cardList     { display: none; }
 
-/* ── Sale card (mobile) ── Geist list-item ────────────────────────
-   Три рівні ієрархії (не «пласкі» 14/--text скрізь):
-   L1 заголовок (клієнт/операція) = 14/500 --text;
-   L2 дата = 13 --text-2 tabular;
-   L3 приглушена мета (метод · тренер · оплачено) = .metaInline --text-2.
-   Числа сум — mono+tabular. Еталон — [[project_dashboard_geist_layout]]. */
+/* ── Sale card (mobile) ──────────────────────────────────────── */
 .card {
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -217,19 +210,19 @@
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .cardRow {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
 .cardClient {
-  font-size: var(--fs-base);
-  font-weight: var(--fw-medium);
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text);
   flex: 1;
   min-width: 0;
@@ -239,41 +232,37 @@
 }
 
 .cardDate {
-  font-size: 13px;
-  color: var(--text-2);
-  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--text);
   flex-shrink: 0;
 }
 
 .cardOperation {
-  font-size: var(--fs-base);
+  font-size: 14px;
   color: var(--text);
 }
 
-/* Приглушений рядок мети (Geist list-item): метод оплати · оплачено · тренер.
-   Підписи — --text-3, значення сум — mono+tabular через .cardMetaValue. */
 .cardMeta {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  line-height: 16px;
-  color: var(--text-2);
+  font-size: 14px;
   flex-wrap: wrap;
 }
 
 .cardMetaLabel {
-  color: var(--text-3);
-}
-
-.cardMetaValue {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
+  font-size: 14px;
   color: var(--text);
 }
 
-.cardDot {
-  color: var(--text-3);
+.cardMetaValue {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.cardTrainer {
+  font-size: 14px;
+  color: var(--text);
 }
 
 .cardActions {

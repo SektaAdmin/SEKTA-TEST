@@ -515,22 +515,17 @@ export default function SalesPage() {
                         {e.description && (
                           <div className={styles.cardOperation}>{e.description}</div>
                         )}
-                        {/* Мета: ±сума (знак несе колір) · метод · тренер. */}
                         <div className={styles.cardMeta}>
                           <span className={isExpense ? styles.depositNeg : styles.depositPos}>
                             {isExpense ? '−' : '+'}{formatMoney(e.amount)}
                           </span>
-                          <span className={styles.cardDot}>·</span>
                           <span className={paymentClass(e.payment_method)}>
                             {paymentLabel(e.payment_method)}
                           </span>
-                          {e.trainers?.name && (
-                            <>
-                              <span className={styles.cardDot}>·</span>
-                              <span>{e.trainers.name}</span>
-                            </>
-                          )}
                         </div>
+                        {e.trainers?.name && (
+                          <div className={styles.cardTrainer}>{e.trainers.name}</div>
+                        )}
                         <div className={styles.cardActions}>
                           <button className={styles.btnEdit} onClick={() => { setEditExpense(e); setExpenseModal(true) }}>
                             Змінити
@@ -560,25 +555,17 @@ export default function SalesPage() {
                             : <span className={styles.opDeduction}>↓ Списання</span>
                         }
                       </div>
-                      {/* Geist list-item мета: метод оплати · оплачено · тренер —
-                          один приглушений рядок замість трьох блоків з підписами. */}
                       <div className={styles.cardMeta}>
+                        {!isDeposit && s.payment_method !== 'deposit' && (
+                          <>
+                            <span className={styles.cardMetaLabel}>Оплачено</span>
+                            <span className={styles.cardMetaValue}>{formatMoney(s.price_paid)}</span>
+                            <span>·</span>
+                          </>
+                        )}
                         <span className={paymentClass(s.payment_method)}>
                           {paymentLabel(s.payment_method)}
                         </span>
-                        {!isDeposit && s.payment_method !== 'deposit' && (
-                          <>
-                            <span className={styles.cardDot}>·</span>
-                            <span className={styles.cardMetaLabel}>Оплачено</span>
-                            <span className={styles.cardMetaValue}>{formatMoney(s.price_paid)}</span>
-                          </>
-                        )}
-                        {s.trainers?.name && (
-                          <>
-                            <span className={styles.cardDot}>·</span>
-                            <span>{s.trainers.name}</span>
-                          </>
-                        )}
                       </div>
                       {depDelta !== 0 && (
                         <div className={styles.cardMeta}>
@@ -587,6 +574,9 @@ export default function SalesPage() {
                             {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
                           </span>
                         </div>
+                      )}
+                      {s.trainers?.name && (
+                        <div className={styles.cardTrainer}>Тренер: {s.trainers.name}</div>
                       )}
                       <div className={styles.cardActions}>
                         <CopyButton
