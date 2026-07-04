@@ -522,20 +522,14 @@
 
 .menuLogout {
   color: var(--text-2);
-  margin-top: 8px;
+  /* Відступ-роздільник — через margin, а не padding-top: інакше несиметричний
+     top-padding зсуває icon+label донизу від вертикального центру рядка. */
+  margin-top: 16px;
   border-top: 1px solid var(--border);
-  padding-top: 8px;
-  /* «Вийти» без стрілки праворуч — центруємо іконку+текст по горизонталі. */
-  justify-content: center;
 }
 
 .menuLogout .menuIcon {
   color: var(--text-2);
-}
-
-/* Скидаємо flex:1 — інакше label розтягується й притискає вміст ліворуч. */
-.menuLogout .menuLabel {
-  flex: 0 0 auto;
 }
 
 /* ── Екран «Мої візити» (картки візитів) ────────────────────────── */
