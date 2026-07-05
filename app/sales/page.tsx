@@ -17,7 +17,7 @@ import { deleteStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { formatClientName, formatSaleDatetime, formatMoney } from '@/lib/formatters'
 import { paymentLabel, paymentClass } from '@/lib/badges'
-import { MSG } from '@/lib/messages'
+import { MSG, friendlyRpcError } from '@/lib/messages'
 import type { Sale, PaymentMethod } from '@/types'
 import Pagination from '@/components/ui/Pagination'
 import FilterSelect from '@/components/ui/FilterSelect'
@@ -48,7 +48,7 @@ export default function SalesPage() {
   const [editSale, setEditSale]         = useState<Sale | null>(null)
   const [expenseModal, setExpenseModal] = useState(false)
   const [editExpense, setEditExpense]   = useState<StudioExpense | null>(null)
-  const [deleteId, setDeleteId]             = useState<string | null>(null)
+  const [deleteSaleTarget, setDeleteSaleTarget] = useState<Sale | null>(null)
   const [deleting, setDeleting]             = useState(false)
   const [deleteError, setDeleteError]       = useState('')
   const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null)
@@ -108,16 +108,16 @@ export default function SalesPage() {
   }
 
   async function handleDelete() {
-    if (!deleteId) return
+    if (!deleteSaleTarget) return
     setDeleting(true)
     setDeleteError('')
-    const { success, error } = await deleteSale(supabase, deleteId)
+    const { success, error } = await deleteSale(supabase, deleteSaleTarget.id)
     if (!success) {
-      setDeleteError(error ?? 'Помилка видалення')
+      setDeleteError(friendlyRpcError(error, MSG.toast.deleteFailed))
       setDeleting(false)
       return
     }
-    setDeleteId(null)
+    setDeleteSaleTarget(null)
     setDeleting(false)
     toast.success('Продаж видалено')
     refetch()
@@ -351,7 +351,13 @@ export default function SalesPage() {
           {loading ? (
             <div className="loading-dots"><span /><span /><span /></div>
           ) : fetchError ? (
-            <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
+            <div className={styles.empty}>
+              <p>{MSG.error.feedLoad}</p>
+              <details className={styles.errorDetails}>
+                <summary>Детальніше</summary>
+                {fetchError}
+              </details>
+            </div>
           ) : feed.length === 0 ? (
             <div className={styles.empty}>
               <span>
@@ -380,7 +386,7 @@ export default function SalesPage() {
                       <th>Занять</th>
                       <th>Ціна</th>
                       <th>Оплачено</th>
-                      <th>Δ Депозит</th>
+                      <th>Депозит</th>
                       <th>Оплата</th>
                       <th>Тренер</th>
                       <th></th>
@@ -443,9 +449,11 @@ export default function SalesPage() {
                           <td>
                             {s.ticket_name
                               ? s.ticket_name
-                              : depDelta >= 0
+                              : depDelta > 0
                                 ? <span className={styles.opTopup}>↑ Поповнення</span>
-                                : <span className={styles.opDeduction}>↓ Списання</span>
+                                : depDelta < 0
+                                  ? <span className={styles.opDeduction}>↓ Списання</span>
+                                  : '—'
                             }
                           </td>
                           <td className={styles.sessions}>{s.sessions ?? '—'}</td>
@@ -460,7 +468,7 @@ export default function SalesPage() {
                           <td className={styles.deposit}>
                             {depDelta !== 0 ? (
                               <span className={depDelta > 0 ? styles.depositPos : styles.depositNeg}>
-                                {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
+                                {depDelta > 0 ? '↑ +' : '↓ '}{formatMoney(depDelta)}
                               </span>
                             ) : <span className={styles.depositZero}>—</span>}
                           </td>
@@ -481,7 +489,7 @@ export default function SalesPage() {
                               <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                                 Змінити
                               </button>
-                              <button className={styles.btnDel} onClick={() => setDeleteId(s.id)}>
+                              <button className={styles.btnDel} onClick={() => setDeleteSaleTarget(s)}>
                                 Видалити
                               </button>
                             </div>
@@ -550,9 +558,11 @@ export default function SalesPage() {
                       <div className={styles.cardOperation}>
                         {s.ticket_name
                           ? s.ticket_name
-                          : depDelta >= 0
+                          : depDelta > 0
                             ? <span className={styles.opTopup}>↑ Поповнення</span>
-                            : <span className={styles.opDeduction}>↓ Списання</span>
+                            : depDelta < 0
+                              ? <span className={styles.opDeduction}>↓ Списання</span>
+                              : '—'
                         }
                       </div>
                       <div className={styles.cardMeta}>
@@ -571,7 +581,7 @@ export default function SalesPage() {
                         <div className={styles.cardMeta}>
                           <span className={styles.cardMetaLabel}>Депозит</span>
                           <span className={depDelta > 0 ? styles.depositPos : styles.depositNeg}>
-                            {depDelta > 0 ? '+' : ''}{formatMoney(depDelta)}
+                            {depDelta > 0 ? '↑ +' : '↓ '}{formatMoney(depDelta)}
                           </span>
                         </div>
                       )}
@@ -588,7 +598,7 @@ export default function SalesPage() {
                         <button className={styles.btnEdit} onClick={() => { setEditSale(s); setShowModal(true) }}>
                           Змінити
                         </button>
-                        <button className={styles.btnDel} onClick={() => setDeleteId(s.id)}>
+                        <button className={styles.btnDel} onClick={() => setDeleteSaleTarget(s)}>
                           Видалити
                         </button>
                       </div>
@@ -658,14 +668,17 @@ export default function SalesPage() {
         />
       )}
 
-      {deleteId && (
+      {deleteSaleTarget && (
         <div className={styles.confirmOverlay}>
           <div className={styles.confirmBox}>
-            <h3>Видалити продаж?</h3>
+            <h3>
+              Видалити продаж {formatClientName(deleteSaleTarget.clients)} на{' '}
+              {formatMoney(deleteSaleTarget.price_paid || deleteSaleTarget.amount_given)}?
+            </h3>
             <p>Цю дію неможливо скасувати.</p>
             {deleteError && <p className={styles.confirmError}>{deleteError}</p>}
             <div className={styles.confirmBtns}>
-              <button className="btn-secondary" onClick={() => { setDeleteId(null); setDeleteError('') }}>Скасувати</button>
+              <button className="btn-secondary" onClick={() => { setDeleteSaleTarget(null); setDeleteError('') }}>Скасувати</button>
               <button className="btn-danger" onClick={handleDelete} disabled={deleting}>
                 {deleting ? 'Видалення...' : 'Видалити'}
               </button>

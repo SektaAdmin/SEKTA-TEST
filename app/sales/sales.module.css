@@ -118,6 +118,13 @@
   gap: 12px;
 }
 
+.errorDetails {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.errorDetails summary { cursor: pointer; color: var(--text-2); }
+.errorDetails[open] summary { margin-bottom: 4px; }
+
 /* Клітинкові оверрайди: колір/mono/tabular. Базовий розмір (14px) дає
    примітив .data-table — сторінка більше не дублює font-size (Сесія 4). */
 .date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; }
@@ -125,12 +132,12 @@
 .trainer { color: var(--text-2) !important; }
 
 .deposit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.depositPos { color: var(--success); font-weight: 500; }
-.depositNeg { color: var(--danger); font-weight: 500; }
+.depositPos { color: var(--success-text); font-weight: 500; }
+.depositNeg { color: var(--danger-text); font-weight: 500; }
 .depositZero { color: var(--text-3); }
 .depositLabel { color: var(--text-3); font-style: italic; }
-.opTopup     { color: var(--success); }
-.opDeduction { color: var(--danger); }
+.opTopup     { color: var(--success-text); }
+.opDeduction { color: var(--danger-text); }
 .sessions    { font-variant-numeric: tabular-nums; }
 
 

@@ -1,10 +1,12 @@
 /* Поля форми — примітив FormField (components/ui/FormField). Локальні стилі нижче лишаються
    тільки для спецвипадків, яких примітив не покриває: банер помилки сабміту, read-only бокс
-   стану депозиту та сегментні кнопки способу оплати (кандидат на майбутній Tabs-примітив). */
+   стану депозиту та сегментні кнопки способу оплати. Сегментні кнопки свідомо НЕ мігровано на
+   спільний .tab-seg (Сесія 12): суцільна заливка --accent на обраному способі оплати — навмисно
+   вища виразність для грошового вибору, а не забутий TODO. */
 
 .error {
   font-size: 14px;
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -15,8 +17,8 @@
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-.depositPos { color: var(--success); }
-.depositNeg { color: var(--danger); }
+.depositPos { color: var(--success-text); }
+.depositNeg { color: var(--danger-text); }
 .depositZero { color: var(--text-3); }
 
 /* Read-only «поле» стану депозиту — той самий розмір, що й інпути форми */
