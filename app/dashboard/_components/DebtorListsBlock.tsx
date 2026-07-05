@@ -51,6 +51,9 @@ export function DebtorListsBlock({ date }: { date: string }) {
           </svg>
         </span>
         <h2 className={styles.blockTitle}>Боржники по сесіях</h2>
+        {!loading && !error && table.rows.length > 0 && (
+          <span className={styles.geistBadge}>{table.rows.length}</span>
+        )}
       </button>
 
       {/* Loading/error видно завжди, навіть коли блок згорнутий — інакше можна
