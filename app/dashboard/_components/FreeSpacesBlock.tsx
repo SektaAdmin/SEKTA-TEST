@@ -68,7 +68,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   }, [trainingTypes])
 
   return (
-    <section className={styles.block} data-impeccable-wrap="FreeSpacesBlock">
+    <section className={styles.block}>
       <div className={styles.cardHead}>
         <h2 className={styles.blockTitle}>Вільні місця на заняттях сьогодні</h2>
       </div>

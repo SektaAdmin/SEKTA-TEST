@@ -176,7 +176,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   return (
     <section className={styles.block}>
       <div className={styles.cardHead}>
-        <h2 className={styles.blockTitle}>Оренда залу</h2>
+        <h2 className={styles.blockTitle}>Оренда залу сьогодні</h2>
       </div>
 
       <div className={styles.opsScroll}>
@@ -200,8 +200,11 @@ export function FreeSlotsBlock({ date }: { date: string }) {
         <div key={i} className={styles.slotAlert} role="alert">
           <WarnTriangleIcon className={styles.slotAlertIcon} />
           <div className={styles.slotAlertBody}>
-            <span className={styles.slotAlertTitle}>{u.clientName ?? 'Студію нема кому відкрити'}</span>
-            <span className={styles.slotAlertText}>Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}</span>
+            <span className={styles.slotAlertTitle}>Студію нема кому відкрити</span>
+            <span className={styles.slotAlertText}>
+              Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}
+              {u.clientName ? ` · ${u.clientName}` : ''}
+            </span>
           </div>
         </div>
       ))}
