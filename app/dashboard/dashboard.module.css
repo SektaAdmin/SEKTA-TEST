@@ -360,6 +360,22 @@
   gap: var(--space-xs);
 }
 
+/* Мобільний layout: кнопка залу на всю ширину зверху, чипи вільно
+   переносяться рядками під нею — без цього 132px-кнопка стискає
+   до 7 погодинних бейджів у вузьку колонку (chip wall). */
+@media (max-width: 640px) {
+  .slotRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .slotHallBtn.slotHallBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Алерт: оренду заброньовано, але тренерське заняття-покриття скасовано →
    студію нема кому відкрити. Справжній критичний сигнал — danger-токени. */
 .slotAlert {
