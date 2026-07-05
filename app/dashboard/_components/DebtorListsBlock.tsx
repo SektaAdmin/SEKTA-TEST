@@ -105,8 +105,24 @@ export function DebtorListsBlock({ date }: { date: string }) {
 
 function Loader() {
   return (
-    <div className="loading-dots" role="status" aria-label="Завантаження...">
-      <span /><span /><span />
+    <div className={styles.debtTableWrap} role="status" aria-label="Завантаження...">
+      <table className={styles.debtTable} aria-hidden="true">
+        <tbody>
+          {[0, 1, 2, 3].map(i => (
+            <tr key={i}>
+              <td className={styles.debtTableName}>
+                <div className={`${styles.skeletonBone} ${styles.debtSkelName}`} style={{ width: `${60 - i * 6}%` }} />
+              </td>
+              <td className={styles.debtTableCol}>
+                <div className={`${styles.skeletonBone} ${styles.debtSkelCell}`} />
+              </td>
+              <td className={styles.debtTableMoney}>
+                <div className={`${styles.skeletonBone} ${styles.debtSkelCell}`} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

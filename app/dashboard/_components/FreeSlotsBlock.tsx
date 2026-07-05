@@ -180,7 +180,20 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       </div>
 
       <div className={styles.opsScroll}>
-      {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+      {loading && (
+        <div role="status" aria-label="Завантаження...">
+          {[0, 1, 2].map(i => (
+            <div key={i} className={styles.skeletonRow} aria-hidden="true">
+              <div className={`${styles.skeletonBone} ${styles.slotSkelHallBtn}`} />
+              <div className={styles.slotSkelWindows}>
+                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
+                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
+                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {error && <BlockError onRetry={refetch} />}
 
       {!loading && !error && uncovered.map((u, i) => (

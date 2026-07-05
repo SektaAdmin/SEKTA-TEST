@@ -77,12 +77,12 @@ export function FreeSpacesBlock({ date }: { date: string }) {
       {loading && (
         <div role="status" aria-label="Завантаження...">
           {[0, 1, 2, 3].map(i => (
-            <div key={i} className={styles.spacesSkeleton} aria-hidden="true">
-              <div className={styles.spacesSkelInfo}>
-                <div className={styles.spacesSkelLine} style={{ width: '52%' }} />
-                <div className={styles.spacesSkelLine} style={{ width: '34%' }} />
+            <div key={i} className={styles.skeletonRow} aria-hidden="true">
+              <div className={styles.skeletonInfo}>
+                <div className={styles.skeletonLine} style={{ width: '52%' }} />
+                <div className={styles.skeletonLine} style={{ width: '34%' }} />
               </div>
-              <div className={styles.spacesSkelCount} />
+              <div className={`${styles.skeletonBone} ${styles.spacesSkelCount}`} />
             </div>
           ))}
         </div>

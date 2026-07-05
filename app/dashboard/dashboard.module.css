@@ -249,6 +249,39 @@
   padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
 }
 
+/* Скелет групи боржників — геометрія .debtGroupHead + .debtClient. */
+.debtSkelGroup {
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--border);
+}
+
+.debtSkelGroup:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.debtSkelHead {
+  height: 14px;
+  width: 44%;
+  margin-bottom: var(--space-sm);
+}
+
+.debtSkelClient {
+  height: 12px;
+  margin: var(--space-xs) 0 var(--space-xs) var(--space-lg);
+}
+
+/* Скелет таблиці боржників — геометрія .debtTableName/.debtTableCol. */
+.debtSkelName {
+  height: 12px;
+}
+
+.debtSkelCell {
+  width: 32px;
+  height: 12px;
+  margin-left: auto;
+}
+
 /* ── Таблиця боржників по сесіях ───────────────────────────────
    Full-width блок: рядок = клієнт, колонки = типи занять + Депозит (₴).
    Авто-розкладка (НЕ fixed): кожна колонка по ширині свого вмісту. При
@@ -360,11 +393,30 @@
   gap: var(--space-xs);
 }
 
+/* Скелет рядка — геометрія кнопки залу (132px) + 3 чипи-«кістки». */
+.slotSkelHallBtn {
+  flex-shrink: 0;
+  width: 132px;
+  height: 30px;
+}
+
+.slotSkelWindows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.slotSkelChip {
+  width: 68px;
+  height: 20px;
+}
+
 /* Мобільний layout: кнопка залу на всю ширину зверху, чипи вільно
    переносяться рядками під нею — без цього 132px-кнопка стискає
    до 7 погодинних бейджів у вузьку колонку (chip wall). */
 @media (max-width: 640px) {
-  .slotRow {
+  .slotRow,
+  .skeletonRow:has(.slotSkelHallBtn) {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-sm);
@@ -373,6 +425,10 @@
   .slotHallBtn.slotHallBtn {
     width: 100%;
     justify-content: center;
+  }
+
+  .slotSkelHallBtn {
+    width: 100%;
   }
 }
 
@@ -515,8 +571,11 @@
   }
 }
 
-/* Скелет рядка під час завантаження — геометрія справжнього рядка. */
-.spacesSkeleton {
+/* ── Skeleton-лоадер (спільний shimmer-патерн) ──────────────────
+   Один каркас для всіх блоків дашборду: рядок-обгортка повторює геометрію
+   реального рядка (border-top/padding), а всередині — прямокутники-«кістки»
+   з градієнтом, що пробігає зліва направо. */
+.skeletonRow {
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -524,11 +583,11 @@
   border-top: 1px solid var(--border);
 }
 
-.spacesSkeleton:first-of-type {
+.skeletonRow:first-of-type {
   border-top: none;
 }
 
-.spacesSkelInfo {
+.skeletonInfo {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -536,7 +595,7 @@
   gap: 7px;
 }
 
-.spacesSkelLine {
+.skeletonLine {
   height: 11px;
   border-radius: var(--radius-sm);
   background: var(--bg-3);
@@ -544,35 +603,30 @@
   overflow: hidden;
 }
 
-.spacesSkelLine::after {
+.skeletonLine::after,
+.skeletonBone::after {
   content: '';
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
-  animation: spacesShimmer 1.3s ease-in-out infinite;
+  animation: skeletonShimmer 1.3s ease-in-out infinite;
+}
+
+.skeletonBone {
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  position: relative;
+  overflow: hidden;
 }
 
 .spacesSkelCount {
   width: 28px;
   height: 20px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
   flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
 }
 
-.spacesSkelCount::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
-  animation: spacesShimmer 1.3s ease-in-out infinite;
-}
-
-@keyframes spacesShimmer {
+@keyframes skeletonShimmer {
   100% { transform: translateX(100%); }
 }
 
@@ -581,8 +635,8 @@
   .spacesChevron {
     transition: none;
   }
-  .spacesSkelLine::after,
-  .spacesSkelCount::after {
+  .skeletonLine::after,
+  .skeletonBone::after {
     animation: none;
   }
 }

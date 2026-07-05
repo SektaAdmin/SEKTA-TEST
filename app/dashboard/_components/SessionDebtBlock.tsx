@@ -36,7 +36,17 @@ export function SessionDebtBlock({ date }: { date: string }) {
       </div>
 
       <div>
-        {loading && <div className="loading-dots" role="status" aria-label="Завантаження..."><span /><span /><span /></div>}
+        {loading && (
+          <div role="status" aria-label="Завантаження...">
+            {[0, 1].map(i => (
+              <div key={i} className={styles.debtSkelGroup} aria-hidden="true">
+                <div className={`${styles.skeletonBone} ${styles.debtSkelHead}`} />
+                <div className={`${styles.skeletonBone} ${styles.debtSkelClient}`} style={{ width: '68%' }} />
+                <div className={`${styles.skeletonBone} ${styles.debtSkelClient}`} style={{ width: '54%' }} />
+              </div>
+            ))}
+          </div>
+        )}
         {error && <BlockError onRetry={refetch} />}
         {!loading && !error && groups.length === 0 && (
           <div className={styles.empty}>Боржників немає</div>
