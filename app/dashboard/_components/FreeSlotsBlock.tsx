@@ -189,7 +189,6 @@ export function FreeSlotsBlock({ date }: { date: string }) {
           <div className={styles.slotAlertBody}>
             <span className={styles.slotAlertTitle}>{u.clientName ?? 'Студію нема кому відкрити'}</span>
             <span className={styles.slotAlertText}>Оренда {u.hall} {minToStr(u.startMin)}–{minToStr(u.endMin)}</span>
-            <span className={styles.slotAlertText}>У цей час немає заняття з тренером.</span>
           </div>
         </div>
       ))}
