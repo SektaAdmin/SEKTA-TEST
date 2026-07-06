@@ -202,6 +202,13 @@ export default function SalaryCalculationsPage() {
     setPaymentModal(true)
   }
 
+  /** EXCLUDE trainer_payments_final_no_overlap (23P01) → зрозуміла помилка замість сирого Postgres */
+  function paymentErrorMessage(error: string): string {
+    return error.includes('trainer_payments_final_no_overlap')
+      ? 'Період перетинається з іншою фінальною виплатою цього тренера. Змініть період або оберіть тип «Аванс».'
+      : error
+  }
+
   async function handleSavePayment() {
     const amount = parseFloat(paymentAmount)
     if (isNaN(amount) || amount <= 0) { setPaymentError('Введіть суму виплати'); return }
@@ -218,7 +225,7 @@ export default function SalaryCalculationsPage() {
         notes: paymentNotes || null,
       })
       setSaving(false)
-      if (error) { setPaymentError(error); return }
+      if (error) { setPaymentError(paymentErrorMessage(error)); return }
     } else {
       const { error } = await insertTrainerPayment(supabase, {
         trainer_id: selectedTrainerId,
@@ -233,7 +240,7 @@ export default function SalaryCalculationsPage() {
         notes: paymentNotes || null,
       })
       setSaving(false)
-      if (error) { setPaymentError(error); return }
+      if (error) { setPaymentError(paymentErrorMessage(error)); return }
     }
     setPaymentModal(false)
     fetchAll()
