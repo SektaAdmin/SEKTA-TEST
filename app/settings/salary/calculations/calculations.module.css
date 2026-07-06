@@ -96,6 +96,9 @@
   border-radius: var(--radius-xs);
 }
 
+/* Бейдж «live N ₴» поруч зі снапшотом нарахування у таблиці виплат */
+.driftBadge { margin-left: 8px; }
+
 .dateTime { color: var(--text-3); }
 
 /* Summary */

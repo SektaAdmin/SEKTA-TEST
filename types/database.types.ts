@@ -1095,6 +1095,27 @@ export type Database = {
         }
         Relationships: []
       }
+      salary_payment_reconcile: {
+        Row: {
+          calculated_amount: number | null
+          drift: number | null
+          live_amount: number | null
+          payment_id: string | null
+          period_end: string | null
+          period_start: string | null
+          trainer_id: string | null
+          trainer_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_payments_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_balance_reconcile: {
         Row: {
           actual_balance: number | null

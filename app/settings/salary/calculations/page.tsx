@@ -6,12 +6,14 @@ import {
   calcTrainerSalaryDetail,
   getTrainerCashBalance,
   listTrainerPayments,
+  listSalaryPaymentDrifts,
   insertTrainerPayment,
   updateTrainerPayment,
   deleteTrainerPayment,
   type TrainerSalaryDetailRow,
   type TrainerPayment,
   type TrainerCashBalance,
+  type SalaryPaymentDrift,
 } from '@/lib/queries/trainer-rates'
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import { getAccountingBalance } from '@/lib/queries/accounting'
@@ -91,6 +93,8 @@ export default function SalaryCalculationsPage() {
   const [cashBalance, setCashBalance] = useState<TrainerCashBalance | null>(null)
   const [cashBalanceTotal, setCashBalanceTotal] = useState<number>(0)
   const [payments, setPayments] = useState<TrainerPayment[]>([])
+  // payment_id → розходження live-пересчёта зі снапшотом (лише final, лише де ≠)
+  const [drifts, setDrifts] = useState<Map<string, SalaryPaymentDrift>>(new Map())
   const [loading, setLoading] = useState(false)
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set())
@@ -120,17 +124,19 @@ export default function SalaryCalculationsPage() {
     setLoading(true)
     const startISO = `${dateFrom}T00:00:00`
     const endISO = `${dateTo}T23:59:59`
-    const [detail, cash, pays, cashTotal] = await Promise.all([
+    const [detail, cash, pays, cashTotal, driftRes] = await Promise.all([
       calcTrainerSalaryDetail(supabase, selectedTrainerId, startISO, endISO),
       getTrainerCashBalance(supabase, selectedTrainerId, dateFrom, dateTo),
       listTrainerPayments(supabase, selectedTrainerId, dateFrom, dateTo),
       // «на руках за весь час» — та сама правда, що баланс cash-рахунку на /accounting
       getAccountingBalance(supabase, { method: 'cash', holder: selectedTrainerId }),
+      listSalaryPaymentDrifts(supabase, selectedTrainerId),
     ])
     setRows(detail.data)
     setCashBalance(cash.data)
     setPayments(pays.data)
     setCashBalanceTotal(cashTotal.balance)
+    setDrifts(new Map(driftRes.data.map(d => [d.payment_id, d])))
     setExpandedDays(new Set())
     setExpandedClasses(new Set())
     setLoading(false)
@@ -639,7 +645,17 @@ export default function SalaryCalculationsPage() {
                             </span>
                           </td>
                           <td className={styles.grayCell}>{formatDate(p.period_start)} – {formatDate(p.period_end)}</td>
-                          <td className={styles.numCell}>{formatMoney(Number(p.calculated_amount))}</td>
+                          <td className={styles.numCell}>
+                            {formatMoney(Number(p.calculated_amount))}
+                            {drifts.has(p.id) && (
+                              <span
+                                className={`badge badge-danger ${styles.driftBadge}`}
+                                title={`Дані періоду змінилися після фіксації виплати. Live-пересчёт: ${formatMoney(drifts.get(p.id)!.live_amount)}`}
+                              >
+                                live {formatMoney(drifts.get(p.id)!.live_amount)}
+                              </span>
+                            )}
+                          </td>
                           <td className={styles.amtCell}>{formatMoney(Number(p.paid_amount))}</td>
                           <td className={styles.grayCell}>{p.notes ?? '—'}</td>
                           <td>
@@ -689,6 +705,14 @@ export default function SalaryCalculationsPage() {
                         {paymentLabel((p.payment_method ?? 'cash') as any)}
                       </span>
                       <span className={styles.grayCell}>{formatDate(p.period_start)} – {formatDate(p.period_end)}</span>
+                      {drifts.has(p.id) && (
+                        <span
+                          className="badge badge-danger"
+                          title={`Дані періоду змінилися після фіксації виплати. Live-пересчёт: ${formatMoney(drifts.get(p.id)!.live_amount)}`}
+                        >
+                          live {formatMoney(drifts.get(p.id)!.live_amount)}
+                        </span>
+                      )}
                     </div>
                     {p.notes && <div className={styles.grayCell}>{p.notes}</div>}
                   </div>

@@ -321,6 +321,35 @@ export async function listTrainerPayments(
   return { data: (data ?? []) as TrainerPayment[], error: error?.message ?? null }
 }
 
+export type SalaryPaymentDrift = {
+  payment_id: string
+  calculated_amount: number
+  live_amount: number
+  drift: number
+}
+
+/** Фінальні виплати, де live-пересчёт розійшовся зі снапшотом calculated_amount
+    (view salary_payment_reconcile; дані рухомі задом — postfactum attendance,
+    ставки заднім числом). Порожньо = усе зійшлося. RLS: бачить лише owner. */
+export async function listSalaryPaymentDrifts(
+  supabase: Db,
+  trainerId: string
+): Promise<{ data: SalaryPaymentDrift[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('salary_payment_reconcile')
+    .select('payment_id, calculated_amount, live_amount, drift')
+    .eq('trainer_id', trainerId)
+  return {
+    data: (data ?? []).map(r => ({
+      payment_id: r.payment_id!,
+      calculated_amount: Number(r.calculated_amount),
+      live_amount: Number(r.live_amount),
+      drift: Number(r.drift),
+    })),
+    error: error?.message ?? null,
+  }
+}
+
 export async function updateTrainerPayment(
   supabase: Db,
   id: string,
