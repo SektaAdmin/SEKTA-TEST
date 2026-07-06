@@ -29,7 +29,7 @@ export type TrainerSalaryDetailRow = {
   enrollments: {
     client_id: string
     client_name: string
-    status: 'attended' | 'noshow'
+    status: 'attended' | 'noshow' | 'cancelled'
     trainer_amount: number
     studio_amount: number
   }[]
@@ -201,7 +201,7 @@ export async function calcTrainerSalaryDetail(
     row.enrollments.push({
       client_id: r.client_id,
       client_name: r.client_name,
-      status: r.enrollment_status as 'attended' | 'noshow',
+      status: r.enrollment_status as 'attended' | 'noshow' | 'cancelled',
       trainer_amount: Number(r.trainer_amount),
       studio_amount: Number(r.studio_amount),
     })
