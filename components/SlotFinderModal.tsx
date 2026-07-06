@@ -11,7 +11,7 @@ import {
   type SlotFinderClass,
 } from '@/lib/queries/classes'
 import { enrollClient, getClientSessionBalance } from '@/lib/queries/enrollments'
-import { computeSlotMatrix, type SlotStatus } from '@/lib/slotFinder'
+import { computeSlotMatrix, hasFutureSlotToday, type SlotStatus } from '@/lib/slotFinder'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -48,20 +48,43 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
   const todayYMD = toYMD(new Date())
   const [client, setClient] = useState<Client | null>(null)
   const [clientBalance, setClientBalance] = useState<number | null>(null)
+  const [balanceError, setBalanceError] = useState<string | null>(null)
   const [trainerId, setTrainerId] = useState('')
   const [dateYMD, setDateYMD] = useState(() => {
     // Прошедшие дни — через звичайний «+ Заняття»; тут тільки сьогодні й далі.
-    return initialDate && initialDate >= todayYMD ? initialDate : todayYMD
+    const resolved = initialDate && initialDate >= todayYMD ? initialDate : todayYMD
+    // Сьогодні вже не лишилось майбутніх годин (за замовч. тривалістю) — одразу відкриваємо завтра.
+    if (resolved === todayYMD && !hasFutureSlotToday(new Date(), 60)) {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return toYMD(tomorrow)
+    }
+    return resolved
   })
   const [durationMin, setDurationMin] = useState(60)
   const [dayClasses, setDayClasses] = useState<SlotFinderClass[]>([])
+  const [dayError, setDayError] = useState<string | null>(null)
+  const [loadingDay, setLoadingDay] = useState(true)
   const [selected, setSelected] = useState<{ hallId: string; hour: number } | null>(null)
   const [saving, setSaving] = useState(false)
 
   const fetchDay = useCallback(async () => {
-    const { data, error } = await listClassesForSlotFinder(supabase, dateYMD)
-    if (error) toast.error(error)
-    setDayClasses(data)
+    setLoadingDay(true)
+    try {
+      const { data, error } = await listClassesForSlotFinder(supabase, dateYMD)
+      if (error) {
+        // Дані про минулу дату не годяться для нової — не показуємо матрицю як «все вільно».
+        setDayError(error)
+      } else {
+        setDayError(null)
+        setDayClasses(data)
+      }
+    } catch {
+      // Обрив мережі кидає виняток, а не {error} — без catch модалка зависла б на «Завантаження…».
+      setDayError('Немає з’єднання із сервером')
+    } finally {
+      setLoadingDay(false)
+    }
   }, [dateYMD])
 
   useEffect(() => { fetchDay() }, [fetchDay])
@@ -83,13 +106,20 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
   async function handleClientSelect(c: Client) {
     setClient(c)
     setClientBalance(null)
-    const { balance } = await getClientSessionBalance(supabase, c.id, TICKET_TYPE)
-    setClientBalance(balance)
+    setBalanceError(null)
+    const { balance, error } = await getClientSessionBalance(supabase, c.id, TICKET_TYPE)
+    if (error) setBalanceError(error)
+    else setClientBalance(balance)
   }
 
   function handleClientClear() {
     setClient(null)
     setClientBalance(null)
+    setBalanceError(null)
+  }
+
+  function handleRetryBalance() {
+    if (client) handleClientSelect(client)
   }
 
   const selectedHallName = selected ? activeHalls.find(h => h.id === selected.hallId)?.name ?? '' : ''
@@ -174,6 +204,14 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
             disabled={saving}
           />
         </FormField>
+        {client && balanceError && (
+          <p className={styles.balanceWarn}>
+            Не вдалося перевірити залишок занять —{' '}
+            <button type="button" className={styles.inlineRetry} onClick={handleRetryBalance}>
+              спробувати ще раз
+            </button>
+          </p>
+        )}
         {client && clientBalance !== null && (
           clientBalance > 0 ? (
             <p className={styles.balanceLine}>
@@ -221,51 +259,72 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
         </div>
       </div>
 
-      <div className={styles.matrixWrap}>
-        <div
-          className={styles.matrix}
-          style={{ gridTemplateColumns: `44px repeat(${activeHalls.length}, minmax(84px, 1fr))` }}
-        >
-          <div className={styles.headCell} />
-          {activeHalls.map(h => (
-            <div key={h.id} className={styles.headCell}>{h.name}</div>
-          ))}
-          {hours.map(hour => (
-            <div key={hour} className={styles.rowContents}>
-              <div className={styles.hourCell}>{String(hour).padStart(2, '0')}:00</div>
-              {activeHalls.map(h => {
-                const status = matrix.get(h.id)?.get(hour) ?? 'free'
-                const isSelected = selected?.hallId === h.id && selected?.hour === hour
-                return (
-                  <button
-                    key={h.id}
-                    type="button"
-                    className={`${styles.cell} ${styles[`cell_${status}`]} ${isSelected ? styles.cellSelected : ''}`}
-                    disabled={status !== 'free' || saving}
-                    title={STATUS_TITLE[status]}
-                    onClick={() => setSelected({ hallId: h.id, hour })}
-                  >
-                    {status === 'selftraining' ? 'самотрен.' : status === 'hall_busy' ? 'зайнято' : status === 'trainer_busy' ? 'тренер' : ''}
-                  </button>
-                )
-              })}
-            </div>
-          ))}
+      {activeHalls.length === 0 ? (
+        <div className={styles.matrixWrap}>
+          <p className={styles.matrixMessage}>Немає активних залів — додайте зал у довідниках</p>
         </div>
-      </div>
+      ) : loadingDay ? (
+        <div className={styles.matrixWrap}>
+          <p className={styles.matrixMessage}>Завантаження розкладу…</p>
+        </div>
+      ) : dayError ? (
+        <div className={styles.matrixWrap}>
+          <div className={styles.matrixError}>
+            <span className={styles.matrixErrorMsg}>Не вдалося завантажити розклад дня</span>
+            <button type="button" className="btn-secondary btn-sm" onClick={fetchDay}>
+              Спробувати ще раз
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={styles.matrixWrap}>
+            <div
+              className={styles.matrix}
+              style={{ gridTemplateColumns: `44px repeat(${activeHalls.length}, minmax(84px, 1fr))` }}
+            >
+              <div className={styles.headCell} />
+              {activeHalls.map(h => (
+                <div key={h.id} className={styles.headCell}>{h.name}</div>
+              ))}
+              {hours.map(hour => (
+                <div key={hour} className={styles.rowContents}>
+                  <div className={styles.hourCell}>{String(hour).padStart(2, '0')}:00</div>
+                  {activeHalls.map(h => {
+                    const status = matrix.get(h.id)?.get(hour) ?? 'free'
+                    const isSelected = selected?.hallId === h.id && selected?.hour === hour
+                    return (
+                      <button
+                        key={h.id}
+                        type="button"
+                        className={`${styles.cell} ${styles[`cell_${status}`]} ${isSelected ? styles.cellSelected : ''}`}
+                        disabled={status !== 'free' || saving}
+                        title={STATUS_TITLE[status]}
+                        onClick={() => setSelected({ hallId: h.id, hour })}
+                      >
+                        {status === 'selftraining' ? 'самотрен.' : status === 'hall_busy' ? 'зайнято' : status === 'trainer_busy' ? 'тренер' : ''}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
 
-      <div className={styles.legend}>
-        <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendFree}`} />вільно</span>
-        <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendBusy}`} />зайнято</span>
-        <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendSelf}`} />самотрен — за домовленістю</span>
-      </div>
+          <div className={styles.legend}>
+            <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendFree}`} />вільно</span>
+            <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendBusy}`} />зайнято</span>
+            <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legendSelf}`} />самотрен — за домовленістю</span>
+          </div>
 
-      {selected && (
-        <p className={styles.summary}>
-          {ymdToDisplay(dateYMD)}, {String(selected.hour).padStart(2, '0')}:00–
-          {String(selected.hour + Math.floor(durationMin / 60)).padStart(2, '0')}:{String(durationMin % 60).padStart(2, '0')},
-          {' '}{selectedHallName}, {selectedTrainerName}
-        </p>
+          {selected && (
+            <p className={styles.summary}>
+              {ymdToDisplay(dateYMD)}, {String(selected.hour).padStart(2, '0')}:00–
+              {String(selected.hour + Math.floor(durationMin / 60)).padStart(2, '0')}:{String(durationMin % 60).padStart(2, '0')},
+              {' '}{selectedHallName}, {selectedTrainerName}
+            </p>
+          )}
+        </>
       )}
     </ModalShell>
   )

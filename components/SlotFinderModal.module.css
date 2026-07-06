@@ -11,13 +11,13 @@
 }
 
 .balanceLine {
-  margin: -6px 0 8px;
+  margin: 0 0 12px;
   font-size: 13px;
   color: var(--text-2);
 }
 
 .balanceWarn {
-  margin: -6px 0 8px;
+  margin: 0 0 12px;
   font-size: 13px;
   color: var(--warning-text);
   background: var(--warning-dim);
@@ -25,11 +25,21 @@
   border-radius: var(--radius-sm);
 }
 
+.inlineRetry {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* ── Матриця зал × година ─────────────────────────────────────── */
 
 .matrixWrap {
   overflow-x: auto;
-  margin-top: 8px;
+  margin-top: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
@@ -37,6 +47,26 @@
 .matrix {
   display: grid;
   min-width: max-content;
+}
+
+.matrixMessage {
+  padding: 32px 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.matrixError {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 10px;
+}
+
+.matrixErrorMsg {
+  font-size: 13px;
+  color: var(--text-3);
+  flex: 1;
 }
 
 /* Обгортка рядка потрібна лише для key — колонки тримає батьківський grid */
@@ -113,7 +143,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-3);
 }
@@ -136,7 +166,10 @@
 .legendSelf { background: var(--warning-dim); }
 
 .summary {
-  margin-top: 10px;
+  margin-top: 20px;
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
@@ -144,7 +177,13 @@
 
 @media (max-width: 640px) {
   .settingsRow {
-    grid-template-columns: 1fr;
-    gap: 0;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Дата — окремим повним рядком (потребує ширини під нативний picker); тренер+тривалість — пара внизу. */
+  .settingsRow > :nth-child(2) {
+    grid-column: 1 / -1;
+    order: -1;
   }
 }

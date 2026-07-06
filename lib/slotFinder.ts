@@ -20,6 +20,13 @@ function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): b
   return aStart < bEnd && bStart < aEnd
 }
 
+/** Чи лишився сьогодні бодай один майбутній старт для цієї тривалості. */
+export function hasFutureSlotToday(now: Date, durationMin: number): boolean {
+  const lastStart = SLOT_MAX_HOUR - Math.ceil(durationMin / 60)
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  return nowMin < lastStart * 60
+}
+
 export function computeSlotMatrix(params: {
   classes: SlotFinderClass[]
   hallIds: string[]

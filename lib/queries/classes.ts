@@ -448,13 +448,15 @@ export async function checkClassConflicts(
   }
 ): Promise<string | null> {
   if (!params.hall_id && !params.trainer_id) return null
-  const { data } = await supabase.rpc('check_class_conflicts', {
+  const { data, error } = await supabase.rpc('check_class_conflicts', {
     p_starts_at: params.starts_at,
     p_duration_min: params.duration_min,
     p_hall_id: params.hall_id ?? undefined,
     p_trainer_id: params.trainer_id ?? undefined,
     p_exclude_id: params.exclude_id ?? undefined,
   })
+  // Мережева/серверна помилка тут — не «конфліктів нема»: без цієї перевірки збереження небезпечне.
+  if (error) return 'Не вдалося перевірити конфлікти — спробуйте ще раз'
   if (!data || data.length === 0) return null
   const c = data[0]
   const when = new Date(c.starts_at).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' })
