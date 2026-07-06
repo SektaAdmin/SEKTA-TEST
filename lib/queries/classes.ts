@@ -227,6 +227,31 @@ export async function listPastClasses(
   return { data: (data ?? []) as unknown as ClassWithJoins[], count: count ?? 0, error: error?.message ?? null }
 }
 
+/** Мінімальний зріз заняття для матриці підбору слота (SlotFinderModal). */
+export type SlotFinderClass = {
+  id: string
+  ticket_type: string
+  starts_at: string
+  duration_min: number
+  hall_id: string | null
+  trainer_id: string | null
+}
+
+export async function listClassesForSlotFinder(
+  supabase: Db,
+  date: string
+): Promise<{ data: SlotFinderClass[]; error: string | null }> {
+  const { from: dayStart, to: dayEnd } = kyivDayUtcBounds(date)
+  const { data, error } = await supabase
+    .from('classes')
+    .select('id, ticket_type, starts_at, duration_min, hall_id, trainer_id')
+    .gte('starts_at', dayStart)
+    .lte('starts_at', dayEnd)
+    .eq('is_cancelled', false)
+    .returns<SlotFinderClass[]>()
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
 // ── Mutations: classes ──────────────────────────────────────────
 
 export async function insertClasses(
@@ -235,6 +260,19 @@ export async function insertClasses(
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from('classes').insert(payloads)
   return { error: error?.message ?? null }
+}
+
+/** INSERT одного заняття з поверненням id — коли одразу потрібен запис клієнта. */
+export async function insertClassReturningId(
+  supabase: Db,
+  payload: ClassPayload
+): Promise<{ id: string | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('classes')
+    .insert(payload)
+    .select('id')
+    .single()
+  return { id: data?.id ?? null, error: error?.message ?? null }
 }
 
 export async function updateClass(

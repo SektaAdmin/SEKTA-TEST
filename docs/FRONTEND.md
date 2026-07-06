@@ -8,7 +8,7 @@
 app/layout.tsx        RefsProvider + <Toaster/> (sonner)
 app/globals.css       CSS-токени, shared layout-класи, @keyframes, бейджі
 app/[route]/page.tsx + [route]/*.module.css
-components/*Modal.tsx  Sale/Client/Class/Series/EnrollClient/ClassDetail/Hall/Ticket/Trainer/TrainingType/StudioExpense
+components/*Modal.tsx  Sale/Client/Class/Series/EnrollClient/ClassDetail/Hall/Ticket/Trainer/TrainingType/StudioExpense/SlotFinder
 components/            Sidebar, BottomNav, HallWeekGrid, ScheduleRightPanel
 components/Date*       DatePicker, DateRangePicker, DateTimePicker, DateTimeInput, SalesDateRangePicker, CalendarPopover, MonthNav
 components/features/   ClientSearchCombobox
@@ -82,6 +82,8 @@ Desktop/mobile таблиці: `.tableDesktop`/`.cardList` обидва в JSX, 
 
 ### /schedule
 **Desktop:** scroll-архітектура (не page-layout), `main{height:100svh}`, скролиться `bodyGridWrapper`. Day (всі зали + ScheduleRightPanel календар) / Week (7 дн, right-panel скрита). Константи: `MIN_HOUR=8`, `MAX_HOUR=22`, `HOUR_HEIGHT=83`.
+
+**SlotFinderModal («Підбір слота»)** — візард запису на індив: клієнт (ClientSearchCombobox + залишок `client_session_balances`, попередження при 0 — НЕ блокує) → тренер («Будь-який»=null)/дата(min=сьогодні)/тривалість 60-90-120 → матриця зал×година (`computeSlotMatrix` у `lib/slotFinder.ts`: free/hall_busy/trainer_busy/selftraining/past; самотрен = жовтий «за домовленістю», некликабельний) → confirm: `checkClassConflicts` (серверна перепроверка) → `insertClassReturningId` (`ticket_type='individual'`, capacity=1) → `enrollClient`; фейл запису після створення = warning-тост, клас лишається. Тригери: btn-secondary «Підбір слота» в topbarRight (desktop) + `.fabSlotFinder` (3-й FAB, лупа, над FAB-календарем). ModalShell `detail`, тости sonner.
 
 **Mobile:** `MobileScheduleTimeline` (page.tsx:508–807), вбудована компонента з власною логікою. Не використовує `page-layout` або desktop grid.
 

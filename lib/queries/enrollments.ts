@@ -100,6 +100,21 @@ export async function listEnrollmentsForClass(
   return { data: data ?? [], error: error?.message ?? null }
 }
 
+/** Поточний залишок занять клієнта за типом. Немає рядка = 0 (нічого не купував). */
+export async function getClientSessionBalance(
+  supabase: Db,
+  clientId: string,
+  ticketType: string
+): Promise<{ balance: number; error: string | null }> {
+  const { data, error } = await supabase
+    .from('client_session_balances')
+    .select('sessions_balance')
+    .eq('client_id', clientId)
+    .eq('ticket_type', ticketType)
+    .maybeSingle()
+  return { balance: data?.sessions_balance ?? 0, error: error?.message ?? null }
+}
+
 /** Залишок сесій після заняття atISO для кожного клієнта (батч). */
 export async function getSessionBalancesAfter(
   supabase: Db,

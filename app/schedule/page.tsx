@@ -10,11 +10,12 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import SlotFinderModal from '@/components/SlotFinderModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
-import { MONTHS_UK_CAP, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { MONTHS_UK_CAP, MONTHS_UK_FULL, getISOWeek, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex, toYMD } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import FilterSelect from '@/components/ui/FilterSelect'
 import styles from './schedule.module.css'
@@ -870,6 +871,7 @@ export default function SchedulePage() {
   const [typeLabels, setTypeLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showSlotFinder, setShowSlotFinder] = useState(false)
   const [prefill, setPrefill] = useState<{ starts_at: string; hall_id?: string } | undefined>()
   const [editClassId, setEditClassId] = useState<string | null>(null)
   const [nowTop, setNowTop] = useState<number | null>(null)
@@ -1155,6 +1157,9 @@ export default function SchedulePage() {
                   Тиждень
                 </button>
               </div>
+            <button className="btn-secondary" onClick={() => setShowSlotFinder(true)}>
+                Підбір слота
+              </button>
             <button className={`btn-primary ${styles.btnAddClass}`} onClick={() => { setPrefill(undefined); setShowModal(true) }}>
                 + Заняття
               </button>
@@ -1432,6 +1437,18 @@ export default function SchedulePage() {
           </div>
         )}
 
+        {/* FAB підбір слота — mobile only, над FAB-календарем */}
+        <button
+          className={styles.fabSlotFinder}
+          onClick={() => setShowSlotFinder(true)}
+          aria-label="Підбір слота для індива"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="9" cy="9" r="6" />
+            <path d="M13.5 13.5L18 18" />
+          </svg>
+        </button>
+
         {/* FAB календар — mobile only, відкриває вибір дати (над FAB «+») */}
         <button
           className={styles.fabCalendar}
@@ -1468,6 +1485,17 @@ export default function SchedulePage() {
             setCalViewMonth(m => ({ ...m })) // re-trigger active dates fetch
           }}
           prefill={prefill}
+        />
+      )}
+
+      {showSlotFinder && (
+        <SlotFinderModal
+          initialDate={toYMD(baseDate)}
+          onClose={() => setShowSlotFinder(false)}
+          onSaved={() => {
+            setShowSlotFinder(false); fetchClasses()
+            setCalViewMonth(m => ({ ...m })) // re-trigger active dates fetch
+          }}
         />
       )}
     </div>
