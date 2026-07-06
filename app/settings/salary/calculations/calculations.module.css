@@ -72,6 +72,30 @@
 
 .dash { color: var(--text-3); }
 
+/* Заняття без ставки в trainer_rates на дату → нараховано тихий 0.
+   Справжній алерт (гроші губляться) — warning-токени. */
+.rateAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: var(--warning-dim);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--warning-text);
+  max-width: fit-content;
+}
+.rateAlertIcon { flex-shrink: 0; color: var(--warning); margin-top: 1px; }
+.rateMissingAmt {
+  color: var(--warning-text);
+  background: var(--warning-dim);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
 .dateTime { color: var(--text-3); }
 
 /* Summary */

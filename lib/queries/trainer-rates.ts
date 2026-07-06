@@ -32,10 +32,13 @@ export type TrainerSalaryDetailRow = {
     status: 'attended' | 'noshow' | 'cancelled'
     trainer_amount: number
     studio_amount: number
+    rate_missing: boolean
   }[]
   total_clients: number
   total_trainer: number
   total_studio: number
+  /** на дату заняття нема ставки в trainer_rates → нараховано тихий 0 */
+  has_missing_rate: boolean
 }
 
 const PAYMENT_SELECT = '*, trainers!trainer_payments_trainer_id_fkey(name)' as const
@@ -195,6 +198,7 @@ export async function calcTrainerSalaryDetail(
         total_clients: 0,
         total_trainer: 0,
         total_studio: 0,
+        has_missing_rate: false,
       })
     }
     const row = map.get(r.class_id)!
@@ -204,8 +208,10 @@ export async function calcTrainerSalaryDetail(
       status: r.enrollment_status as 'attended' | 'noshow' | 'cancelled',
       trainer_amount: Number(r.trainer_amount),
       studio_amount: Number(r.studio_amount),
+      rate_missing: r.rate_missing,
     })
     row.total_clients += 1
+    row.has_missing_rate = row.has_missing_rate || r.rate_missing
     row.total_trainer += Number(r.trainer_amount)
     row.total_studio += Number(r.studio_amount)
   }

@@ -1142,7 +1142,12 @@ export type Database = {
     }
     Functions: {
       accounting_balance: {
-        Args: { p_holder?: string; p_method: string }
+        Args: {
+          p_from?: string
+          p_holder?: string
+          p_method: string
+          p_to?: string
+        }
         Returns: {
           balance: number
           income: number
@@ -1180,6 +1185,7 @@ export type Database = {
           duration_min: number
           enrollment_status: string
           hall_name: string
+          rate_missing: boolean
           starts_at: string
           studio_amount: number
           ticket_type: string

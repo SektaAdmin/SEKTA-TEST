@@ -23,7 +23,7 @@ import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, pay
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
-import { Pencil, Trash2, Download } from 'lucide-react'
+import { Pencil, Trash2, Download, AlertTriangle } from 'lucide-react'
 import { exportSalaryPdf } from '@/lib/exportSalaryPdf'
 import { toast } from 'sonner'
 import { MSG } from '@/lib/messages'
@@ -35,6 +35,13 @@ const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
+
+/** Відмінювання «заняття»: 1/2-4→заняття, 0/5+/11-14→занять (патерн pluralHours). */
+function pluralClasses(n: number): string {
+  const m10 = n % 10, m100 = n % 100
+  if (m10 >= 1 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'заняття'
+  return 'занять'
+}
 
 function getMonthRange() {
   const d = new Date()
@@ -148,6 +155,8 @@ export default function SalaryCalculationsPage() {
   }, [rows])
 
   const totalTrainer = useMemo(() => rows.reduce((s, r) => s + r.total_trainer, 0), [rows])
+  // Заняття, де на дату немає ставки в trainer_rates → нараховано тихий 0 (rate_missing з RPC)
+  const missingRateCount = useMemo(() => rows.filter(r => r.has_missing_rate).length, [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
   const toPay = totalTrainer - cashOnHand - totalPaidPeriod
@@ -312,6 +321,15 @@ export default function SalaryCalculationsPage() {
                 <div className={ss.empty}>{MSG.empty.salaryClasses}</div>
               ) : (
                 <>
+                  {missingRateCount > 0 && (
+                    <div className={styles.rateAlert} role="alert">
+                      <AlertTriangle size={15} className={styles.rateAlertIcon} aria-hidden />
+                      <span>
+                        Для {missingRateCount} {pluralClasses(missingRateCount)} немає
+                        ставки на дату — тренеру нараховано 0&nbsp;₴. Додайте ставку у вкладці «Ставки».
+                      </span>
+                    </div>
+                  )}
                   {/* ── DESKTOP TABLE ── */}
                   <div className={`data-table-wrap ${styles.tableDesktop}`}>
                     <table className="data-table">
@@ -390,7 +408,11 @@ export default function SalaryCalculationsPage() {
                                           }
                                         </td>
                                       ))}
-                                      <td className={`${styles.amtCell} ${r.total_trainer < 0 ? styles.amtNegative : ''}`}>{formatMoney(r.total_trainer)}</td>
+                                      <td className={`${styles.amtCell} ${r.total_trainer < 0 ? styles.amtNegative : ''}`}>
+                                        {r.has_missing_rate
+                                          ? <span className={styles.rateMissingAmt} title="Немає ставки на дату заняття">{formatMoney(r.total_trainer)}</span>
+                                          : formatMoney(r.total_trainer)}
+                                      </td>
                                     </tr>
 
                                     {/* Client rows */}
@@ -404,7 +426,11 @@ export default function SalaryCalculationsPage() {
                                           </span>
                                         </td>
                                         {ticketTypes.map(t => <td key={t} />)}
-                                        <td className={`${styles.amtCell} ${e.trainer_amount < 0 ? styles.amtNegative : ''}`}>{formatMoney(e.trainer_amount)}</td>
+                                        <td className={`${styles.amtCell} ${e.trainer_amount < 0 ? styles.amtNegative : ''}`}>
+                                          {e.rate_missing
+                                            ? <span className={styles.rateMissingAmt} title="Немає ставки на дату заняття">{formatMoney(e.trainer_amount)}</span>
+                                            : formatMoney(e.trainer_amount)}
+                                        </td>
                                       </tr>
                                     ))}
                                   </>
@@ -452,7 +478,7 @@ export default function SalaryCalculationsPage() {
                                         {r.hall_name && <span className={styles.grayCell}>{r.hall_name}</span>}
                                       </div>
                                       <div className={styles.cardRight}>
-                                        <span className={styles.cardAmt}>{formatMoney(r.total_trainer)}</span>
+                                        <span className={`${styles.cardAmt} ${r.has_missing_rate ? styles.rateMissingAmt : ''}`}>{formatMoney(r.total_trainer)}</span>
                                         <span className={styles.grayCell}>{r.total_clients} чол.</span>
                                       </div>
                                     </div>
