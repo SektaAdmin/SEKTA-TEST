@@ -339,16 +339,31 @@ export async function removeSeriesClient(
 
 // ── Week generation / template teardown (/schedule/templates) ───
 
+/** Слот шаблону, пропущений generate_week через перетин по залу/тренеру. */
+export interface GeneratedConflict {
+  series_title: string | null
+  ticket_type: string
+  class_date: string
+  time_of_day: string
+  hall_name: string | null
+  conflict_type: 'hall' | 'trainer'
+  conflict_with_title: string
+  conflict_with_starts_at: string
+}
+
 export async function generateWeek(
   supabase: Db,
   monday: string,
   weeks: number = 1
-): Promise<{ classesCreated: number; enrollmentsCreated: number; error: string | null }> {
+): Promise<{ classesCreated: number; enrollmentsCreated: number; conflicts: GeneratedConflict[]; error: string | null }> {
   const { data, error } = await supabase.rpc('generate_week', { p_start_date: monday, p_weeks: weeks })
-  if (error) return { classesCreated: 0, enrollmentsCreated: 0, error: error.message }
+  if (error) return { classesCreated: 0, enrollmentsCreated: 0, conflicts: [], error: error.message }
+  // jsonb-колонка типізується як Json — форму елементів гарантує сама RPC.
+  const conflicts = (data?.[0]?.conflicts ?? []) as unknown as GeneratedConflict[]
   return {
     classesCreated: data?.[0]?.classes_created ?? 0,
     enrollmentsCreated: data?.[0]?.enrollments_created ?? 0,
+    conflicts,
     error: null,
   }
 }

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useSeriesTemplates } from '@/hooks/useSeriesTemplates'
-import { deleteSeries, generateWeek, listTemplateSeriesIds, deleteClassesInRange } from '@/lib/queries/classes'
+import { deleteSeries, generateWeek, listTemplateSeriesIds, deleteClassesInRange, type GeneratedConflict } from '@/lib/queries/classes'
 import { useTrainers } from '@/hooks/useTrainers'
 import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
@@ -132,15 +132,38 @@ export default function TemplatesPage() {
     if (selectedMondays.length === 0) return
     setGenerating(true)
     let totalClasses = 0, totalEnrollments = 0
+    const totalConflicts: GeneratedConflict[] = []
     for (const monday of [...selectedMondays].sort()) {
-      const { classesCreated, enrollmentsCreated, error } = await generateWeek(supabase, monday, 1)
+      const { classesCreated, enrollmentsCreated, conflicts, error } = await generateWeek(supabase, monday, 1)
       if (error) { toast.error(error); setGenerating(false); return }
       totalClasses += classesCreated
       totalEnrollments += enrollmentsCreated
+      totalConflicts.push(...conflicts)
     }
     setGenerating(false)
     setShowGenerate(false)
     toast.success(`Створено ${totalClasses} занять, записано ${totalEnrollments} клієнтів`)
+    if (totalConflicts.length > 0) {
+      const shown = totalConflicts.slice(0, 5)
+      toast.warning(`Пропущено ${totalConflicts.length} занять — час зайнятий`, {
+        duration: 10000,
+        description: (
+          <>
+            {shown.map((c, i) => {
+              const [, m, d] = c.class_date.split('-')
+              const dow = DOW_LABELS_SHORT[new Date(c.class_date).getDay()]
+              const busy = c.conflict_type === 'hall' ? 'зал зайнятий' : 'тренер зайнятий'
+              return (
+                <div key={i}>
+                  {dow} {d}.{m} {c.time_of_day}{c.hall_name ? `, ${c.hall_name}` : ''} — {busy}: «{c.conflict_with_title}»
+                </div>
+              )
+            })}
+            {totalConflicts.length > shown.length && <div>…та ще {totalConflicts.length - shown.length}</div>}
+          </>
+        ),
+      })
+    }
   }
 
   const handleDelete = async () => {

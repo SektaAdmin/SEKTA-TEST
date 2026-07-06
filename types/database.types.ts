@@ -1323,6 +1323,7 @@ export type Database = {
         Args: { p_start_date: string; p_weeks?: number }
         Returns: {
           classes_created: number
+          conflicts: Json
           enrollments_created: number
         }[]
       }
