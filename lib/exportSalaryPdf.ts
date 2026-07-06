@@ -209,6 +209,20 @@ export async function exportSalaryPdf(opts: {
       }
     }
 
+    if (opts.cashBalance.incomes.length > 0) {
+      cashBody.push([
+        { content: 'Надходження', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 3, textColor: colGray } },
+        '', '',
+      ])
+      for (const i of opts.cashBalance.incomes) {
+        cashBody.push([
+          `${formatDate(i.created_at)} ${formatTime(i.created_at)}`,
+          i.description ?? '—',
+          { content: `+${i.amount.toLocaleString('uk-UA')} ₴`, styles: { halign: 'right' as const, textColor: colGreen, fontStyle: 'bold' as const } },
+        ])
+      }
+    }
+
     if (opts.cashBalance.expenses.length > 0) {
       cashBody.push([
         { content: 'Витрати', styles: { fontStyle: 'bold', fillColor: sectionBg, colSpan: 3, textColor: colGray } },

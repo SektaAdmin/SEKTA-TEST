@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase'
 import {
   calcTrainerSalaryDetail,
   getTrainerCashBalance,
-  getTrainerCashBalanceTotal,
   listTrainerPayments,
   insertTrainerPayment,
   updateTrainerPayment,
@@ -15,6 +14,7 @@ import {
   type TrainerCashBalance,
 } from '@/lib/queries/trainer-rates'
 import { listActiveTrainers } from '@/lib/queries/trainers'
+import { getAccountingBalance } from '@/lib/queries/accounting'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
@@ -124,12 +124,13 @@ export default function SalaryCalculationsPage() {
       calcTrainerSalaryDetail(supabase, selectedTrainerId, startISO, endISO),
       getTrainerCashBalance(supabase, selectedTrainerId, dateFrom, dateTo),
       listTrainerPayments(supabase, selectedTrainerId, dateFrom, dateTo),
-      getTrainerCashBalanceTotal(supabase, selectedTrainerId),
+      // «на руках за весь час» — та сама правда, що баланс cash-рахунку на /accounting
+      getAccountingBalance(supabase, { method: 'cash', holder: selectedTrainerId }),
     ])
     setRows(detail.data)
     setCashBalance(cash.data)
     setPayments(pays.data)
-    setCashBalanceTotal(cashTotal.data)
+    setCashBalanceTotal(cashTotal.balance)
     setExpandedDays(new Set())
     setExpandedClasses(new Set())
     setLoading(false)
@@ -538,6 +539,19 @@ export default function SalaryCalculationsPage() {
                             <span>{s.client_name}</span>
                             <span>{s.ticket_name ?? '—'}</span>
                             <span className={styles.cashItemAmt}>+{formatMoney(s.amount)}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {cashBalance.incomes.length > 0 && (
+                      <>
+                        <div className={styles.cashHeader}>Надходження</div>
+                        {cashBalance.incomes.map(i => (
+                          <div key={i.id} className={styles.cashItem}>
+                            <span className={styles.grayCell}>{formatDateShort(i.created_at)} {formatTime(i.created_at)}</span>
+                            <span>{i.description ?? '—'}</span>
+                            <span></span>
+                            <span className={styles.cashItemAmt}>+{formatMoney(i.amount)}</span>
                           </div>
                         ))}
                       </>

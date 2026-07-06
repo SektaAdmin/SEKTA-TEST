@@ -57,6 +57,7 @@ export type TrainerPayment = Omit<QueryData<ReturnType<typeof paymentQuery>>[num
 
 export type TrainerCashBalance = {
   cash_sales: { id: string; created_at: string; client_name: string; ticket_name: string | null; amount: number }[]
+  incomes: { id: string; created_at: string; description: string | null; amount: number }[]
   expenses: { id: string; created_at: string; description: string | null; amount: number }[]
   salary_payments: { id: string; created_at: string; payment_date: string; amount: number }[]
   total: number
@@ -218,9 +219,13 @@ export async function calcTrainerSalaryDetail(
   return { data: Array.from(map.values()), error: null }
 }
 
-// Готівка на руках у тренера за період:
-// cash-продажі − studio_expenses − виплати ЗП готівкою за цей же період
-// Готівка тренера за обраний період (для деталізації в розрахунках)
+// Готівка на руках у тренера за період (деталізація в розрахунках ЗП).
+// Формула — дзеркало RPC accounting_balance (єдина правда для «на руках»):
+//   (cash-продажі: ticket → price_paid, без тікета → greatest(0, amount_given))
+//   + приходи (direction='income') − витрати (direction='expense') − виплати ЗП готівкою.
+// Осі часу: sales/expenses по created_at (Kyiv-доба, як /accounting);
+// виплати — по payment_date СВІДОМО (коли реально виплатили, а не коли внесли запис).
+// Тотал за весь час НЕ рахуємо тут — це getAccountingBalance('cash', trainerId).
 export async function getTrainerCashBalance(
   supabase: Db,
   trainerId: string,
@@ -230,7 +235,7 @@ export async function getTrainerCashBalance(
   const [salesRes, expensesRes, paymentsRes] = await Promise.all([
     supabase
       .from('sales')
-      .select('id, created_at, price_paid, ticket_name, clients(first_name, last_name)')
+      .select('id, created_at, price_paid, amount_given, ticket_id, ticket_name, clients(first_name, last_name)')
       .eq('cash_holder', trainerId)
       .eq('payment_method', 'cash')
       .gte('created_at', kyivDayUtcBounds(dateFrom).from)
@@ -238,9 +243,8 @@ export async function getTrainerCashBalance(
       .order('created_at'),
     supabase
       .from('studio_expenses')
-      .select('id, created_at, amount, description')
+      .select('id, created_at, amount, description, direction')
       .eq('cash_holder', trainerId)
-      .eq('direction', 'expense')
       .gte('created_at', kyivDayUtcBounds(dateFrom).from)
       .lte('created_at', kyivDayUtcBounds(dateTo).to)
       .order('created_at'),
@@ -265,15 +269,17 @@ export async function getTrainerCashBalance(
     created_at: s.created_at,
     client_name: [s.clients?.first_name, s.clients?.last_name].filter(Boolean).join(' ') || '—',
     ticket_name: s.ticket_name ?? null,
-    amount: Number(s.price_paid),
+    amount: s.ticket_id !== null ? Number(s.price_paid) : Math.max(0, Number(s.amount_given)),
   }))
 
-  const expenses = (expensesRes.data ?? []).map(e => ({
+  const mapExpense = (e: { id: string; created_at: string; description: string | null; amount: number }) => ({
     id: e.id,
     created_at: e.created_at,
     description: e.description ?? null,
     amount: Number(e.amount),
-  }))
+  })
+  const incomes = (expensesRes.data ?? []).filter(e => e.direction === 'income').map(mapExpense)
+  const expenses = (expensesRes.data ?? []).filter(e => e.direction === 'expense').map(mapExpense)
 
   const salaryPayments = (paymentsRes.data ?? []).map(p => ({
     id: p.id,
@@ -283,109 +289,22 @@ export async function getTrainerCashBalance(
   }))
 
   const totalSales = cashSales.reduce((s, r) => s + r.amount, 0)
+  const totalIncomes = incomes.reduce((s, r) => s + r.amount, 0)
   const totalExpenses = expenses.reduce((s, r) => s + r.amount, 0)
   const totalSalaryPaid = salaryPayments.reduce((s, r) => s + r.amount, 0)
 
   return {
     data: {
       cash_sales: cashSales,
+      incomes,
       expenses,
       salary_payments: salaryPayments,
-      total: totalSales - totalExpenses - totalSalaryPaid,
+      total: totalSales + totalIncomes - totalExpenses - totalSalaryPaid,
     },
     error,
   }
 }
 
-// Загальний баланс готівки тренера за весь час (без фільтра дат)
-export async function getTrainerCashBalanceTotal(
-  supabase: Db,
-  trainerId: string
-): Promise<{ data: number; error: string | null }> {
-  const [salesRes, expensesRes, paymentsRes] = await Promise.all([
-    supabase
-      .from('sales')
-      .select('price_paid')
-      .eq('cash_holder', trainerId)
-      .eq('payment_method', 'cash'),
-    supabase
-      .from('studio_expenses')
-      .select('amount')
-      .eq('cash_holder', trainerId)
-      .eq('direction', 'expense'),
-    supabase
-      .from('trainer_payments')
-      .select('paid_amount')
-      .eq('cash_holder', trainerId)
-      .eq('payment_method', 'cash'),
-  ])
-
-  const error =
-    salesRes.error?.message ??
-    expensesRes.error?.message ??
-    paymentsRes.error?.message ??
-    null
-
-  const totalSales = (salesRes.data ?? []).reduce((s, r) => s + Number(r.price_paid), 0)
-  const totalExpenses = (expensesRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0)
-  const totalPaid = (paymentsRes.data ?? []).reduce((s, r) => s + Number(r.paid_amount), 0)
-
-  return { data: totalSales - totalExpenses - totalPaid, error }
-}
-
-// Баланси готівки всіх тренерів одним запитом (для /accounting)
-export async function listAllCashBalances(
-  supabase: Db
-): Promise<{ data: { trainer_id: string; trainer_name: string; balance: number }[]; error: string | null }> {
-  const [trainersRes, salesRes, expensesRes, paymentsRes] = await Promise.all([
-    supabase.from('trainers').select('id, name').eq('is_active', true).order('name'),
-    supabase.from('sales').select('cash_holder, price_paid').eq('payment_method', 'cash').not('cash_holder', 'is', null),
-    supabase.from('studio_expenses').select('cash_holder, amount').eq('direction', 'expense').not('cash_holder', 'is', null),
-    supabase.from('trainer_payments').select('cash_holder, paid_amount').eq('payment_method', 'cash').not('cash_holder', 'is', null),
-  ])
-
-  const error =
-    trainersRes.error?.message ??
-    salesRes.error?.message ??
-    expensesRes.error?.message ??
-    paymentsRes.error?.message ??
-    null
-
-  const trainers = trainersRes.data ?? []
-
-  // cash_holder гарантовано non-null — запити фільтрують .not('cash_holder','is',null).
-  const salesByHolder = new Map<string, number>()
-  for (const s of salesRes.data ?? []) {
-    const h = s.cash_holder!
-    salesByHolder.set(h, (salesByHolder.get(h) ?? 0) + Number(s.price_paid))
-  }
-
-  const expensesByHolder = new Map<string, number>()
-  for (const e of expensesRes.data ?? []) {
-    const h = e.cash_holder!
-    expensesByHolder.set(h, (expensesByHolder.get(h) ?? 0) + Number(e.amount))
-  }
-
-  const paidByHolder = new Map<string, number>()
-  for (const p of paymentsRes.data ?? []) {
-    const h = p.cash_holder!
-    paidByHolder.set(h, (paidByHolder.get(h) ?? 0) + Number(p.paid_amount))
-  }
-
-  return {
-    data: trainers
-      .map(t => ({
-        trainer_id: t.id,
-        trainer_name: t.name,
-        balance: (salesByHolder.get(t.id) ?? 0) - (expensesByHolder.get(t.id) ?? 0) - (paidByHolder.get(t.id) ?? 0),
-      }))
-      .filter(t => t.balance !== 0),
-    error,
-  }
-}
-
-// Загальний борг студії перед тренером за весь час:
-// сума всіх нарахувань (з calc_trainer_salary_v2 за весь час) мінус сума всіх виплат
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function listTrainerPayments(
