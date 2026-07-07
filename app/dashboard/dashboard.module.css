@@ -115,6 +115,44 @@
   border-radius: var(--radius-sm);
 }
 
+/* Рядок шапки, коли поруч зі складаною кнопкою є правий слот (CopyButton) —
+   слот лишається видимим і при згорнутому блоці, тож він виведений за межі
+   .collapseHead, а не всередину неї. */
+.collapseHeadRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.collapseHeadRow .collapseHead {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Мобільний layout: правий слот (CopyButton) переносимо під заголовок і
+   розтягуємо на всю ширину — той самий прийом, що й .slotRow/.slotHallBtn
+   нижче (кнопка на всю ширину замість стиснутої поруч з написом). */
+@media (max-width: 640px) {
+  .collapseHeadRow {
+    flex-wrap: wrap;
+  }
+
+  .collapseHeadRight.collapseHeadRight {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Тіло складаного блоку — роздільник + відступ над контентом, коли
+   розкрито (тіло рендериться лише при open, тож під згорнутою шапкою
+   лінії немає). Спільно для .debtTableWrap і списку днів SessionDebtBlock. */
+.collapseBody {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
 .collapseHead:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -287,12 +325,8 @@
    Авто-розкладка (НЕ fixed): кожна колонка по ширині свого вмісту. При
    багатьох типах занять — горизонтальний скрол лише самої таблиці. */
 .debtTableWrap {
+  composes: collapseBody;
   overflow-x: auto;
-  /* Роздільник над таблицею — з'являється лише коли блок розкрито (тіло
-     рендериться при open), тож під згорнутою шапкою лінії немає. */
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border);
 }
 
 .debtTable {
