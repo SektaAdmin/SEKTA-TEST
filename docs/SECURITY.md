@@ -53,9 +53,13 @@
 - **`auth_leaked_password_protection` (WARN)** — HaveIBeenPwned вимкнено (генеровані паролі, не самореєстрація).
 
 ## Відкриті сигнали advisor (НЕ прийнято — розібрати)
-- **`render_enrollment_event_message(…, p_enrollment_id)` — anon може виконати DEFINER-функцію (lint 0028, WARN)**: 5-арг overload має PUBLIC EXECUTE → незалогінений рендерить текст з іменем клієнта/часом заняття по довільних uuid (info-leak). Фікс: REVOKE від PUBLIC/anon/`authenticated`, лишити `postgres` (кличе лише `emit_enrollment_event`); легасі 4-арг overload — DROP.
+
+_Немає відкритих сигналів понад прийняті вище._
 
 > Новий ERROR/WARN, якого тут немає, — потенційна дірка: розбирати, не ігнорувати.
+
+## Закриті (фікс застосовано)
+- **`render_enrollment_event_message` PUBLIC EXECUTE (2026-07-07)** — 5-арг overload мав дефолтний PUBLIC EXECUTE → anon/authenticated могли рендерити текст з іменем клієнта/часом заняття по довільних uuid (info-leak, lint 0028). REVOKE EXECUTE від PUBLIC/anon/authenticated, лишено лише `postgres` (кличе `emit_enrollment_event`). Легасі 4-арг overload (мертвий, не викликався жодною живою функцією) — DROP.
 
 ---
 
