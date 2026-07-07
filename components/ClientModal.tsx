@@ -28,6 +28,37 @@ interface Transaction {
   created_at: string
 }
 
+const SKELETON_TX_ROWS = [0, 1, 2]
+
+// Мірить геометрію реальної .historyTable, щоб перший рендер історії
+// транзакцій не блимав голим текстом «Завантаження...».
+function HistorySkeleton() {
+  return (
+    <table className={styles.historyTable} role="status" aria-label="Завантаження...">
+      <thead>
+        <tr>
+          <th>Дата</th>
+          <th>Тип</th>
+          <th>Сума</th>
+          <th>Баланс</th>
+          <th>Опис</th>
+        </tr>
+      </thead>
+      <tbody>
+        {SKELETON_TX_ROWS.map(i => (
+          <tr key={i}>
+            <td><div className="skeleton-bone" style={{ width: 46, height: 11 }} /></td>
+            <td><div className="skeleton-bone" style={{ width: 60, height: 11 }} /></td>
+            <td><div className="skeleton-bone" style={{ width: 40, height: 14 }} /></td>
+            <td><div className="skeleton-bone" style={{ width: 40, height: 14 }} /></td>
+            <td><div className="skeleton-bone" style={{ width: 90, height: 14 }} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 const clientSchema = z.object({
   first_name: z.string().min(1, VM.required.name),
   last_name: z.string().min(1, VM.required.lastName),
@@ -204,7 +235,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
           {(showHistory || historyLoading) && (
             <div className={styles.historySection}>
               {historyLoading ? (
-                <p className={styles.historyLoading}>Завантаження...</p>
+                <HistorySkeleton />
               ) : transactions.length === 0 ? (
                 <p className={styles.historyEmpty}>{MSG.empty.transactions}</p>
               ) : (

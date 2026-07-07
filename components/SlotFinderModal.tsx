@@ -34,6 +34,39 @@ const STATUS_TITLE: Record<SlotStatus, string> = {
   past: 'Час минув',
 }
 
+const SKELETON_HOURS = [0, 1, 2, 3, 4]
+
+// Мірить геометрію реальної матриці зал×година; заголовки залів відомі одразу
+// (з RefsContext, не залежать від fetchDay), тож рендеримо їх реальними — тільки
+// клітинки-статуси лишаються кістками, щоб перший рендер не блимав текстом.
+function SlotMatrixSkeleton({ activeHalls }: { activeHalls: { id: string; name: string }[] }) {
+  return (
+    <div className={styles.matrixWrap} role="status" aria-label="Завантаження...">
+      <div
+        className={styles.matrix}
+        style={{ gridTemplateColumns: `44px repeat(${activeHalls.length}, minmax(84px, 1fr))` }}
+      >
+        <div className={styles.headCell} />
+        {activeHalls.map(h => (
+          <div key={h.id} className={styles.headCell}>{h.name}</div>
+        ))}
+        {SKELETON_HOURS.map(i => (
+          <div key={i} className={styles.rowContents}>
+            <div className={styles.hourCell}>
+              <div className="skeleton-bone" style={{ width: 34, height: 10 }} />
+            </div>
+            {activeHalls.map(h => (
+              <div key={h.id} className={styles.cell} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="skeleton-bone" style={{ width: '60%', height: 10 }} />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 interface Props {
   onClose: () => void
   onSaved: () => void
@@ -264,9 +297,7 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
           <p className={styles.matrixMessage}>Немає активних залів — додайте зал у довідниках</p>
         </div>
       ) : loadingDay ? (
-        <div className={styles.matrixWrap}>
-          <p className={styles.matrixMessage}>Завантаження розкладу…</p>
-        </div>
+        <SlotMatrixSkeleton activeHalls={activeHalls} />
       ) : dayError ? (
         <div className={styles.matrixWrap}>
           <div className={styles.matrixError}>

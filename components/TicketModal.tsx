@@ -26,11 +26,15 @@ interface Props {
 
 export default function TicketModal({ onClose, onSaved }: Props) {
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
+  const [typesLoading, setTypesLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
 
   useEffect(() => {
-    listActiveTrainingTypes(supabase).then(({ data }) => setTrainingTypes(data))
+    listActiveTrainingTypes(supabase).then(({ data }) => {
+      setTrainingTypes(data)
+      setTypesLoading(false)
+    })
   }, [])
 
   const {
@@ -88,18 +92,22 @@ export default function TicketModal({ onClose, onSaved }: Props) {
       </FormField>
 
       <FormField id="ticket-type" label="Тип" required error={errors.ticket_type}>
-        <select
-          id="ticket-type"
-          {...register('ticket_type', {
-            validate: v => trainingTypes.some(t => t.code === v) || VM.required.selectType,
-          })}
-          disabled={loading}
-        >
-          <option value="">— Оберіть тип —</option>
-          {trainingTypes.map(t => (
-            <option key={t.code} value={t.code}>{t.label}</option>
-          ))}
-        </select>
+        {typesLoading ? (
+          <div className="skeleton-bone" style={{ width: '100%', height: 'var(--control-h)' }} role="status" aria-label="Завантаження..." />
+        ) : (
+          <select
+            id="ticket-type"
+            {...register('ticket_type', {
+              validate: v => trainingTypes.some(t => t.code === v) || VM.required.selectType,
+            })}
+            disabled={loading}
+          >
+            <option value="">— Оберіть тип —</option>
+            {trainingTypes.map(t => (
+              <option key={t.code} value={t.code}>{t.label}</option>
+            ))}
+          </select>
+        )}
       </FormField>
 
       <div className={styles.row}>

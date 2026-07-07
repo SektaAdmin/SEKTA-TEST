@@ -106,9 +106,3 @@
   white-space: nowrap;
 }
 
-.historyLoading {
-  font-size: 14px;
-  color: var(--text-3);
-  text-align: center;
-  padding: 12px 0;
-}

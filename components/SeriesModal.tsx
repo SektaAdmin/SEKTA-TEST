@@ -20,6 +20,24 @@ import {
 import type { ClassSeries, Trainer, Hall, TrainingType, Client } from '@/types'
 import styles from './SeriesModal.module.css'
 
+const SKELETON_CLIENT_ROWS = [0, 1]
+
+// Мірить геометрію .clientRow, щоб перший рендер списку постійників не блимав
+// голим текстом «Завантаження...». .clientRow залитий --bg-3 — той самий колір,
+// що й сама кістка за замовчуванням, тож тут потрібен явний контрастний override.
+function ClientsSkeleton() {
+  return (
+    <div className={styles.clientList} role="status" aria-label="Завантаження...">
+      {SKELETON_CLIENT_ROWS.map(i => (
+        <div key={i} className={styles.clientRow}>
+          <span className={styles.clientNum}>{i + 1}</span>
+          <div className="skeleton-bone" style={{ width: 140, height: 14, flex: 'none', background: 'var(--bg-2)' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const DAY_OPTIONS = [
   { label: 'Понеділок', value: 1 },
   { label: 'Вівторок', value: 2 },
@@ -311,7 +329,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
             </div>
 
             {clientsLoading ? (
-              <span className={styles.clientsLoading}>Завантаження...</span>
+              <ClientsSkeleton />
             ) : clients.length === 0 ? (
               <span className={styles.noClients}>{MSG.empty.seriesClients}</span>
             ) : (

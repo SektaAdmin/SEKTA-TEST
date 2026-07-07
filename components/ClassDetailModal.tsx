@@ -41,6 +41,71 @@ type EnrollmentRow = {
   clients: { first_name: string | null; last_name: string | null } | null
 }
 
+const SKELETON_ENROLLMENT_ROWS = [0, 1, 2]
+
+// Мірить геометрію реального контенту (detailsCard + таблиця записаних),
+// щоб перший рендер не блимав голим текстом «Завантаження...».
+function ClassDetailSkeleton() {
+  return (
+    <div className={styles.content} role="status" aria-label="Завантаження...">
+      <div className={styles.detailsCard}>
+        {/* Картка залита --bg-3 — той самий колір, що й сама кістка (шаблон
+            .skeleton-bone), тож тут потрібен явний контрастний override. */}
+        <div className={`${styles.field} ${styles.fieldHalf}`}>
+          <div className="skeleton-bone" style={{ width: 50, marginBottom: 8, background: 'var(--bg-2)' }} />
+          <div className="skeleton-bone" style={{ width: 120, height: 16, background: 'var(--bg-2)' }} />
+        </div>
+        <div className={`${styles.field} ${styles.fieldHalf}`}>
+          <div className="skeleton-bone" style={{ width: 30, marginBottom: 8, background: 'var(--bg-2)' }} />
+          <div className="skeleton-bone" style={{ width: 90, height: 16, background: 'var(--bg-2)' }} />
+        </div>
+        <div className={`${styles.field} ${styles.fieldThird}`}>
+          <div className="skeleton-bone" style={{ width: 36, marginBottom: 8, background: 'var(--bg-2)' }} />
+          <div className="skeleton-bone" style={{ width: 140, height: 16, background: 'var(--bg-2)' }} />
+        </div>
+        <div className={`${styles.field} ${styles.fieldThird}`}>
+          <div className="skeleton-bone" style={{ width: 30, marginBottom: 8, background: 'var(--bg-2)' }} />
+          <div className="skeleton-bone" style={{ width: 70, height: 16, background: 'var(--bg-2)' }} />
+        </div>
+        <div className={`${styles.field} ${styles.fieldThird} ${styles.fieldPlaces}`}>
+          <div className="skeleton-bone" style={{ width: 42, marginBottom: 8, background: 'var(--bg-2)' }} />
+          <div className="skeleton-bone" style={{ width: 36, height: 16, background: 'var(--bg-2)' }} />
+        </div>
+      </div>
+
+      <div className={styles.enrollmentSection}>
+        <div className={styles.enrollmentHeader}>
+          <div className="skeleton-bone" style={{ width: 150, height: 14 }} />
+        </div>
+        <div className={styles.tableContainer}>
+          <table className={styles.table} aria-hidden="true">
+            <thead>
+              <tr>
+                <th className={styles.thNum}></th>
+                <th>Клієнт</th>
+                <th>Статус</th>
+                <th className={styles.balanceDesktop}>Баланс</th>
+                <th className={styles.thRight}>Дія</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_ENROLLMENT_ROWS.map(i => (
+                <tr key={i}>
+                  <td className={styles.rowNum}></td>
+                  <td><div className="skeleton-bone" style={{ width: 130, height: 14 }} /></td>
+                  <td><div className="skeleton-bone" style={{ width: 80, height: 20, borderRadius: 999 }} /></td>
+                  <td className={styles.balanceDesktop}><div className="skeleton-bone" style={{ width: 24, height: 14 }} /></td>
+                  <td className={styles.actionsCell}><div className="skeleton-bone" style={{ width: 70, height: 32, marginLeft: 'auto' }} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface Props {
   classId: string
   onClose: () => void
@@ -359,9 +424,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
       headerActions={headerActions}
       bodyClassName={styles.body}
     >
-          {loading && (
-            <div className={styles.loadingState}>Завантаження...</div>
-          )}
+          {loading && <ClassDetailSkeleton />}
 
           {!loading && (fetchError || !cls) && (
             <div className={styles.loadingState}>{fetchError ?? 'Заняття не знайдено'}</div>

@@ -58,11 +58,6 @@
   align-items: center;
 }
 
-.clientsLoading {
-  font-size: 14px;
-  color: var(--text-3);
-}
-
 .noClients {
   font-size: 14px;
   color: var(--text-3);

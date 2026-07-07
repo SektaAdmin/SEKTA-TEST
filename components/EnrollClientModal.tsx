@@ -43,6 +43,29 @@ function formatTime(iso: string, durationMin: number) {
   return `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
 }
 
+const SKELETON_CLASS_ROWS = [0, 1, 2]
+
+// Мірить геометрію .item (час+тип+тренер зліва, кнопка справа), щоб перший
+// рендер списку занять на дату не блимав голим текстом «Завантаження...».
+// .item залитий --bg-3 — той самий колір, що й сама кістка за замовчуванням,
+// тож тут потрібен явний контрастний override.
+function ClassesSkeleton() {
+  return (
+    <div className={styles.list} role="status" aria-label="Завантаження...">
+      {SKELETON_CLASS_ROWS.map(i => (
+        <div key={i} className={styles.item}>
+          <div className={styles.itemInfo}>
+            <div className="skeleton-bone" style={{ width: 70, height: 14, background: 'var(--bg-2)' }} />
+            <div className="skeleton-bone" style={{ width: 130, height: 14, background: 'var(--bg-2)' }} />
+            <div className="skeleton-bone" style={{ width: 100, height: 12, background: 'var(--bg-2)' }} />
+          </div>
+          <div className="skeleton-bone" style={{ width: 80, height: 32, flexShrink: 0, background: 'var(--bg-2)' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function EnrollClientModal({ client, typeLabels, onClose, onSaved }: Props) {
   const [date, setDate] = useState(todayLocal())
   const [classes, setClasses] = useState<ClassOption[]>([])
@@ -98,7 +121,7 @@ export default function EnrollClientModal({ client, typeLabels, onClose, onSaved
       </div>
 
       {loadingClasses ? (
-        <div className={styles.empty}>Завантаження...</div>
+        <ClassesSkeleton />
       ) : classes.length === 0 ? (
         <div className={styles.empty}>Занять на цю дату немає</div>
       ) : (
