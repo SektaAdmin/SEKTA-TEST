@@ -14,6 +14,55 @@ import styles from './audit.module.css'
 
 const PAGE_SIZE = 20
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function AuditSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={`data-table-wrap ${styles.tableDesktop}`}>
+        <table className="data-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th>Час</th>
+              <th>Дія</th>
+              <th>Клієнт</th>
+              <th>Заняття</th>
+              <th>Тренер-власник</th>
+              <th>Хто зробив</th>
+              <th>Telegram</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKELETON_ROWS.map(i => (
+              <tr key={i}>
+                <td><div className={`skeleton-bone ${styles.skelTime}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelBadge}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelClient}`} /></td>
+                <td><div className="skeleton-bone" style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`skeleton-bone ${styles.skelTrainer}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelActor}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelDelivered}`} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.cardList} aria-hidden="true">
+        {SKELETON_ROWS.slice(0, 5).map(i => (
+          <div key={i} className={styles.card}>
+            <div className={styles.cardRow}>
+              <div className="skeleton-bone" style={{ width: `${55 - (i % 3) * 8}%` }} />
+              <div className={`skeleton-bone ${styles.skelCardDateTime}`} />
+            </div>
+            <div className={`skeleton-bone ${styles.skelCardMeta}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const EVENT_LABEL: Record<string, string> = {
   enrolled: 'Запис',
   cancelled: 'Скасування',
@@ -184,7 +233,7 @@ export default function AuditPage() {
 
       <div className={`page-body ${styles.content}`}>
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <AuditSkeleton />
         ) : data.length === 0 ? (
           <div className={styles.empty}>Подій не знайдено</div>
         ) : (

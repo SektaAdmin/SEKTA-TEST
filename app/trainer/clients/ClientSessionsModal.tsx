@@ -12,6 +12,25 @@ function clientName(c: TrainerClientRow): string {
   return [c.first_name, c.last_name].filter(Boolean).join(' ') || '—'
 }
 
+const SKELETON_ROWS = [0, 1]
+
+function SessionsSkeleton() {
+  return (
+    <section className={styles.balanceBlock} role="status" aria-label="Завантаження...">
+      {SKELETON_ROWS.map(i => (
+        <div key={i} className={styles.balanceRow}>
+          <div className={`skeleton-bone ${styles.skelBalanceLabel}`} />
+          <div className={`skeleton-bone ${styles.skelBalanceNum}`} />
+        </div>
+      ))}
+      <div className={styles.depositRow}>
+        <div className={`skeleton-bone ${styles.skelBalanceLabel}`} />
+        <div className={`skeleton-bone ${styles.skelDepositVal}`} />
+      </div>
+    </section>
+  )
+}
+
 interface Props {
   client: TrainerClientRow
   onClose: () => void
@@ -32,7 +51,7 @@ export default function ClientSessionsModal({ client, onClose }: Props) {
     <ModalShell title={clientName(client)} onClose={onClose} footer={null}>
       <h2 className={styles.modalSectionLabel}>Залишок занять</h2>
       {loading ? (
-        <div className="loading-dots"><span /><span /><span /></div>
+        <SessionsSkeleton />
       ) : error ? (
         <div className={styles.empty}>Не вдалося завантажити.</div>
       ) : (

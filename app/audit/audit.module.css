@@ -120,6 +120,18 @@
   color: var(--text-3);
 }
 
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelTime    { width: 100px; }
+.skelBadge   { width: 76px; height: 18px; border-radius: var(--radius-full); }
+.skelClient  { width: 90px; }
+.skelClass   { width: 160px; }
+.skelTrainer { width: 84px; }
+.skelActor   { width: 70px; }
+.skelDelivered { width: 24px; }
+
+.skelCardDateTime { width: 110px; flex-shrink: 0; }
+.skelCardMeta { width: 150px; }
+
 /* ── Pagination ──────────────────────────────────────────────── */
 .pagination {
   display: flex;

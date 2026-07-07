@@ -24,6 +24,71 @@ type FeedItem = FeedRow
 
 const PAGE_SIZE = 50
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function AccountingSkeleton({ isMobile }: { isMobile: boolean }) {
+  if (isMobile) {
+    return (
+      <div className={styles.cardList} style={{ display: 'flex', flexDirection: 'column' }} role="status" aria-label="Завантаження...">
+        {SKELETON_ROWS.slice(0, 6).map(i => (
+          <div key={i} className={styles.card}>
+            <div className={styles.cardMain}>
+              <div className={styles.cardBody}>
+                <div className={styles.cardRow1}>
+                  <div className={`skeleton-bone ${styles.skelCardClient}`} style={{ width: `${40 - (i % 3) * 6}%` }} />
+                  <div className={`skeleton-bone ${styles.skelCardAmt}`} />
+                </div>
+                <div className={styles.cardRow2}>
+                  <div className={`skeleton-bone ${styles.skelCardTicket}`} />
+                  <div className={`skeleton-bone ${styles.skelCardMethod}`} />
+                </div>
+                <div className={styles.cardRow3}>
+                  <div className={`skeleton-bone ${styles.skelCardDatetime}`} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className={`data-table-wrap ${styles.tableDesktop}`} role="status" aria-label="Завантаження...">
+      <table className="data-table" aria-hidden="true">
+        <thead>
+          <tr>
+            <th className={styles.thCheck}></th>
+            <th className={styles.thIcon}></th>
+            <th className={styles.thDate}>Дата</th>
+            <th className={styles.thClient}>Клієнт</th>
+            <th className={styles.thTicket}>Абонемент / Коментар</th>
+            <th className={styles.thPrice}>Ціна</th>
+            <th className={styles.thDeposit}>На депозит</th>
+            <th className={styles.thAmt}>Сума</th>
+            <th className={styles.thMethod}>Метод</th>
+          </tr>
+        </thead>
+        <tbody>
+          {SKELETON_ROWS.map(i => (
+            <tr key={i}>
+              <td></td>
+              <td></td>
+              <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+              <td><div className="skeleton-bone" style={{ width: `${60 - (i % 3) * 8}%` }} /></td>
+              <td><div className={`skeleton-bone ${styles.skelTicket}`} /></td>
+              <td><div className={`skeleton-bone ${styles.skelPrice}`} /></td>
+              <td><div className={`skeleton-bone ${styles.skelPrice}`} /></td>
+              <td><div className={`skeleton-bone ${styles.skelPrice}`} /></td>
+              <td><div className={`skeleton-bone ${styles.skelMethod}`} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function clientName(s: SaleRow): string {
   if (!s.clients) return '—'
   return [s.clients.first_name, s.clients.last_name].filter(Boolean).join(' ') || '—'
@@ -197,7 +262,7 @@ export default function AccountingPage() {
 
           <div className={styles.content}>
             {loading ? (
-              <div className="loading-dots"><span /><span /><span /></div>
+              <AccountingSkeleton isMobile={isMobile} />
             ) : error ? (
               <div className={styles.empty}>Помилка: {error}</div>
             ) : feed.length === 0 ? (

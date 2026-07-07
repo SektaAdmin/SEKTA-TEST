@@ -1362,6 +1362,18 @@
   border-radius: var(--radius-sm);
 }
 
+/* ── Skeleton-лоадер (тижнева стрічка + слоти дня) ──────────────── */
+.skelDayNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.skelSlotTime { width: 40px; flex-shrink: 0; }
+.skelSlotName { width: 55%; }
+.skelSlotMeta { width: 40%; }
+.skelSlotTag  { width: 60px; height: 20px; border-radius: var(--radius-full); flex-shrink: 0; }
+
 /* ── Мобільна адаптація (єдиний @media-блок у кінці файлу — інакше
    десктопні стилі перебивають, патерн проекту) ─────────────────── */
 @media (max-width: 640px) {

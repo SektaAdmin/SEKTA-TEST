@@ -131,6 +131,15 @@
 .cashAmt { color: var(--success); }
 .amtNegative { color: var(--danger); }
 
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelDate  { width: 74px; }
+.skelNum   { width: 50px; margin-left: auto; }
+.skelAmt   { width: 64px; margin-left: auto; }
+.skelBadge { width: 64px; height: 18px; border-radius: var(--radius-full); }
+
+.skelSummaryLabel { width: 130px; }
+.skelSummaryVal   { width: 70px; }
+
 .cashToggle {
   display: flex;
   align-items: center;

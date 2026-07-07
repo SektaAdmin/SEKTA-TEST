@@ -54,6 +54,15 @@
 
 .errorMsg { color: var(--danger); font-size: 13px; }
 
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelType    { width: 60px; height: 18px; border-radius: var(--radius-full); }
+.skelHall    { width: 70px; }
+.skelTrainer { width: 90px; }
+.skelRate    { width: 56px; margin-left: auto; }
+.skelDate    { width: 74px; }
+
+.skelCardRate { width: 90px; }
+
 /* Mobile */
 @media (max-width: 640px) {
   .tableDesktop { display: none; }

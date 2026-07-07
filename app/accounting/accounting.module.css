@@ -266,6 +266,19 @@
 
 .zero { color: var(--text-3) !important; }
 
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelDate    { width: 74px; }
+.skelClient  { width: 110px; }
+.skelTicket  { width: 130px; }
+.skelPrice   { width: 60px; margin-left: auto; }
+.skelMethod  { width: 64px; height: 18px; border-radius: var(--radius-full); }
+
+.skelCardClient { width: 40%; }
+.skelCardAmt    { width: 70px; flex-shrink: 0; }
+.skelCardTicket { width: 55%; }
+.skelCardMethod { width: 60px; height: 18px; border-radius: var(--radius-full); flex-shrink: 0; }
+.skelCardDatetime { width: 100px; }
+
 
 /* ── Desktop/mobile toggle ───────────────────────────────────── */
 .cardList { display: none; }

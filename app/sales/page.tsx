@@ -40,6 +40,64 @@ function MaybePortal({ active, children }: { active: boolean; children: React.Re
   return <>{children}</>
 }
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function FeedSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={`data-table-wrap ${styles.tableDesktop}`}>
+        <table className="data-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Клієнт</th>
+              <th>Операція</th>
+              <th>Занять</th>
+              <th>Ціна</th>
+              <th>Оплачено</th>
+              <th>Депозит</th>
+              <th>Оплата</th>
+              <th>Тренер</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKELETON_ROWS.map(i => (
+              <tr key={i}>
+                <td><div className={`${styles.skeletonBone} ${styles.skelDate}`} /></td>
+                <td><div className={styles.skeletonBone} style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelOp}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelPay}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelTrainer}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelActions}`} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.cardList} aria-hidden="true">
+        {SKELETON_ROWS.slice(0, 5).map(i => (
+          <div key={i} className={styles.card}>
+            <div className={styles.cardRow}>
+              <div className={styles.skeletonBone} style={{ width: `${60 - (i % 3) * 8}%` }} />
+              <div className={`${styles.skeletonBone} ${styles.skelCardDate}`} />
+            </div>
+            <div className={`${styles.skeletonBone} ${styles.skelCardOp}`} />
+            <div className={styles.cardMeta}>
+              <div className={`${styles.skeletonBone} ${styles.skelCardMeta}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function SalesPage() {
   const { tickets, trainers } = useRefs()
   const activeTrainers = trainers.filter(t => t.is_active)
@@ -349,7 +407,7 @@ export default function SalesPage() {
 
         <div className={`page-body ${styles.content}`}>
           {loading ? (
-            <div className="loading-dots"><span /><span /><span /></div>
+            <FeedSkeleton />
           ) : fetchError ? (
             <div className={styles.empty}>
               <p>{MSG.error.feedLoad}</p>

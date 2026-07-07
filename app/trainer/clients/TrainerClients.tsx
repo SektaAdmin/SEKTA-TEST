@@ -17,6 +17,21 @@ function clientName(c: TrainerClientRow): string {
   return [c.first_name, c.last_name].filter(Boolean).join(' ') || '—'
 }
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function TrainerClientsSkeleton() {
+  return (
+    <div className={styles.list} role="status" aria-label="Завантаження...">
+      {SKELETON_ROWS.map(i => (
+        <div key={i} className={styles.card}>
+          <div className="skeleton-bone" style={{ width: `${50 - (i % 3) * 8}%` }} />
+          <div className={`skeleton-bone ${styles.skelCardBalance}`} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function TrainerClients() {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
@@ -93,7 +108,7 @@ export default function TrainerClients() {
 
       <div className={styles.scroll}>
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <TrainerClientsSkeleton />
         ) : error ? (
           <div className={styles.empty}>Помилка завантаження: {error}</div>
         ) : clients.length === 0 ? (

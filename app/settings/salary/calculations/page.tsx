@@ -45,6 +45,86 @@ function pluralClasses(n: number): string {
   return 'занять'
 }
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4]
+
+function CalculationsSkeleton() {
+  return (
+    <div className={styles.content} role="status" aria-label="Завантаження...">
+      <section className={styles.section}>
+        <h2 className="section-title">Заняття</h2>
+        <div className={`data-table-wrap ${styles.tableDesktop}`}>
+          <table className="data-table" aria-hidden="true">
+            <thead>
+              <tr>
+                <th style={{ width: 24 }}></th>
+                <th>Дата</th>
+                <th style={{ width: 120 }}>Статус</th>
+                <th className={styles.numCol}>Нараховано</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_ROWS.map(i => (
+                <tr key={i}>
+                  <td></td>
+                  <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                  <td></td>
+                  <td><div className={`skeleton-bone ${styles.skelAmt}`} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2 className="section-title">Підсумок</h2>
+        <div className={styles.summary}>
+          {SKELETON_ROWS.slice(0, 3).map(i => (
+            <div key={i} className={styles.summaryRow}>
+              <div className={`skeleton-bone ${styles.skelSummaryLabel}`} />
+              <div className={`skeleton-bone ${styles.skelSummaryVal}`} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2 className="section-title">Виплати</h2>
+        <div className={`data-table-wrap ${styles.tableDesktop}`}>
+          <table className="data-table" aria-hidden="true">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Тип</th>
+                <th>Метод</th>
+                <th>Період</th>
+                <th className={styles.numCol}>Нараховано</th>
+                <th className={styles.numCol}>Виплачено</th>
+                <th>Примітка</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_ROWS.slice(0, 3).map(i => (
+                <tr key={i}>
+                  <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                  <td><div className={`skeleton-bone ${styles.skelBadge}`} /></td>
+                  <td><div className={`skeleton-bone ${styles.skelBadge}`} /></td>
+                  <td><div className="skeleton-bone" style={{ width: 130 }} /></td>
+                  <td><div className={`skeleton-bone ${styles.skelNum}`} /></td>
+                  <td><div className={`skeleton-bone ${styles.skelAmt}`} /></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function getMonthRange() {
   const d = new Date()
   const start = toYMD(new Date(d.getFullYear(), d.getMonth(), 1))
@@ -326,7 +406,7 @@ export default function SalaryCalculationsPage() {
 
       <div className="page-body">
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <CalculationsSkeleton />
         ) : (
           <div className={styles.content}>
             <section className={styles.section}>

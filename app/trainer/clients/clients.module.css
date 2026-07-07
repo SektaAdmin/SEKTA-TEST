@@ -143,6 +143,8 @@
   white-space: nowrap;
 }
 
+.skelCardBalance { width: 60px; flex-shrink: 0; }
+
 /* ── Empty / pagination ──────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
@@ -252,6 +254,11 @@
   font-size: 14px;
   color: var(--text-2);
 }
+
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelBalanceLabel { width: 100px; }
+.skelBalanceNum   { width: 44px; height: 26px; }
+.skelDepositVal   { width: 70px; }
 
 .depositRow {
   display: flex;

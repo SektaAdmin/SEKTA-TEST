@@ -33,6 +33,56 @@ function ToggleBtns({ id, active, toggling, onToggle }: {
   )
 }
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5]
+
+/** Скелетон під геометрію конкретних `columns` — кількість колонок і те,
+    чи є картка з редагуванням, відомі заздалегідь (не залежать від даних). */
+function RefEntitySkeleton({ columnCount, editable }: { columnCount: number; editable?: boolean }) {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={styles.tableDesktop}>
+        <div className="data-table-wrap">
+          <table className="data-table" aria-hidden="true">
+            <thead>
+              <tr>
+                {Array.from({ length: columnCount }).map((_, i) => <th key={i}></th>)}
+                <th></th>
+                {editable && <th></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_ROWS.map(i => (
+                <tr key={i}>
+                  {Array.from({ length: columnCount }).map((_, ci) => (
+                    <td key={ci}>
+                      <div className={`skeleton-bone ${ci === 0 ? styles.skelName : ''}`} style={ci === 0 ? { width: `${70 - (i % 3) * 8}%` } : { width: 70 }} />
+                    </td>
+                  ))}
+                  <td><div className={`skeleton-bone ${styles.skelToggle}`} /></td>
+                  {editable && <td></td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className={styles.cardList}>
+        {SKELETON_ROWS.slice(0, 4).map(i => (
+          <div key={i} className={styles.settingCard}>
+            <div className={styles.cardRow}>
+              <div className="skeleton-bone" style={{ width: `${45 - (i % 3) * 6}%` }} />
+              <div className={`skeleton-bone ${styles.skelToggle}`} />
+            </div>
+            <div className={styles.cardMeta}>
+              <div className={`skeleton-bone ${styles.skelCardMeta}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ArchiveSection({ label, count, open, onToggle, children }: {
   label: string; count: number; open: boolean; onToggle: () => void; children: ReactNode
 }) {
@@ -188,7 +238,7 @@ export function RefEntityPage<T extends { id: string; is_active?: boolean }>({
 
       <div className={`page-body ${styles.tabSection}`}>
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <RefEntitySkeleton columnCount={columns.length} editable={editable} />
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (

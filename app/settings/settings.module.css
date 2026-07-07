@@ -34,6 +34,12 @@
   flex-shrink: 0;
 }
 
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelName    { width: 120px; }
+.skelToggle  { width: 76px; height: 22px; }
+.skelCardName { width: 40%; }
+.skelCardMeta { width: 60px; height: 18px; border-radius: var(--radius-full); }
+
 /* ── Settings tab nav ────────────────────────────────────────── */
 .tabNav { display: none; }
 

@@ -18,6 +18,57 @@ const SETTINGS_TABS = [
   { href: '/settings/training-types', label: 'Типи' },
 ]
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5]
+
+function TrainingTypesSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={styles.tableDesktop}>
+        <div className="data-table-wrap">
+          <table className="data-table" aria-hidden="true">
+            <thead>
+              <tr>
+                <th style={{ width: 32 }}></th>
+                <th>Назва</th>
+                <th>Коротка</th>
+                <th>Код</th>
+                <th>Статус</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_ROWS.map(i => (
+                <tr key={i}>
+                  <td className={dndStyles.handle}>⠿</td>
+                  <td><div className={`skeleton-bone ${styles.skelName}`} style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
+                  <td><div className="skeleton-bone" style={{ width: 60 }} /></td>
+                  <td><div className="skeleton-bone" style={{ width: 50 }} /></td>
+                  <td><div className={`skeleton-bone ${styles.skelToggle}`} /></td>
+                  <td></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className={styles.cardList}>
+        {SKELETON_ROWS.slice(0, 4).map(i => (
+          <div key={i} className={styles.settingCard}>
+            <div className={styles.cardRow}>
+              <div className="skeleton-bone" style={{ width: `${45 - (i % 3) * 6}%` }} />
+              <div className={`skeleton-bone ${styles.skelToggle}`} />
+            </div>
+            <div className={styles.cardMeta}>
+              <div className={`skeleton-bone ${styles.skelCardMeta}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function TrainingTypesPage() {
   const pathname = usePathname()
   const { data, loading, fetchError, toggling, toggle, refetch } = useRefEntity<TrainingType>(
@@ -91,7 +142,7 @@ export default function TrainingTypesPage() {
 
       <div className={`page-body ${styles.tabSection}`}>
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <TrainingTypesSkeleton />
         ) : fetchError ? (
           <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
         ) : active.length === 0 ? (

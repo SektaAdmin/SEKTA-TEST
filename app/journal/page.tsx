@@ -19,6 +19,57 @@ import jStyles from './journal.module.css'
 
 const PAGE_SIZE = 20
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function JournalSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={`data-table-wrap ${jStyles.tableDesktop}`}>
+        <table className="data-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Час</th>
+              <th>Тип</th>
+              <th>Назва</th>
+              <th>Тренер</th>
+              <th>Зал</th>
+              <th>Записів</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKELETON_ROWS.map(i => (
+              <tr key={i}>
+                <td><div className={`skeleton-bone ${jStyles.skelDate}`} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelTime}`} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelType}`} /></td>
+                <td><div className="skeleton-bone" style={{ width: `${60 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelTrainer}`} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelHall}`} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelCount}`} /></td>
+                <td><div className={`skeleton-bone ${jStyles.skelStatus}`} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={jStyles.cardList} aria-hidden="true">
+        {SKELETON_ROWS.slice(0, 5).map(i => (
+          <div key={i} className={jStyles.card}>
+            <div className={jStyles.cardRow}>
+              <div className="skeleton-bone" style={{ width: `${50 - (i % 3) * 8}%` }} />
+              <div className={`skeleton-bone ${jStyles.skelCardDateTime}`} />
+            </div>
+            <div className={`skeleton-bone ${jStyles.skelCardMeta}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function JournalPage() {
   const { trainers, halls, trainingTypes } = useRefs()
 
@@ -126,7 +177,7 @@ export default function JournalPage() {
 
       <div className={`page-body ${jStyles.content}`}>
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <JournalSkeleton />
         ) : data.length === 0 ? (
           <div className={jStyles.empty}>{MSG.empty.journalEmpty}</div>
         ) : (

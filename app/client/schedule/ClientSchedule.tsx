@@ -26,6 +26,40 @@ const ENROLL_ERROR_LABEL: Record<string, string> = {
   'Заняття скасовано': 'Заняття скасовано',
 }
 
+const SKELETON_DAYS = [0, 1, 2, 3, 4, 5, 6]
+const SKELETON_SLOTS = [0, 1, 2, 3]
+
+function BookScheduleSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={styles.bookStripWrap}>
+        <div className={styles.bookDaysMonth}>&nbsp;</div>
+        <div className={styles.bookDays}>
+          {SKELETON_DAYS.map(i => (
+            <div key={i} className={styles.bookDay}>
+              <span className={styles.bookDayDow}>&nbsp;</span>
+              <span className={`skeleton-bone ${styles.skelDayNum}`} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.bookSlots}>
+        {SKELETON_SLOTS.map(i => (
+          <div key={i} className={styles.bookSlot}>
+            <span className={`skeleton-bone ${styles.skelSlotTime}`} />
+            <span className={styles.bookSlotInfo}>
+              <span className={`skeleton-bone ${styles.skelSlotName}`} style={{ width: `${55 - (i % 3) * 8}%` }} />
+              <span className={`skeleton-bone ${styles.skelSlotMeta}`} />
+            </span>
+            <span className={`skeleton-bone ${styles.skelSlotTag}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function dayKey(startISO: string): string {
   const k = kyivParts(new Date(startISO))
   return `${k.year}-${k.month}-${k.day}`
@@ -311,7 +345,7 @@ export default function ClientSchedule({
     )
   }
   if (loading && classes.length === 0) {
-    return wrap(<div className="loading-dots"><span /><span /><span /></div>)
+    return wrap(<BookScheduleSkeleton />)
   }
   if (daysWithClasses.size === 0) {
     return wrap(<p className={styles.empty}>{MSG.empty.bookableClasses}.</p>)

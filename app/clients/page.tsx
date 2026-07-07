@@ -18,6 +18,51 @@ import styles from './clients.module.css'
 
 const PAGE_SIZES = [20, 50, 100] as const
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function ClientsSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={`data-table-wrap ${styles.tableDesktop}`}>
+        <table className="data-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th>Ім&apos;я</th>
+              <th>Телефон</th>
+              <th>Instagram</th>
+              <th>Telegram</th>
+              <th>Депозит</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKELETON_ROWS.map(i => (
+              <tr key={i}>
+                <td><div className={styles.skeletonBone} style={{ width: `${68 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelPhone}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelHandle}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelHandle}`} /></td>
+                <td><div className={`${styles.skeletonBone} ${styles.skelBalance}`} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.cardList} aria-hidden="true">
+        {SKELETON_ROWS.slice(0, 5).map(i => (
+          <div key={i} className={styles.clientCard}>
+            <div className={styles.cardRow1}>
+              <div className={styles.skeletonBone} style={{ width: `${55 - (i % 3) * 8}%` }} />
+              <div className={`${styles.skeletonBone} ${styles.skelCardBalance}`} />
+            </div>
+            <div className={`${styles.skeletonBone} ${styles.skelCardContacts}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ClientsPage() {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
@@ -103,9 +148,7 @@ export default function ClientsPage() {
 
         <div className={`page-body ${styles.content}`}>
           {loading ? (
-            <div className="loading-dots">
-              <span /><span /><span />
-            </div>
+            <ClientsSkeleton />
           ) : fetchError ? (
             <div className={styles.empty}>Помилка завантаження: {fetchError}</div>
           ) : clients.length === 0 ? (

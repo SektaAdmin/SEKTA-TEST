@@ -28,6 +28,60 @@ const SALARY_TABS = [
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
 
+const SKELETON_ROWS = [0, 1, 2, 3, 4]
+
+function RatesSkeleton() {
+  return (
+    <div role="status" aria-label="Завантаження...">
+      <div className={`data-table-wrap ${styles.tableDesktop}`}>
+        <table className="data-table" aria-hidden="true">
+          <thead>
+            <tr>
+              <th>Тип заняття</th>
+              <th>Зал</th>
+              <th>Тренер</th>
+              <th className={styles.numCol}>Ставка тренера</th>
+              <th className={styles.numCol}>Ставка студії</th>
+              <th>Діє з</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKELETON_ROWS.map(i => (
+              <tr key={i}>
+                <td><div className={`skeleton-bone ${styles.skelType}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelHall}`} /></td>
+                <td><div className="skeleton-bone" style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`skeleton-bone ${styles.skelRate}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelRate}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                <td></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.cardList} aria-hidden="true">
+        {SKELETON_ROWS.slice(0, 3).map(i => (
+          <div key={i} className={styles.card}>
+            <div className={styles.cardRow}>
+              <div className={`skeleton-bone ${styles.skelType}`} />
+            </div>
+            <div className={styles.cardMeta}>
+              <div className="skeleton-bone" style={{ width: `${60 - (i % 3) * 8}%` }} />
+            </div>
+            <div className={styles.cardRates}>
+              <div className={`skeleton-bone ${styles.skelCardRate}`} />
+              <div className={`skeleton-bone ${styles.skelCardRate}`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 type ModalState =
   | { open: false }
   | { open: true; editRate: TrainerRate | null }
@@ -179,7 +233,7 @@ export default function SalaryRatesPage() {
 
       <div className="page-body">
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <RatesSkeleton />
         ) : (
           <div className={styles.content}>
             {activeRates.length === 0 ? (

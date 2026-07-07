@@ -174,11 +174,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: var(--radius-xs); }
 
-@keyframes dotPulse {
-  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-  40%           { opacity: 1;   transform: scale(1); }
-}
-
 @keyframes overlayIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -307,26 +302,30 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .btn-sm { height: auto; padding: var(--btn-sm-py) var(--btn-sm-px); font-size: var(--btn-sm-font); }
 
-/* Dot-pulse loading spinner — replaces .loading in 3 page modules */
-.loading-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 40px 0;
+/* Skeleton shimmer bone — спільний примітив для сторінкових скелетонів
+   завантаження. Кожна сторінка задає власні розміри/розкладку "кісток"
+   під геометрію свого реального контенту. */
+.skeleton-bone {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  position: relative;
+  overflow: hidden;
 }
-.loading-dots span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-3);
-  animation: dotPulse 1.2s ease-in-out infinite;
+.skeleton-bone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
+  animation: skeletonShimmer 1.3s ease-in-out infinite;
 }
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-dots span { animation: none; opacity: 0.4; }
+  .skeleton-bone::after { animation: none; }
 }
 
 /* Standard data table — replaces .tableWrap/.table in 5 page modules */

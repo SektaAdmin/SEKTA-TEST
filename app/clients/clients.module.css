@@ -155,6 +155,41 @@
   gap: 12px;
 }
 
+/* ── Skeleton-лоадер (спільний shimmer-патерн, як у /dashboard, /sales) ──
+   Каркас повторює геометрію реальних рядків (таблиця desktop + картки
+   mobile), щоб не було стрибка розмірів після завантаження. */
+.skeletonBone {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonBone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
+  animation: skeletonShimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBone::after { animation: none; }
+}
+
+.skelPhone   { width: 100px; font-family: var(--font-mono); }
+.skelHandle  { width: 90px; }
+.skelBalance { width: 64px; }
+
+.skelCardBalance { width: 64px; flex-shrink: 0; }
+.skelCardContacts { width: 140px; margin-top: 2px; }
+
 .empty2 { color: var(--text-3); }
 
 .clickableRow { cursor: pointer; }

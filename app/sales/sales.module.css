@@ -158,6 +158,45 @@
 .btnEdit:hover    { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
 .btnDel:hover     { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
 
+/* ── Skeleton-лоадер (спільний shimmer-патерн, як у /dashboard) ──
+   Каркас повторює геометрію реальних рядків (таблиця desktop + картки
+   mobile), щоб не було стрибка розмірів після завантаження. */
+.skeletonBone {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonBone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
+  animation: skeletonShimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBone::after { animation: none; }
+}
+
+.skelDate     { width: 78px; }
+.skelOp       { width: 110px; }
+.skelNarrow   { width: 46px; }
+.skelPay      { width: 64px; height: 18px; border-radius: var(--radius-full); }
+.skelTrainer  { width: 84px; }
+.skelActions  { width: 120px; height: 22px; }
+
+.skelCardDate { width: 68px; flex-shrink: 0; }
+.skelCardOp   { width: 55%; margin-top: 2px; }
+.skelCardMeta { width: 90px; height: 18px; border-radius: var(--radius-full); margin-top: 4px; }
+
 /* ── Confirm dialog ──────────────────────────────────────────────
    Модалка-підтвердження на токенах Сесії 3: світлий фрост-бекдроп
    (--modal-backdrop) + --shadow-modal (перший шар = 1px ring, тож
