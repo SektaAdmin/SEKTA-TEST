@@ -21,3 +21,10 @@ Next.js 14.2.3 (App Router) · React 18 · TypeScript (strict) · Supabase (Post
 - Ролі / RLS / auth / доступи → **`docs/SECURITY.md`**
 
 **ЗАБОРОНЕНО** без прямого наказу: читати логи та будь-які файли з **`docs/archive/`**.
+
+## Субагенти (`.claude/agents/`, запуск вручну на запит)
+
+- **docs-sync** — актуалізація+ущільнення docs/CLAUDE.md за реальним кодом/прод-БД (мозок — `scripts/sync-docs.prompt.md`, спільний з `npm run sync:docs`).
+- **db-guard** — аудит diff на інваріанти БД + пастки SQL-міграцій (read-only).
+- **ui-reviewer** — Geist-консистентність змінених компонентів (read-only).
+- **security-auditor** — RLS/гранти/advisors + дрейф prod↔SECURITY.md (read-only).
