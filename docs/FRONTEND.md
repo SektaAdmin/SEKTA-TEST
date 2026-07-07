@@ -1,6 +1,6 @@
 # Frontend
 
-Інваріанти й карта коду → [../CLAUDE.md](../CLAUDE.md). Тут — верстка, компоненти, mobile.
+Інваріанти → [../CLAUDE.md](../CLAUDE.md), карта коду → [ARCHITECTURE.md](ARCHITECTURE.md). Тут — верстка, компоненти, mobile.
 
 ## Структура
 

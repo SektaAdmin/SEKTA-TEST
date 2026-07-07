@@ -1,6 +1,6 @@
 # ARCHITECTURE — навігаційний указівник
 
-Канон архітектури — кореневий `CLAUDE.md` (стек, карта коду, інваріанти, scaffold). Тут — вхідні точки. Зміна паттерну/осі → оновлюй `CLAUDE.md` у тому ж коміті (див. [CONTRIBUTING.md](CONTRIBUTING.md)).
+Кореневий `CLAUDE.md` — тонкий диспетчер (стек, критичні інваріанти, куди дивитись). Карта коду — тут (§Карта коду); scaffold → [FRONTEND.md](FRONTEND.md) §Scaffold + [templates/](templates/). Зміна паттерну/осі → оновлюй цей файл у тому ж коміті (див. [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Стек
 Next.js 14.2.3 App Router · React 18 · TS strict · Supabase PostgreSQL+Auth(JWT) · Tailwind 4+shadcn (CSS Modules співіснують) · react-hook-form+zod · sonner · date-fns. UI **тільки українською**.
@@ -22,21 +22,21 @@ Next.js 14.2.3 App Router · React 18 · TS strict · Supabase PostgreSQL+Auth(J
 - **Усі запити (читання+мутації)** → `lib/queries/*.ts`. Компоненти/хуки/сторінки НЕ пишуть `.from()`/`.rpc()`. Інваріант: `grep -rn "\.from(\|\.rpc(" app components hooks contexts | grep -v "lib/queries\|app/api\|Array.from"` = порожньо.
   - Кожна query-функція: 1-й арг `supabase: Db` (`Db=SupabaseClient<Database>` у `lib/queries/_db.ts`; там же `Row/Insert/Update<'table'>`). **НЕ** голий `SupabaseClient` (=`<any>`, стирає типи). Повертає `{…, error: string|null}`.
   - Компонент тримає лише UI-оркестрацію (toast/setError/формат).
-  - Файли: `accounting.ts` feed звірки; `classes.ts` conflict-check/week-gen/series CRUD/class insert-update-delete/`listPastClasses`; `clients.ts` combobox+`getClientBalance`; `dashboard.ts` cash за день.
+  - Файли (вибірково): `accounting.ts` feed звірки (`accounting_feed_page`); `sales.ts` feed /sales (`listSalesFeedPage`→RPC `sales_feed_page`) + CRUD продажів; `classes.ts` conflict-check/week-gen/series CRUD/class insert-update-delete/`listPastClasses`; `clients.ts` combobox+`getClientBalance`; `dashboard.ts` cash за день; `enrollment-events.ts` /audit.
   - Кабінети: `client-cabinet.ts` (RPC `clientEnroll`/`clientCancel`), `client-cabinet-data.ts` (`getMyClient`/`getMyContacts`/`listMySessionBalances`/`listMyUpcomingEnrollments`/`listMyPastEnrollments`/`listMyRunningBalances`/`listBookableClasses`/`getClassAvailability`/`listMyPurchases`/`getMyEnrollmentDetail`/`getBaseTicketPrice`), `trainer-cabinet.ts` (`getMyTrainer`/`listMyUpcomingClasses`).
   - Статика студії (назва/адреса/Telegram/Instagram/Maps+координати) → `lib/studio.ts` (`STUDIO`).
   - Онбординг логіну: `client-login.ts` (`createClientLogin`), `trainer-login.ts` (`createTrainerLogin`) — `fetch` до Route Handler, не RPC.
 - **RPC-розпаковка** → `callRpc()` у `lib/rpc.ts`. Усі success/error_message-RPC через нього (НЕ `data?.[0]?.success` руками). Data-RPC (calc_trainer_salary*, check_*) — без нього.
 
 ### ⚠️ Route Handlers зі service-role — лише `app/api/**` (єдиний виняток з «усе в lib/queries»)
-Створення `auth.users` потребує `SUPABASE_SERVICE_ROLE_KEY` (`createClient<Database>(url, serviceKey)` + `auth.admin.createUser`) — не світити в браузер. Два:
+Створення `auth.users` потребує `SUPABASE_SERVICE_ROLE_KEY` (`createClient<Database>(url, serviceKey)` + `auth.admin.createUser`) — не світити в браузер. П'ять роутів (гейти → [SECURITY.md](SECURITY.md) §Route Handlers): `admin/create-client` (дедуп+INSERT клієнта від тренера), `telegram/webhook`+`telegram/disconnect` (привʼязка/відписка Telegram тренера) і два логін-онбординги:
 - `app/api/admin/create-client-login/route.ts` — гейт `isStaff` через `getRole()`, телефон з `client_contacts`, `normalize_phone_ua()`, перевірка `clients.user_id IS NULL` (UNIQUE `clients_user_id_key`) + номер вільний, створює auth-юзера `role='client'`, привʼязує `clients.user_id`. Identifier = телефон E.164 `+380…`.
 - `app/api/admin/create-trainer-login/route.ts` — те саме, `role='trainer'`, таблиця `trainers` (контакти `phone`/`email` у ній), ідентифікатор телефон→інакше email. UNIQUE `trainers_user_id_key`/`_phone_key`/`_email_key`. Frontend `createTrainerLogin()`, кнопка «Створити кабінет» у `TrainerModal` (edit).
 - Логін+пароль (адмін шле в директ), далі OTP по SMS. middleware відсікає не-staff на `/api/**`.
 - **Скидання пароля = той самий endpoint.** Якщо `user_id` заповнений → генерує новий пароль (`auth.admin.updateUserById`), повертає `{login, password, reset:true}` (старий пароль не показати — Supabase хешує). Кнопка «Скинути пароль» у картці клієнта (`resetMode`) і `TrainerModal`. `create*Login()` повертає прапорець `reset`.
 
 ### ⚠️ Типи запитів — виводити зі схеми
-- Row-типи через `QueryData<typeof query>`, НЕ руками. Патерн: `const X_SELECT='…' as const` → `function xQuery(s:Db){return s.from('t').select(X_SELECT)}` → `export type XRow = QueryData<ReturnType<typeof xQuery>>[number]`. `as unknown as RowType` у queries = **заборонено** (було 31, тепер 0).
+- Row-типи через `QueryData<typeof query>`, НЕ руками. Патерн: `const X_SELECT='…' as const` → `function xQuery(s:Db){return s.from('t').select(X_SELECT)}` → `export type XRow = QueryData<ReturnType<typeof xQuery>>[number]`. `as unknown as RowType` у queries = **заборонено**; 2 задокументовані винятки в `classes.ts` (динамічний select-рядок `listPastClasses` → `ClassWithJoins[]`; jsonb `conflicts` з `generate_week` → `GeneratedConflict[]`).
 - Винятки-приведення лише: (а) union-звуження доменом (`payment_method`/`direction`/`enrollment_status` — БД `text`, форма/CHECK звужує) через `Omit<…,'f'> & {f:Union}` + `as` (НЕ `as unknown as`); (б) `cash_holder!` після `.not('cash_holder','is',null)`.
 - **⚠️ `select` — СТАТИЧНИЙ літерал `as const`, без template `${}`.** QueryData парсить embed лише зі статичного рядка; `trainers!${TRAINER_FK.sales}(name)` → тип `string` → row=`GenericStringError`. Тому FK вшито рядком-літералом + guard `const _x: typeof TRAINER_FK.sales = 'sales_trainer_id_fkey'`.
 - **⚠️ Embed `trainers(...)` на `sales`/`studio_expenses`/`trainer_payments`** — ДВА FK (`trainer_id`+`cash_holder`), голий `trainers(name)` → рантайм «more than one relationship». FK вшито літералом: `sales_trainer_id_fkey`/`studio_expenses_trainer_id_fkey`/`trainer_payments_trainer_id_fkey` (`lib/queries/_fk.ts`, guard). Решта (classes/enrollments/trainer_rates/class_series) — 1 FK, голий `trainers(name)` ок.
