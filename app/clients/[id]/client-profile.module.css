@@ -612,3 +612,23 @@ a.msContact:hover svg { color: var(--accent); }
   .btnRowEdit, .btnRowDel { height: 36px; padding: 0 14px; }
   .backBtn { min-height: 44px; padding: 0 8px; }
 }
+
+/* ── Skeleton-лоадер ──────────────────────────────────────────── */
+.skelTitle       { width: 160px; height: 20px; }
+.skelCardTitle   { width: 110px; height: 16px; }
+.skelContact     { width: 90px; height: 18px; }
+.skelCabinetBtn  { width: 130px; height: 32px; border-radius: var(--radius-sm); }
+.skelMetricLabel { width: 70px; height: 11px; }
+.skelMetricVal   { width: 60px; height: 24px; }
+.skelFieldDt     { width: 60px; }
+.skelFieldDd     { width: 140px; }
+.skelBalance     { width: 110px; height: 22px; }
+.skelSessionType { width: 90px; }
+.skelSessionVal  { width: 24px; height: 18px; }
+.skelIcardLine   { width: 80%; height: 13px; }
+.skelDate        { width: 96px; }
+.skelType        { width: 120px; }
+.skelTrainer     { width: 80px; }
+.skelHall        { width: 60px; }
+.skelAmt         { width: 50px; margin-left: auto; }
+.skelBadgeSm     { width: 64px; height: 18px; border-radius: var(--radius-full); }

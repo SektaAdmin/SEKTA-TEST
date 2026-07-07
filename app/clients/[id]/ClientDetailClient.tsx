@@ -57,6 +57,178 @@ function balToneClass(bal: number): string {
   return bal > 0 ? styles.balPositive : bal < 0 ? styles.balNegative : styles.balZero
 }
 
+const FEED_SKELETON_ROWS = [0, 1, 2, 3, 4]
+
+// Мірить геометрію реального контенту (topGrid/mobileSummary + картки-секції нижче),
+// щоб перший рендер не блимав голим текстом «Завантаження...».
+function ClientDetailSkeleton({ isMobile }: { isMobile: boolean }) {
+  return (
+    <div className="page-layout">
+      <Sidebar />
+      <BottomNav />
+      <main className="page-main">
+        <div className={`page-head ${styles.topbar}`}>
+          <div className={styles.topbarLeft}>
+            <button className={styles.backBtn} disabled>← Клієнти</button>
+            <div className={`skeleton-bone ${styles.skelTitle}`} />
+          </div>
+        </div>
+
+        <div className={`page-body ${styles.content}`} role="status" aria-label="Завантаження...">
+
+          {/* Mobile summary skeleton */}
+          <div className={styles.mobileSummary}>
+            <div className={styles.msContacts}>
+              <div className={`skeleton-bone ${styles.skelContact}`} />
+              <div className={`skeleton-bone ${styles.skelContact}`} style={{ width: 110 }} />
+              <div className={styles.msCabinet}>
+                <div className={`skeleton-bone ${styles.skelCabinetBtn}`} />
+              </div>
+            </div>
+            <div className={styles.msMetrics}>
+              {[0, 1].map(i => (
+                <div key={i} className={styles.msMetric}>
+                  <div className={`skeleton-bone ${styles.skelMetricLabel}`} />
+                  <div className={`skeleton-bone ${styles.skelMetricVal}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top grid skeleton (Контакти / Депозит / Залишок занять) */}
+          <div className={styles.topGrid}>
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div className={`skeleton-bone ${styles.skelCardTitle}`} />
+              </div>
+              <div className={styles.fields}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} className={styles.field}>
+                    <div className={`skeleton-bone ${styles.skelFieldDt}`} />
+                    <div className={`skeleton-bone ${styles.skelFieldDd}`} />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className={styles.card}>
+              <div className={`skeleton-bone ${styles.skelCardTitle}`} style={{ marginBottom: 16 }} />
+              <div className={`skeleton-bone ${styles.skelBalance}`} />
+            </section>
+
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div className={`skeleton-bone ${styles.skelCardTitle}`} />
+              </div>
+              <div className={styles.sessionCards}>
+                {[0, 1].map(i => (
+                  <div key={i} className={styles.sessionCard}>
+                    <div className={`skeleton-bone ${styles.skelSessionType}`} />
+                    <div className={`skeleton-bone ${styles.skelSessionVal}`} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Постійні записи skeleton */}
+          <section className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={`skeleton-bone ${styles.skelCardTitle}`} />
+            </div>
+            <div className={styles.sessionCards}>
+              <div className={styles.sessionCard}>
+                <div className={`skeleton-bone ${styles.skelSessionType}`} style={{ width: '55%' }} />
+              </div>
+            </div>
+          </section>
+
+          {/* Майбутні записи skeleton */}
+          <section className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={`skeleton-bone ${styles.skelCardTitle}`} />
+            </div>
+            {/* CSS-toggle (не isMobile-хук — той резолвиться лише після mount і дав би
+                фреш desktop-таблиці на мобільному кадрі скелетону), як і в реальному контенті. */}
+            <div className={`${styles.tableWrap} ${styles.upcomingTableDesktop}`}>
+              <table className={styles.table} aria-hidden="true">
+                <thead>
+                  <tr>
+                    <th>Дата і час</th><th>Тип</th><th>Тренер</th><th>Зал</th><th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[0, 1, 2].map(i => (
+                    <tr key={i}>
+                      <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                      <td><div className={`skeleton-bone ${styles.skelType}`} /></td>
+                      <td><div className={`skeleton-bone ${styles.skelTrainer}`} /></td>
+                      <td><div className={`skeleton-bone ${styles.skelHall}`} /></td>
+                      <td></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className={`${styles.cardList} ${styles.upcomingCardList}`}>
+              {[0, 1].map(i => (
+                <div key={i} className={styles.iCard}>
+                  <div className={`skeleton-bone ${styles.skelIcardLine}`} />
+                  <div className={`skeleton-bone ${styles.skelIcardLine}`} style={{ width: '55%', marginTop: 6 }} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Feed/Sales tabs skeleton */}
+          <section className={styles.card}>
+            <div className={styles.tabHeader}>
+              <div className="tabs-underline">
+                <span className="tab-underline tab-underline-active">Зведена стрічка</span>
+                <span className="tab-underline">Продажі</span>
+              </div>
+            </div>
+            {isMobile ? (
+              <div className={styles.cardList}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} className={styles.iCard}>
+                    <div className={`skeleton-bone ${styles.skelIcardLine}`} />
+                    <div className={`skeleton-bone ${styles.skelIcardLine}`} style={{ width: '45%', marginTop: 6 }} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.tableWrap}>
+                <table className={styles.table} aria-hidden="true">
+                  <thead>
+                    <tr>
+                      <th>Дата і час</th><th>Подія</th><th>Тип / Операція</th><th>Тренер</th><th>Деталі</th><th>Списано</th><th>Залишок</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {FEED_SKELETON_ROWS.map(i => (
+                      <tr key={i}>
+                        <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelBadgeSm}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelType}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelTrainer}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelHall}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelAmt}`} /></td>
+                        <td><div className={`skeleton-bone ${styles.skelAmt}`} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+        </div>
+      </main>
+    </div>
+  )
+}
+
 // Шапка картки з аватаром тренера (ініціал). Немає тренера → лише chevron / нічого.
 function ICardTop({ name, chevron }: { name?: string | null; chevron?: boolean }) {
   if (!name) {
@@ -268,13 +440,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
     fetchSales(next)
   }
 
-  if (loading) return (
-    <div className="page-layout">
-      <Sidebar />
-      <BottomNav />
-      <main className="page-main"><div className={styles.empty}>Завантаження...</div></main>
-    </div>
-  )
+  if (loading) return <ClientDetailSkeleton isMobile={isMobile} />
+
 
   if (fetchError || !client) return (
     <div className="page-layout">
