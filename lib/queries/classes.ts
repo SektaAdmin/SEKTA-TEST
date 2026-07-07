@@ -82,15 +82,6 @@ export async function getClassById(
   return { data: (data as (Class & { trainers: { name: string } | null; halls: { name: string } | null }) | null) ?? null, error: error?.message ?? null }
 }
 
-export async function updateClassCancelled(
-  supabase: Db,
-  classId: string,
-  isCancelled: boolean
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('classes').update({ is_cancelled: isCancelled }).eq('id', classId)
-  return { error: error?.message ?? null }
-}
-
 export async function updateClassChoreoStage(
   supabase: Db,
   classId: string,

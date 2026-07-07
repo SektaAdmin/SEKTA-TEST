@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useRealtime } from '@/lib/useRealtime'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { getClassById, updateClassCancelled, cancelClassAndRestoreSessions, restoreClass, deleteClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
+import { getClassById, cancelClassAndRestoreSessions, restoreClass, deleteClass, updateClassChoreoStage, checkClassConflicts } from '@/lib/queries/classes'
 import {
   listEnrollmentsForClass,
   getSessionBalancesAfter,
