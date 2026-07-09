@@ -37,11 +37,11 @@ function ClientsSkeleton() {
           <tbody>
             {SKELETON_ROWS.map(i => (
               <tr key={i}>
-                <td><div className={styles.skeletonBone} style={{ width: `${68 - (i % 3) * 8}%` }} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelPhone}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelHandle}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelHandle}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelBalance}`} /></td>
+                <td><div className="skeleton-bone" style={{ width: `${68 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`skeleton-bone ${styles.skelPhone}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelHandle}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelHandle}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelBalance}`} /></td>
               </tr>
             ))}
           </tbody>
@@ -52,10 +52,10 @@ function ClientsSkeleton() {
         {SKELETON_ROWS.slice(0, 5).map(i => (
           <div key={i} className={styles.clientCard}>
             <div className={styles.cardRow1}>
-              <div className={styles.skeletonBone} style={{ width: `${55 - (i % 3) * 8}%` }} />
-              <div className={`${styles.skeletonBone} ${styles.skelCardBalance}`} />
+              <div className="skeleton-bone" style={{ width: `${55 - (i % 3) * 8}%` }} />
+              <div className={`skeleton-bone ${styles.skelCardBalance}`} />
             </div>
-            <div className={`${styles.skeletonBone} ${styles.skelCardContacts}`} />
+            <div className={`skeleton-bone ${styles.skelCardContacts}`} />
           </div>
         ))}
       </div>
@@ -66,7 +66,6 @@ function ClientsSkeleton() {
 export default function ClientsPage() {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
-  const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -101,13 +100,8 @@ export default function ClientsPage() {
 
   function handleSaved() {
     setShowModal(false)
-    setEditingClient(null)
     toast.success(MSG.toast.saved)
     refetch()
-  }
-
-  function handleEditClose() {
-    setEditingClient(null)
   }
 
   return (
@@ -277,15 +271,6 @@ export default function ClientsPage() {
           onSaved={handleSaved}
         />
       )}
-
-      {editingClient && (
-        <ClientModal
-          client={editingClient}
-          onClose={handleEditClose}
-          onSaved={handleSaved}
-        />
-      )}
-
     </div>
   )
 }

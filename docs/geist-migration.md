@@ -11,7 +11,7 @@
 | 1 | / | app/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-компонент (auth-гейт), CSS/JSX відсутні |
 | 2 | /dashboard | app/dashboard/page.tsx | ✅ чисто | 2026-07-09 | 5 знахідок виправлено: debtTable→.data-table (+локальні модифікатори через :global), geistBadge→.badge badge-type/badge-success (новий генеричний модифікатор), skeleton→global .skeleton-bone, 140ms→--motion-fast, CollapseHead h2 обгортає button (ARIA accordion) |
 | 3 | /login | app/login/page.tsx | ✅ чисто | 2026-07-09 | 1 знахідку виправлено: `.logo` font-size 22px хардкод → var(--fs-lg) (L1-заголовок екрана) |
-| 4 | /clients | app/clients/page.tsx | 🔲 не перевірено | — | — |
+| 4 | /clients | app/clients/page.tsx | ✅ чисто | 2026-07-09 | Виправлено: skeleton→global .skeleton-bone; 14px→--fs-base (×10); .txPos/.txNeg→-text варіанти; 0.12s→--motion-fast (×5, width→--motion-standard); видалено dead-код editingClient. Відкладено (наскрізне): inline padding .page-foot (те саме на /sales,/journal,/audit) — винести в спільний клас при уніфікації |
 | 5 | /clients/[id] | app/clients/[id]/page.tsx | 🔲 не перевірено | — | — |
 | 6 | /schedule | app/schedule/page.tsx | 🔲 не перевірено | — | — |
 | 7 | /schedule/[classId] | app/schedule/[classId]/page.tsx | 🔲 не перевірено | — | — |

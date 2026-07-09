@@ -9,7 +9,7 @@
 }
 
 .error {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -22,13 +22,13 @@
   background: none;
   border: none;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
   gap: 4px;
-  transition: color 0.12s;
+  transition: color var(--motion-fast);
   font-family: inherit;
 }
 .historyToggle:hover { color: var(--text-2); }
@@ -41,7 +41,7 @@
 }
 
 .historyEmpty {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   text-align: center;
   padding: 12px 0;
@@ -50,7 +50,7 @@
 .historyTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .historyTable th {
@@ -78,8 +78,8 @@
   font-weight: 500;
   white-space: nowrap;
 }
-.txPos { color: var(--success); }
-.txNeg { color: var(--danger); }
+.txPos { color: var(--success-text); }
+.txNeg { color: var(--danger-text); }
 
 .txBalance {
   font-variant-numeric: tabular-nums;
