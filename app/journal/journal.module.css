@@ -29,7 +29,7 @@
 }
 
 .topbarCount {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
 }
 
@@ -60,12 +60,16 @@
   padding: 60px 24px;
   text-align: center;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 /* ── Desktop/mobile table toggle ─────────────────────────────── */
 .tableDesktop { display: block; }
 .cardList     { display: none; }
+
+.tableDesktop :global(.data-table) tbody tr {
+  cursor: pointer;
+}
 
 /* ── Journal card (mobile) ───────────────────────────────────── */
 .card {
@@ -89,7 +93,7 @@
 }
 
 .cardTitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   flex: 1;
@@ -100,7 +104,7 @@
 }
 
 .cardDateTime {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -110,13 +114,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   flex-wrap: wrap;
 }
 
 .cardMetaDot {
   color: var(--text-3);
+}
+
+.tabularCell {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ── Skeleton-лоадер ──────────────────────────────────────────── */
@@ -146,7 +155,7 @@
 }
 
 .paginationInfo {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
@@ -162,11 +171,11 @@
   border-radius: var(--radius-sm);
   padding: 5px 0;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-base);
   cursor: pointer;
   min-width: 32px;
   text-align: center;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 .pageBtn:hover:not(:disabled) {
   border-color: var(--border-hover);

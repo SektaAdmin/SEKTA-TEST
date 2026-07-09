@@ -199,9 +199,9 @@ export default function JournalPage() {
                 </thead>
                 <tbody>
                   {data.map(cls => (
-                    <tr key={cls.id} onClick={() => setSelectedClassId(cls.id)} style={{ cursor: 'pointer' }}>
+                    <tr key={cls.id} onClick={() => setSelectedClassId(cls.id)}>
                       <td>{formatDate(cls.starts_at)}</td>
-                      <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatTime(cls.starts_at)}</td>
+                      <td className={jStyles.tabularCell}>{formatTime(cls.starts_at)}</td>
                       <td>{ticketTypeShortLabel(cls.ticket_type)}</td>
                       <td>{trainingTypes.find(t => t.code === cls.ticket_type)?.label ?? cls.ticket_type}</td>
                       <td>{cls.trainers?.name ?? '—'}</td>
