@@ -34,9 +34,10 @@
 | 8 | /schedule/templates | app/schedule/templates/page.tsx | ✅ чисто | 2026-07-09 | 3 знахідки виправлено: Список-вигляд → .data-table-wrap/.data-table (+.listCard з відступами як .gridCard); GridSkeleton → глобальний .skeleton-bone (skelPulse видалено); font-size хардкоди → токени (page ×11, SeriesModal ×6); бонус: .btnRowDel:hover текст → --danger-text. HallWeekGrid мікротипографія навмисно raw |
 | 9 | /sales | app/sales/page.tsx | ✅ чисто | 2026-07-09 | Аудит оркестратором (без субагента). Виправлено: skeleton→глобальний .skeleton-bone (локальний shimmer видалено); 14/13px→--fs-base/--fs-sm; 0.12s→--motion-fast (і в SaleModal.module.css: 14px ×4, all 0.12s); danger-hover тексти (.filterClear/.btnDel)→--danger-text; inline-стилі рядка витрати/доходу→.mutedCell/.opLabel/.opIcon. Наскрізне закрито: padding .page-foot перенесено в глобальний клас, inline-дублі прибрано з /sales,/clients,/journal,/audit. Навмисно: .paymentTabs локальна (рішення Сесії 12); confirmBox 300px desktop + responsive mobile override — ок |
 
-## Етап I — 🔲 Фінанси
+## Етап I — ✅ виконано 2026-07-09 (Фінанси, сторінки 10–13)
 
 > /audit і /journal — майже дзеркальні модулі; всі три сторінки вже на глобальних `.data-table`/`.skeleton-bone`, лишились дрібні хардкоди (font-size px, 0.12s, raw --danger).
+> Урок етапу: `!important` на td/th-класах знімати ТІЛЬКИ з рескоупом `.обгортка :global(.data-table) .клас` — гола `.class` (0,1,0) програє глобальному `.data-table td` (0,1,1); haiku на таке не здатен без точного рецепта (див. рядок 10).
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
