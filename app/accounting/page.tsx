@@ -29,7 +29,7 @@ const SKELETON_ROWS = [0, 1, 2, 3, 4, 5, 6, 7]
 function AccountingSkeleton({ isMobile }: { isMobile: boolean }) {
   if (isMobile) {
     return (
-      <div className={styles.cardList} style={{ display: 'flex', flexDirection: 'column' }} role="status" aria-label="Завантаження...">
+      <div className={styles.cardList} role="status" aria-label="Завантаження...">
         {SKELETON_ROWS.slice(0, 6).map(i => (
           <div key={i} className={styles.card}>
             <div className={styles.cardMain}>

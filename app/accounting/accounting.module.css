@@ -42,7 +42,7 @@
 }
 
 .dateSep {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   flex-shrink: 0;
 }
@@ -95,7 +95,7 @@
 }
 
 .balanceCardLabel {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-3);
 }
@@ -114,7 +114,7 @@
 .balanceCardMeta {
   display: flex;
   gap: 16px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
   color: var(--text-3);
 }
@@ -128,7 +128,7 @@
 
 .empty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 40px 0;
   text-align: center;
 }
@@ -148,8 +148,8 @@
 .iconCell {
   width: 28px;
   vertical-align: top;
-  padding-right: 0 !important;
 }
+.tableDesktop :global(.data-table) .iconCell { padding-right: 0; }
 
 .iconIncome      { color: var(--success); }
 .iconDeposit     { color: var(--text-3); }
@@ -157,26 +157,30 @@
 .iconOtherIncome { color: var(--success); }
 .thClient  { width: 160px; }
 .thTicket  { width: 170px; }
-.thPrice   { width: 100px; text-align: right !important; }
+.thPrice   { width: 100px; }
+.tableDesktop :global(.data-table) .thPrice { text-align: right; }
 
-.trainerName { color: var(--text-2); font-size: 13px; }
-.thDeposit { width: 110px; text-align: right !important; }
-.thAmt     { width: 100px; text-align: right !important; }
-.thMethod  { width: 100px; text-align: left !important; }
+.trainerName { color: var(--text-2); font-size: var(--fs-sm); }
+.thDeposit { width: 110px; }
+.tableDesktop :global(.data-table) .thDeposit { text-align: right; }
+.thAmt     { width: 100px; }
+.tableDesktop :global(.data-table) .thAmt { text-align: right; }
+.thMethod  { width: 100px; }
+.tableDesktop :global(.data-table) .thMethod { text-align: left; }
 
 .priceCell {
   text-align: right;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 14px;
+  font-size: var(--fs-base);
   white-space: nowrap;
   color: var(--text-2);
 }
 
 .checkCell {
   width: 36px;
-  padding-right: 0 !important;
 }
+.tableDesktop :global(.data-table) .checkCell { padding-right: 0; }
 
 .checkbox {
   width: 16px;
@@ -212,28 +216,28 @@
 }
 
 .dateMain {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .dateTime {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
 .clientName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
 }
 
 .ticketCell {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
 }
 
 .ticketName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
 }
 
@@ -241,7 +245,7 @@
   text-align: right;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 14px;
+  font-size: var(--fs-base);
   white-space: nowrap;
 }
 
@@ -255,7 +259,7 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--fs-base);
   white-space: nowrap;
 }
 
@@ -314,7 +318,7 @@
 }
 
 .cardClient {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   flex: 1;
@@ -326,7 +330,7 @@
 
 .cardAmt {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--text);
@@ -342,7 +346,7 @@
 }
 
 .cardTicket {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   flex: 1;
   min-width: 0;
@@ -360,12 +364,12 @@
 }
 
 .cardDatetime {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
 .depositHint {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--accent);
   font-weight: 500;
 }
@@ -387,14 +391,16 @@
 }
 
 .amtExpense {
-  color: var(--danger) !important;
+  color: var(--danger-text);
   font-weight: 600;
 }
+.tableDesktop :global(.data-table) .amtExpense { color: var(--danger-text); }
 
 .amtOtherIncome {
-  color: var(--success) !important;
+  color: var(--success-text);
   font-weight: 600;
 }
+.tableDesktop :global(.data-table) .amtOtherIncome { color: var(--success-text); }
 
 .expenseMethodRow {
   display: flex;
@@ -435,7 +441,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
 }
