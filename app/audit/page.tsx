@@ -255,7 +255,7 @@ export default function AuditPage() {
                 <tbody>
                   {data.map(ev => (
                     <tr key={ev.id}>
-                      <td style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                      <td className={styles.tabularCell}>
                         {formatDate(ev.created_at)} {formatTime(ev.created_at)}
                       </td>
                       <td>
@@ -267,7 +267,7 @@ export default function AuditPage() {
                       <td>{classLabel(ev)}</td>
                       <td>{trainerName(ev.owner_trainer_id)}</td>
                       <td>{actorLabel(ev)}</td>
-                      <td className={styles.deliveredCell}>{deliveredCell(ev)}</td>
+                      <td className={styles.tabularCell}>{deliveredCell(ev)}</td>
                     </tr>
                   ))}
                 </tbody>
