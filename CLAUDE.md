@@ -29,4 +29,6 @@ Next.js 14.2.3 (App Router) · React 18 · TypeScript (strict) · Supabase (Post
 - **ui-reviewer** — Geist-консистентність змінених компонентів (read-only).
 - **security-auditor** — RLS/гранти/advisors + дрейф prod↔SECURITY.md (read-only).
 - **geist-migrator** — аудит ОДНІЄЇ сторінки проти docs/geist/ + FRONTEND.md, веде трекер `docs/geist-migration.md` (коду не редагує; sonnet).
-- **geist-fixer** — застосовує знахідки аудиту після тріажу оркестратором; лише механічні правки, структурне — оркестратор сам (sonnet).
+- **geist-fixer** — застосовує знахідки аудиту після тріажу оркестратором; лише механічні правки, структурне — оркестратор сам (sonnet; повністю механічні списки — override `model: "haiku"`).
+
+**Geist-міграція:** слово «поїхали» → навичка `geist-session` (протокол етапу + модельна матриця + гарди haiku).
