@@ -20,11 +20,11 @@
   background: none;
   border: none;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-base);
   cursor: pointer;
   padding: 0;
   white-space: nowrap;
-  transition: color 0.15s;
+  transition: color var(--motion-fast);
 }
 .backBtn:hover { color: var(--text); }
 
@@ -46,7 +46,7 @@
 .empty {
   padding: 48px 28px;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   text-align: center;
 }
 
@@ -85,7 +85,7 @@
   align-items: center;
   gap: 6px 14px;
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .msContact {
@@ -148,6 +148,13 @@ a.msContact:hover svg { color: var(--accent); }
   color: var(--text-3);
 }
 
+/* Порожній стан метрики («немає активних записів») — тихий рядок замість числа. */
+.msMetricEmpty {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-normal);
+  color: var(--text-3);
+}
+
 /* Стопка типів занять, коли їх кілька */
 .msSessionStack {
   display: flex;
@@ -175,7 +182,7 @@ a.msContact:hover svg { color: var(--accent); }
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
-.msSessionLine .msSessionAlert { color: var(--danger); }
+.msSessionLine .msSessionAlert { color: var(--danger-text); }
 
 /* Дії під метриками */
 .msActions {
@@ -231,14 +238,14 @@ a.msContact:hover svg { color: var(--accent); }
 }
 
 .field dt {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   min-width: 72px;
   flex-shrink: 0;
 }
 
 .field dd {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   margin: 0;
   min-width: 0;
@@ -249,7 +256,7 @@ a.msContact:hover svg { color: var(--accent); }
 .fieldLink {
   color: var(--accent);
   text-decoration: none;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 .fieldLink:hover { text-decoration: underline; }
 
@@ -285,7 +292,7 @@ a.msContact:hover svg { color: var(--accent); }
 }
 
 .sessionType {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
@@ -302,56 +309,26 @@ a.msContact:hover svg { color: var(--accent); }
 .balanceNeg  { color: var(--danger); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
 .balanceZero { color: var(--text-3); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
 
-.sessionPos  { color: var(--success); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
-.sessionNeg  { color: var(--danger); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sessionPos  { color: var(--success-text); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
+.sessionNeg  { color: var(--danger-text); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
 .sessionZero { color: var(--text-3); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
 
-/* ── Table ──────────────────────────────────────────────────── */
+/* ── Table ──────────────────────────────────────────────────────
+   Сама таблиця = глобальний .data-table (Geist Table). Тут лише
+   full-bleed скрол-зона всередині картки секції (БЕЗ .data-table-wrap —
+   рамку/фон дає картка, а не таблиця). */
 .tableWrap {
   overflow-x: auto;
   margin: 0 -24px;
   padding: 0 24px;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.table thead tr { background: var(--bg-3); }
-
-.table th {
-  padding: 8px 12px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-
-.table td {
-  padding: 10px 12px;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-.table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover td { background: var(--bg-3); }
-
 .dateCell {
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-base);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-
-.depositLabel { color: var(--text-3); font-style: italic; }
-.txDesc       { color: var(--text-2); font-size: 14px; max-width: 240px; }
 
 .empty2 { color: var(--text-3); }
 
@@ -360,6 +337,17 @@ a.msContact:hover svg { color: var(--accent); }
   color: var(--text-2);
   margin-top: 3px;
   line-height: 1.35;
+}
+
+/* Блок логін/пароль створеного кабінету (confirm-оверлей). */
+.credsBox {
+  white-space: pre-wrap;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: var(--fs-base);
+  margin: 8px 0;
 }
 
 /* ── Load more — layout modifier поверх глобального .btn-secondary ─ */
@@ -382,11 +370,11 @@ a.msContact:hover svg { color: var(--accent); }
   font-size: var(--btn-sm-font);
   cursor: pointer;
   color: var(--text-2);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
   white-space: nowrap;
 }
 .btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.btnRowDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnRowDel:hover  { border-color: var(--danger); color: var(--danger-text); background: var(--danger-dim); }
 
 /* ── Delete confirmation overlay — токени Elevation Сесії 3
    (світлий фрост-бекдроп + --shadow-modal, без CSS-рамки),
@@ -407,24 +395,25 @@ a.msContact:hover svg { color: var(--accent); }
   border-radius: var(--radius);
   box-shadow: var(--shadow-modal);
   padding: 24px;
-  width: 300px;
+  width: calc(100% - 32px);
+  max-width: 360px;
 }
 
 .confirmBox h3 {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   margin: 0 0 8px;
 }
 
 .confirmBox p {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   margin: 0 0 20px;
 }
 
 .confirmError {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger-text);
   background: var(--danger-dim);
   padding: 7px 10px;
@@ -440,15 +429,15 @@ a.msContact:hover svg { color: var(--accent); }
 
 
 /* ── Table number cells ─────────────────────────────────────── */
-.numCell { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
+.numCell { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--fs-base); white-space: nowrap; }
 
 /* ── Deposit delta & balance-after ─────────────────────────── */
-.deltaPos  { color: var(--success); font-weight: 500; }
-.deltaNeg  { color: var(--danger); font-weight: 500; }
+.deltaPos  { color: var(--success-text); font-weight: 500; }
+.deltaNeg  { color: var(--danger-text); font-weight: 500; }
 
 /* ── Operation type labels (no-ticket rows) ─────────────────── */
-.opTopup     { color: var(--success); font-size: 14px; }
-.opDeduction { color: var(--danger); font-size: 14px; }
+.opTopup     { color: var(--success-text); font-size: var(--fs-base); }
+.opDeduction { color: var(--danger-text); font-size: var(--fs-base); }
 
 /* ── Tabs ───────────────────────────────────────────────────── */
 .tabHeader {
@@ -464,8 +453,8 @@ a.msContact:hover svg { color: var(--accent); }
 /* .tabBar/.tab/.tabActive → глобальні .tabs-underline/.tab-underline (Сесія 12) */
 
 /* ── Session delta in feed ──────────────────────────────────── */
-.sessionsNeg { color: var(--danger); font-weight: 500; }
-.sessionsPos { color: var(--success); font-weight: 500; }
+.sessionsNeg { color: var(--danger-text); font-weight: 500; }
+.sessionsPos { color: var(--success-text); font-weight: 500; }
 
 /* ── Upcoming enrollments desktop/mobile toggle ─────────────── */
 .upcomingTableDesktop { display: block; }
@@ -513,12 +502,12 @@ a.msContact:hover svg { color: var(--accent); }
     border-radius: 50%;
     background: var(--accent-dim);
     color: var(--text);
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-weight: 600;
   }
 
   .iCardTrainerName {
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-weight: 500;
     color: var(--text);
   }
@@ -580,18 +569,6 @@ a.msContact:hover svg { color: var(--accent); }
     border: 1px solid transparent;
   }
 
-  /* Тони бейджів — узгоджено з кабінетом (.visitTimer*) */
-  .toneAttended  { color: var(--success); background: var(--success-dim); border-color: var(--success-border); }
-  .toneNoshow    { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
-  .toneLate      { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
-  .toneCancelled { color: var(--text-2);  background: var(--bg-3);        border-color: var(--border); }
-  .toneEnrolled  { color: var(--text-2);  background: var(--bg-3);        border-color: var(--border); }
-  .toneWaitlist  { color: var(--warning); background: var(--warning-dim); border-color: var(--warning-border); }
-
-  .balPositive { color: var(--success); background: var(--success-dim); border-color: var(--success-border); }
-  .balZero     { color: var(--warning); background: var(--warning-dim); border-color: var(--warning-border); }
-  .balNegative { color: var(--danger);  background: var(--danger-dim);  border-color: var(--danger-border); }
-
   /* Слот дій усередині картки */
   .iCardActions {
     display: flex;
@@ -603,7 +580,7 @@ a.msContact:hover svg { color: var(--accent); }
   .iCardActions .btnRowDel {
     flex: 1;
     height: 36px;
-    font-size: 14px;
+    font-size: var(--fs-base);
   }
 
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px; }

@@ -18,7 +18,7 @@ import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
 import { formatClientName, formatSaleDatetime, formatMoney, formatDate, hhmm } from '@/lib/formatters'
-import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass, enrollmentBadge, type EnrollmentBadgeTone } from '@/lib/badges'
+import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
@@ -42,20 +42,6 @@ type PermanentEnrollment = {
 }
 
 const SALES_PAGE_SIZE = 20
-
-// Tone → CSS-клас бейджа картки (узгоджено з кабінетом, .visitTimer*).
-const TONE_CLASS: Record<EnrollmentBadgeTone, string> = {
-  attended:  styles.toneAttended,
-  noshow:    styles.toneNoshow,
-  late:      styles.toneLate,
-  cancelled: styles.toneCancelled,
-  enrolled:  styles.toneEnrolled,
-  waitlist:  styles.toneWaitlist,
-}
-
-function balToneClass(bal: number): string {
-  return bal > 0 ? styles.balPositive : bal < 0 ? styles.balNegative : styles.balZero
-}
 
 const FEED_SKELETON_ROWS = [0, 1, 2, 3, 4]
 
@@ -151,7 +137,7 @@ function ClientDetailSkeleton({ isMobile }: { isMobile: boolean }) {
             {/* CSS-toggle (не isMobile-хук — той резолвиться лише після mount і дав би
                 фреш desktop-таблиці на мобільному кадрі скелетону), як і в реальному контенті. */}
             <div className={`${styles.tableWrap} ${styles.upcomingTableDesktop}`}>
-              <table className={styles.table} aria-hidden="true">
+              <table className="data-table" aria-hidden="true">
                 <thead>
                   <tr>
                     <th>Дата і час</th><th>Тип</th><th>Тренер</th><th>Зал</th><th></th>
@@ -199,7 +185,7 @@ function ClientDetailSkeleton({ isMobile }: { isMobile: boolean }) {
               </div>
             ) : (
               <div className={styles.tableWrap}>
-                <table className={styles.table} aria-hidden="true">
+                <table className="data-table" aria-hidden="true">
                   <thead>
                     <tr>
                       <th>Дата і час</th><th>Подія</th><th>Тип / Операція</th><th>Тренер</th><th>Деталі</th><th>Списано</th><th>Залишок</th>
@@ -519,7 +505,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               <div className={styles.msMetric}>
                 <span className={styles.msMetricLabel}>Залишок занять</span>
                 {sessionBalances.length === 0 ? (
-                  <span className={`${styles.msMetricValue} ${styles.msMetricSub}`} style={{ fontSize: 14, fontWeight: 400 }}>
+                  <span className={`${styles.msMetricValue} ${styles.msMetricEmpty}`}>
                     {MSG.empty.activeEnrollments}
                   </span>
                 ) : sessionBalances.length === 1 ? (
@@ -716,7 +702,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
               <>
                 {/* Desktop table */}
                 <div className={`${styles.tableWrap} ${styles.upcomingTableDesktop}`}>
-                  <table className={styles.table}>
+                  <table className="data-table">
                     <thead>
                       <tr>
                         <th>Дата і час</th>
@@ -778,7 +764,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         <div className={styles.iCardFooter}>
                           <div className={styles.iCardRow}>
                             <span className={styles.iCardLabel}>Статус</span>
-                            <span className={`${styles.iCardBadge} ${TONE_CLASS[badge.tone]}`}>{badge.label}</span>
+                            <span className={enrollmentBadgeClass(badge.tone)}>{badge.label}</span>
                           </div>
                         </div>
                         <div className={styles.iCardActions}>
@@ -873,7 +859,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 <>
                   {!isMobile && (
                     <div className={styles.tableWrap}>
-                      <table className={styles.table}>
+                      <table className="data-table">
                         <thead>
                           <tr>
                             <th>Дата і час</th>
@@ -991,7 +977,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                               <div className={styles.iCardFooter}>
                                 <div className={styles.iCardRow}>
                                   <span className={styles.iCardLabel}>Статус</span>
-                                  <span className={`${styles.iCardBadge} ${TONE_CLASS[badge.tone]}`}>{badge.label}</span>
+                                  <span className={enrollmentBadgeClass(badge.tone)}>{badge.label}</span>
                                 </div>
                                 <div className={styles.iCardRow}>
                                   <span className={styles.iCardLabel}>Списано</span>
@@ -1002,7 +988,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 {bal !== undefined && (
                                   <div className={styles.iCardRow}>
                                     <span className={styles.iCardLabel}>Залишок після</span>
-                                    <span className={`${styles.iCardBadge} ${balToneClass(bal)}`}>{bal} год.</span>
+                                    <span className={`${styles.iCardBadge} ${balanceClass(bal)}`}>{bal} год.</span>
                                   </div>
                                 )}
                               </div>
@@ -1031,7 +1017,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 {bal !== undefined && (
                                   <div className={styles.iCardRow}>
                                     <span className={styles.iCardLabel}>Залишок після</span>
-                                    <span className={`${styles.iCardBadge} ${balToneClass(bal)}`}>{bal} год.</span>
+                                    <span className={`${styles.iCardBadge} ${balanceClass(bal)}`}>{bal} год.</span>
                                   </div>
                                 )}
                               </div>
@@ -1060,7 +1046,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                 <>
                   {!isMobile && (
                     <div className={styles.tableWrap}>
-                      <table className={styles.table}>
+                      <table className="data-table">
                         <thead>
                           <tr>
                             <th>Дата</th>
@@ -1316,10 +1302,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <div className={styles.confirmBox}>
             <h3>{createdCreds.reset ? 'Пароль скинуто' : 'Кабінет створено'}</h3>
             <p>Надішліть ці дані клієнту в Instagram або Telegram:</p>
-            <pre style={{
-              whiteSpace: 'pre-wrap', background: 'var(--bg-3)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)', padding: 12, fontSize: 14, margin: '8px 0',
-            }}>{credsText()}</pre>
+            <pre className={styles.credsBox}>{credsText()}</pre>
             {loginError && <p className={styles.confirmError}>{loginError}</p>}
             <div className={styles.confirmBtns}>
               <button className="btn-secondary" onClick={() => setCreatedCreds(null)}>
