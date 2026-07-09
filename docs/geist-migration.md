@@ -8,7 +8,7 @@
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
-| 1 | / | app/page.tsx | 🔲 не перевірено | — | — |
+| 1 | / | app/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-компонент (auth-гейт), CSS/JSX відсутні |
 | 2 | /dashboard | app/dashboard/page.tsx | 🔲 не перевірено | — | — |
 | 3 | /login | app/login/page.tsx | 🔲 не перевірено | — | — |
 | 4 | /clients | app/clients/page.tsx | 🔲 не перевірено | — | — |
