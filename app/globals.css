@@ -553,6 +553,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .page-foot {
   flex-shrink: 0;
+  padding: 10px var(--topbar-px);
   border-top: 1px solid var(--border);
   background: var(--bg);
 }

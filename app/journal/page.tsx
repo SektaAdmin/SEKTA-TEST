@@ -252,7 +252,7 @@ export default function JournalPage() {
       </div>
 
       {total > 0 && (
-        <div className={`page-foot ${jStyles.pagination}`} style={{padding: '10px 28px'}}>
+        <div className={`page-foot ${jStyles.pagination}`}>
           <div className={jStyles.paginationLeft}>
             <span className={jStyles.paginationInfo}>
               Сторінка {page + 1} з {totalPages} · {total} занять

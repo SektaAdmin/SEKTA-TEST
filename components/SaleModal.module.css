@@ -5,7 +5,7 @@
    вища виразність для грошового вибору, а не забутий TODO. */
 
 .error {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger-text);
   background: var(--danger-dim);
   padding: 8px 12px;
@@ -34,8 +34,8 @@
   gap: 8px;
   min-height: 39px;
 }
-.depositBoxNext { font-size: 14px; font-weight: 600; }
-.depositBoxEmpty { font-size: 14px; color: var(--text-3); }
+.depositBoxNext { font-size: var(--fs-base); font-weight: 600; }
+.depositBoxEmpty { font-size: var(--fs-base); color: var(--text-3); }
 
 .paymentTabs {
   display: flex;
@@ -45,13 +45,13 @@
 .paymentTab {
   flex: 1;
   padding: 8px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-3);
   color: var(--text-2);
   cursor: pointer;
-  transition: all 0.12s;
+  transition: all var(--motion-fast);
   text-align: center;
 }
 

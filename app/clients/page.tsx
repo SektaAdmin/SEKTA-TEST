@@ -252,7 +252,7 @@ export default function ClientsPage() {
         </div>
 
         {!loading && !fetchError && clients.length > 0 && (
-          <div className="page-foot" style={{padding: '10px 28px'}}>
+          <div className="page-foot">
             <Pagination
               page={page}
               pageSize={pageSize}

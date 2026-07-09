@@ -64,16 +64,16 @@ function FeedSkeleton() {
           <tbody>
             {SKELETON_ROWS.map(i => (
               <tr key={i}>
-                <td><div className={`${styles.skeletonBone} ${styles.skelDate}`} /></td>
-                <td><div className={styles.skeletonBone} style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelOp}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelNarrow}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelPay}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelTrainer}`} /></td>
-                <td><div className={`${styles.skeletonBone} ${styles.skelActions}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelDate}`} /></td>
+                <td><div className="skeleton-bone" style={{ width: `${70 - (i % 3) * 8}%` }} /></td>
+                <td><div className={`skeleton-bone ${styles.skelOp}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelNarrow}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelNarrow}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelNarrow}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelNarrow}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelPay}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelTrainer}`} /></td>
+                <td><div className={`skeleton-bone ${styles.skelActions}`} /></td>
               </tr>
             ))}
           </tbody>
@@ -84,12 +84,12 @@ function FeedSkeleton() {
         {SKELETON_ROWS.slice(0, 5).map(i => (
           <div key={i} className={styles.card}>
             <div className={styles.cardRow}>
-              <div className={styles.skeletonBone} style={{ width: `${60 - (i % 3) * 8}%` }} />
-              <div className={`${styles.skeletonBone} ${styles.skelCardDate}`} />
+              <div className="skeleton-bone" style={{ width: `${60 - (i % 3) * 8}%` }} />
+              <div className={`skeleton-bone ${styles.skelCardDate}`} />
             </div>
-            <div className={`${styles.skeletonBone} ${styles.skelCardOp}`} />
+            <div className={`skeleton-bone ${styles.skelCardOp}`} />
             <div className={styles.cardMeta}>
-              <div className={`${styles.skeletonBone} ${styles.skelCardMeta}`} />
+              <div className={`skeleton-bone ${styles.skelCardMeta}`} />
             </div>
           </div>
         ))}
@@ -458,15 +458,15 @@ export default function SalesPage() {
                         return (
                           <tr key={`exp-${e.id}`}>
                             <td className={styles.date}>{formatSaleDatetime(e.created_at)}</td>
-                            <td style={{ color: 'var(--text-2)' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
+                            <td className={styles.mutedCell}>
+                              <span className={styles.opLabel}>
+                                <span className={styles.opIcon}>
                                   {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
                                 </span>
                                 {isExpense ? 'Витрата студії' : 'Дохід студії'}
                               </span>
                             </td>
-                            <td style={{ color: 'var(--text-2)' }}>
+                            <td className={styles.mutedCell}>
                               {e.description || '—'}
                             </td>
                             <td>—</td>
@@ -569,8 +569,8 @@ export default function SalesPage() {
                       <div key={`exp-${e.id}`} className={`${styles.card} ${isExpense ? styles.cardExpense : styles.cardIncome}`}>
                         <div className={styles.cardRow}>
                           <span className={styles.cardClient}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-3)' }}>
+                            <span className={styles.opLabel}>
+                              <span className={styles.opIcon}>
                                 {isExpense ? <ShoppingBag size={13} /> : <TrendingUp size={13} />}
                               </span>
                               {isExpense ? 'Витрата студії' : 'Дохід студії'}
@@ -669,7 +669,7 @@ export default function SalesPage() {
         </div>
 
         {showPagination && (
-          <div className="page-foot" style={{padding: '10px 28px'}}>
+          <div className="page-foot">
             <Pagination
               page={page}
               pageSize={pageSize}

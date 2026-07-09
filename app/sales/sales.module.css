@@ -51,11 +51,11 @@
   height: var(--control-h);
   padding: 0 12px 0 30px;
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: var(--font);
   outline: none;
   width: 200px;
-  transition: border-color 0.12s;
+  transition: border-color var(--motion-fast);
 }
 .filterSearchInput:focus { border-color: var(--accent); }
 .filterSearchInput::placeholder { color: var(--text-3); }
@@ -67,13 +67,13 @@
   height: var(--control-h);
   padding: 0 12px;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: var(--font);
   cursor: pointer;
-  transition: border-color 0.12s, color 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
   white-space: nowrap;
 }
-.filterClear:hover { border-color: var(--danger); color: var(--danger); }
+.filterClear:hover { border-color: var(--danger); color: var(--danger-text); }
 
 /* Desktop: FilterSelect-и видимі, mobile-чипи сховані. Перемикання в @media. */
 .filterDesktopOnly { display: contents; }
@@ -109,7 +109,7 @@
 
 .empty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 40px 0;
   text-align: center;
   display: flex;
@@ -119,7 +119,7 @@
 }
 
 .errorDetails {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
 }
 .errorDetails summary { cursor: pointer; color: var(--text-2); }
@@ -130,6 +130,11 @@
 .date { color: var(--text-2) !important; font-variant-numeric: tabular-nums; }
 .price { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .trainer { color: var(--text-2) !important; }
+
+/* Рядок студійної витрати/доходу: приглушена клітинка + іконка-префікс операції. */
+.mutedCell { color: var(--text-2); }
+.opLabel { display: inline-flex; align-items: center; gap: 5px; }
+.opIcon { display: inline-flex; align-items: center; color: var(--text-3); }
 
 .deposit { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .depositPos { color: var(--success-text); font-weight: 500; }
@@ -152,40 +157,15 @@
   font-size: var(--btn-sm-font);
   cursor: pointer;
   color: var(--text-2);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
   white-space: nowrap;
 }
 .btnEdit:hover    { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.btnDel:hover     { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnDel:hover     { border-color: var(--danger); color: var(--danger-text); background: var(--danger-dim); }
 
-/* ── Skeleton-лоадер (спільний shimmer-патерн, як у /dashboard) ──
-   Каркас повторює геометрію реальних рядків (таблиця desktop + картки
-   mobile), щоб не було стрибка розмірів після завантаження. */
-.skeletonBone {
-  height: 12px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-  position: relative;
-  overflow: hidden;
-}
-
-.skeletonBone::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
-  animation: skeletonShimmer 1.3s ease-in-out infinite;
-}
-
-@keyframes skeletonShimmer {
-  100% { transform: translateX(100%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeletonBone::after { animation: none; }
-}
-
+/* ── Skeleton-лоадер: глобальний .skeleton-bone (globals.css), тут лише
+   розмірні модифікатори під геометрію реальних рядків (таблиця desktop +
+   картки mobile), щоб не було стрибка розмірів після завантаження. */
 .skelDate     { width: 78px; }
 .skelOp       { width: 110px; }
 .skelNarrow   { width: 46px; }
@@ -221,20 +201,20 @@
 }
 
 .confirmBox h3 {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   margin-bottom: 8px;
   color: var(--text);
 }
 
 .confirmBox p {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   margin-bottom: 20px;
 }
 
 .confirmError {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger-text);
   background: var(--danger-dim);
   padding: 7px 10px;
@@ -267,7 +247,7 @@
 }
 
 .cardClient {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   flex: 1;
@@ -278,13 +258,13 @@
 }
 
 .cardDate {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   flex-shrink: 0;
 }
 
 .cardOperation {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
@@ -292,22 +272,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   flex-wrap: wrap;
 }
 
 .cardMetaLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .cardMetaValue {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .cardTrainer {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
@@ -345,7 +325,7 @@
   .filterSearchInput {
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.12s;
+    transition: border-color var(--motion-fast);
   }
   .filterSearchInput:focus { width: 100%; }
 
@@ -364,7 +344,7 @@
     border-radius: var(--radius-sm);
     background: var(--bg-2);
     color: var(--text-2);
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-family: var(--font);
     cursor: pointer;
     white-space: nowrap;

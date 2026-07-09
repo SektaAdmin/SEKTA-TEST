@@ -311,7 +311,7 @@ export default function AuditPage() {
       </div>
 
       {total > 0 && (
-        <div className={`page-foot ${styles.pagination}`} style={{ padding: '10px 28px' }}>
+        <div className={`page-foot ${styles.pagination}`}>
           <div className={styles.paginationLeft}>
             <span className={styles.paginationInfo}>
               Сторінка {page + 1} з {totalPages} · {total} подій
