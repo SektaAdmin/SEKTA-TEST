@@ -1,10 +1,32 @@
-# Geist-міграція — трекер сторінок
+# Geist-міграція — трекер (посесійні етапи)
 
-> Оновлюється агентом `geist-migrator` (по одному рядку за виклик — одна сторінка).
-> Джерело правди: `docs/geist/` (сирий еталон Vercel/Geist: tokens.md, theming.md, components/*.md)
-> + `docs/FRONTEND.md` (вже адаптовані під проєкт примітиви — ModalShell/FormField/badges/tabs/токени).
+> **Протокол сесії: одна сесія = один етап.** Нова сесія стартує командою «поїхали» —
+> оркестратор бере перший етап зі статусом 🔲 і працює тільки в його межах.
+>
+> Цикл на сторінку незмінний: `geist-migrator` (аудит, оновлює рядок) → тріаж оркестратором
+> (хибні знахідки відкинути, механіку → `geist-fixer`, структурне → сам) → `npx tsc --noEmit`
+> (НЕ build — dev може бути відкритий) → **1 коміт = 1 сторінка** → push у main (перевірка —
+> користувач сам на Vercel, без Playwright). Redirect-стаби можна об'єднувати в один коміт етапу.
+> Великі TSX без власного CSS (напр. `/trainer/schedule` — використовує вже чистий
+> `schedule.module.css`) — оркестратор тріажить уважніше: дивитись inline-стилі та JSX.
+>
+> Джерело правди: `docs/geist/` (сирий еталон Vercel/Geist: tokens.md, theming.md,
+> components/*.md) + `docs/FRONTEND.md` (адаптовані примітиви — ModalShell/FormField/badges/tabs/токени).
 >
 > Статуси: 🔲 не перевірено · ✅ чисто · ⚠️ є розбіжності (див. колонку «Знахідки»)
+
+## Конвенції прогону (устоялись на Етапі 0, нові знахідки міряти об них)
+
+- skeleton → глобальний `.skeleton-bone` (локальні передруки shimmer видаляти);
+- бейджі → глобальний `.badge` + модифікатори (є генеричні `.badge-success`/`.badge-danger`); мапери — тільки `lib/badges.ts` (`enrollmentBadgeClass`, `balanceClass`, `paymentClass`);
+- таблиці → `.data-table`(-wrap); локальні оверрайди через `.wrap :global(.data-table) .cell` (без `!important`);
+- типографіка: 12/13/14/16px → `--fs-xs/sm/base/md`; 20/24px → `--fs-lg/xl`;
+- рухи: 0.1–0.15s → `--motion-fast`, 0.18–0.2s hover-переходи → `--motion-standard` (токени ВЖЕ містять easing — не дописувати `ease`);
+- семантичний текст ≤18px → `--success-text/--danger-text/--warning-text` (заливки/бордери/іконки та текст >18px — raw `--success/--danger/--warning`);
+- навмисно raw (НЕ чіпати): мікро-типографіка календарних сіток (10/11px), індикаторні акценти «зараз/сьогодні» на `--danger`, swipe-анімації зі своїм easing, динамічні inline-стилі позиціювання, `.paymentTabs` (рішення Сесії 12);
+- `.page-foot` padding — у глобальному класі (inline-дублі прибрано).
+
+## Етап 0 — ✅ виконано 2026-07-09 (сторінки 1–9)
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
@@ -14,27 +36,74 @@
 | 4 | /clients | app/clients/page.tsx | ✅ чисто | 2026-07-09 | Виправлено: skeleton→global .skeleton-bone; 14px→--fs-base (×10); .txPos/.txNeg→-text варіанти; 0.12s→--motion-fast (×5, width→--motion-standard); видалено dead-код editingClient. Відкладено (наскрізне): inline padding .page-foot (те саме на /sales,/journal,/audit) — винести в спільний клас при уніфікації |
 | 5 | /clients/[id] | app/clients/[id]/page.tsx | ✅ чисто | 2026-07-09 | 9 знахідок виправлено: `.table`→глобальний .data-table (5 місць, uppercase-шапку прибрано; .tableWrap лишився як full-bleed скрол-зона картки); TONE_CLASS/.tone*→enrollmentBadgeClass() (канон-кольори з lib/badges.ts); balToneClass→balanceClass(); dead CSS видалено; 14px→--fs-base (×18); 0.15s/0.12s→--motion-fast; raw --success/--danger→-text (текст ≤18px; .msMetricAlert 24px навмисно raw); inline `<pre>`/порожня метрика→.credsBox/.msMetricEmpty; .confirmBox→calc(100%-32px)/max 360px як /sales |
 | 6 | /schedule | app/schedule/page.tsx | ✅ чисто | 2026-07-09 | Аудит оркестратором (без субагента). Виправлено: 12/13/14/16px→--fs-xs/sm/base/md (×28); 0.1s/0.12s→--motion-fast; статус-тексти (SlotsFull/Free/Waitlist/Reserve/CancelledBadge)→-text варіанти. Навмисно raw: 10/11/15/17/28px мікро-типографіка сітки (поза шкалою); --danger на .nowLineTime/.mobileTlDayToday = індикаторний акцент «зараз/сьогодні» (збіг із кольором лінії); swipe-анімації 0.18s/0.2s зі своїм easing; inline-стилі в page.tsx — динамічне позиціювання. Спільні компоненти (MobileScheduleTimeline тощо) — поза скоупом рядка |
-| 7 | /schedule/[classId] | app/schedule/[classId]/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-стаб (`redirect('/schedule')`), CSS-модуля немає, локальних компонентів немає; реальний UI деталей заняття — ClassDetailModal (окрема сторінка трекера) |
+| 7 | /schedule/[classId] | app/schedule/[classId]/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-стаб (`redirect('/schedule')`), CSS-модуля немає, локальних компонентів немає; реальний UI деталей заняття — ClassDetailModal (Етап V) |
 | 8 | /schedule/templates | app/schedule/templates/page.tsx | ✅ чисто | 2026-07-09 | 3 знахідки виправлено: Список-вигляд → .data-table-wrap/.data-table (+.listCard з відступами як .gridCard); GridSkeleton → глобальний .skeleton-bone (skelPulse видалено); font-size хардкоди → токени (page ×11, SeriesModal ×6); бонус: .btnRowDel:hover текст → --danger-text. HallWeekGrid мікротипографія навмисно raw |
 | 9 | /sales | app/sales/page.tsx | ✅ чисто | 2026-07-09 | Аудит оркестратором (без субагента). Виправлено: skeleton→глобальний .skeleton-bone (локальний shimmer видалено); 14/13px→--fs-base/--fs-sm; 0.12s→--motion-fast (і в SaleModal.module.css: 14px ×4, all 0.12s); danger-hover тексти (.filterClear/.btnDel)→--danger-text; inline-стилі рядка витрати/доходу→.mutedCell/.opLabel/.opIcon. Наскрізне закрито: padding .page-foot перенесено в глобальний клас, inline-дублі прибрано з /sales,/clients,/journal,/audit. Навмисно: .paymentTabs локальна (рішення Сесії 12); confirmBox 300px desktop + responsive mobile override — ок |
+
+## Етап I — 🔲 Фінанси
+
+> /audit і /journal — майже дзеркальні модулі; всі три сторінки вже на глобальних `.data-table`/`.skeleton-bone`, лишились дрібні хардкоди (font-size px, 0.12s, raw --danger).
+
+| # | Маршрут | Файл | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
 | 10 | /accounting | app/accounting/page.tsx | 🔲 не перевірено | — | — |
-| 11 | /accounting/trainers | app/accounting/trainers/page.tsx | 🔲 не перевірено | — | — |
+| 11 | /accounting/trainers | app/accounting/trainers/page.tsx | 🔲 не перевірено | — | стаб redirect('/accounting') — очікувано «чисто» |
 | 12 | /audit | app/audit/page.tsx | 🔲 не перевірено | — | — |
 | 13 | /journal | app/journal/page.tsx | 🔲 не перевірено | — | — |
-| 14 | /halls | app/halls/page.tsx | 🔲 не перевірено | — | — |
-| 15 | /trainers | app/trainers/page.tsx | 🔲 не перевірено | — | — |
-| 16 | /training-types | app/training-types/page.tsx | 🔲 не перевірено | — | — |
-| 17 | /tickets | app/tickets/page.tsx | 🔲 не перевірено | — | — |
-| 18 | /settings | app/settings/page.tsx | 🔲 не перевірено | — | — |
-| 19 | /settings/halls | app/settings/halls/page.tsx | 🔲 не перевірено | — | — |
-| 20 | /settings/tickets | app/settings/tickets/page.tsx | 🔲 не перевірено | — | — |
-| 21 | /settings/trainers | app/settings/trainers/page.tsx | 🔲 не перевірено | — | — |
-| 22 | /settings/training-types | app/settings/training-types/page.tsx | 🔲 не перевірено | — | — |
+
+## Етап II — 🔲 Довідники (/settings)
+
+> №14–18 — redirect-стаби (аудит тривіальний, можна одним комітом). №19–21 рендеряться спільним рушієм `app/settings/_RefEntityPage.tsx` + `settings.module.css` — фактичний аудит ОДИН на трьох. №22 — окрема drag-drop сторінка (не через RefEntityPage).
+
+| # | Маршрут | Файл | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
+| 14 | /halls | app/halls/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=halls') |
+| 15 | /trainers | app/trainers/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=trainers') |
+| 16 | /training-types | app/training-types/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=training-types') |
+| 17 | /tickets | app/tickets/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=tickets') |
+| 18 | /settings | app/settings/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings/tickets') |
+| 19 | /settings/halls | app/settings/halls/page.tsx | 🔲 не перевірено | — | через _RefEntityPage — аудит спільний з №20–21 |
+| 20 | /settings/tickets | app/settings/tickets/page.tsx | 🔲 не перевірено | — | через _RefEntityPage |
+| 21 | /settings/trainers | app/settings/trainers/page.tsx | 🔲 не перевірено | — | через _RefEntityPage (+TrainerModal — Етап VI) |
+| 22 | /settings/training-types | app/settings/training-types/page.tsx | 🔲 не перевірено | — | окрема drag-drop сторінка + training-types.module.css |
+
+## Етап III — 🔲 Тренерський кабінет
+
+> №24: власного CSS немає (спільний вже чистий schedule.module.css) — ревʼю лише TSX (TrainerSchedule.tsx 1426 р., тріаж оркестратором). №25 тягне ClientSessionsModal/CreateClientModal (локальні для зони — в скоупі рядка).
+
+| # | Маршрут | Файл | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
 | 23 | /trainer | app/trainer/page.tsx | 🔲 не перевірено | — | — |
 | 24 | /trainer/schedule | app/trainer/schedule/page.tsx | 🔲 не перевірено | — | — |
 | 25 | /trainer/clients | app/trainer/clients/page.tsx | 🔲 не перевірено | — | — |
 | 26 | /trainer/my | app/trainer/my/page.tsx | 🔲 не перевірено | — | — |
+
+## Етап IV — 🔲 Клієнтський кабінет
+
+> Усі 4 сторінки (+/client/visits/[id]) ділять ОДИН `app/client/client.module.css` (1463 р.) — CSS-прохід один на етап, далі по-сторінково TSX. Відомий дубль: локальний `@keyframes skelPulse` (L120-123) замість глобального `.skeleton-bone`.
+
+| # | Маршрут | Файл | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
 | 27 | /client | app/client/page.tsx | 🔲 не перевірено | — | — |
 | 28 | /client/schedule | app/client/schedule/page.tsx | 🔲 не перевірено | — | — |
 | 29 | /client/subscriptions | app/client/subscriptions/page.tsx | 🔲 не перевірено | — | — |
-| 30 | /client/visits | app/client/visits/page.tsx | 🔲 не перевірено | — | — |
+| 30 | /client/visits | app/client/visits/page.tsx | 🔲 не перевірено | — | +visits/[id]/VisitDetail.tsx |
+
+## Етап V — 🔲 ClassDetailModal
+
+> Найбільший спільний компонент (45КБ TSX + 20КБ CSS), використовується адмінкою/тренером/дашбордом — окрема сесія.
+
+| # | Скоуп | Файл | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
+| 31 | ClassDetailModal | components/ClassDetailModal.tsx + .module.css | 🔲 не перевірено | — | — |
+
+## Етап VI — 🔲 Спільні компоненти
+
+> Цілі-примітиви НЕ аудитувати (вони і є еталон): ModalShell, FormField, ModalFooter. SaleModal/SeriesModal вже пройдені (Етап 0, рядки 8–9). HallWeekGrid — частково (мікротипографія raw).
+
+| # | Скоуп | Файли | Статус | Дата | Знахідки |
+|---|---|---|---|---|---|
+| 32 | Навігація | components/Sidebar, BottomNav, CabinetHeader | 🔲 не перевірено | — | — |
+| 33 | Модалки сутностей | components/ClassModal, ClientModal, EnrollClientModal, SlotFinderModal, StudioExpenseModal, TicketModal, TrainerModal, HallModal, TrainingTypeModal | 🔲 не перевірено | — | — |
+| 34 | Дата-пікери | components/CalendarPopover, SalesDateRangePicker, DatePicker, DateTimeInput, DateTimePicker | 🔲 не перевірено | — | — |
+| 35 | ui/* та інше | components/ui/{ActionSelect, CopyButton, Pagination, FilterSelect, SocialHandleInput}, features/ClientSearchCombobox, ScheduleRightPanel, StudioContactIcons | 🔲 не перевірено | — | — |
