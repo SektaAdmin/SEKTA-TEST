@@ -79,10 +79,10 @@ export function FreeSpacesBlock({ date }: { date: string }) {
           {[0, 1, 2, 3].map(i => (
             <div key={i} className={styles.skeletonRow} aria-hidden="true">
               <div className={styles.skeletonInfo}>
-                <div className={styles.skeletonLine} style={{ width: '52%' }} />
-                <div className={styles.skeletonLine} style={{ width: '34%' }} />
+                <div className={`skeleton-bone ${styles.skeletonLine}`} style={{ width: '52%' }} />
+                <div className={`skeleton-bone ${styles.skeletonLine}`} style={{ width: '34%' }} />
               </div>
-              <div className={`${styles.skeletonBone} ${styles.spacesSkelCount}`} />
+              <div className={`skeleton-bone ${styles.spacesSkelCount}`} />
             </div>
           ))}
         </div>
@@ -121,7 +121,7 @@ export function FreeSpacesBlock({ date }: { date: string }) {
               {r.choreo && <div className={styles.spacesChoreo}>{r.choreo}</div>}
             </div>
             <div className={styles.spacesRight}>
-              <span className={styles.geistBadge}>{r.free}</span>
+              <span className="badge badge-type">{r.free}</span>
               <ArrowRightIcon className={styles.spacesChevron} />
             </div>
           </button>

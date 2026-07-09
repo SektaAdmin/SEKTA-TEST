@@ -637,6 +637,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Warning / negative state */
 .badge-danger { background: var(--danger-dim); color: var(--danger-text); border-color: var(--danger-border); }
 
+/* Positive / success state */
+.badge-success { background: var(--success-dim); color: var(--success-text); border-color: var(--success-border); }
+
 /* Session balance chips (schedule, dashboard, client cabinet).
    balance-ok = >0 (green), balance-zero = 0 (yellow), balance-warn = <0 (red).
    Used for both money (₴) and session counts. */

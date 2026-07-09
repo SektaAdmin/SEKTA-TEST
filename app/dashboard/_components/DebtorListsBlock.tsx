@@ -58,7 +58,7 @@ export function DebtorListsBlock({ date }: { date: string }) {
           <div className={styles.empty}>Боржників немає</div>
         )}
         {table.rows.length > 0 && (
-          <table className={styles.debtTable}>
+          <table className="data-table">
             <thead>
               <tr>
                 <th className={styles.debtTableName}>Клієнт</th>
@@ -97,18 +97,18 @@ export function DebtorListsBlock({ date }: { date: string }) {
 function Loader() {
   return (
     <div className={styles.debtTableWrap} role="status" aria-label="Завантаження...">
-      <table className={styles.debtTable} aria-hidden="true">
+      <table className="data-table" aria-hidden="true">
         <tbody>
           {[0, 1, 2, 3].map(i => (
             <tr key={i}>
               <td className={styles.debtTableName}>
-                <div className={`${styles.skeletonBone} ${styles.debtSkelName}`} style={{ width: `${60 - i * 6}%` }} />
+                <div className={`skeleton-bone ${styles.debtSkelName}`} style={{ width: `${60 - i * 6}%` }} />
               </td>
               <td className={styles.debtTableCol}>
-                <div className={`${styles.skeletonBone} ${styles.debtSkelCell}`} />
+                <div className={`skeleton-bone ${styles.debtSkelCell}`} />
               </td>
               <td className={styles.debtTableMoney}>
-                <div className={`${styles.skeletonBone} ${styles.debtSkelCell}`} />
+                <div className={`skeleton-bone ${styles.debtSkelCell}`} />
               </td>
             </tr>
           ))}

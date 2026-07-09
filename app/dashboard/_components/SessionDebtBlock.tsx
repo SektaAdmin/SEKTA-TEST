@@ -50,9 +50,9 @@ export function SessionDebtBlock({ date }: { date: string }) {
         <div role="status" aria-label="Завантаження...">
           {[0, 1].map(i => (
             <div key={i} className={styles.debtSkelGroup} aria-hidden="true">
-              <div className={`${styles.skeletonBone} ${styles.debtSkelHead}`} />
-              <div className={`${styles.skeletonBone} ${styles.debtSkelClient}`} style={{ width: '68%' }} />
-              <div className={`${styles.skeletonBone} ${styles.debtSkelClient}`} style={{ width: '54%' }} />
+              <div className={`skeleton-bone ${styles.debtSkelHead}`} />
+              <div className={`skeleton-bone ${styles.debtSkelClient}`} style={{ width: '68%' }} />
+              <div className={`skeleton-bone ${styles.debtSkelClient}`} style={{ width: '54%' }} />
             </div>
           ))}
         </div>

@@ -184,11 +184,11 @@ export function FreeSlotsBlock({ date }: { date: string }) {
         <div role="status" aria-label="Завантаження...">
           {[0, 1, 2].map(i => (
             <div key={i} className={styles.skeletonRow} aria-hidden="true">
-              <div className={`${styles.skeletonBone} ${styles.slotSkelHallBtn}`} />
+              <div className={`skeleton-bone ${styles.slotSkelHallBtn}`} />
               <div className={styles.slotSkelWindows}>
-                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
-                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
-                <div className={`${styles.skeletonBone} ${styles.slotSkelChip}`} />
+                <div className={`skeleton-bone ${styles.slotSkelChip}`} />
+                <div className={`skeleton-bone ${styles.slotSkelChip}`} />
+                <div className={`skeleton-bone ${styles.slotSkelChip}`} />
               </div>
             </div>
           ))}
@@ -225,7 +225,7 @@ export function FreeSlotsBlock({ date }: { date: string }) {
           />
           <div className={styles.slotWindows}>
             {splitIntoHourSlots(h.free).map(w => (
-              <span key={w.from} className={`${styles.geistBadge} ${styles.geistBadgeSuccess}`}>
+              <span key={w.from} className="badge badge-success">
                 {minToStr(w.from)}–{minToStr(w.to)}
               </span>
             ))}

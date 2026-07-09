@@ -124,8 +124,9 @@
   gap: var(--space-sm);
 }
 
-.collapseHeadRow .collapseHead {
-  width: auto;
+/* h2-обгортка кнопки-тогла (ARIA-патерн акордеона). Типографіку скидає
+   Tailwind preflight; фактичний стиль назви — .blockTitle на span усередині. */
+.collapseHeadTitle {
   flex: 1;
   min-width: 0;
 }
@@ -202,24 +203,6 @@
   line-height: var(--lh-base);
   color: var(--text-3);
   flex: 1;
-}
-
-/* ── Geist badge — нейтральна плашка (число, мітка) ─────────────
-   Success-варіант для вільних слотів (позитивний сигнал «можна здати»). */
-.geistBadge {
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: var(--fw-medium);
-  font-variant-numeric: tabular-nums;
-  background: var(--bg-3);
-  color: var(--text);
-}
-
-.geistBadgeSuccess {
-  background: var(--success-dim);
-  color: var(--success-text);
 }
 
 /* Geist list-item мета — приглушений рядок (тренер · зал), БЕЗ dl-підписів. */
@@ -323,68 +306,46 @@
 /* ── Таблиця боржників по сесіях ───────────────────────────────
    Full-width блок: рядок = клієнт, колонки = типи занять + Депозит (₴).
    Авто-розкладка (НЕ fixed): кожна колонка по ширині свого вмісту. При
-   багатьох типах занять — горизонтальний скрол лише самої таблиці. */
+   багатьох типах занять — горизонтальний скрол лише самої таблиці.
+   Геометрія/бордери/hover — глобальний примітив .data-table (Geist Table);
+   тут лише локальна специфіка: числові колонки праворуч + приглушені.
+   БЕЗ .data-table-wrap: рамку/фон дає сам складаний блок. */
 .debtTableWrap {
   composes: collapseBody;
   overflow-x: auto;
 }
 
-.debtTable {
-  min-width: 100%;
-  border-collapse: collapse;
-  font-size: var(--fs-base);
-}
-
-.debtTable th {
-  font-size: var(--fs-base);
-  line-height: var(--lh-base);
-  font-weight: var(--fw-medium);
-  color: var(--text);
+.debtTableWrap :global(.data-table) th,
+.debtTableWrap :global(.data-table) td {
   text-align: right;
   white-space: nowrap;
-  padding: 0 var(--space-sm) var(--space-sm);
-  border-bottom: 1px solid var(--border);
 }
 
-.debtTable td {
-  padding: 10px var(--space-sm);
-  border-bottom: 1px solid var(--border);
-  text-align: right;
+.debtTableWrap :global(.data-table) td {
   color: var(--text-2);
-  white-space: nowrap;
-}
-
-.debtTable tbody tr:hover {
-  background: var(--bg-3);
-}
-
-.debtTable tr:last-child td {
-  border-bottom: none;
 }
 
 /* «Клієнт» — гумова колонка: width:100% забирає весь залишок, стискаючи
    числові колонки до їхнього вмісту. */
-.debtTableName {
-  text-align: left !important;
-  padding-left: 0 !important;
-  padding-right: var(--space-lg);
-  color: var(--text) !important;
+.debtTableWrap :global(.data-table) .debtTableName {
+  text-align: left;
+  padding-left: 0;
+  color: var(--text);
   width: 100%;
-  white-space: nowrap;
 }
 
 /* Числова колонка-заняття: hug-to-content; min-width тримає доріжку рівною. */
-.debtTableCol {
+.debtTableWrap :global(.data-table) .debtTableCol {
   min-width: 56px;
   font-variant-numeric: tabular-nums;
 }
 
 /* «Депозит» (₴) — інша одиниця (гроші): відокремлюємо лівим роздільником
    і ширшою доріжкою під суми з ₴. */
-.debtTableMoney {
+.debtTableWrap :global(.data-table) .debtTableMoney {
   min-width: 84px;
   border-left: 1px solid var(--border);
-  padding-left: var(--space-md) !important;
+  padding-left: var(--space-md);
   font-variant-numeric: tabular-nums;
 }
 
@@ -522,7 +483,7 @@
   cursor: pointer;
   color: inherit;
   font: inherit;
-  transition: background 140ms ease, box-shadow 140ms ease;
+  transition: background var(--motion-fast), box-shadow var(--motion-fast);
 }
 
 .spacesRow:first-of-type {
@@ -588,7 +549,7 @@
   color: var(--text-3);
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition: opacity var(--motion-fast), transform var(--motion-fast);
   flex-shrink: 0;
 }
 
@@ -631,27 +592,6 @@
 
 .skeletonLine {
   height: 11px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-  position: relative;
-  overflow: hidden;
-}
-
-.skeletonLine::after,
-.skeletonBone::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
-  animation: skeletonShimmer 1.3s ease-in-out infinite;
-}
-
-.skeletonBone {
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-  position: relative;
-  overflow: hidden;
 }
 
 .spacesSkelCount {
@@ -660,17 +600,9 @@
   flex-shrink: 0;
 }
 
-@keyframes skeletonShimmer {
-  100% { transform: translateX(100%); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .spacesRow,
   .spacesChevron {
     transition: none;
-  }
-  .skeletonLine::after,
-  .skeletonBone::after {
-    animation: none;
   }
 }

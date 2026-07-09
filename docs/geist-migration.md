@@ -9,7 +9,7 @@
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
 | 1 | / | app/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-компонент (auth-гейт), CSS/JSX відсутні |
-| 2 | /dashboard | app/dashboard/page.tsx | 🔲 не перевірено | — | — |
+| 2 | /dashboard | app/dashboard/page.tsx | ✅ чисто | 2026-07-09 | 5 знахідок виправлено: debtTable→.data-table (+локальні модифікатори через :global), geistBadge→.badge badge-type/badge-success (новий генеричний модифікатор), skeleton→global .skeleton-bone, 140ms→--motion-fast, CollapseHead h2 обгортає button (ARIA accordion) |
 | 3 | /login | app/login/page.tsx | 🔲 не перевірено | — | — |
 | 4 | /clients | app/clients/page.tsx | 🔲 не перевірено | — | — |
 | 5 | /clients/[id] | app/clients/[id]/page.tsx | 🔲 не перевірено | — | — |
