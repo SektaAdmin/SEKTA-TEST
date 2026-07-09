@@ -41,7 +41,7 @@
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
 | 10 | /accounting | app/accounting/page.tsx | ✅ чисто | 2026-07-09 | 4 знахідки виправлено: th/td-оверрайди (.thPrice/.thDeposit/.thAmt/.thMethod/.iconCell/.checkCell) → рескоуп `.tableDesktop :global(.data-table) .cell` без `!important`; `.amtExpense`/`.amtOtherIncome` (текст ≤18px) → `--danger-text`/`--success-text` (базовий клас для mobile-span + рескоуплений для td); font-size 12/13/14px → --fs-xs/sm/base (×21); мертвий inline flex-style на .cardList (page.tsx:32) видалено. Навмисно raw: `.balanceCardVal` 26px/22px — hero-number поза шкалою (прецедент .msMetricAlert); iconIncome/Expense та border .expenseCard — raw --success/--danger коректно (іконки/бордери). Пастка сесії: haiku-fixer зняв `!important` без рескоупу (програш специфічності `.data-table td`) → відкат + перезапуск на sonnet за гардом |
-| 11 | /accounting/trainers | app/accounting/trainers/page.tsx | 🔲 не перевірено | — | стаб redirect('/accounting') — очікувано «чисто» |
+| 11 | /accounting/trainers | app/accounting/trainers/page.tsx | ✅ чисто | 2026-07-09 | Без UI — серверний redirect-стаб (`redirect('/accounting')`), CSS-модуля і локальних компонентів немає |
 | 12 | /audit | app/audit/page.tsx | 🔲 не перевірено | — | — |
 | 13 | /journal | app/journal/page.tsx | 🔲 не перевірено | — | — |
 
