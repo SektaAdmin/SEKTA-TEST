@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   cursor: pointer;
   user-select: none;
@@ -48,7 +48,7 @@
 }
 
 .hoursError {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--danger-text);
   align-self: center;
 }
@@ -59,7 +59,7 @@
 }
 
 .noClients {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
@@ -89,7 +89,7 @@
 }
 
 .clientName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   flex: 1;
 }
@@ -104,7 +104,7 @@
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
   cursor: pointer;
   opacity: 0;
@@ -121,7 +121,7 @@
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   color: var(--danger);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
   cursor: pointer;
   flex-shrink: 0;

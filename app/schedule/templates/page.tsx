@@ -418,8 +418,8 @@ export default function TemplatesPage() {
               />
             </div>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <div className={`data-table-wrap ${styles.listCard}`}>
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>День</th>
@@ -441,7 +441,7 @@ export default function TemplatesPage() {
                     const typeLabel = trainingTypes.find(t => t.code === series.ticket_type)?.label ?? series.ticket_type
 
                     return (
-                      <tr key={series.id} className={styles.row}>
+                      <tr key={series.id}>
                         <td>{DOW_LABELS_SHORT[series.day_of_week]}</td>
                         <td>{series.time_of_day.slice(0, 5)}</td>
                         <td>{typeLabel}</td>
@@ -582,14 +582,14 @@ function GridSkeleton() {
     <div className={styles.gridCard} aria-hidden="true">
       <div className={styles.skelHeader}>
         <div className={styles.skelGutter} />
-        {days.map(d => <div key={d} className={styles.skelDayHead}><span className={styles.skelBar} /></div>)}
+        {days.map(d => <div key={d} className={styles.skelDayHead}><span className={`skeleton-bone ${styles.skelBar}`} /></div>)}
       </div>
       <div className={styles.skelBody}>
         <div className={styles.skelGutter} />
         {days.map(d => (
           <div key={d} className={styles.skelCol}>
             {slots.filter((_, i) => i % days.length === d % days.length).map((s, i) => (
-              <div key={i} className={styles.skelCell} style={{ top: s.top, height: s.h }} />
+              <div key={i} className={`skeleton-bone ${styles.skelCell}`} style={{ top: s.top, height: s.h }} />
             ))}
           </div>
         ))}

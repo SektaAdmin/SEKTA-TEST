@@ -47,7 +47,7 @@
 }
 
 .backLink {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   text-decoration: none;
   transition: color var(--motion-fast);
@@ -66,7 +66,7 @@
 .navBtn { width: 28px; height: 28px; padding: 0; flex-shrink: 0; }
 
 .dayNavLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -88,7 +88,7 @@
 /* .viewToggle/.toggleBtn/.toggleActive → глобальні .tabs-segmented/.tab-seg (Сесія 12) */
 
 .deleteWarning {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger);
   margin: 0;
   opacity: 0.8;
@@ -127,7 +127,7 @@
   border: 1px solid var(--accent-border);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 14px;
+  font-size: var(--fs-base);
   white-space: nowrap;
   max-width: 220px;
   overflow: hidden;
@@ -138,7 +138,7 @@
   background: transparent;
   border: none;
   color: var(--accent);
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1;
   cursor: pointer;
   padding: 0 2px;
@@ -180,6 +180,15 @@
   .gridCard { margin: 8px; }
 }
 
+/* Список-вигляд: картка .data-table-wrap з тими самими відступами, що .gridCard. */
+.listCard {
+  margin: 12px 16px 16px;
+}
+
+@media (max-width: 900px) {
+  .listCard { margin: 8px; }
+}
+
 
 /* ── Grid states: empty / no-results ─────────────────────────── */
 .stateWrap {
@@ -208,7 +217,7 @@
 }
 
 .stateTitle {
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -216,7 +225,7 @@
 }
 
 .stateText {
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.5;
   color: var(--text-2);
   margin: 0 0 6px;
@@ -250,8 +259,6 @@
 .skelBar {
   width: 52px;
   height: 9px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
 }
 .skelBody {
   display: flex;
@@ -270,61 +277,10 @@
   position: absolute;
   left: 6px;
   right: 6px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-}
-.skelBar,
-.skelCell {
-  animation: skelPulse 1.4s ease-in-out infinite;
-}
-@keyframes skelPulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.45; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .skelBar, .skelCell { animation: none; opacity: 0.7; }
 }
 
 /* ── Table ───────────────────────────────────────────────── */
-.tableWrap {
-  overflow-x: auto;
-  padding: var(--topbar-py) var(--topbar-px);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-/* Geist Table geometry (Сесія 2/globals.css .data-table): normal-case 14/500,
-   не uppercase-мікрокапс. */
-.table th {
-  height: 40px;
-  text-align: left;
-  font-size: 14px;
-  color: var(--text);
-  font-weight: 500;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.table th:first-child { padding-left: 0; }
-.table th:last-child { padding-right: 0; }
-
-.row td {
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  vertical-align: middle;
-}
-
-.row td:first-child { padding-left: 0; }
-.row td:last-child { padding-right: 0; }
-
-.row:last-child td { border-bottom: none; }
+/* Геометрія/бордери/hover — глобальний примітив .data-table-wrap/.data-table (Geist Table). */
 
 .actions {
   display: flex;
@@ -348,10 +304,10 @@
   white-space: nowrap;
 }
 .btnRowEdit:hover { border-color: var(--border-hover); color: var(--text); }
-.btnRowDel:hover  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnRowDel:hover  { border-color: var(--danger); color: var(--danger-text); background: var(--danger-dim); }
 
 .deleteConfirm {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
 }
 
@@ -360,7 +316,7 @@
   border: none;
   padding: 0;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
   cursor: pointer;
   transition: color var(--motion-fast);
@@ -380,7 +336,7 @@
 }
 
 .mobileDayLabel {
-  font-size: 15px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
