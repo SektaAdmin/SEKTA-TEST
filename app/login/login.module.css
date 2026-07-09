@@ -15,7 +15,7 @@
 }
 
 .logo {
-  font-size: 22px;
+  font-size: var(--fs-lg); /* L1-заголовок екрана (wordmark) */
   font-weight: 600;
   letter-spacing: 0.15em;
   color: var(--accent);
