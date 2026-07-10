@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   background: none;
   border: none;
@@ -41,7 +41,7 @@
 }
 
 .todayBtn {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--accent);
   background: none;
   border: none;
@@ -69,7 +69,7 @@
   justify-content: center;
   box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
   z-index: 100;
-  transition: opacity 0.12s, transform 0.1s;
+  transition: opacity var(--motion-fast), transform var(--motion-fast);
 }
 
 .fab:hover { opacity: 0.88; }
@@ -122,7 +122,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background var(--motion-fast);
   -webkit-tap-highlight-color: transparent;
   -webkit-appearance: none;
   appearance: none;
@@ -252,7 +252,7 @@
   position: absolute;
   left: 52px;
   right: 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--card-color) 12%, var(--bg));
   border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
   display: flex;
@@ -260,7 +260,7 @@
   overflow: hidden;
   cursor: pointer;
   text-align: left;
-  transition: opacity 0.12s, transform 0.1s;
+  transition: opacity var(--motion-fast), transform var(--motion-fast);
   z-index: 2;
 }
 
@@ -289,7 +289,7 @@
 }
 
 .cardTitle {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -298,7 +298,7 @@
 }
 
 .cardMeta {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
@@ -349,7 +349,7 @@
   top: 4px;
   right: 6px;
   font-size: 10px;
-  color: var(--danger);
+  color: var(--danger-text);
   font-weight: 600;
 }
 
@@ -359,7 +359,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   pointer-events: none;
 }
