@@ -53,7 +53,7 @@
 }
 
 .hint {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   margin-top: 4px;
 }
@@ -76,13 +76,13 @@
 }
 
 .tgTitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text);
 }
 
 .tgHint {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   margin-top: 2px;
 }
@@ -101,7 +101,7 @@
 }
 
 .tgConnected {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-2);
   white-space: nowrap;
@@ -111,16 +111,16 @@
   padding: 0;
   border: none;
   background: none;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 500;
   color: var(--text-3);
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.12s;
+  transition: color var(--motion-fast);
 }
 
 .tgDisconnectBtn:hover:not(:disabled) {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .tgDisconnectBtn:disabled {
@@ -149,7 +149,7 @@
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background var(--motion-fast);
   width: 100%;
   text-align: left;
 }
@@ -179,7 +179,7 @@
 }
 
 .menuLogout {
-  color: var(--danger);
+  color: var(--danger-text);
   background: transparent;
   border-color: transparent;
 }
@@ -191,7 +191,7 @@
 /* ── Empty state ──────────────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 32px 0;
   text-align: center;
 }

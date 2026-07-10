@@ -68,7 +68,7 @@
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
-| 23 | /trainer | app/trainer/page.tsx | 🔲 не перевірено | — | — |
+| 23 | /trainer | app/trainer/page.tsx | ✅ чисто | 2026-07-10 | 10 знахідок виправлено (haiku-fixer, гард пройдено), всі в trainer.module.css: font-size 12/13/14px→--fs-xs/sm/base (×6); 0.12s→--motion-fast (×2, .tgDisconnectBtn/.menuItem); `color:var(--danger)` на тексті ≤18px (.tgDisconnectBtn:hover, .menuLogout)→--danger-text. Навмисно raw: `.avatar` 22px (hero-number, прецедент .msMetricAlert); `.profileName` 18px і `.menuItem` 15px — поза шкалою без токена-відповідника (прецедент 15/17px /schedule); `.menuLogout .menuIcon` var(--danger) (іконка, не текст); `TrainerHome.tsx:42` inline `background:avatarColor(...)` (динамічне значення per-тренер). Структурно чисто: модалок/форм/таблиць/skeleton немає — ModalShell/FormField/badges.ts/.data-table не застосовні; `btn-primary` перевикористано коректно; меню-лаунчер — власний патерн кабінету |
 | 24 | /trainer/schedule | app/trainer/schedule/page.tsx | 🔲 не перевірено | — | — |
 | 25 | /trainer/clients | app/trainer/clients/page.tsx | 🔲 не перевірено | — | — |
 | 26 | /trainer/my | app/trainer/my/page.tsx | 🔲 не перевірено | — | — |
