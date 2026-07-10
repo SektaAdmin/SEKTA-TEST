@@ -7,10 +7,10 @@ export default function ClientVisitsLoading() {
     <>
       <CabinetHeader title="Мої візити" backHref="/client" hideLogout />
       <div className={styles.scroll}>
-        <div className={`${styles.skel}`} style={{ height: 14, width: 120, marginBottom: 12 }} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
+        <div className="skeleton-bone" style={{ height: 14, width: 120, marginBottom: 12 }} />
+        <div className={`skeleton-bone ${styles.skelCard}`} />
+        <div className={`skeleton-bone ${styles.skelCard}`} />
+        <div className={`skeleton-bone ${styles.skelCard}`} />
       </div>
     </>
   )

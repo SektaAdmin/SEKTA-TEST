@@ -79,7 +79,7 @@ export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
     <>
       {/* Hero: назва тренування + зал, потім час */}
       <section className={styles.detailHero}>
-        <div className={styles.detailAvatar} style={{ background: avatarColor(trainerName || ''), color: '#fff' }}>{initial}</div>
+        <div className={styles.detailAvatar} style={{ background: avatarColor(trainerName || ''), color: 'var(--white)' }}>{initial}</div>
         <div className={styles.detailTrainerName}>{className}</div>
         <div className={styles.detailTrainerRole}>
           {trainerName || 'Тренер'}{hallName ? ` · ${hallName}` : ''}
@@ -91,7 +91,7 @@ export default function VisitDetail({ enrollment, typeLabels, isPast }: Props) {
             <span className={enrollmentBadgeClass(badge.tone)}>{badge.label}</span>
           )
         })()}
-        {!isPast && c.is_cancelled && <span className={styles.badge}>Заняття скасовано</span>}
+        {!isPast && c.is_cancelled && <span className="badge badge-class-cancelled">Заняття скасовано</span>}
 
         {!isPast && !c.is_cancelled && enrollment.status !== 'cancelled' && enrollment.status !== 'waitlist' && (
           <a

@@ -7,9 +7,9 @@ export default function VisitDetailLoading() {
     <>
       <CabinetHeader title="Запис" backHref="/client/visits" hideLogout />
       <div className={styles.scroll}>
-        <div className={`${styles.skel}`} style={{ height: 180, borderRadius: 'var(--radius)', marginBottom: 24 }} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
-        <div className={`${styles.skel} ${styles.skelCard}`} />
+        <div className="skeleton-bone" style={{ height: 180, borderRadius: 'var(--radius)', marginBottom: 24 }} />
+        <div className={`skeleton-bone ${styles.skelCard}`} />
+        <div className={`skeleton-bone ${styles.skelCard}`} />
       </div>
     </>
   )

@@ -8,11 +8,11 @@ export default function ClientHomeLoading() {
     <>
       <CabinetHeader title="Особистий кабінет" address={STUDIO.address} hideLogout />
       <div className={styles.scroll}>
-        <div className={`${styles.skel} ${styles.skelCard}`} style={{ height: 84 }} />
+        <div className={`skeleton-bone ${styles.skelCard}`} style={{ height: 84 }} />
         <div style={{ marginTop: 24 }}>
-          <div className={`${styles.skel} ${styles.skelBlock}`} />
-          <div className={`${styles.skel} ${styles.skelBlock}`} />
-          <div className={`${styles.skel} ${styles.skelBlock}`} />
+          <div className={`skeleton-bone ${styles.skelBlock}`} />
+          <div className={`skeleton-bone ${styles.skelBlock}`} />
+          <div className={`skeleton-bone ${styles.skelBlock}`} />
         </div>
       </div>
     </>

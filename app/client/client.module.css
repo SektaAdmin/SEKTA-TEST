@@ -32,7 +32,7 @@
 
 .empty {
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 32px 0;
   text-align: center;
 }
@@ -66,7 +66,7 @@
 }
 
 .emptyCardHint {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.45;
   color: var(--text-2);
   max-width: 30ch;
@@ -82,7 +82,7 @@
   border: 1px solid var(--danger-border);
   border-radius: var(--radius);
   padding: 12px 14px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.4;
   color: var(--danger-text);
 }
@@ -114,21 +114,6 @@
    Показуються миттєво при кліку, поки SSR-сторінка рахує дані. Форма
    повторює реальні картки (.profileCard/.menuItem/.visitCard), щоб не було
    стрибка layout при підміні на справжній контент. */
-.skel {
-  background: var(--bg-3);
-  border-radius: var(--radius-sm);
-  animation: skelPulse 1.2s ease-in-out infinite;
-}
-
-@keyframes skelPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skel { animation: none; }
-}
-
 .skelBlock {
   height: 56px;
   margin-bottom: 10px;
@@ -210,7 +195,7 @@
 /* Одиниця «год» — підпорядкована герой-цифрі (28px). 13px тримає її нижче
    body-тіру (15px), щоб око читало «число + дрібна одиниця», а не два рівні слова. */
 .balanceSessionsUnit {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-3);
 }
@@ -230,7 +215,7 @@
    (інакше «Залишок занять» виглядав би як заголовок без вмісту). */
 .balanceEmpty {
   padding: 11px 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
 }
 
@@ -255,7 +240,7 @@
 }
 
 .depositValue {
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--success-text);
@@ -264,13 +249,6 @@
    Мінус (борг) лишається червоним — це справжній сигнал, який клієнт має бачити. */
 .depositValueZero { color: var(--text-2); }
 .depositValueNeg { color: var(--danger-text); }
-
-/* Inline-бейдж «Заняття скасовано» (VisitDetail hero, /client/visits/[id]). */
-.badge {
-  font-size: 12px;
-  color: var(--danger);
-  white-space: nowrap;
-}
 
 /* ── Списки історії (покупки, рух депозиту) ─────────────────────── */
 .txList {
@@ -306,7 +284,7 @@
   column-gap: 14px;
   padding: 8px 14px;
   border-top: 1px solid var(--border);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
@@ -334,7 +312,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 7px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   margin-top: 3px;
 }
@@ -342,7 +320,7 @@
 /* Сума — проста tabular-цифра з кольоровим знаком (без чипа-плашки):
    три плашки різної ширини в стовпчику створювали шум. Колір несе знак. */
 .amount {
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-weight: 600;
   text-align: right;
   white-space: nowrap;
@@ -352,7 +330,7 @@
 
 /* Менша сума у під-рядках (з депозиту / решта / всього). */
 .txDepositRow .amount {
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 
 .amountPos {
@@ -364,7 +342,7 @@
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   margin-top: 12px;
   padding-top: 10px;
@@ -398,7 +376,7 @@
   margin: 0 0 8px;
   padding: 6px 0;
   background: var(--bg);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--text-2);
 }
@@ -413,7 +391,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
 }
@@ -461,7 +439,7 @@
 }
 
 .profileContact {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   margin-top: 2px;
   word-break: break-word;
@@ -492,7 +470,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: 16px;
+  font-size: var(--fs-md);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -538,7 +516,7 @@
    sentence-case + вага + майже-чорнильний колір дають чисту ієрархію без шуму.
    Чітко вищий за рядки-вміст (15px/400) і нижчий за герой-цифру (28px). */
 .sectionLabel {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: -0.005em;
   color: var(--text);
@@ -570,7 +548,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
 }
@@ -605,25 +583,6 @@
   scroll-margin-top: 40px;
 }
 
-/* Візити — колір за статусом (узгоджено з badge-* у globals.css). */
-.visitTimerAttended {
-  color: var(--success);
-  background: var(--success-dim);
-  border-color: var(--success-border);
-}
-
-.visitTimerCancelled {
-  color: var(--warning);
-  background: var(--warning-dim);
-  border-color: var(--warning-border);
-}
-
-.visitTimerNoshow {
-  color: var(--danger);
-  background: var(--danger-dim);
-  border-color: var(--danger-border);
-}
-
 .visitWhen {
   font-size: 15px;
   font-weight: 500;
@@ -631,7 +590,7 @@
 }
 
 .visitMeta {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   margin-top: 4px;
 }
@@ -659,18 +618,18 @@
   border-radius: 50%;
   background: var(--accent-dim);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
 }
 
 .visitTrainerName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
 }
 
 .visitTrainerRole {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
@@ -692,12 +651,12 @@
 }
 
 .visitHistoryLabel {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
 .visitHistoryValue {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text);
 }
@@ -709,13 +668,13 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 500;
   border: 1px solid transparent;
 }
 
 .visitHistoryBadge.visitTimerAttended {
-  color: var(--success);
+  color: var(--success-text);
   background: var(--success-dim);
   border-color: var(--success-border);
 }
@@ -727,13 +686,13 @@
 }
 
 .visitHistoryBadge.visitTimerLatePenalty {
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
   border-color: var(--danger-border);
 }
 
 .visitHistoryBadge.visitTimerNoshow {
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
   border-color: var(--danger-border);
 }
@@ -745,25 +704,25 @@
 }
 
 .visitHistoryBadge.visitBadgeWaitlist {
-  color: var(--warning);
+  color: var(--warning-text);
   background: var(--warning-dim);
   border-color: var(--warning-border);
 }
 
 .visitHistoryBadge.visitBadgeBalancePositive {
-  color: var(--success);
+  color: var(--success-text);
   background: var(--success-dim);
   border-color: var(--success-border);
 }
 
 .visitHistoryBadge.visitBadgeBalanceZero {
-  color: var(--warning);
+  color: var(--warning-text);
   background: var(--warning-dim);
   border-color: var(--warning-border);
 }
 
 .visitHistoryBadge.visitBadgeBalanceNegative {
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
   border-color: var(--danger-border);
 }
@@ -796,13 +755,13 @@
 }
 
 .detailTrainerName {
-  font-size: 20px;
+  font-size: var(--fs-lg);
   font-weight: 600;
   color: var(--text);
 }
 
 .detailTrainerRole {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
 }
 
@@ -837,7 +796,7 @@
   padding: 13px 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   text-decoration: none;
   background: var(--bg-3);
@@ -867,7 +826,7 @@
 }
 
 .detailRowSub {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   margin-top: 4px;
 }
@@ -897,7 +856,7 @@
 }
 
 .contactIconLabel {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
 }
 
@@ -913,8 +872,8 @@
   border: 1px solid var(--danger-border);
   border-radius: var(--radius);
   background: none;
-  color: var(--danger);
-  font-size: 14px;
+  color: var(--danger-text);
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
   transition: background var(--motion-fast);
@@ -929,19 +888,19 @@
 
 /* ── Модалка підтвердження скасування ───────────────────────────── */
 .confirmText {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   margin-bottom: 12px;
 }
 
 .confirmRule {
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.5;
   color: var(--text-2);
 }
 
 .confirmRuleWarn {
-  color: var(--danger);
+  color: var(--danger-text);
   font-weight: 500;
 }
 
@@ -958,13 +917,13 @@
 }
 
 .confirmHeroWhen {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   margin-top: 4px;
 }
 
 .confirmHeroTrainer {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   margin-top: 2px;
 }
@@ -981,7 +940,7 @@
 }
 
 .confirmStageBoxLabel {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
 }
 
@@ -1003,7 +962,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 11px 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   border-top: 1px solid var(--border);
 }
 .confirmRow:first-child {
@@ -1028,9 +987,9 @@
 
 /* Попередження про резерв — інформаційне (бурштин), не помилка (червоний). */
 .confirmReserve {
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.5;
-  color: var(--warning);
+  color: var(--warning-text);
   margin-top: 12px;
   padding: 10px 12px;
   background: var(--warning-dim);
@@ -1047,14 +1006,14 @@
 .bookTodayBtn {
   height: var(--control-h);
   padding: 0 12px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: var(--font);
   color: var(--text-2);
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
 }
 @media (hover: hover) {
   .bookTodayBtn:hover { border-color: var(--border-hover); color: var(--text); }
@@ -1177,7 +1136,7 @@
 
 /* Заголовок обраного дня над списком слотів. */
 .bookDayHeading {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text);
   text-transform: capitalize;
@@ -1208,7 +1167,7 @@
   gap: 6px;
   flex-shrink: 0;
   padding: 6px 14px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-2);
   background: var(--bg-2);
@@ -1289,7 +1248,7 @@
 }
 
 .bookSlotName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   white-space: nowrap;
@@ -1298,7 +1257,7 @@
 }
 
 .bookSlotMeta {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
@@ -1307,19 +1266,19 @@
 
 .bookSlotTag {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 500;
   padding: 3px 9px;
   border-radius: var(--radius-full);
   white-space: nowrap;
-  color: var(--success);
+  color: var(--success-text);
   background: var(--success-dim);
   border: 1px solid var(--success-border);
 }
 
 /* Повний зал — бурштинова мітка, картка лишається активною (запис у резерв). */
 .bookSlotReserve .bookSlotTag {
-  color: var(--warning);
+  color: var(--warning-text);
   background: var(--warning-dim);
   border-color: var(--warning-border);
 }
@@ -1346,7 +1305,7 @@
   border-color: var(--border);
 }
 .bookSlotEnrolledWaitlist .bookSlotTag {
-  color: var(--warning);
+  color: var(--warning-text);
   background: var(--warning-dim);
   border-color: var(--warning-border);
 }
@@ -1355,7 +1314,7 @@
 .bookNoSessions {
   margin-top: 12px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   color: var(--text-2);
   background: var(--bg-3);
@@ -1408,7 +1367,7 @@
 .visitTab {
   flex: 1;
   padding: 11px 0;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-3);
   background: none;
@@ -1435,14 +1394,14 @@
 }
 
 .visitEmptyTitle {
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--text);
   margin: 0;
 }
 
 .visitEmptySubtitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
   margin: 0;
 }
@@ -1454,7 +1413,7 @@
   background: var(--accent);
   color: var(--accent-text);
   border-radius: var(--radius);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   text-decoration: none;
   transition: background var(--motion-fast);

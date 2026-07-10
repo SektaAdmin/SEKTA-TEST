@@ -14,13 +14,13 @@ export default function ClientSubscriptionsLoading() {
         <section className={styles.balanceBlock}>
           {[64, 80, 56].map((w, i) => (
             <div key={i} className={styles.balanceRow}>
-              <span className={styles.skel} style={{ height: 15, width: w, borderRadius: 4 }} />
-              <span className={styles.skel} style={{ height: 26, width: 52, borderRadius: 4 }} />
+              <span className="skeleton-bone" style={{ height: 15, width: w, borderRadius: 4 }} />
+              <span className="skeleton-bone" style={{ height: 26, width: 52, borderRadius: 4 }} />
             </div>
           ))}
           <div className={styles.depositRow}>
-            <span className={styles.skel} style={{ height: 14, width: 56, borderRadius: 4 }} />
-            <span className={styles.skel} style={{ height: 16, width: 64, borderRadius: 4 }} />
+            <span className="skeleton-bone" style={{ height: 14, width: 56, borderRadius: 4 }} />
+            <span className="skeleton-bone" style={{ height: 16, width: 64, borderRadius: 4 }} />
           </div>
         </section>
 
@@ -30,10 +30,10 @@ export default function ClientSubscriptionsLoading() {
             <li key={i} className={styles.txItem}>
               <div className={styles.txItemMain}>
                 <div className={styles.txMain}>
-                  <span className={styles.skel} style={{ display: 'block', height: 15, width: w, borderRadius: 4 }} />
-                  <span className={styles.skel} style={{ display: 'block', height: 13, width: 96, marginTop: 7, borderRadius: 4 }} />
+                  <span className="skeleton-bone" style={{ display: 'block', height: 15, width: w, borderRadius: 4 }} />
+                  <span className="skeleton-bone" style={{ display: 'block', height: 13, width: 96, marginTop: 7, borderRadius: 4 }} />
                 </div>
-                <span className={styles.skel} style={{ height: 16, width: 72, borderRadius: 4 }} />
+                <span className="skeleton-bone" style={{ height: 16, width: 72, borderRadius: 4 }} />
               </div>
             </li>
           ))}
