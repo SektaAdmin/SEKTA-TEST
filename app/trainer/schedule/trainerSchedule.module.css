@@ -1,0 +1,35 @@
+/* Локальні оверрайди спільного schedule.module.css для кабінету тренера
+   (без сайдбара, компактний топбар). Скоуп .shell дає специфічність (0,2,0)
+   над класами спільного модуля (0,1,0) незалежно від порядку бандла. */
+
+.shell .mainNoSidebar {
+  margin-left: 0;
+  padding-bottom: 0;
+}
+
+.shell .topbarCompact {
+  height: 48px;
+}
+
+.shell .menuBlock {
+  flex: none;
+  gap: 0;
+}
+
+.shell .navCenter {
+  flex: 1;
+  justify-content: center;
+}
+
+.menuLabel {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.hallChips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}

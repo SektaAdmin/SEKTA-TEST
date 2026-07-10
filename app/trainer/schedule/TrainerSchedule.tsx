@@ -16,6 +16,7 @@ import { ticketTypeAbbr } from '@/lib/badges'
 import { MONTHS_UK_CAP, MONTHS_UK_FULL, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import styles from '../../schedule/schedule.module.css'
+import local from './trainerSchedule.module.css'
 import ScheduleRightPanel from '@/components/ScheduleRightPanel'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
@@ -1121,20 +1122,20 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
 
   // ── Desktop render ──────────────────────────────────────────────────────────
   return (
-    <div className={styles.layout} style={{ '--sidebar-w': '0px' } as React.CSSProperties}>
-      <main className={styles.main} style={{ marginLeft: 0, paddingBottom: 0 }}>
+    <div className={`${styles.layout} ${local.shell}`}>
+      <main className={`${styles.main} ${local.mainNoSidebar}`}>
 
-        <div className={styles.topbar} style={{ height: '48px' }}>
-          <div className={styles.topbarLeft} style={{ flex: 'none', gap: 0 }}>
+        <div className={`${styles.topbar} ${local.topbarCompact}`}>
+          <div className={`${styles.topbarLeft} ${local.menuBlock}`}>
             <button className={`btn-secondary ${styles.navBtn}`} onClick={() => router.push('/trainer')} aria-label="Меню">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 2L4 7l5 5"/>
               </svg>
             </button>
-            <span style={{ fontSize: 13, color: 'var(--text-3)', marginLeft: 6, whiteSpace: 'nowrap' }}>Меню</span>
+            <span className={local.menuLabel}>Меню</span>
           </div>
 
-          <div className={styles.topbarLeft} style={{ flex: 1, justifyContent: 'center' }}>
+          <div className={`${styles.topbarLeft} ${local.navCenter}`}>
             <div className={styles.desktopNav}>
               <button className={`btn-secondary ${styles.navBtn}`} onClick={goPrev} disabled={isPrevDisabled} aria-label="Назад">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -1173,7 +1174,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                 Тиждень
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'nowrap' }}>
+            <div className={local.hallChips}>
               {[
                 { value: 'all', label: 'Всі' },
                 ...activeHalls.map(h => ({ value: h.id, label: h.name })),
