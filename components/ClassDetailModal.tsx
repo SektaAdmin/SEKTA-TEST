@@ -466,7 +466,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                   <dd className={styles.fieldValue}>
                     {new Date(cls.starts_at).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '')}
                     {cls.is_cancelled && (
-                      <span className="badge badge-class-cancelled" style={{ marginLeft: 8 }}>скасовано</span>
+                      <span className={`badge badge-class-cancelled ${styles.cancelledInline}`}>скасовано</span>
                     )}
                   </dd>
                 </dl>
@@ -579,7 +579,7 @@ export default function ClassDetailModal({ classId, onClose, onClassUpdated, vie
                                     <span className={enrollmentBadgeClass(badge.tone)}>
                                       {Icon && <Icon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
                                       {badge.label}
-                                      {sourceHint && <span style={{ opacity: 0.65, marginLeft: 4 }}>· {sourceHint}</span>}
+                                      {sourceHint && <span className={styles.sourceHint}>· {sourceHint}</span>}
                                     </span>
                                   )
                                 })()}

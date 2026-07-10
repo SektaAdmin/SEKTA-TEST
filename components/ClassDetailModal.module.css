@@ -6,7 +6,7 @@
 
 .loadingState {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 60px 0;
   text-align: center;
 }
@@ -28,14 +28,14 @@
   border: 1px solid var(--warning-border);
   border-radius: var(--radius);
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   line-height: 1.5;
 }
 
 .calloutIcon {
   color: var(--warning);
-  font-size: 14px;
+  font-size: var(--fs-base);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -109,6 +109,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+.cancelledInline {
+  margin-left: 8px;
+}
+
+.sourceHint {
+  opacity: 0.65;
+  margin-left: 4px;
+}
+
 .choreoRow {
   display: flex;
   flex-direction: column;
@@ -118,7 +127,7 @@
 
 .choreoInput {
   width: 100%;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   line-height: 1.4;
   background: var(--bg-2);
@@ -136,7 +145,7 @@
 
 .choreoSave {
   align-self: flex-end;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--white);
   background: var(--accent);
@@ -166,7 +175,7 @@
 }
 
 .enrollmentTitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   margin: 0;
@@ -195,15 +204,15 @@
 }
 
 .clientName {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
 }
 
 
 .enrollError {
-  font-size: 14px;
-  color: var(--danger);
+  font-size: var(--fs-base);
+  color: var(--danger-text);
   background: var(--danger-dim);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -218,7 +227,7 @@
 /* ── Empty ───────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 32px 0;
   text-align: center;
 }
@@ -234,7 +243,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 /* Geist Table geometry (Сесія 2/globals.css .data-table): thead БЕЗ заливки,
@@ -243,7 +252,7 @@
   height: 40px;
   padding: 0 16px;
   text-align: left;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   border-bottom: 1px solid var(--border);
@@ -271,9 +280,9 @@
   user-select: none;
 }
 
-.thNum {
+.table th.thNum {
   width: 28px;
-  padding-right: 0 !important;
+  padding-right: 0;
 }
 
 /* № як inline-префікс імені — лише на мобілі (десктоп має окрему колонку) */
@@ -285,9 +294,9 @@
 .rowCancelled { opacity: 1; }
 .rowCancelled .clientLink { color: var(--text-2); }
 
-.actionsCell {
+.table td.actionsCell {
   text-align: right;
-  padding: 11px 14px !important;
+  padding: 11px 14px;
   white-space: nowrap;
 }
 
@@ -307,7 +316,7 @@
 }
 
 .waitlistTitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
   margin: 0 0 12px;
@@ -336,18 +345,18 @@
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-2);
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
   white-space: nowrap;
   flex-shrink: 0;
   padding: 0 var(--btn-sm-px);
 }
 .btnRowEdit:hover:not(:disabled) { border-color: var(--border-hover); color: var(--text); background: var(--bg-3); }
-.btnRowDel:hover:not(:disabled)  { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+.btnRowDel:hover:not(:disabled)  { border-color: var(--danger); color: var(--danger-text); background: var(--danger-dim); }
 .btnRowEdit:disabled, .btnRowDel:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .rowError {
   font-size: 11px;
-  color: var(--danger);
+  color: var(--danger-text);
   max-width: 160px;
   white-space: nowrap;
   overflow: hidden;
@@ -373,7 +382,7 @@
   gap: 4px;
 }
 .deleteHint {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   white-space: nowrap;
 }
@@ -383,7 +392,7 @@
    тут; небезпеку .btn-ghost вже проявляє на hover через --accent-dim, тому колір
    лишаємо приглушеним у спокої й тонуємо в danger лише на hover нижче). */
 .btnDeleteGhost { color: var(--text-3); }
-.btnDeleteGhost:hover:not(:disabled) { color: var(--danger); background: var(--danger-dim); }
+.btnDeleteGhost:hover:not(:disabled) { color: var(--danger-text); background: var(--danger-dim); }
 
 /* ── Confirm dialogs — токени Elevation Сесії 3, той самий еталон що
    /sales (Сесія 4) і /clients/[id] (Сесія 6): світлий фрост-бекдроп +
@@ -409,7 +418,7 @@
   border-radius: 0 0 var(--radius) var(--radius);
 }
 .confirmText {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
   line-height: 1.5;
   margin: 0;
@@ -437,7 +446,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   cursor: pointer;
   user-select: none;
@@ -450,10 +459,6 @@
   cursor: pointer;
 }
 
-
-.hidden {
-  display: none;
-}
 
 /* Баланс у окремій десктопній колонці — ховаємо на мобілі */
 .balanceDesktop { }
@@ -488,7 +493,7 @@
   .footerActions :global(.btn-danger) {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 13px;
+    font-size: var(--fs-sm);
     padding: 10px 8px;
     white-space: nowrap;
     text-align: center;
@@ -497,7 +502,7 @@
   /* Другий ряд: Видалити (тиха текст-кнопка) — окремий рядок на всю ширину */
   .footerActions .btnDeleteGhost {
     flex: 0 0 100%;
-    font-size: 13px;
+    font-size: var(--fs-sm);
     padding: 10px 8px;
     text-align: center;
     height: auto;
@@ -513,7 +518,7 @@
      ховаємо (картка самодостатня), № — префікс перед іменем, баланс
      отримує підпис через ::before, «Дія» — touch-target 44px.        */
   .tableContainer { overflow-x: hidden; }
-  .table { display: block; width: 100%; font-size: 14px; }
+  .table { display: block; width: 100%; font-size: var(--fs-base); }
   .table thead { display: none; }
   .table tbody { display: block; }
 
@@ -550,7 +555,7 @@
   .rowNumInline {
     display: inline;
     margin-right: 5px;
-    font-size: 13px;
+    font-size: var(--fs-sm);
     color: var(--text-3);
     user-select: none;
   }
@@ -573,7 +578,7 @@
   }
   .table td:nth-child(3) span[class*="badge"] {
     white-space: nowrap;
-    font-size: 12px;
+    font-size: var(--fs-xs);
     padding: 3px 8px;
   }
 
@@ -592,26 +597,26 @@
   }
   .balanceDesktop::before {
     content: 'Баланс';
-    font-size: 12px;
+    font-size: var(--fs-xs);
     font-weight: 400;
     color: var(--text-3);
   }
-  .balanceDesktop > span { font-size: 13px; font-weight: 600; }
+  .balanceDesktop > span { font-size: var(--fs-sm); font-weight: 600; }
   .balanceMobile { display: none; }
 
   /* Дія — праворуч, по центру обох рядків; min-width дає селекту зручну
      ширину й водночас дозволяє inline-підтвердженню (Так/Ні) розсунутись. */
-  .actionsCell {
+  .table td.actionsCell {
     grid-area: action;
     min-width: 92px;
     width: auto;
     justify-self: end;
     align-self: center;
     text-align: right;
-    padding: 0 !important;
+    padding: 0;
   }
   .actions { gap: 6px; justify-content: flex-end; }
-  .btnRowEdit, .btnRowDel { height: 44px; padding: 0 12px; font-size: 14px; }
+  .btnRowEdit, .btnRowDel { height: 44px; padding: 0 12px; font-size: var(--fs-base); }
   .deleteConfirm { align-items: stretch; }
   .deleteHint { white-space: normal; text-align: right; }
 
