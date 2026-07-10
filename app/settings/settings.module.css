@@ -23,7 +23,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
@@ -37,7 +37,6 @@
 /* ── Skeleton-лоадер ──────────────────────────────────────────── */
 .skelName    { width: 120px; }
 .skelToggle  { width: 76px; height: 22px; }
-.skelCardName { width: 40%; }
 .skelCardMeta { width: 60px; height: 18px; border-radius: var(--radius-full); }
 
 /* ── Settings tab nav ────────────────────────────────────────── */
@@ -48,7 +47,7 @@
   padding: 6px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-2);
   text-decoration: none;
   background: transparent;
@@ -109,7 +108,7 @@
 /* ── States ──────────────────────────────────────────────────── */
 .empty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 40px 0;
   text-align: center;
   display: flex;
@@ -120,13 +119,13 @@
 
 .name { font-weight: 500; }
 
-.mono {
+.tableDesktop :global(.data-table) .mono {
   font-variant-numeric: tabular-nums;
-  font-size: 14px !important;
-  color: var(--text-2) !important;
+  font-size: var(--fs-base);
+  color: var(--text-2);
 }
 
-.handle { color: var(--text-2); font-size: 14px; }
+.handle { color: var(--text-2); font-size: var(--fs-base); }
 .dash { color: var(--text-3); }
 .description { color: var(--text-2); max-width: 300px; }
 
@@ -143,7 +142,7 @@
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-3);
-  transition: background 0.12s, color 0.12s, border-color 0.12s, opacity 0.12s;
+  transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast), opacity var(--motion-fast);
   letter-spacing: 0.03em;
 }
 
@@ -154,19 +153,19 @@
 }
 .toggleFalse:hover:not(:disabled):not(.toggleActiveFalse) {
   border-color: var(--danger-border-hover);
-  color: var(--danger);
+  color: var(--danger-text);
   background: var(--danger-dim);
 }
 .toggleActiveTrue {
-  background: var(--accent-dim) !important;
-  border-color: var(--accent-border-strong) !important;
-  color: var(--accent) !important;
+  background: var(--accent-dim);
+  border-color: var(--accent-border-strong);
+  color: var(--accent);
   cursor: default;
 }
 .toggleActiveFalse {
-  background: var(--danger-dim) !important;
-  border-color: var(--danger-border-strong) !important;
-  color: var(--danger) !important;
+  background: var(--danger-dim);
+  border-color: var(--danger-border-strong);
+  color: var(--danger-text);
   cursor: default;
 }
 .toggleBtn:disabled { opacity: 1; }
@@ -181,7 +180,7 @@
   cursor: pointer;
   color: var(--text-2);
   font-family: var(--font);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
   white-space: nowrap;
 }
 .editBtn:hover {
@@ -204,10 +203,10 @@
   border: none;
   cursor: pointer;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: var(--font);
   padding: 4px 0;
-  transition: color 0.12s;
+  transition: color var(--motion-fast);
   user-select: none;
   width: fit-content;
 }
@@ -216,7 +215,7 @@
 .archiveChevron {
   display: flex;
   align-items: center;
-  transition: transform 0.18s ease;
+  transition: transform var(--motion-standard);
   color: var(--text-3);
 }
 .archiveChevronOpen { transform: rotate(180deg); }
@@ -224,7 +223,7 @@
 
 .archiveEmpty {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   padding: 14px 0;
   text-align: center;
 }
@@ -242,14 +241,13 @@
   cursor: pointer;
   color: var(--text-2);
   font-family: var(--font);
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: border-color var(--motion-fast), color var(--motion-fast), background var(--motion-fast);
   white-space: nowrap;
-  opacity: 1 !important;
 }
 .restoreBtn:hover {
   border-color: var(--accent-border-hover);
   color: var(--accent);
   background: var(--accent-dim);
 }
-.restoreBtn:disabled { opacity: 0.4 !important; cursor: not-allowed; }
+.restoreBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
