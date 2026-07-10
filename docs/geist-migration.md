@@ -52,11 +52,11 @@
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
-| 14 | /halls | app/halls/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=halls') |
-| 15 | /trainers | app/trainers/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=trainers') |
-| 16 | /training-types | app/training-types/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=training-types') |
-| 17 | /tickets | app/tickets/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings?tab=tickets') |
-| 18 | /settings | app/settings/page.tsx | 🔲 не перевірено | — | стаб redirect('/settings/tickets') |
+| 14 | /halls | app/halls/page.tsx | ✅ чисто | 2026-07-10 | Без UI — redirect-стаб (`redirect('/settings?tab=halls')`), CSS/JSX відсутні |
+| 15 | /trainers | app/trainers/page.tsx | ✅ чисто | 2026-07-10 | Без UI — redirect-стаб (`redirect('/settings?tab=trainers')`), CSS/JSX відсутні |
+| 16 | /training-types | app/training-types/page.tsx | ✅ чисто | 2026-07-10 | Без UI — redirect-стаб (`redirect('/settings?tab=training-types')`), CSS/JSX відсутні |
+| 17 | /tickets | app/tickets/page.tsx | ✅ чисто | 2026-07-10 | Без UI — redirect-стаб (`redirect('/settings?tab=tickets')`), CSS/JSX відсутні |
+| 18 | /settings | app/settings/page.tsx | ✅ чисто | 2026-07-10 | Без UI — redirect-стаб (`redirect('/settings/tickets')`), CSS/JSX відсутні |
 | 19 | /settings/halls | app/settings/halls/page.tsx | 🔲 не перевірено | — | через _RefEntityPage — аудит спільний з №20–21 |
 | 20 | /settings/tickets | app/settings/tickets/page.tsx | 🔲 не перевірено | — | через _RefEntityPage |
 | 21 | /settings/trainers | app/settings/trainers/page.tsx | 🔲 не перевірено | — | через _RefEntityPage (+TrainerModal — Етап VI) |
