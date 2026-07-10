@@ -6,7 +6,7 @@
 }
 
 .dateLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
@@ -14,7 +14,7 @@
 .empty {
   text-align: center;
   padding: 24px 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
@@ -55,24 +55,24 @@
 }
 
 .itemTime {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-variant-numeric: tabular-nums;
   color: var(--text);
   font-weight: 500;
 }
 
 .itemType {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text);
 }
 
 .itemMeta {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
 .seats { color: var(--text-3); }
-.full  { color: var(--danger); }
+.full  { color: var(--danger-text); }
 
 /* ── Enroll button ──────────────────────────────────────────── */
 .btnEnroll {
@@ -82,7 +82,7 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--accent-text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;

@@ -1,6 +1,6 @@
 .error {
-  font-size: 14px;
-  color: var(--danger);
+  font-size: var(--fs-base);
+  color: var(--danger-text);
   background: var(--danger-dim);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -18,13 +18,13 @@
 }
 
 .cabinetLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
 }
 
 .cabinetHint {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
   line-height: 1.4;
 }
@@ -36,7 +36,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   margin: 0;
 }
 

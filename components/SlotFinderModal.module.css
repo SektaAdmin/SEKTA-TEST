@@ -12,13 +12,13 @@
 
 .balanceLine {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-2);
 }
 
 .balanceWarn {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--warning-text);
   background: var(--warning-dim);
   padding: 6px 10px;
@@ -52,7 +52,7 @@
 .matrixMessage {
   padding: 32px 10px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
 }
 
@@ -64,7 +64,7 @@
 }
 
 .matrixErrorMsg {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   flex: 1;
 }
@@ -78,7 +78,7 @@
   position: sticky;
   top: 0;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--text-2);
   background: var(--bg-2);
@@ -91,7 +91,7 @@
   display: flex;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
   background: var(--bg-2);
   border-bottom: 1px solid var(--border);
@@ -144,7 +144,7 @@
   flex-wrap: wrap;
   gap: 14px;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-3);
 }
 
@@ -170,7 +170,7 @@
   padding: 10px 12px;
   background: var(--accent-dim);
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: var(--text);
 }

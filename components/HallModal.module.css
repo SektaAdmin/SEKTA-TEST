@@ -1,5 +1,5 @@
 .error {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger-text);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
