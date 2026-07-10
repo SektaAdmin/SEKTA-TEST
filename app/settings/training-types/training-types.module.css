@@ -1,7 +1,7 @@
 .handle {
   cursor: grab;
   color: var(--text-3);
-  font-size: 16px;
+  font-size: var(--fs-md);
   user-select: none;
   text-align: center;
 }
@@ -10,10 +10,14 @@
   cursor: grabbing;
 }
 
+.handleCol {
+  width: 32px;
+}
+
 .handleMobile {
   cursor: grab;
   color: var(--text-3);
-  font-size: 16px;
+  font-size: var(--fs-md);
   user-select: none;
   flex-shrink: 0;
 }
@@ -25,7 +29,7 @@
 }
 
 .saving {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-3);
   padding: 8px 0;
 }
