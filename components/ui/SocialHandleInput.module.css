@@ -17,7 +17,7 @@
   position: absolute;
   left: 11px;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-base);
   pointer-events: none;
   user-select: none;
   z-index: 1;
@@ -30,9 +30,9 @@
   padding: 9px 11px 9px 24px;
   color: var(--text);
   outline: none;
-  transition: border-color 0.12s;
+  transition: border-color var(--motion-fast);
   width: 100%;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
 }
 .input:focus { border-color: var(--accent); }

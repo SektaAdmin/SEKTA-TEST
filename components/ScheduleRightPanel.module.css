@@ -22,7 +22,7 @@
 }
 
 .monthLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--text);
   letter-spacing: 0.01em;
@@ -76,7 +76,7 @@
   border: none;
   background: transparent;
   color: var(--text-2);
-  font-size: 14px !important;
+  font-size: var(--fs-base);
   cursor: pointer;
   padding: 0;
   transition: color var(--motion-fast);

@@ -9,7 +9,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-family: var(--font);
   cursor: pointer;
   outline: none;
@@ -27,7 +27,7 @@
      з бейджем статусу за увагу (One Voice Rule). */
   .trigger {
     padding: 0 14px;
-    font-size: 14px;
+    font-size: var(--fs-base);
     height: 44px;
     background: transparent;
     border-color: var(--border-hover);
@@ -57,7 +57,7 @@
   display: flex;
   align-items: center;
   padding: 7px 12px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-family: var(--font);
   color: var(--text);
   cursor: pointer;

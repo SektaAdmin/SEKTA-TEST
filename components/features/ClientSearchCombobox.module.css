@@ -7,7 +7,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   outline: none;
   transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
   box-sizing: border-box;
@@ -38,9 +38,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 9px 11px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background var(--motion-fast);
   color: var(--text);
 }
 .option:hover { background: var(--bg-2); }
@@ -59,7 +59,7 @@
 
 .empty {
   padding: 9px 11px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-3);
 }
 
