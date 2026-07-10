@@ -11,7 +11,7 @@
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   cursor: pointer;
   transition: border-color var(--motion-fast), background var(--motion-fast);

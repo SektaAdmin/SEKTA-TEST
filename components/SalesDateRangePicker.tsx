@@ -198,7 +198,7 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   // Refs для позиціонування курсору
   const inputFromRef = useRef<HTMLInputElement>(null)
   const inputToRef = useRef<HTMLInputElement>(null)
-  // Першый клік вибору (ще не другий)
+  // Перший клік вибору (ще не другий)
   const [selectingFrom, setSelectingFrom] = useState<string | null>(null)
   const [hoverDate, setHoverDate] = useState<string | null>(null)
 
