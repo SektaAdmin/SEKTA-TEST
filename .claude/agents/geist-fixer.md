@@ -1,7 +1,7 @@
 ---
 name: geist-fixer
 description: Виконавець правок Geist-міграції. Отримує в задачі готовий список знахідок аудиту (від geist-migrator після тріажу оркестратором) і застосовує ТІЛЬКИ їх — жодних правок за власною ініціативою. Механічні заміни: хардкоди→токени, обхідні стилі→спільні примітиви (ModalShell/FormField/badges/tabs). Структурні перекомпоновки не робить.
-tools: Read, Grep, Glob, Edit, Bash
+tools: Read, Edit, Bash
 model: sonnet
 ---
 
@@ -23,7 +23,9 @@ model: sonnet
 - Токени та спільні примітиви: `docs/FRONTEND.md` (ModalShell, FormField, badges.ts,
   enrollmentBadge, `.tabs-segmented`/`.tabs-underline`, `.filterChip*`, CSS-токени в globals.css).
 - Сирий еталон значень: `docs/geist/tokens.md`, `docs/geist/theming.md`.
-- Видаляючи CSS-клас — перевір Grep-ом, що він ніде більше не використовується.
+- Видаляючи CSS-клас — перевір `bash scripts/geist/audit-page.sh usages <клас>`:
+  видаляй лише якщо єдиний збіг — саме визначення. Власний пошук по репо (grep/find)
+  НЕ запускай — все, що треба знайти, вже є в переданому списку (file:line).
 
 ПІСЛЯ ПРАВОК
 Прожени `npx tsc --noEmit` (НЕ `npm run build` — може бути відкритий dev-сервер).

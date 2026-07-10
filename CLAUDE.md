@@ -28,7 +28,7 @@ Next.js 14.2.3 (App Router) · React 18 · TypeScript (strict) · Supabase (Post
 - **db-guard** — аудит diff на інваріанти БД + пастки SQL-міграцій (read-only).
 - **ui-reviewer** — Geist-консистентність змінених компонентів (read-only).
 - **security-auditor** — RLS/гранти/advisors + дрейф prod↔SECURITY.md (read-only).
-- **geist-migrator** — аудит ОДНІЄЇ сторінки проти docs/geist/ + FRONTEND.md, веде трекер `docs/geist-migration.md` (коду не редагує; sonnet).
-- **geist-fixer** — застосовує знахідки аудиту після тріажу оркестратором; лише механічні правки, структурне — оркестратор сам (sonnet; повністю механічні списки — override `model: "haiku"`).
+- **geist-migrator** — тріаж-аудитор ОДНІЄЇ сторінки: працює СТРОГО за звітом прескану `scripts/geist/audit-page.sh` (власний пошук заборонено, тулів Grep/Glob немає), додає структурний рівень, веде трекер `docs/geist-migration.md` (коду не редагує; sonnet).
+- **geist-fixer** — застосовує знахідки аудиту після тріажу оркестратором; лише механічні правки за file:line зі списку, без власного grep (sonnet; повністю механічні списки — override `model: "haiku"`).
 
-**Geist-міграція:** слово «поїхали» → навичка `geist-session` (протокол етапу + модельна матриця + гарди haiku).
+**Geist-міграція:** слово «поїхали» → навичка `geist-session` (протокол етапу + модельна матриця + гарди haiku). Механічний пошук (хардкоди/px/motion/dead CSS) — ТІЛЬКИ скриптом `bash scripts/geist/audit-page.sh <page> [-o звіт]`, не grep-ом.
