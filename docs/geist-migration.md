@@ -62,9 +62,10 @@
 | 21 | /settings/trainers | app/settings/trainers/page.tsx | ✅ чисто | 2026-07-10 | Спільний рушій — виправлення у рядку №19; `trainers/page.tsx` структурно чисте (badge через глобальний `.badge badge-completed`, `.dash`/`.handle` без дублів; TrainerModal — Етап VI, поза скоупом) |
 | 22 | /settings/training-types | app/settings/training-types/page.tsx | ✅ чисто | 2026-07-10 | Окрема drag-drop сторінка (НЕ через `_RefEntityPage`). 6 знахідок виправлено (sonnet-fixer): font-size 13px→--fs-sm (`.saving`), 16px→--fs-md (`.handle`/`.handleMobile`); inline `style={{width:32}}` на `<th>` драг-колонки (skeleton+реальна шапка) → новий клас `.handleCol{width:32px}`; inline color на «—» (page.tsx:183) → `styles.dash` із settings.module.css. Навмисно raw: skeleton-ширини px (page.tsx:43,44,45,59); inline `opacity:0.65` на архівній mobile-картці — дзеркало канонічного патерну `_RefEntityPage.tsx:191` (лишено для консистентності, звести в клас при можливому спільному проході). Структурно чисто: ArchiveSection/ToggleBtns/tabNav/.data-table/.badge badge-type — канонічний патерн /settings; `.handle`/`.handleMobile`/`.dragOver`/`.saving` — власна drag-специфіка без дублювання Geist-примітивів |
 
-## Етап III — 🔲 Тренерський кабінет
+## Етап III — ✅ виконано 2026-07-10 (Тренерський кабінет, сторінки 23–26)
 
 > №24: власного CSS немає (спільний вже чистий schedule.module.css) — ревʼю лише TSX (TrainerSchedule.tsx 1426 р., тріаж оркестратором). №25 тягне ClientSessionsModal/CreateClientModal (локальні для зони — в скоупі рядка).
+> Урок етапу: статичні inline-оверрайди СПІЛЬНОГО CSS-модуля виносити в локальний модуль зі скоупом `.shell .клас` (0,2,0) — гола локальна `.клас` (0,1,0) залежить від порядку бандла проти класів спільного модуля; заодно перевіряти inline CSS-змінні на мертвих споживачів (`--sidebar-w: 0px` без Sidebar/.page-main у піддереві).
 
 | # | Маршрут | Файл | Статус | Дата | Знахідки |
 |---|---|---|---|---|---|
