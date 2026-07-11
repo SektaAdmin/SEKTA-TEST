@@ -467,7 +467,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill, forced
           />
         </FormField>
 
-        {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+        {serverError && <p className="form-error" role="alert">{serverError}</p>}
       </ModalShell>
     </form>
   )

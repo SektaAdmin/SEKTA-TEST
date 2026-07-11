@@ -10,11 +10,10 @@ app/globals.css       CSS-токени, shared layout-класи, @keyframes, б
 app/[route]/page.tsx + [route]/*.module.css
 components/*Modal.tsx  Sale/Client/Class/Series/EnrollClient/ClassDetail/Hall/Ticket/Trainer/TrainingType/StudioExpense/SlotFinder
 components/            Sidebar, BottomNav, HallWeekGrid, ScheduleRightPanel
-components/Date*       DatePicker, DateRangePicker, DateTimePicker, DateTimeInput, SalesDateRangePicker, CalendarPopover, MonthNav
+components/Date*       DatePicker, DateTimePicker, DateTimeInput, SalesDateRangePicker, CalendarPopover
 components/features/   ClientSearchCombobox
 components/icons/navigation.tsx   усі нав-SVG як React-компоненти
-components/ui/         ModalShell, ModalFooter, FormField, Pagination, ActionSelect, FilterSelect, SocialHandleInput
-components/ui/         shadcn: button/calendar/command/dialog/popover/select/table
+components/ui/         ModalShell, ModalFooter, FormField, Pagination, ActionSelect, FilterSelect, SocialHandleInput, CopyButton
 ```
 
 ## UI-компоненти
@@ -29,6 +28,7 @@ components/ui/         shadcn: button/calendar/command/dialog/popover/select/tab
 - **FilterSelect** (`ui/FilterSelect.tsx`) — inline Radix для фільтрів. ⚠️ Radix не приймає `value=""` → пусте мапиться в sentinel `'__all__'`.
 - **Pagination** (`ui/Pagination.tsx`) — page size 20/50/100 + range з «…» + Prev/Next.
 - **CopyButton** (`ui/CopyButton.tsx`) — Geist Copy Button (звірено з `Vercel_DS/Copy Button`): outline-стиль, **розмір точно як Geist — 40px** (`--geist-form-height`), **іконка 16px заливна** (точні Geist-паси copy/check), кросфейд Copy↔Check (opacity+scale 200ms, галочка в кольорі тексту — НЕ зелена). Props: `text` (string | `() => string` — ліниво), `label?` (без нього → квадратна icon-only 40×40), `copiedLabel?`, `title?`, `ariaLabel?`, `className?`. Помилка → `toast.error`. Єдина копі-кнопка: ClassDetailModal header, dashboard (SessionDebtBlock/FreeSlotsBlock). НЕ плодити локальні `.copyBtn`/`.btnCopy`.
+- **DateTimeInput** vs **DateTimePicker** — побайтово ідентичний `.calendarBtn`, але **навмисно різні UX-стратегії відкриття** (не дублювання, не зводити): `DateTimeInput` — легкий варіант, прихований нативний `<input type="datetime-local">` з `opacity:0` поверх кнопки (системний пікер ОС); `DateTimePicker` — важкий варіант, кастомний `CalendarPopover` (свій grid+time-inputs). Обирати за контекстом виклику, не за звичкою.
 
 ## CSS токени (globals.css)
 

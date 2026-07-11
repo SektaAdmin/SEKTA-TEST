@@ -42,11 +42,7 @@
 }
 
 .error {
-  font-size: var(--fs-base);
-  color: var(--danger-text);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--danger-dim);
+  composes: form-error from global;
   border: 1px solid var(--danger-border);
   margin-top: 4px;
 }

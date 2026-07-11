@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { buildCalendarDays, WEEKDAYS_SHORT, toYMD, parseYMD, ymdToDisplay, MONTHS_UK_CAP } from '@/lib/dateUtils'
+import { calStyles } from './CalendarPopover'
 import styles from './SalesDateRangePicker.module.css'
 
 interface Props {
@@ -166,8 +167,9 @@ function renderMonthGrid(
         key={`${year}-${month}-${i}`}
         type="button"
         className={[
+          calStyles.day,
           styles.day,
-          !inMonth ? styles.dayOutside : '',
+          !inMonth ? calStyles.dayOutside : '',
           inRange ? styles.dayInRange : '',
           isStart && !isSingleDay ? styles.dayRangeStart : '',
           isEnd && !isSingleDay ? styles.dayRangeEnd : '',
@@ -179,8 +181,8 @@ function renderMonthGrid(
         aria-label={day.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
         aria-pressed={isEndpoint}
       >
-        <span className={styles.dayNum}>{day.getDate()}</span>
-        {isToday && <span className={styles.todayDot} aria-hidden="true" />}
+        <span className={`${calStyles.dayNum} ${styles.dayNum}`}>{day.getDate()}</span>
+        {isToday && <span className={calStyles.todayDot} aria-hidden="true" />}
       </button>
     )
   })
@@ -463,15 +465,15 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
             <div className={styles.calendars}>
               {/* Лівий місяць */}
               <div className={styles.calWrap}>
-                <div className={styles.calHeader}>
-                  <button type="button" className={styles.monthNav} onClick={prevMonth} aria-label="Попередній місяць">
+                <div className={calStyles.calHeader}>
+                  <button type="button" className={calStyles.monthNav} onClick={prevMonth} aria-label="Попередній місяць">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2L4 6l4 4"/></svg>
                   </button>
-                  <span className={styles.monthLabel}>{MONTHS_UK_CAP[leftMonth]} {leftYear}</span>
+                  <span className={calStyles.monthLabel}>{MONTHS_UK_CAP[leftMonth]} {leftYear}</span>
                   <div className={styles.monthNavPlaceholder} />
                 </div>
-                <div className={styles.grid}>
-                  {WEEKDAYS_SHORT.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                <div className={calStyles.grid}>
+                  {WEEKDAYS_SHORT.map(d => <div key={d} className={calStyles.weekday}>{d}</div>)}
                   {renderMonthGrid(leftYear, leftMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
                 </div>
               </div>
@@ -480,15 +482,15 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
 
               {/* Правий місяць */}
               <div className={styles.calWrap}>
-                <div className={styles.calHeader}>
+                <div className={calStyles.calHeader}>
                   <div className={styles.monthNavPlaceholder} />
-                  <span className={styles.monthLabel}>{MONTHS_UK_CAP[rightMonth]} {rightYear}</span>
-                  <button type="button" className={styles.monthNav} onClick={nextMonth} aria-label="Наступний місяць">
+                  <span className={calStyles.monthLabel}>{MONTHS_UK_CAP[rightMonth]} {rightYear}</span>
+                  <button type="button" className={calStyles.monthNav} onClick={nextMonth} aria-label="Наступний місяць">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 2l4 4-4 4"/></svg>
                   </button>
                 </div>
-                <div className={styles.grid}>
-                  {WEEKDAYS_SHORT.map(d => <div key={d} className={styles.weekday}>{d}</div>)}
+                <div className={calStyles.grid}>
+                  {WEEKDAYS_SHORT.map(d => <div key={d} className={calStyles.weekday}>{d}</div>)}
                   {renderMonthGrid(rightYear, rightMonth, effectiveFrom, effectiveTo, selectingFrom, handleDayClick, setHoverDate, () => setHoverDate(null))}
                 </div>
               </div>

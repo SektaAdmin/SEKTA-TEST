@@ -152,7 +152,7 @@ export default function TicketModal({ onClose, onSaved }: Props) {
         </FormField>
       </div>
 
-      {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+      {serverError && <p className="form-error" role="alert">{serverError}</p>}
     </ModalShell>
   )
 }

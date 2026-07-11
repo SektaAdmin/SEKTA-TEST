@@ -43,14 +43,13 @@
 }
 .chevronOpen { transform: rotate(180deg); }
 
-/* Popover */
+/* Popover — Shadow Menu (Сесія 3), як CalendarPopover, без ручного border */
 .popover {
   z-index: 400; /* над модалкою (300) */
   display: flex;
   background: var(--bg-2);
-  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-md), var(--shadow-sm);
+  box-shadow: var(--shadow-menu);
   overflow: hidden;
   animation: popoverIn var(--motion-fast) both;
 }
@@ -115,97 +114,10 @@
 
 .calWrap { width: 224px; }
 
-.calHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.monthLabel {
-  font-size: var(--fs-base);
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.01em;
-}
-
-.monthNav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  transition: border-color var(--motion-fast), color var(--motion-fast);
-}
-.monthNav:hover { border-color: var(--border-hover); color: var(--text); }
-.monthNav:active { transform: translateY(1px); }
-
 .monthNavPlaceholder { width: 22px; height: 22px; flex-shrink: 0; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0;
-}
-
-.weekday {
-  text-align: center;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-3);
-  padding-bottom: 6px;
-  letter-spacing: 0.02em;
-}
-
-/* Day cell */
-.day {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-2);
-  font-size: var(--fs-base);
-  cursor: pointer;
-  padding: 0;
-  transition: color var(--motion-fast);
-}
-.day:hover { color: var(--text); }
-.day:hover .dayNum { background: var(--bg-3); }
-
-.dayNum {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  transition: background var(--motion-fast), color var(--motion-fast);
-  position: relative;
-  z-index: 1;
-}
-
-.dayOutside { color: var(--text-3); opacity: 0.4; }
-
-.todayDot {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--accent);
-  z-index: 2;
-}
+/* .day/.dayNum — hook-класи, застосовуються поруч з calStyles.day/.dayNum
+   (SalesDateRangePicker.tsx); власних правил нема, лише мобільний оверрайд нижче. */
 
 /* Range highlight — сіра смуга між кінцями */
 .dayInRange::before {
@@ -322,7 +234,6 @@
   .popover {
     flex-direction: column;
     border-radius: var(--radius) var(--radius) 0 0;
-    border-bottom: none;
     max-height: 92dvh;
     overflow-y: auto;
     animation: bottomSheetIn var(--motion-fast) both;
@@ -367,9 +278,6 @@
     max-width: 320px;
     margin: 0 auto;
   }
-
-  /* Grid: рівномірні клітинки по ширині */
-  .grid { gap: 0; }
 
   .day { height: 40px; }
 

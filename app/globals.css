@@ -50,6 +50,7 @@ html, body { overscroll-behavior: none; }
   --fw-medium: 500;
   --fw-semibold: 600;
 
+  --fs-2xs:  11px; --lh-2xs:  14px; /* мікро-мітки поза базовою Geist-шкалою (SocialHandleInput label, ClientSearchCombobox phone) */
   --fs-xs:   12px; --lh-xs:   16px; /* Geist label-12 — бейджі, дрібні мітки, count-chip */
   --fs-sm:   13px; --lh-sm:   18px; /* Geist copy-13 — другорядний/допоміжний текст */
   --fs-base: 14px; --lh-base: 20px; /* Geist copy-14 — базовий UI-текст, таблиці, поля */
@@ -301,6 +302,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .btn-danger:hover:not(:disabled) { opacity: 0.9; }
 
 .btn-sm { height: auto; padding: var(--btn-sm-py) var(--btn-sm-px); font-size: var(--btn-sm-font); }
+
+/* Банер серверної помилки форми (спільний для модалок сутностей) */
+.form-error {
+  font-size: var(--fs-base);
+  color: var(--danger-text);
+  background: var(--danger-dim);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  line-height: 1.4;
+}
 
 /* Skeleton shimmer bone — спільний примітив для сторінкових скелетонів
    завантаження. Кожна сторінка задає власні розміри/розкладку "кісток"

@@ -40,8 +40,6 @@
     color: var(--accent);
   }
 
-  .moreBtn { font-size: inherit; }
-
   .icon {
     display: flex;
     align-items: center;

@@ -274,7 +274,7 @@ export default function ClientModal({ onClose, onSaved, client }: Props) {
         </>
       )}
 
-      {error && <p className={styles.error} role="alert">{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
     </ModalShell>
   )
 }

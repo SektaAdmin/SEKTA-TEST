@@ -8,7 +8,6 @@ import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
 import { VM } from '@/lib/validation-messages'
 import type { TrainingType } from '@/types'
-import styles from './TrainingTypeModal.module.css'
 
 
 interface FormValues {
@@ -110,7 +109,7 @@ export default function TrainingTypeModal({ onClose, onSaved, existing }: Props)
         />
       </FormField>
 
-      {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+      {serverError && <p className="form-error" role="alert">{serverError}</p>}
     </ModalShell>
   )
 }

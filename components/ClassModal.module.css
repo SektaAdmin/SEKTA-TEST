@@ -9,15 +9,6 @@
 }
 
 
-.error {
-  font-size: var(--fs-base);
-  color: var(--danger-text);
-  background: var(--danger-dim);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  line-height: 1.4;
-}
-
 /* ── Series toggle ───────────────────────────────────────────── */
 .toggleRow {
   display: flex;

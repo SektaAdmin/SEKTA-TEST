@@ -168,7 +168,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
         disabled={loading}
       />
 
-      {serverError && <p className={styles.error} role="alert">{serverError}</p>}
+      {serverError && <p className="form-error" role="alert">{serverError}</p>}
 
       {isEdit && (
         <div className={styles.cabinet}>
@@ -179,7 +179,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
               <p className={styles.cabinetHint}>
                 Пароль не зберігається — якщо тренер його загубив, згенеруйте новий.
               </p>
-              {loginError && <p className={styles.error} role="alert">{loginError}</p>}
+              {loginError && <p className="form-error" role="alert">{loginError}</p>}
               <button
                 type="button"
                 className="btn-primary"
@@ -209,7 +209,7 @@ export default function TrainerModal({ existing, onClose, onSaved }: Props) {
                 Тренер заходитиме за {existing.phone ? `номером ${existing.phone}` : `email ${existing.email}`}.
                 Логін і пароль зʼявляться після створення — надішліть їх тренеру.
               </p>
-              {loginError && <p className={styles.error} role="alert">{loginError}</p>}
+              {loginError && <p className="form-error" role="alert">{loginError}</p>}
               <button
                 type="button"
                 className="btn-primary"
