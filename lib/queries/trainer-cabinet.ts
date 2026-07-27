@@ -104,6 +104,35 @@ export async function listTrainerClients(
   return { data: (data as TrainerClientRow[]) ?? [], count: count ?? 0, error: error?.message ?? null }
 }
 
+// ── Постійники (екран /trainer/regulars) ───────────────────────────────────
+// Тижневі шаблони (class_series, type='template') свого тренера +
+// series_clients — RLS звужена міграцією 20260727_trainer_regulars_rls.sql
+// (trainer_select_own на обох таблицях, лише власний trainer_id).
+
+const TRAINER_REGULARS_SELECT =
+  'id, ticket_type, title, day_of_week, time_of_day, duration_min, halls(name), series_clients(id, client_id, hours_attended, clients(first_name, last_name))' as const
+
+function trainerRegularsQuery(supabase: Db, trainerId: string) {
+  return supabase
+    .from('class_series')
+    .select(TRAINER_REGULARS_SELECT)
+    .eq('trainer_id', trainerId)
+    .eq('type', 'template')
+    .order('day_of_week')
+    .order('time_of_day')
+}
+
+export type TrainerRegularsSeriesRow = QueryData<ReturnType<typeof trainerRegularsQuery>>[number]
+
+/** Тижневі шаблони тренера з переліком постійників (read-only). */
+export async function listTrainerRegulars(
+  supabase: Db,
+  trainerId: string
+): Promise<{ data: TrainerRegularsSeriesRow[]; error: string | null }> {
+  const { data, error } = await trainerRegularsQuery(supabase, trainerId)
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
 export interface CreateClientPayload {
   first_name: string
   last_name: string

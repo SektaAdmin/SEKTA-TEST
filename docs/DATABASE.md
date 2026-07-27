@@ -74,7 +74,7 @@ training_types — довідник
 - Готівка «на руках» тренера — єдина правда `accounting_balance('cash', trainer)`; періодна деталізація `getTrainerCashBalance` дзеркалить формулу RPC (депозитні продажі по `amount_given`, + `direction='income'`), виплати — по `payment_date` свідомо.
 
 ## RLS (інв. #9, через `auth_role()`)
-Доменні таблиці: `owner_admin_all` (owner+admin FOR ALL) АБО `owner_all` (owner FOR ALL) + SELECT-політики. `class_series` — RLS УВІМКНЕНО (`owner_admin_all`; DML відкликано в `anon`). Матриця → `docs/ROLES_PLAN.md` §Фаза 3.
+Доменні таблиці: `owner_admin_all` (owner+admin FOR ALL) АБО `owner_all` (owner FOR ALL) + SELECT-політики. `class_series` — RLS УВІМКНЕНО (`owner_admin_all` + trainer SELECT лише власних `trainer_id`; DML відкликано в `anon`). `series_clients` — trainer SELECT лише для серій свого `trainer_id` (екран `/trainer/regulars`). Матриця → `docs/ROLES_PLAN.md` §Фаза 3.
 - `client_contacts`/`sales`/`balance_transactions`/`studio_expenses` — trainer не бачить. `trainer_payments`/`trainer_rates` — trainer SELECT лише свої (`trainer_select_own`; rates також глобальні `trainer_id IS NULL`).
 - admin не бачить `trainer_payments`/`trainer_rates` (ALL — лише owner); не редагує `halls`/`training_types`/`tickets` (SELECT).
 - trainer пише `classes`/`enrollments` лише свої (`trainer_id = current_trainer_id()`).

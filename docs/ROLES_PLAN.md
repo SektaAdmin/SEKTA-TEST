@@ -189,7 +189,7 @@ drop policy if exists "tickets: anon can read" on tickets;
 - trainer/client write-флоу через `SECURITY DEFINER` RPC (`change_enrollment_status`, `mark_attendance` тощо)
   обходить RLS; прямий INSERT enrollment (`enrollClient`) — INVOKER → під RLS, тому trainer має write-політики
   на `classes`/`enrollments` лише для своїх занять.
-- `series_clients` (шаблони серій) — owner/admin ALL + trainer SELECT; client доступу не має (бачить `enrollments`, не шаблони).
+- `series_clients` (шаблони серій) — owner/admin ALL + trainer SELECT лише для серій свого `trainer_id` (звужено 2026-07-27, раніше без фільтра власності — trainer бачив чужі серії); client доступу не має (бачить `enrollments`, не шаблони). `class_series` так само отримав trainer SELECT лише власних (раніше жодного) — екран `/trainer/regulars`.
 - Перевірка — симуляція `set request.jwt.claims` + `set local role authenticated` у транзакції з rollback (без реальних логінів).
 
 ---

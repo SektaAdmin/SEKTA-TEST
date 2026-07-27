@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { avatarColor } from '@/lib/avatarColor'
-import { ScheduleIcon, JournalIcon, ClientsIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
+import { ScheduleIcon, JournalIcon, RegularsIcon, ClientsIcon, ArrowRightIcon, LogoutIcon } from '@/components/icons/navigation'
 import styles from './trainer.module.css'
 
 type Props = {
@@ -88,6 +88,11 @@ export default function TrainerHome({ trainerName, telegramConnected, telegramLi
         <Link href="/trainer/my" prefetch className={styles.menuItem}>
           <span className={styles.menuIcon}><JournalIcon /></span>
           <span className={styles.menuLabel}>Мої заняття</span>
+          <ArrowRightIcon className={styles.menuArrow} />
+        </Link>
+        <Link href="/trainer/regulars" prefetch className={styles.menuItem}>
+          <span className={styles.menuIcon}><RegularsIcon /></span>
+          <span className={styles.menuLabel}>Постійники</span>
           <ArrowRightIcon className={styles.menuArrow} />
         </Link>
         <Link href="/trainer/clients" prefetch className={styles.menuItem}>

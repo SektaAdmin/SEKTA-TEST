@@ -15,7 +15,7 @@
 - Доменний id у політиках — `current_client_id()`/`current_trainer_id()` (SECURITY DEFINER, в обхід RLS).
 - RLS-on БЕЗ політики = deny-all. Чистка політик лишає щонайменше owner-політику.
 - Нова таблиця → `ENABLE ROW LEVEL SECURITY` + (`owner_all` або `owner_admin_all`) + trainer/client-політики + `GRANT SELECT,INSERT,UPDATE,DELETE … TO anon, authenticated`.
-- `class_series` — RLS УВІМКНЕНО (`owner_admin_all`); DML відкликано в `anon`.
+- `class_series` — RLS УВІМКНЕНО (`owner_admin_all` + `trainer_select_own`: SELECT лише власних `trainer_id = current_trainer_id()`, екран `/trainer/regulars`); DML відкликано в `anon`.
 - Матриця → `ROLES_PLAN.md` §Фаза 3.
 
 ## Гранти
@@ -59,6 +59,7 @@ _Немає відкритих сигналів понад прийняті ви
 > Новий ERROR/WARN, якого тут немає, — потенційна дірка: розбирати, не ігнорувати.
 
 ## Закриті (фікс застосовано)
+- **`series_clients.trainer_select` без фільтра власності (2026-07-27)** — політика дозволяла БУДЬ-ЯКОМУ trainer SELECT-ити `series_clients` чужих серій (client_id+series_id інших тренерів), бо `qual` перевіряв лише `auth_role() = 'trainer'` без звʼязку з `class_series.trainer_id`. Замінено на `trainer_select_own`: `series_id IN (SELECT id FROM class_series WHERE trainer_id = current_trainer_id())`. Одночасно додано `class_series.trainer_select_own` (раніше в trainer не було жодного SELECT) — обидві потрібні для нового екрана `/trainer/regulars`.
 - **`render_enrollment_event_message` PUBLIC EXECUTE (2026-07-07)** — 5-арг overload мав дефолтний PUBLIC EXECUTE → anon/authenticated могли рендерити текст з іменем клієнта/часом заняття по довільних uuid (info-leak, lint 0028). REVOKE EXECUTE від PUBLIC/anon/authenticated, лишено лише `postgres` (кличе `emit_enrollment_event`). Легасі 4-арг overload (мертвий, не викликався жодною живою функцією) — DROP.
 
 ---
