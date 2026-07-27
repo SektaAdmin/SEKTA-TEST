@@ -112,10 +112,11 @@ export default function TrainerRegulars({ series }: Props) {
                   {(s.series_clients ?? []).length === 0 ? (
                     <span className={styles.noClients}>{MSG.empty.seriesClients}</span>
                   ) : (
-                    s.series_clients.map(row => {
+                    s.series_clients.map((row, i) => {
                       const hoursLabel = formatHoursLabel(row.hours_attended, s.time_of_day)
                       return (
                         <div key={row.id} className={styles.clientChip}>
+                          <span className={styles.clientNum}>{i + 1}</span>
                           <span className={styles.clientChipName}>{clientName(row.clients)}</span>
                           {hoursLabel && <span className={`badge badge-type ${styles.hoursTag}`}>{hoursLabel}</span>}
                         </div>

@@ -147,6 +147,13 @@
   border-radius: var(--radius-sm);
 }
 
+.clientNum {
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 18px;
+  flex-shrink: 0;
+}
+
 .clientChipName {
   font-size: var(--fs-base);
   color: var(--text);
