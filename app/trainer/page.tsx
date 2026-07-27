@@ -31,7 +31,7 @@ export default async function TrainerCabinet() {
 
   return (
     <>
-      <CabinetHeader title={trainer.name} subtitle="Кабінет тренера" />
+      <CabinetHeader title={trainer.name} subtitle="Кабінет тренера" hideLogout />
       <div className={styles.scroll}>
         <TrainerHome
           trainerId={trainer.id}
