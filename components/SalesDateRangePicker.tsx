@@ -11,6 +11,8 @@ interface Props {
   onChangeFrom: (v: string) => void
   onChangeTo: (v: string) => void
   onClear: () => void
+  /** Свій набір пресетів (напр. «вперед» для планування). Дефолт — історичні пресети /sales. */
+  presets?: Preset[]
 }
 
 // Маска: raw = '18052026' (8 цифр ДДММРРРР) → display = '18.05.2026'
@@ -50,7 +52,7 @@ function startOfDay(d: Date): Date {
   const r = new Date(d); r.setHours(0,0,0,0); return r
 }
 
-type Preset = { label: string; getRange: () => { from: string; to: string } | null }
+export type Preset = { label: string; getRange: () => { from: string; to: string } | null }
 
 function buildPresets(): Preset[] {
   const now = startOfDay(new Date())
@@ -125,9 +127,9 @@ function buildPresets(): Preset[] {
   ]
 }
 
-function getActivePreset(dateFrom: string, dateTo: string): string | null {
-  if (!dateFrom && !dateTo) return 'Весь час'
-  for (const p of buildPresets()) {
+function getActivePreset(presets: Preset[], dateFrom: string, dateTo: string): string | null {
+  if (!dateFrom && !dateTo) return presets.find(p => p.getRange() === null)?.label ?? null
+  for (const p of presets) {
     const r = p.getRange()
     if (!r) continue
     if (r.from === dateFrom && r.to === dateTo) return p.label
@@ -188,7 +190,7 @@ function renderMonthGrid(
   })
 }
 
-export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, onChangeTo, onClear }: Props) {
+export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, onChangeTo, onClear, presets: customPresets }: Props) {
   const [open, setOpen] = useState(false)
 
   // Draft state — застосовується лише через Apply
@@ -218,8 +220,8 @@ export default function SalesDateRangePicker({ dateFrom, dateTo, onChangeFrom, o
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const [isMobile, setIsMobile] = useState(false)
 
-  const presets = buildPresets()
-  const activePreset = getActivePreset(dateFrom, dateTo)
+  const presets = customPresets ?? buildPresets()
+  const activePreset = getActivePreset(presets, dateFrom, dateTo)
 
   const hasValue = dateFrom !== '' || dateTo !== ''
   const triggerLabel = hasValue

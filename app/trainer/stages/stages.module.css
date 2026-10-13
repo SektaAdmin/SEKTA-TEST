@@ -44,6 +44,14 @@
   flex-shrink: 0;
 }
 
+/* Діапазон дат (SalesDateRangePicker — на mobile відкривається bottom-sheet) */
+.toolbar {
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px 0;
+  flex-shrink: 0;
+}
+
 /* Чипи — глобальні .filterChips; тут лише роздільник і центрування */
 .chips {
   border-bottom: 1px solid var(--border);

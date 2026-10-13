@@ -32,7 +32,8 @@ export const MSG = {
     vacationNoStart:    'Вкажіть дату, від якої рахуються квартали відпускних (поле «Квартали від»).',
     vacations:          'Відпусток ще не було',
     vacationPayments:   'Виплат відпускних ще не було',
-    stageClasses:       'Групових занять на найближчі 2 тижні немає',
+    stageClasses:       'Групових занять на ці дати немає',
+    stagesNotGenerated: 'Розклад на ці дати ще не сформовано',
     stagesAllFilled:    'Усі етапи заповнено',
   },
   toast: {

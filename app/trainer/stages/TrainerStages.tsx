@@ -9,8 +9,9 @@ import { useRefs } from '@/contexts/RefsContext'
 import { listMyStageClasses, type TrainerStageClassRow } from '@/lib/queries/trainer-cabinet'
 import { updateClassChoreoStage } from '@/lib/queries/classes'
 import { buildStageGroups } from '@/lib/choreoStages'
-import { DOW_LABELS_SHORT, MONTHS_UK_GENITIVE } from '@/lib/dateUtils'
+import { DOW_LABELS_SHORT, MONTHS_UK_GENITIVE, getMondayOf, parseYMD, toYMD } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
+import SalesDateRangePicker, { type Preset } from '@/components/SalesDateRangePicker'
 import styles from './stages.module.css'
 
 type Filter = 'empty' | 'all'
@@ -20,8 +21,34 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'Усі' },
 ]
 
-// Вікно: минулі 14 днів — для «минулого разу» й підказок; майбутні 14 — редагуємо.
-const WINDOW_DAYS = 14
+// Скільки днів ДО початку діапазону тягнемо — для «минулого разу» й підказок.
+const CONTEXT_DAYS = 14
+
+function addDays(d: Date, n: number): Date {
+  const r = new Date(d); r.setDate(d.getDate() + n); return r
+}
+
+function today(): Date {
+  const d = new Date(); d.setHours(0, 0, 0, 0); return d
+}
+
+/** Дефолт: сьогодні → неділя наступного тижня. */
+function defaultRange(): { from: string; to: string } {
+  const t = today()
+  return { from: toYMD(t), to: toYMD(addDays(getMondayOf(t), 13)) }
+}
+
+// Пресети «вперед» — екран для планування, історичні пресети /sales тут зайві.
+const PRESETS: Preset[] = [
+  { label: 'Сьогодні', getRange: () => ({ from: toYMD(today()), to: toYMD(today()) }) },
+  { label: 'Завтра', getRange: () => { const d = addDays(today(), 1); return { from: toYMD(d), to: toYMD(d) } } },
+  { label: 'Цей тиждень', getRange: () => ({ from: toYMD(today()), to: toYMD(addDays(getMondayOf(today()), 6)) }) },
+  { label: 'Наступний тиждень', getRange: () => {
+    const mon = addDays(getMondayOf(today()), 7)
+    return { from: toYMD(mon), to: toYMD(addDays(mon, 6)) }
+  } },
+  { label: '2 тижні', getRange: defaultRange },
+]
 
 function dayLabel(iso: string): string {
   const d = new Date(iso)
@@ -36,17 +63,27 @@ export default function TrainerStages({ trainerId }: Props) {
   const [filter, setFilter] = useState<Filter>('empty')
   // Збережені на цьому екрані значення поверх серверних (до наступного refetch).
   const [saved, setSaved] = useState<Record<string, string | null>>({})
+  const [range, setRange] = useState(defaultRange)
+
+  // Порожнє поле в picker-і (ручне стирання) → дефолт, щоб запит завжди мав межі.
+  const rangeStart = parseYMD(range.from) ?? today()
+  const rangeEnd = parseYMD(range.to) ?? rangeStart
 
   const { data, loading, error } = useAsync(async () => {
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const from = new Date(today); from.setDate(today.getDate() - WINDOW_DAYS)
-    const to = new Date(today); to.setDate(today.getDate() + WINDOW_DAYS + 1)
-    const res = await listMyStageClasses(supabase, trainerId, from.toISOString(), to.toISOString())
+    const res = await listMyStageClasses(
+      supabase,
+      trainerId,
+      addDays(rangeStart, -CONTEXT_DAYS).toISOString(),
+      addDays(rangeEnd, 1).toISOString()
+    )
     setSaved({})
     return res
-  }, [trainerId], { refetchOnVisible: true })
+  }, [trainerId, range.from, range.to], { refetchOnVisible: true })
 
-  const groups = useMemo(() => buildStageGroups(data ?? [], new Date()), [data])
+  const groups = useMemo(() => buildStageGroups(data ?? [], rangeStart), [data, range.from])
+  // Розклад генерується потижнево (generate_week): порожній діапазон, що починається
+  // з наступного тижня чи пізніше, найімовірніше ще не згенерований.
+  const notGenerated = groups.length === 0 && rangeStart >= addDays(getMondayOf(today()), 7)
 
   // Фільтр — за серверним станом, не за `saved`: інакше рядок зникав би
   // одразу після збереження, під пальцем тренера.
@@ -87,6 +124,17 @@ export default function TrainerStages({ trainerId }: Props) {
         <span className={styles.topbarSpacer} />
       </div>
 
+      <div className={styles.toolbar}>
+        <SalesDateRangePicker
+          dateFrom={range.from}
+          dateTo={range.to}
+          onChangeFrom={v => setRange(r => ({ ...r, from: v }))}
+          onChangeTo={v => setRange(r => ({ ...r, to: v }))}
+          onClear={() => setRange(defaultRange())}
+          presets={PRESETS}
+        />
+      </div>
+
       <div className={`filterChips ${styles.chips}`} role="tablist">
         {FILTERS.map(f => (
           <button
@@ -109,7 +157,9 @@ export default function TrainerStages({ trainerId }: Props) {
           <div className={styles.empty}>{MSG.error.dataLoad}</div>
         ) : visible.length === 0 ? (
           <div className={styles.empty}>
-            {groups.length === 0 ? MSG.empty.stageClasses : MSG.empty.stagesAllFilled}
+            {notGenerated
+              ? MSG.empty.stagesNotGenerated
+              : groups.length === 0 ? MSG.empty.stageClasses : MSG.empty.stagesAllFilled}
           </div>
         ) : (
           visible.map(({ g, rows }) => (

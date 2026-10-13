@@ -13,7 +13,7 @@ export type StageGroup = {
   lastStage: string | null
   /** Унікальні етапи групи (новіші першими) — для автопідказок. */
   stages: string[]
-  /** Майбутні заняття групи (від now), за часом. */
+  /** Заняття групи у вибраному діапазоні (від rangeStart), за часом. */
   upcoming: TrainerStageClassRow[]
 }
 
@@ -26,11 +26,12 @@ function groupKey(c: TrainerStageClassRow): string {
 
 /**
  * Групує заняття тренера по групах для екрана етапів. Вхід — відсортований
- * за starts_at список (минулі + майбутні). Групи без майбутніх занять відкидаються;
- * порядок груп — за найближчим майбутнім заняттям.
+ * за starts_at список: контекст до rangeStart (для «минулого разу») + сам діапазон
+ * (кінець обрізає запит). Групи без занять у діапазоні відкидаються; порядок груп —
+ * за першим заняттям у діапазоні.
  */
-export function buildStageGroups(rows: TrainerStageClassRow[], now: Date): StageGroup[] {
-  const nowMs = now.getTime()
+export function buildStageGroups(rows: TrainerStageClassRow[], rangeStart: Date): StageGroup[] {
+  const startMs = rangeStart.getTime()
   const map = new Map<string, StageGroup>()
 
   for (const c of rows) {
@@ -50,7 +51,7 @@ export function buildStageGroups(rows: TrainerStageClassRow[], now: Date): Stage
       }
       map.set(key, g)
     }
-    if (new Date(c.starts_at).getTime() >= nowMs) g.upcoming.push(c)
+    if (new Date(c.starts_at).getTime() >= startMs) g.upcoming.push(c)
     else if (c.choreo_stage) g.lastStage = c.choreo_stage // rows asc → лишиться найсвіжіший
   }
 
