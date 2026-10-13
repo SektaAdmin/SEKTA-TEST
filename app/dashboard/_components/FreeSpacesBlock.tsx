@@ -7,10 +7,12 @@ import { useListQuery } from '@/hooks/useListQuery'
 import { formatTime } from '@/lib/formatters'
 import { ArrowRightIcon } from '@/components/icons/navigation'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import DatePicker from '@/components/DatePicker'
 import { BlockError } from './BlockError'
+import { useBlockDate } from './useBlockDate'
 import styles from '../dashboard.module.css'
 
-/* Блок: вільні місця на заняттях сьогодні (крім selftraining). */
+/* Блок: вільні місця на заняттях обраної дати (за замовчуванням сьогодні; крім selftraining). */
 
 type ClassRow = {
   id: string
@@ -23,7 +25,8 @@ type ClassRow = {
   choreo: string | null
 }
 
-export function FreeSpacesBlock({ date }: { date: string }) {
+export function FreeSpacesBlock({ date: today }: { date: string }) {
+  const { date, setDate } = useBlockDate(today)
   const { trainingTypes } = useRefs()
   const [detailClassId, setDetailClassId] = useState<string | null>(null)
 
@@ -70,7 +73,8 @@ export function FreeSpacesBlock({ date }: { date: string }) {
   return (
     <section className={styles.block}>
       <div className={styles.cardHead}>
-        <h2 className={styles.blockTitle}>Вільні місця на заняттях сьогодні</h2>
+        <h2 className={styles.blockTitle}>Вільні місця на заняттях</h2>
+        <DatePicker value={date} onChange={setDate} />
       </div>
 
       <div className={styles.opsScroll}>

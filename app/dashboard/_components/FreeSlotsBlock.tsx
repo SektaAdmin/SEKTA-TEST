@@ -5,10 +5,12 @@ import { listHallBusyIntervalsForDate, type HallBusyInterval } from '@/lib/queri
 import { useRefs } from '@/contexts/RefsContext'
 import { useListQuery } from '@/hooks/useListQuery'
 import { CopyButton } from '@/components/ui/CopyButton'
+import DatePicker from '@/components/DatePicker'
 import { BlockError } from './BlockError'
+import { useBlockDate } from './useBlockDate'
 import styles from '../dashboard.module.css'
 
-/* Блок 3: вільні вікна залів сьогодні (робочий день 8:00–22:00). */
+/* Блок 3: вільні вікна залів на обрану дату, за замовчуванням сьогодні (робочий день 8:00–22:00). */
 
 /** Трикутник-попередження для алерту «студію нема кому відкрити». */
 function WarnTriangleIcon({ className }: { className?: string }) {
@@ -140,7 +142,8 @@ function buildHallSlotsText(hallName: string, free: Window[]): string {
   return `${hallName}:\n${lines.join('\n')}`
 }
 
-export function FreeSlotsBlock({ date }: { date: string }) {
+export function FreeSlotsBlock({ date: today }: { date: string }) {
+  const { date, setDate, isToday } = useBlockDate(today)
   const { halls } = useRefs()
   const { data: busy, loading, error, refetch } = useListQuery<HallBusyInterval>(
     () => listHallBusyIntervalsForDate(supabase, date),
@@ -176,7 +179,8 @@ export function FreeSlotsBlock({ date }: { date: string }) {
   return (
     <section className={styles.block}>
       <div className={styles.cardHead}>
-        <h2 className={styles.blockTitle}>Оренда залу сьогодні</h2>
+        <h2 className={styles.blockTitle}>Оренда залу</h2>
+        <DatePicker value={date} onChange={setDate} />
       </div>
 
       <div className={styles.opsScroll}>
@@ -210,7 +214,9 @@ export function FreeSlotsBlock({ date }: { date: string }) {
       ))}
 
       {!loading && !error && byHall.length === 0 && (
-        <div className={styles.empty}>Сьогодні студія без занять — оренду немає кому відкрити.</div>
+        <div className={styles.empty}>
+          {isToday ? 'Сьогодні' : 'У цей день'} студія без занять — оренду немає кому відкрити.
+        </div>
       )}
 
       {!loading && !error && byHall.map(h => (
