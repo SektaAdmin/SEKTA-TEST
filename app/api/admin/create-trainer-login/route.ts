@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { createServerSupabase } from '@/lib/supabase-server'
 import { getRole } from '@/lib/auth/getRole'
 import { isStaff } from '@/lib/auth/role'
 import type { Database } from '@/types/database.types'
@@ -48,8 +47,9 @@ export async function POST(req: Request) {
   })
 
   // 2) Карта тренера: чи існує, чи вже привʼязаний, контакти.
-  const supabase = createServerSupabase()
-  const { data: trainer, error: trainerErr } = await supabase
+  // Через service-role admin: phone/email приховані колонковим бар'єром RLS від authenticated
+  // (навіть staff-JWT), тож читаємо не через createServerSupabase, а напряму service-role.
+  const { data: trainer, error: trainerErr } = await admin
     .from('trainers')
     .select('id, user_id, phone, email')
     .eq('id', trainerId)

@@ -1,7 +1,7 @@
 'use client'
 import TrainerModal from '@/components/TrainerModal'
 import { useRefEntity } from '@/hooks/useRefEntity'
-import { listTrainers, toggleTrainer } from '@/lib/queries/trainers'
+import { listTrainersAdmin, toggleTrainer } from '@/lib/queries/trainers'
 import { MSG } from '@/lib/messages'
 import { RefEntityPage, type RefColumn } from '../_RefEntityPage'
 import styles from '../settings.module.css'
@@ -58,7 +58,7 @@ export default function TrainersPage() {
       addLabel="+ Додати тренера"
       archiveLabel="Архів тренерів"
       emptyMsg={MSG.empty.trainers}
-      useEntity={() => useRefEntity<Trainer>('trainers', listTrainers, toggleTrainer)}
+      useEntity={() => useRefEntity<Trainer>('trainers', listTrainersAdmin, toggleTrainer)}
       columns={columns}
       editable
       renderModal={({ editing, onClose, onSaved }) => (

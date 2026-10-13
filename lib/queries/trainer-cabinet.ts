@@ -14,12 +14,12 @@ export async function getMyTrainer(
   supabase: Db,
   userId: string
 ): Promise<{ data: MyTrainer | null; error: string | null }> {
-  const { data, error } = await supabase
-    .from('trainers')
-    .select('id, name, telegram_chat_id, telegram_link_token')
-    .eq('user_id', userId)
-    .maybeSingle()
-  return { data, error: error?.message ?? null }
+  // telegram_chat_id/telegram_link_token приховані колонковим бар'єром RLS від усіх
+  // authenticated; власну картку тренер дістає через gated RPC (WHERE user_id = auth.uid()).
+  // userId лишаємо в сигнатурі для сумісності виклику (RPC сам бере auth.uid()).
+  void userId
+  const { data, error } = await supabase.rpc('get_my_trainer')
+  return { data: (data?.[0] as MyTrainer) ?? null, error: error?.message ?? null }
 }
 
 const TRAINER_CLASSES_SELECT =

@@ -1427,6 +1427,15 @@ export type Database = {
           enrollments_created: number
         }[]
       }
+      get_my_trainer: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+          telegram_chat_id: number
+          telegram_link_token: string
+        }[]
+      }
       get_session_balance_after: {
         Args: { p_at: string; p_client_ids: string[]; p_ticket_type: string }
         Returns: {
@@ -1450,6 +1459,19 @@ export type Database = {
           start_min: number
           time_str: string
           trainer: string
+        }[]
+      }
+      list_trainers_admin: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+          instagram_username: string
+          is_active: boolean
+          name: string
+          phone: string
+          telegram_username: string
+          user_id: string
         }[]
       }
       mark_attendance: {

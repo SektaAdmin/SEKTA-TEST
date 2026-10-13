@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
+
+/** Порівняння секретів у сталому часі (без timing-каналу). Різна довжина → одразу false. */
+function secretMatches(got: string | null, expected: string): boolean {
+  if (!got) return false
+  const a = Buffer.from(got)
+  const b = Buffer.from(expected)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
 
 // Telegram bot webhook — привʼязка кабінету тренера до Telegram-чату.
 //
@@ -53,7 +63,7 @@ export async function POST(req: Request) {
   }
 
   // 1) Перевірка секрету Telegram.
-  if (req.headers.get('x-telegram-bot-api-secret-token') !== webhookSecret) {
+  if (!secretMatches(req.headers.get('x-telegram-bot-api-secret-token'), webhookSecret)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 401 })
   }
 
