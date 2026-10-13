@@ -71,16 +71,14 @@ vacation_start_date)` лише `authenticated`. Чутливі колонки з
 
 ## Відкриті сигнали advisor (НЕ прийнято — розібрати)
 
-- **Self-signup увімкнено (`/auth/v1/settings`: `disable_signup=false`, `phone_autoconfirm=true`)** —
-  застосунок не має UI реєстрації, але будь-хто з публічним anon-key може `POST /auth/v1/signup`
-  (телефон+пароль, авто-підтвердження) і дістати авто-створеного `authenticated`-юзера з дефолт-роллю
-  `client` → клієнтські SELECT-права. **Дія оператора (НЕ в коді):** Dashboard → Authentication →
-  Sign In / Providers → вимкнути «Allow new users to sign up» (`disable_signup=true`). До вимкнення —
-  ризик вище номінального.
+_Немає відкритих сигналів понад прийняті вище._
 
 > Новий ERROR/WARN, якого тут немає, — потенційна дірка: розбирати, не ігнорувати.
 
 ## Закриті (фікс застосовано)
+- **Self-signup був увімкнений (2026-10-13)** — `/auth/v1/settings` мав `disable_signup=false` →
+  будь-хто з anon-key міг `POST /auth/v1/signup` і стати `authenticated` з дефолт-роллю `client`.
+  Оператор вимкнув реєстрацію в Dashboard (`disable_signup=true`); застосунок UI реєстрації не має.
 - **Витік чутливих колонок `trainers` будь-якому client/trainer (2026-10-13)** — політика
   `trainer_client_select` (`auth_role() IN ('trainer','client')`) без обмеження колонок давала будь-якому
   клієнту `SELECT telegram_link_token/phone/email/telegram_chat_id` усіх тренерів → перехоплення Telegram
