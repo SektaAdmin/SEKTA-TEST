@@ -158,3 +158,24 @@ export async function createClientViaApi(
   const body = (await res.json().catch(() => ({}))) as { error?: string }
   return { error: body.error ?? 'unknown' }
 }
+
+// ── Зарплата (екран /trainer/salary) ──────────────────────────────────────────
+// Нарахування й виплати — спільні calcTrainerSalaryDetail / listTrainerPayments
+// (trainer-rates.ts; RPC і RLS пускають тренера лише до себе). Готівку тренер сам
+// не порахує (нема RLS на sales/studio_expenses) → DEFINER-RPC my_trainer_cash.
+
+export type MyTrainerCash = { cash_period: number; cash_total: number }
+
+/** Готівка на руках поточного тренера: за період [from..to] (YYYY-MM-DD, Kyiv) і за весь час. */
+export async function getMyTrainerCash(
+  supabase: Db,
+  from: string,
+  to: string
+): Promise<{ data: MyTrainerCash; error: string | null }> {
+  const { data, error } = await supabase.rpc('my_trainer_cash', { p_from: from, p_to: to })
+  const row = data?.[0]
+  return {
+    data: { cash_period: Number(row?.cash_period ?? 0), cash_total: Number(row?.cash_total ?? 0) },
+    error: error?.message ?? null,
+  }
+}

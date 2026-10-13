@@ -5,7 +5,7 @@
 ## Ролі (`auth_role()` з JWT `app_metadata.role`, дефолт `client`)
 - **owner** — повний доступ.
 - **admin** — owner мінус ЗП (`trainer_payments`/`trainer_rates` owner-only) і редагування довідників (`halls`/`training_types`/`tickets` — SELECT).
-- **trainer** — пише `classes`/`enrollments` лише свої (`trainer_id = current_trainer_id()`); не бачить контактів/чужих грошей; SELECT свої `trainer_payments`/`trainer_rates` (своя ЗП, `trainer_select_own`).
+- **trainer** — пише `classes`/`enrollments` лише свої (`trainer_id = current_trainer_id()`); не бачить контактів/чужих грошей; SELECT свої `trainer_payments`/`trainer_rates` (своя ЗП, `trainer_select_own`); нарахування — `calc_trainer_salary_v2` лише по собі, готівка на руках — лише своя через `my_trainer_cash` (екран `/trainer/salary`).
 - **client** — бачить лише `*_id = current_client_id()`.
 
 Код: `lib/auth/*`, `hooks/useRole.ts`, `middleware.ts` (owner/admin→`/dashboard`, trainer→`/trainer`, client→`/client`). Не парсити `app_metadata.role` руками.
@@ -59,6 +59,7 @@ _Немає відкритих сигналів понад прийняті ви
 > Новий ERROR/WARN, якого тут немає, — потенційна дірка: розбирати, не ігнорувати.
 
 ## Закриті (фікс застосовано)
+- **`accounting_balance` без гейта ролі (2026-10-13)** — SECURITY DEFINER RPC з EXECUTE `authenticated` не перевіряв роль → будь-який залогінений (і client) міг прочитати баланс каси студії по методу/тримачу. Тепер гейт owner/admin (42501), тіло винесено в `_accounting_balance_raw` (EXECUTE лише `postgres`). Заодно `calc_trainer_salary_v2` (INVOKER) отримав гейт «trainer — лише себе» (раніше тренер бачив нарахування колег по загальних ставках).
 - **`series_clients.trainer_select` без фільтра власності (2026-07-27)** — політика дозволяла БУДЬ-ЯКОМУ trainer SELECT-ити `series_clients` чужих серій (client_id+series_id інших тренерів), бо `qual` перевіряв лише `auth_role() = 'trainer'` без звʼязку з `class_series.trainer_id`. Замінено на `trainer_select_own`: `series_id IN (SELECT id FROM class_series WHERE trainer_id = current_trainer_id())`. Одночасно додано `class_series.trainer_select_own` (раніше в trainer не було жодного SELECT) — обидві потрібні для нового екрана `/trainer/regulars`.
 - **`render_enrollment_event_message` PUBLIC EXECUTE (2026-07-07)** — 5-арг overload мав дефолтний PUBLIC EXECUTE → anon/authenticated могли рендерити текст з іменем клієнта/часом заняття по довільних uuid (info-leak, lint 0028). REVOKE EXECUTE від PUBLIC/anon/authenticated, лишено лише `postgres` (кличе `emit_enrollment_event`). Легасі 4-арг overload (мертвий, не викликався жодною живою функцією) — DROP.
 

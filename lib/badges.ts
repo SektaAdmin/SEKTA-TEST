@@ -283,3 +283,12 @@ const TICKET_TYPE_ABBR: Record<string, string> = {
 export function ticketTypeAbbr(type: string): string {
   return TICKET_TYPE_ABBR[type] ?? (type ? type[0].toUpperCase() : '?')
 }
+
+// ── Тип виплати ЗП (trainer_payments.payment_type) ─────────────────────────
+export function salaryPaymentTypeLabel(type: string): string {
+  return type === 'advance' ? 'Аванс' : 'Фінальна'
+}
+
+export function salaryPaymentTypeClass(type: string): string {
+  return type === 'advance' ? 'badge badge-type' : 'badge badge-completed'
+}

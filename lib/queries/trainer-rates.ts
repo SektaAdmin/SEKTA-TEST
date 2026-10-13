@@ -245,6 +245,7 @@ export async function getTrainerCashBalance(
       .from('studio_expenses')
       .select('id, created_at, amount, description, direction')
       .eq('cash_holder', trainerId)
+      .eq('payment_method', 'cash')
       .gte('created_at', kyivDayUtcBounds(dateFrom).from)
       .lte('created_at', kyivDayUtcBounds(dateTo).to)
       .order('created_at'),

@@ -1386,6 +1386,13 @@ export type Database = {
           success: boolean
         }[]
       }
+      my_trainer_cash: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          cash_period: number
+          cash_total: number
+        }[]
+      }
       normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
       render_enrollment_event_message:
         | {

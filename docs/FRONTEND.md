@@ -163,6 +163,9 @@ Full-width (звірка поруч із банком).
 - `accountKey`→фільтр: `fop`/`personal_card`→метод; інакше cash + `cash_holder=accountKey`.
 - Фільтрація на клієнті після fetch. Зміна методу скидає тренера. Deposit ховає expenses.
 
+### /trainer/salary («Моя зарплата»)
+Патерн `/trainer/regulars` (shell+topbar «Меню»+scroll ≤640px). Період: `.tabs-segmented` Тиждень/Місяць/Період; тиждень/місяць — ‹ › навігація, «Період» — `SalesDateRangePicker`. Підсумок: До виплати (`salaryToPay` з `lib/salary.ts` — та сама формула, що в адмінці) / Нараховано / Виплачено / Готівка на руках (весь час + «з них за період»). Деталізація — `buildDayGroups` (`lib/salary.ts`, спільний з `/settings/salary/calculations`): день → заняття (тап розгортає клієнтів зі статусом і сумою) + виплати періоду. Дані тягне клієнт (`useAsync`, `refetchOnVisible`), без server-prefetch — період у TZ пристрою.
+
 ### /settings/*
 - `settings/layout.tsx` (Sidebar+BottomNav+main), shared `settings.module.css`. Topbar: заголовок + «+ Додати…», `height:--topbar-h`, sticky.
 - **tabNav** (mobile): рядок під topbar, sticky `top:--topbar-h`, гориз. скрол, `<a href>` (hard nav), desktop `display:none`.

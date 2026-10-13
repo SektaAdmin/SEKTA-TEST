@@ -20,8 +20,9 @@ import { getAccountingBalance } from '@/lib/queries/accounting'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
-import { toYMD, isoToYMD, DOW_LABELS_SHORT } from '@/lib/dateUtils'
-import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass } from '@/lib/badges'
+import { toYMD } from '@/lib/dateUtils'
+import { buildDayGroups, salaryToPay, pluralClasses } from '@/lib/salary'
+import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass, salaryPaymentTypeLabel, salaryPaymentTypeClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -37,13 +38,6 @@ const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
 ]
-
-/** Відмінювання «заняття»: 1/2-4→заняття, 0/5+/11-14→занять (патерн pluralHours). */
-function pluralClasses(n: number): string {
-  const m10 = n % 10, m100 = n % 100
-  if (m10 >= 1 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'заняття'
-  return 'занять'
-}
 
 const SKELETON_ROWS = [0, 1, 2, 3, 4]
 
@@ -132,37 +126,6 @@ function getMonthRange() {
   return { start, end }
 }
 
-type DayGroup = {
-  dateKey: string         // YYYY-MM-DD
-  dateLabel: string       // "пт 22.05.2026"
-  classes: TrainerSalaryDetailRow[]
-  totalByType: Record<string, number>  // ticket_type → total clients
-  totalTrainer: number
-}
-
-function buildDayGroups(rows: TrainerSalaryDetailRow[]): DayGroup[] {
-  const map = new Map<string, DayGroup>()
-  for (const r of rows) {
-    const dateKey = isoToYMD(r.starts_at)
-    if (!map.has(dateKey)) {
-      const d = new Date(r.starts_at)
-      const dow = DOW_LABELS_SHORT[d.getDay()]
-      map.set(dateKey, {
-        dateKey,
-        dateLabel: `${dow} ${formatDate(r.starts_at)}`,
-        classes: [],
-        totalByType: {},
-        totalTrainer: 0,
-      })
-    }
-    const group = map.get(dateKey)!
-    group.classes.push(r)
-    group.totalByType[r.ticket_type] = (group.totalByType[r.ticket_type] ?? 0) + r.total_clients
-    group.totalTrainer += r.total_trainer
-  }
-  return Array.from(map.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey))
-}
-
 export default function SalaryCalculationsPage() {
   const pathname = usePathname()
   const [trainers, setTrainers] = useState<Trainer[]>([])
@@ -246,7 +209,7 @@ export default function SalaryCalculationsPage() {
   const missingRateCount = useMemo(() => rows.filter(r => r.has_missing_rate).length, [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
   const cashOnHand = cashBalance?.total ?? 0
-  const toPay = totalTrainer - cashOnHand - totalPaidPeriod
+  const toPay = salaryToPay(totalTrainer, cashOnHand, totalPaidPeriod)
 
   function toggleDay(dateKey: string) {
     setExpandedDays(prev => {
@@ -715,8 +678,8 @@ export default function SalaryCalculationsPage() {
                         <tr key={p.id}>
                           <td>{formatDate(p.payment_date)}</td>
                           <td>
-                            <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
-                              {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                            <span className={salaryPaymentTypeClass(p.payment_type)}>
+                              {salaryPaymentTypeLabel(p.payment_type)}
                             </span>
                           </td>
                           <td>
@@ -778,8 +741,8 @@ export default function SalaryCalculationsPage() {
                       </div>
                     </div>
                     <div className={styles.cardMeta}>
-                      <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
-                        {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                      <span className={salaryPaymentTypeClass(p.payment_type)}>
+                              {salaryPaymentTypeLabel(p.payment_type)}
                       </span>
                       <span className={paymentClass((p.payment_method ?? 'cash') as any)}>
                         {paymentLabel((p.payment_method ?? 'cash') as any)}
