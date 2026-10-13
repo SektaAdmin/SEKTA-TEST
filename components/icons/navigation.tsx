@@ -92,3 +92,9 @@ export const DashboardIcon = () => (
     <rect x="9" y="9" width="5" height="5" rx="1"/>
   </svg>
 )
+
+export const AttendanceIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1.5 8h3l2-4.5 3 9 2-4.5h3" />
+  </svg>
+)

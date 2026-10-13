@@ -1244,6 +1244,25 @@ export type Database = {
           total_count: number
         }[]
       }
+      attendance_overview: {
+        Args: { p_period_days?: number; p_trainer_id?: string }
+        Returns: {
+          balance: number
+          client_id: string
+          days_since: number
+          first_name: string
+          is_regular: boolean
+          last_name: string
+          last_visit_at: string
+          missed_regular: number
+          next_enrollment_at: string
+          planned_regular: number
+          regular_series: string[]
+          sessions_left: number
+          visits_period: number
+          visits_prev_period: number
+        }[]
+      }
       auth_role: { Args: never; Returns: string }
       auto_close_classes: {
         Args: never

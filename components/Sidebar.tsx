@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { useRole } from '@/hooks/useRole'
-import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon } from './icons/navigation'
+import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon, AttendanceIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
 
 const nav = [
@@ -14,6 +14,7 @@ const nav = [
   { href: '/schedule', label: 'Розклад', icon: <ScheduleIcon /> },
   { href: '/schedule/templates', label: 'Шаблони', icon: <TemplatesIcon /> },
   { href: '/journal', label: 'Журнал', icon: <JournalIcon /> },
+  { href: '/attendance', label: 'Відвідуваність', icon: <AttendanceIcon /> },
   { href: '/audit', label: 'Аудит', icon: <JournalIcon /> },
   { href: '/accounting', label: 'Звітність', icon: <AccountingIcon /> },
 ]

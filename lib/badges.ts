@@ -294,3 +294,12 @@ export function salaryPaymentTypeLabel(type: string): string {
 export function salaryPaymentTypeClass(type: string): string {
   return type === 'final' ? 'badge badge-completed' : 'badge badge-type'
 }
+
+/* ── Давність візиту (екран «Відвідуваність») ──────────────────────── */
+// Рівень рахує lib/attendance.ts (пороги 14/30 днів).
+
+export function absenceBadgeClass(level: 'ok' | 'warn' | 'alert'): string {
+  if (level === 'alert') return 'badge badge-danger'
+  if (level === 'warn') return 'badge badge-warning'
+  return 'badge badge-type'
+}

@@ -648,6 +648,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 /* Warning / negative state */
 .badge-danger { background: var(--danger-dim); color: var(--danger-text); border-color: var(--danger-border); }
+.badge-warning { background: var(--warning-dim); color: var(--warning-text); border-color: var(--warning-border); }
 
 /* Positive / success state */
 .badge-success { background: var(--success-dim); color: var(--success-text); border-color: var(--success-border); }

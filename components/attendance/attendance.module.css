@@ -1,0 +1,195 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 220px;
+  height: var(--control-h);
+  padding: 0 30px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  outline: none;
+  transition: border-color var(--motion-fast);
+}
+.searchInput:focus { border-color: var(--accent); }
+.searchInput::placeholder { color: var(--text-3); }
+
+.searchClear {
+  position: absolute;
+  right: 8px;
+  padding: 2px 3px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: var(--fs-2xs);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--motion-fast);
+}
+.searchClear:hover { color: var(--text-2); }
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--fs-base);
+}
+
+/* ── Таблиця (desktop) ───────────────────────────────────────── */
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+.row { cursor: pointer; }
+
+.nameCell {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.subtle { color: var(--text-3); }
+
+.series {
+  color: var(--text-2);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Картки (mobile / кабінет тренера) ───────────────────────── */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+.card:hover { border-color: var(--border-hover); }
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot { color: var(--text-3); }
+
+/* ── Скелетон ────────────────────────────────────────────────── */
+.cardListAlways {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skelCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.skelBadge { width: 72px; height: 18px; border-radius: var(--radius-full); }
+.skelMeta  { width: 60%; }
+
+.cardSeries {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.compact .tableDesktop { display: none; }
+.compact .cardList { display: flex; flex-direction: column; gap: 8px; }
+.compact .controls { flex-direction: column; align-items: stretch; }
+.compact .searchInput { width: 100%; }
+.compact .controls > :global(.tabs-segmented) { display: flex; }
+.compact .controls > :global(.tabs-segmented) :global(.tab-seg) { flex: 1; padding: 0 6px; }
+
+@media (max-width: 640px) {
+  .controls { flex-direction: column; align-items: stretch; }
+  /* Період + тренер — один рядок з гориз. скролом (патерн mobile filterbar). */
+  .filters { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; }
+  .filters > * { flex-shrink: 0; }
+  .searchInput { width: 100%; }
+  .controls > :global(.tabs-segmented) { display: flex; }
+  .controls > :global(.tabs-segmented) :global(.tab-seg) { flex: 1; padding: 0 6px; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+}

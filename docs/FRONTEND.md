@@ -45,7 +45,7 @@ components/ui/         ModalShell, ModalFooter, FormField, Pagination, ActionSel
 
 Shared utils: `.btn-primary`, `.loading-dots`, `.data-table-wrap`+`.data-table`. Нестандартні таблиці (accounting/salary/rates) — у module.css.
 
-**Бейджі:** CSS у globals.css, логіка `lib/badges.ts`. Класи `.badge` + `.badge-{cash,fop,card,deposit,enrolled,attended,…,type,danger,class-cancelled,completed}`. НЕ оголошувати локальний `.badge`; НЕ патерн `${styles.badge} ${styles[..]}`.
+**Бейджі:** CSS у globals.css, логіка `lib/badges.ts`. Класи `.badge` + `.badge-{cash,fop,card,deposit,enrolled,attended,…,type,danger,warning,class-cancelled,completed}`. НЕ оголошувати локальний `.badge`; НЕ патерн `${styles.badge} ${styles[..]}`.
 
 **Бейджі балансу** (депозит ₴ / залишок занять год) — квадратні чіпи `border-radius:4px`, 3 стани (єдині для грошей і сесій): `balance-ok` (зел, `>0`), `balance-zero` (жовт, `=0`), `balance-warn` (черв, `<0`). Локальні варіанти НЕ плодити.
 
@@ -169,6 +169,9 @@ Full-width (звірка поруч із банком).
 
 ### /trainer/stages («Етапи занять»)
 Планування `classes.choreo_stage` наперед. Shell/topbar як `/trainer/salary`; дані — клієнтський `useAsync` (`listMyStageClasses`: лише `ticket_type='group'`, незаскасовані, TZ пристрою) + `refetchOnVisible`. Діапазон — `SalesDateRangePicker` з пресетами «вперед» (проп `presets`: Сьогодні/Завтра/Цей тиждень/Наступний тиждень/2 тижні; дефолт — сьогодні→нд наступного тижня); запит тягне ще 14 днів ДО діапазону для «минулого разу». Порожній діапазон від наступного тижня → «Розклад ще не сформовано» (generate_week потижнево). Групування — `buildStageGroups` (`lib/choreoStages.ts`): ключ `series_id`, для разових — назва/тип+день тижня+час; у хедері «Минулого разу» (останній етап з минулих), рядки — лише майбутні заняття. Чипи `.filterChips`: «Без етапу» (дефолт; фільтр за серверним станом, щоб рядок не зникав після збереження) / «Усі». Збереження — blur/Enter → `updateClassChoreoStage` (RLS: тренер пише лише свої classes); чип «як минулого разу» (попереднє заняття групи) + `<datalist>` автопідказок.
+
+### /attendance + /trainer/attendance («Відвідуваність»)
+Спільний `components/attendance/AttendanceView.tsx` (дані `getAttendanceOverview`, `useAsync`+`refetchOnVisible`; класифікація `lib/attendance.ts`). Таби `.tabs-segmented`: «Зникли» (`isLeaving`: ≥14 дн. без візиту і без майбутнього запису; постійникам майбутній запис не рахується — його ставить generate_week), «Пропуски» (постійники з `missed_regular>0`, сорт за часткою), «Усі». Період — `.tabs-segmented` 30/60/90 дн., пошук за іменем, тренер (`FilterSelect`, лише owner/admin). Бейдж давності: `<14` нейтральний, `≥14` `.badge-warning`, `≥30`/«не було» `.badge-danger`. Desktop — `.data-table`, ≤640px — картки; проп `compact` = завжди картки (кабінет тренера). Admin: Sidebar/BottomNav «Ще», тап → `/clients/[id]`. Trainer: shell `/trainer/regulars`, тап → `ClientSessionsModal`.
 
 ### /settings/salary/vacation («Відпускні», owner)
 Вкладка поруч зі Ставки/Нарахування (+ Sidebar/BottomNav owner-only). Фільтрбар: тренер + «Квартали від» (DatePicker, кнопка «Зберегти» при зміні). Секції: Квартали (таблиця №/Період/Відпустка/Робочих днів/ЗП/Відпускні/Виплачено; поточний = бейдж, завершений → «Виплатити» → `trainer_payments` `payment_type='vacation'`), Відпустки (+ Додати, soft-delete), Виплати відпускних. Стилі — спільні з `calculations.module.css` (`cs`).
