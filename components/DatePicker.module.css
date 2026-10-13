@@ -37,3 +37,8 @@
   background: var(--accent-dim);
   color: var(--accent);
 }
+
+/* Швидкий вибір «Сьогодні» у футері CalendarPopover. */
+.todayBtn {
+  width: 100%;
+}

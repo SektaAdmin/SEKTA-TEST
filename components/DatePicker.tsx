@@ -42,6 +42,15 @@ export default function DatePicker({ value, onChange, placeholder = 'Обері�
         viewMonth={viewMonth}
         onPrevMonth={prevMonth}
         onNextMonth={nextMonth}
+        footer={
+          <button
+            type="button"
+            className={`btn-secondary ${styles.todayBtn}`}
+            onClick={() => { onChange(toYMD(today)); setOpen(false) }}
+          >
+            Сьогодні
+          </button>
+        }
         renderDay={(day, inMonth, i) => {
           const isSelected = selected ? isSameDay(day, selected) : false
           const isToday = isSameDay(day, today)
