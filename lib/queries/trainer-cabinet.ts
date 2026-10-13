@@ -62,6 +62,36 @@ export async function listMyPastClasses(
   return { data: (data as TrainerClassRow[]) ?? [], error: error?.message ?? null }
 }
 
+// ── Етапи хореографії (екран /trainer/stages) ─────────────────────────────────
+// Лише групові незаскасовані заняття тренера у вікні [from..to). Минулі потрібні
+// для підказки «минулого разу», редагуються — майбутні (updateClassChoreoStage,
+// RLS пускає тренера лише до своїх classes).
+
+function trainerStageQuery(supabase: Db, trainerId: string, fromISO: string, toISO: string) {
+  return supabase
+    .from('classes')
+    .select('id, series_id, title, ticket_type, starts_at, duration_min, choreo_stage, halls(name)')
+    .eq('trainer_id', trainerId)
+    .eq('ticket_type', 'group')
+    .eq('is_cancelled', false)
+    .gte('starts_at', fromISO)
+    .lt('starts_at', toISO)
+    .order('starts_at', { ascending: true })
+}
+
+export type TrainerStageClassRow = QueryData<ReturnType<typeof trainerStageQuery>>[number]
+
+/** Групові заняття тренера у вікні [fromISO..toISO) для екрана етапів. */
+export async function listMyStageClasses(
+  supabase: Db,
+  trainerId: string,
+  fromISO: string,
+  toISO: string
+): Promise<{ data: TrainerStageClassRow[]; error: string | null }> {
+  const { data, error } = await trainerStageQuery(supabase, trainerId, fromISO, toISO)
+  return { data: data ?? [], error: error?.message ?? null }
+}
+
 // ── Клієнти (екран /trainer/clients) ──────────────────────────────────────────
 // Тренер за RLS бачить лише clients (ім'я+баланс), БЕЗ контактів (вони в
 // client_contacts, куди тренеру доступ закрито). Тому читаємо clients напряму —

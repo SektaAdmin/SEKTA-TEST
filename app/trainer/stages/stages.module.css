@@ -1,0 +1,200 @@
+/* ── Shell / topbar (патерн /trainer/salary) ─────────────────────────────── */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.backBtn:hover { color: var(--text); }
+
+.topbarTitle {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.topbarSpacer {
+  width: 52px;
+  flex-shrink: 0;
+}
+
+/* Чипи — глобальні .filterChips; тут лише роздільник і центрування */
+.chips {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+}
+
+/* ── Scroll ──────────────────────────────────────────────────────────────── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px 32px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Група ───────────────────────────────────────────────────────────────── */
+.group {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.groupHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.groupTitle {
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.groupMeta {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+
+.groupLast {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+
+.muted { color: var(--text-3); }
+
+/* ── Рядки занять ────────────────────────────────────────────────────────── */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px 12px;
+}
+
+.row + .row { border-top: 1px solid var(--border); }
+
+.rowLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rowDate {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.rowSaved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-2);
+}
+
+.rowInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rowInput {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 10px;
+  font-size: var(--fs-base);
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--motion-fast);
+}
+
+.rowInput:hover { border-color: var(--border-hover); }
+.rowInput:focus { outline: none; border-color: var(--accent); }
+.rowInput::placeholder { color: var(--text-3); }
+.rowInput:disabled { opacity: 0.6; }
+
+/* «Як минулого разу» — тихий чип-підказка під порожнім полем */
+.copyPrev {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
+}
+
+.copyPrev:hover { border-color: var(--border-hover); color: var(--text); }
+
+.copyPrevText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Empty ───────────────────────────────────────────────────────────────── */
+.empty {
+  color: var(--text-3);
+  font-size: var(--fs-base);
+  padding: 40px 0;
+  text-align: center;
+}
