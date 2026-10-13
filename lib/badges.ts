@@ -286,9 +286,11 @@ export function ticketTypeAbbr(type: string): string {
 
 // ── Тип виплати ЗП (trainer_payments.payment_type) ─────────────────────────
 export function salaryPaymentTypeLabel(type: string): string {
-  return type === 'advance' ? 'Аванс' : 'Фінальна'
+  if (type === 'advance') return 'Аванс'
+  if (type === 'vacation') return 'Відпускні'
+  return 'Фінальна'
 }
 
 export function salaryPaymentTypeClass(type: string): string {
-  return type === 'advance' ? 'badge badge-type' : 'badge badge-completed'
+  return type === 'final' ? 'badge badge-completed' : 'badge badge-type'
 }

@@ -4,8 +4,8 @@
 
 ## Ролі (`auth_role()` з JWT `app_metadata.role`, дефолт `client`)
 - **owner** — повний доступ.
-- **admin** — owner мінус ЗП (`trainer_payments`/`trainer_rates` owner-only) і редагування довідників (`halls`/`training_types`/`tickets` — SELECT).
-- **trainer** — пише `classes`/`enrollments` лише свої (`trainer_id = current_trainer_id()`); не бачить контактів/чужих грошей; SELECT свої `trainer_payments`/`trainer_rates` (своя ЗП, `trainer_select_own`); нарахування — `calc_trainer_salary_v2` лише по собі, готівка на руках — лише своя через `my_trainer_cash` (екран `/trainer/salary`).
+- **admin** — owner мінус ЗП (`trainer_payments`/`trainer_rates`/`trainer_vacations` owner-only) і редагування довідників (`halls`/`training_types`/`tickets` — SELECT).
+- **trainer** — пише `classes`/`enrollments` лише свої (`trainer_id = current_trainer_id()`); не бачить контактів/чужих грошей; SELECT свої `trainer_payments`/`trainer_rates`/`trainer_vacations` (своя ЗП і відпускні, `trainer_select_own`); нарахування — `calc_trainer_salary_v2` лише по собі, готівка на руках — лише своя через `my_trainer_cash` (екран `/trainer/salary`).
 - **client** — бачить лише `*_id = current_client_id()`.
 
 Код: `lib/auth/*`, `hooks/useRole.ts`, `middleware.ts` (owner/admin→`/dashboard`, trainer→`/trainer`, client→`/client`). Не парсити `app_metadata.role` руками.

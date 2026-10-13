@@ -52,8 +52,11 @@ function paymentQuery(supabase: Db) { return supabase.from('trainer_payments').s
  */
 export type TrainerPayment = Omit<QueryData<ReturnType<typeof paymentQuery>>[number], 'payment_method' | 'payment_type'> & {
   payment_method: 'cash' | 'fop' | 'personal_card'
-  payment_type: 'advance' | 'final'
+  payment_type: SalaryPaymentType
 }
+
+/** 'vacation' — виплата відпускних (/settings/salary/vacation); у «До виплати» ЗП не входить. */
+export type SalaryPaymentType = 'advance' | 'final' | 'vacation'
 
 export type TrainerCashBalance = {
   cash_sales: { id: string; created_at: string; client_name: string; ticket_name: string | null; amount: number }[]
@@ -316,6 +319,8 @@ export async function listTrainerPayments(
 ): Promise<{ data: TrainerPayment[]; error: string | null }> {
   const { data, error } = await paymentQuery(supabase)
     .eq('trainer_id', trainerId)
+    // відпускні живуть окремо (listVacationPayments) — не зменшують «До виплати» ЗП
+    .neq('payment_type', 'vacation')
     .lte('period_start', periodEnd)
     .gte('period_end', periodStart)
     .order('created_at', { ascending: false })
@@ -359,7 +364,7 @@ export async function updateTrainerPayment(
     payment_date: string
     payment_method: 'cash' | 'fop' | 'personal_card'
     cash_holder: string | null
-    payment_type: 'advance' | 'final'
+    payment_type: SalaryPaymentType
     notes: string | null
   }
 ): Promise<{ error: string | null }> {
@@ -386,7 +391,7 @@ export async function insertTrainerPayment(
     payment_date: string
     payment_method: 'cash' | 'fop' | 'personal_card'
     cash_holder: string | null
-    payment_type: 'advance' | 'final'
+    payment_type: SalaryPaymentType
     notes: string | null
   }
 ): Promise<{ error: string | null }> {

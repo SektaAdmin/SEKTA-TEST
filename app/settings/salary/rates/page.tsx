@@ -26,6 +26,7 @@ import styles from './rates.module.css'
 const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
+  { href: '/settings/salary/vacation', label: 'Відпускні' },
 ]
 
 const SKELETON_ROWS = [0, 1, 2, 3, 4]

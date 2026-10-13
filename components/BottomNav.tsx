@@ -39,7 +39,7 @@ const primaryNav = [
 ]
 
 // Пункти, доступні лише owner (зарплати). Для admin фільтруються.
-const ownerOnlyMore = ['/settings/salary/rates', '/settings/salary/calculations']
+const ownerOnlyMore = ['/settings/salary/rates', '/settings/salary/calculations', '/settings/salary/vacation']
 
 const moreNav = [
   { href: '/accounting', label: 'Звіти' },
@@ -48,6 +48,7 @@ const moreNav = [
   { href: '/audit', label: 'Аудит' },
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
+  { href: '/settings/salary/vacation', label: 'Відпускні' },
   { href: '/settings', label: 'Налаштування' },
 ]
 

@@ -974,6 +974,44 @@ export type Database = {
           },
         ]
       }
+      trainer_vacations: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          trainer_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          trainer_id: string
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_vacations_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trainers: {
         Row: {
           created_at: string
@@ -988,6 +1026,7 @@ export type Database = {
           telegram_username: string | null
           updated_at: string
           user_id: string | null
+          vacation_start_date: string | null
         }
         Insert: {
           created_at?: string
@@ -1002,6 +1041,7 @@ export type Database = {
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
+          vacation_start_date?: string | null
         }
         Update: {
           created_at?: string
@@ -1016,6 +1056,7 @@ export type Database = {
           telegram_username?: string | null
           updated_at?: string
           user_id?: string | null
+          vacation_start_date?: string | null
         }
         Relationships: []
       }
@@ -1162,6 +1203,19 @@ export type Database = {
       }
     }
     Functions: {
+      _accounting_balance_raw: {
+        Args: {
+          p_from?: string
+          p_holder?: string
+          p_method: string
+          p_to?: string
+        }
+        Returns: {
+          balance: number
+          income: number
+          outcome: number
+        }[]
+      }
       accounting_balance: {
         Args: {
           p_from?: string
@@ -1394,26 +1448,16 @@ export type Database = {
         }[]
       }
       normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
-      render_enrollment_event_message:
-        | {
-            Args: {
-              p_actor_role: string
-              p_class_id: string
-              p_client_id: string
-              p_event_type: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_actor_role: string
-              p_class_id: string
-              p_client_id: string
-              p_enrollment_id?: string
-              p_event_type: string
-            }
-            Returns: string
-          }
+      render_enrollment_event_message: {
+        Args: {
+          p_actor_role: string
+          p_class_id: string
+          p_client_id: string
+          p_enrollment_id?: string
+          p_event_type: string
+        }
+        Returns: string
+      }
       restore_class: {
         Args: { p_class_id: string }
         Returns: {
@@ -1509,12 +1553,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1538,11 +1582,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1563,11 +1607,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1588,11 +1632,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1605,11 +1649,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

@@ -12,7 +12,7 @@ import BottomNav from '@/components/BottomNav'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate } from '@/lib/formatters'
 import { ArrowDownLeft, ArrowUpRight, ShoppingBag, TrendingUp, Trash2, Banknote, X } from 'lucide-react'
-import { paymentLabel, paymentClass } from '@/lib/badges'
+import { paymentLabel, paymentClass, salaryPaymentTypeLabel, salaryPaymentTypeClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import { toYMD } from '@/lib/dateUtils'
 import type { PaymentMethod } from '@/types'
@@ -451,8 +451,8 @@ export default function AccountingPage() {
                                   <span className={paymentClass(method)}>
                                     {paymentLabel(method)}
                                   </span>
-                                  <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
-                                    {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                                  <span className={salaryPaymentTypeClass(p.payment_type)}>
+                                    {salaryPaymentTypeLabel(p.payment_type)}
                                   </span>
                                 </div>
                               </td>
@@ -585,8 +585,8 @@ export default function AccountingPage() {
                               </div>
                               <div className={styles.cardRow3}>
                                 <span className={styles.cardDatetime}>{date} · {time}</span>
-                                <span className={`badge ${p.payment_type === 'advance' ? 'badge-type' : 'badge-completed'}`}>
-                                  {p.payment_type === 'advance' ? 'Аванс' : 'Фінальна'}
+                                <span className={salaryPaymentTypeClass(p.payment_type)}>
+                                  {salaryPaymentTypeLabel(p.payment_type)}
                                 </span>
                               </div>
                             </div>

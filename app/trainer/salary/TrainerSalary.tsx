@@ -13,6 +13,7 @@ import { toYMD, parseYMD, getMondayOf, MONTHS_UK_CAP } from '@/lib/dateUtils'
 import { enrollmentBadge, enrollmentBadgeClass, salaryPaymentTypeLabel, salaryPaymentTypeClass } from '@/lib/badges'
 import { MSG } from '@/lib/messages'
 import SalesDateRangePicker from '@/components/SalesDateRangePicker'
+import TrainerVacation from './TrainerVacation'
 import styles from './salary.module.css'
 
 type Mode = 'week' | 'month' | 'range'
@@ -289,6 +290,8 @@ export default function TrainerSalary({ trainerId }: Props) {
                 </div>
               )}
             </section>
+
+            <TrainerVacation trainerId={trainerId} />
           </>
         )}
       </div>

@@ -2,8 +2,8 @@
 
 Канон: колонки/типи → `types/database.types.ts` (`npm run sync:schema`); зв'язки+бізнес-сенс → §Схема (нижче); сигнатури RPC → §RPC (нижче); тіла RPC/тригерів/RLS → `supabase/migrations/*`; прод-стан → Supabase MCP (лише SELECT, project-ref у `reference_supabase_mcp`).
 
-## Таблиці (17)
-`balance_transactions` · `class_series` · `classes` · `client_contacts` · `client_session_balances` · `clients` · `enrollment_events` · `enrollments` · `halls` · `sales` · `series_clients` · `studio_expenses` · `tickets` · `trainer_payments` · `trainer_rates` · `trainers` · `training_types`.
+## Таблиці (18)
+`balance_transactions` · `class_series` · `classes` · `client_contacts` · `client_session_balances` · `clients` · `enrollment_events` · `enrollments` · `halls` · `sales` · `series_clients` · `studio_expenses` · `tickets` · `trainer_payments` · `trainer_rates` · `trainer_vacations` · `trainers` · `training_types`.
 
 ## Views (5)
 | View | Призначення | Вживає |
@@ -45,6 +45,7 @@ clients ──< sales >── tickets        balance_transactions >── client
                           └── halls, trainers
 trainer_rates >── trainers (trainer_id NULL = глобальна)
 trainer_payments >── trainers      studio_expenses >── trainers (optional)
+trainer_vacations >── trainers
 training_types — довідник
 ```
 
@@ -70,7 +71,8 @@ training_types — довідник
 - `studio_expenses.direction` — `expense` (зменшує) / `income` (збільшує). `payment_method` без `deposit`.
 - `trainers.phone`/`email` — контакти для логіну, UNIQUE серед заповнених. `trainers.user_id` заповнений = є кабінет.
 - `trainer_rates` — `trainer_rate`+`studio_rate` (₴/людино-год), `valid_from`/`valid_to` (NULL=активна). Пріоритет: індивід.+зал > індивід. > глоб.+зал > глоб. Зміна = закрити стару (`valid_to`) + додати нову.
-- `trainer_payments` — EXCLUDE `trainer_payments_final_no_overlap` (gist): періоди `payment_type='final'` одного тренера НЕ перекриваються (перекриття задвоювало «До виплати»). Аванси вільні — легітимно перекриваються з final за той самий період. 23P01 → UI-помилка (`paymentErrorMessage`). Снапшот `calculated_amount` = «Нараховано» на момент фіксації; звірка з live → view `salary_payment_reconcile`.
+- `trainer_payments` — EXCLUDE `trainer_payments_final_no_overlap` (gist): періоди `payment_type='final'` одного тренера НЕ перекриваються (перекриття задвоювало «До виплати»). Аванси вільні — легітимно перекриваються з final за той самий період. 23P01 → UI-помилка (`paymentErrorMessage`). Снапшот `calculated_amount` = «Нараховано» на момент фіксації; звірка з live → view `salary_payment_reconcile`. `payment_type`: `advance`/`final`/`vacation`; `vacation` = виплата відпускних (`period_start/end` = відпускний квартал), `listTrainerPayments` її виключає → у «До виплати» ЗП не входить; готівкова все одно зменшує «на руках».
+- **Відпускні** — `trainers.vacation_start_date` (NULL = не нараховуються) задає квартали по 3 міс.; `trainer_vacations` (`date_from`/`date_to` включно, м'яке `is_active`) — періоди відпусток. Формула (`lib/vacation.ts`, клієнт): `round(ЗП за квартал ÷ (днів кварталу − днів відпустки в кварталі) × 7)`; ЗП = сума `calc_trainer_salary_v2` за квартал з межами як на /settings/salary/calculations. Екрани `/settings/salary/vacation` (owner) і блок у `/trainer/salary`.
 - Готівка «на руках» тренера — єдина правда `accounting_balance('cash', trainer)`; періодна деталізація `getTrainerCashBalance` дзеркалить формулу RPC (депозитні продажі по `amount_given`, + `direction='income'`), виплати — по `payment_date` свідомо.
 
 ## RLS (інв. #9, через `auth_role()`)

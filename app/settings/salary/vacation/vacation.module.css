@@ -1,0 +1,38 @@
+/* Спільні класи сторінки ЗП (filterBar/section/таблиця/модалка) → calculations.module.css (cs) */
+
+.formula {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.actionCell { text-align: right; white-space: nowrap; }
+
+.list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  max-width: 640px;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-base);
+}
+.listRow:last-child { border-bottom: none; }
+
+.listMain { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.listMeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--fs-sm); }
+
+.confirmText { font-size: var(--fs-base); color: var(--text-2); margin: 0; }
+
+@media (max-width: 640px) {
+  .list { max-width: none; }
+}

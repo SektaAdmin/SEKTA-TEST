@@ -28,6 +28,7 @@ const settingsSubNav = [
 const salarySubNav = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
+  { href: '/settings/salary/vacation', label: 'Відпускні' },
 ]
 
 function Chevron({ open }: { open: boolean }) {

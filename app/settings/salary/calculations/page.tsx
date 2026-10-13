@@ -37,6 +37,7 @@ import styles from './calculations.module.css'
 const SALARY_TABS = [
   { href: '/settings/salary/rates', label: 'Ставки' },
   { href: '/settings/salary/calculations', label: 'Нарахування' },
+  { href: '/settings/salary/vacation', label: 'Відпускні' },
 ]
 
 const SKELETON_ROWS = [0, 1, 2, 3, 4]
@@ -244,7 +245,7 @@ export default function SalaryCalculationsPage() {
     setPaymentDate(p.payment_date)
     setPaymentAmount(String(p.paid_amount))
     setPaymentNotes(p.notes ?? '')
-    setPaymentType(p.payment_type)
+    setPaymentType(p.payment_type === 'advance' ? 'advance' : 'final')
     setPaymentMethod((p.payment_method ?? 'cash') as 'cash' | 'fop' | 'personal_card')
     setPaymentCashHolder((p as any).cash_holder ?? '')
     setPaymentError(null)

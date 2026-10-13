@@ -164,7 +164,10 @@ Full-width (звірка поруч із банком).
 - Фільтрація на клієнті після fetch. Зміна методу скидає тренера. Deposit ховає expenses.
 
 ### /trainer/salary («Моя зарплата»)
-Патерн `/trainer/regulars` (shell+topbar «Меню»+scroll ≤640px). Період: `.tabs-segmented` Тиждень/Місяць/Період; тиждень/місяць — ‹ › навігація, «Період» — `SalesDateRangePicker`. Підсумок: До виплати (`salaryToPay` з `lib/salary.ts` — та сама формула, що в адмінці) / Нараховано / Виплачено / Готівка на руках (весь час + «з них за період»). Деталізація — `buildDayGroups` (`lib/salary.ts`, спільний з `/settings/salary/calculations`): день → заняття (тап розгортає клієнтів зі статусом і сумою) + виплати періоду. Дані тягне клієнт (`useAsync`, `refetchOnVisible`), без server-prefetch — період у TZ пристрою.
+Патерн `/trainer/regulars` (shell+topbar «Меню»+scroll ≤640px). Період: `.tabs-segmented` Тиждень/Місяць/Період; тиждень/місяць — ‹ › навігація, «Період» — `SalesDateRangePicker`. Підсумок: До виплати (`salaryToPay` з `lib/salary.ts` — та сама формула, що в адмінці) / Нараховано / Виплачено / Готівка на руках (весь час + «з них за період»). Деталізація — `buildDayGroups` (`lib/salary.ts`, спільний з `/settings/salary/calculations`): день → заняття (тап розгортає клієнтів зі статусом і сумою) + виплати періоду. Дані тягне клієнт (`useAsync`, `refetchOnVisible`), без server-prefetch — період у TZ пристрою. Внизу — `TrainerVacation` (read-only відпускні: поточний квартал-прогноз, історія кварталів, відпустки; приховано, якщо `vacation_start_date` NULL).
+
+### /settings/salary/vacation («Відпускні», owner)
+Вкладка поруч зі Ставки/Нарахування (+ Sidebar/BottomNav owner-only). Фільтрбар: тренер + «Квартали від» (DatePicker, кнопка «Зберегти» при зміні). Секції: Квартали (таблиця №/Період/Відпустка/Робочих днів/ЗП/Відпускні/Виплачено; поточний = бейдж, завершений → «Виплатити» → `trainer_payments` `payment_type='vacation'`), Відпустки (+ Додати, soft-delete), Виплати відпускних. Стилі — спільні з `calculations.module.css` (`cs`).
 
 ### /settings/*
 - `settings/layout.tsx` (Sidebar+BottomNav+main), shared `settings.module.css`. Topbar: заголовок + «+ Додати…», `height:--topbar-h`, sticky.

@@ -1,6 +1,6 @@
 import type { TrainerSalaryDetailRow, TrainerPayment, TrainerCashBalance } from '@/lib/queries/trainer-rates'
 import { formatDate, formatTime } from '@/lib/formatters'
-import { ticketTypeShortLabel, paymentLabel } from '@/lib/badges'
+import { ticketTypeShortLabel, paymentLabel, salaryPaymentTypeLabel } from '@/lib/badges'
 import { DOW_LABELS_SHORT, isoToYMD } from '@/lib/dateUtils'
 
 type DayGroup = {
@@ -299,7 +299,7 @@ export async function exportSalaryPdf(opts: {
       head: [['Дата', 'Тип', 'Метод', 'Період', 'Нараховано', 'Виплачено', 'Примітка']],
       body: opts.payments.map(p => [
         formatDate(p.payment_date),
-        p.payment_type === 'advance' ? 'Аванс' : 'Фінальна',
+        salaryPaymentTypeLabel(p.payment_type),
         paymentLabel((p.payment_method ?? 'cash') as any),
         `${formatDate(p.period_start)} – ${formatDate(p.period_end)}`,
         `${Number(p.calculated_amount).toLocaleString('uk-UA')} ₴`,
