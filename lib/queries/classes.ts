@@ -3,6 +3,7 @@ import type { Db, Insert } from '@/lib/queries/_db'
 import type { Class, ClassSeries } from '@/types'
 import { callRpc } from '@/lib/rpc'
 import { kyivDayUtcBounds } from '@/lib/dateUtils'
+import type { GenerateWarning } from '@/lib/planned'
 
 export type ClassWithJoins = Class & {
   trainers: { name: string } | null
@@ -326,6 +327,20 @@ export async function updateSeries(
   return { error: error?.message ?? null }
 }
 
+/** Тимчасовий шаблон: період дії (NULL = без межі). Впливає лише на generate_week і примарні слоти. */
+export async function updateSeriesPeriod(
+  supabase: Db,
+  seriesId: string,
+  validFrom: string | null,
+  validTo: string | null
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('class_series')
+    .update({ valid_from: validFrom, valid_to: validTo })
+    .eq('id', seriesId)
+  return { error: error?.message ?? null }
+}
+
 export async function deleteSeries(
   supabase: Db,
   seriesId: string
@@ -384,15 +399,17 @@ export async function generateWeek(
   supabase: Db,
   monday: string,
   weeks: number = 1
-): Promise<{ classesCreated: number; enrollmentsCreated: number; conflicts: GeneratedConflict[]; error: string | null }> {
+): Promise<{ classesCreated: number; enrollmentsCreated: number; conflicts: GeneratedConflict[]; warnings: GenerateWarning[]; error: string | null }> {
   const { data, error } = await supabase.rpc('generate_week', { p_start_date: monday, p_weeks: weeks })
-  if (error) return { classesCreated: 0, enrollmentsCreated: 0, conflicts: [], error: error.message }
-  // jsonb-колонка типізується як Json — форму елементів гарантує сама RPC.
+  if (error) return { classesCreated: 0, enrollmentsCreated: 0, conflicts: [], warnings: [], error: error.message }
+  // jsonb-колонки типізуються як Json — форму елементів гарантує сама RPC.
   const conflicts = (data?.[0]?.conflicts ?? []) as unknown as GeneratedConflict[]
+  const warnings = (data?.[0]?.warnings ?? []) as unknown as GenerateWarning[]
   return {
     classesCreated: data?.[0]?.classes_created ?? 0,
     enrollmentsCreated: data?.[0]?.enrollments_created ?? 0,
     conflicts,
+    warnings,
     error: null,
   }
 }

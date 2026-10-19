@@ -1,0 +1,339 @@
+/* «Заплановане»: майстер PlannedChangeModal + реєстр PlannedView. Лише var()-токени. */
+
+/* ── Майстер: крок 1 — вибір виду ─────────────────────────── */
+.kindList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kindCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion-fast), background var(--motion-fast);
+}
+.kindCard:hover { border-color: var(--border-hover); background: var(--bg-3); }
+.kindCard:focus-visible { outline: none; border-color: var(--text); box-shadow: var(--focus-glow); }
+
+.kindTitle {
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.kindHint {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+
+/* ── Майстер: поля ────────────────────────────────────────── */
+.stepHint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+
+.fieldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Дзеркало FormField label (13px, --text-2) для блоків без одного control. */
+.fieldLabel {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.muted {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color var(--motion-fast);
+}
+.checkRow:hover { border-color: var(--border-hover); }
+.checkRow input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.checkLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-base);
+  color: var(--text);
+}
+
+/* ── Майстер: превʼю наслідків ────────────────────────────── */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.previewSummary {
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.previewList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.previewItem,
+.previewItemWarn {
+  display: flex;
+  gap: 10px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.previewItemWarn { color: var(--warning-text); }
+
+.previewDate {
+  flex-shrink: 0;
+  width: 92px;
+  color: var(--text-3);
+}
+.previewItemWarn .previewDate { color: inherit; }
+
+.previewError {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--danger-text);
+}
+
+/* ── Реєстр ────────────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.search {
+  width: 220px;
+  height: var(--control-h);
+  padding: 0 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  outline: none;
+  transition: border-color var(--motion-fast);
+}
+.search:focus { border-color: var(--text); }
+.search::placeholder { color: var(--text-3); }
+
+.newBtn { flex-shrink: 0; }
+
+.empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--fs-base);
+}
+
+.tableDesktop { display: block; }
+.cardList     { display: none; }
+
+.row { cursor: pointer; }
+
+.nameCell {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.subtle { color: var(--text-3); }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion-fast);
+}
+.card:hover { border-color: var(--border-hover); }
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot { color: var(--text-3); }
+
+.tabCount {
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* ── Деталь запису (по датах) ─────────────────────────────── */
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.dateList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.dateRowDate {
+  flex-shrink: 0;
+  width: 92px;
+  color: var(--text-2);
+}
+
+.dateRowResult {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+}
+
+.linkBtn {
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.linkBtn:hover { color: var(--text-2); }
+
+.compact .tableDesktop { display: none; }
+.compact .cardList { display: flex; flex-direction: column; gap: 8px; }
+.compact .controls { flex-direction: column; align-items: stretch; }
+.compact .filters { flex-wrap: nowrap; }
+.compact .search { flex: 1; width: auto; min-width: 0; }
+.compact .controls > :global(.tabs-segmented) { display: flex; }
+.compact .controls > :global(.tabs-segmented) :global(.tab-seg) { flex: 1 1 auto; padding: 0 8px; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .controls { flex-direction: column; align-items: stretch; }
+  .controls > :global(.tabs-segmented) { display: flex; }
+  .controls > :global(.tabs-segmented) :global(.tab-seg) { flex: 1 1 auto; padding: 0 8px; white-space: nowrap; }
+  .search { flex: 1; min-width: 0; }
+  .filters { flex-wrap: nowrap; }
+  .tableDesktop { display: none; }
+  .cardList { display: flex; flex-direction: column; gap: 8px; }
+}

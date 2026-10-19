@@ -4,7 +4,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { signOutAndRedirect } from '@/lib/auth/signOut'
 import { useRole } from '@/hooks/useRole'
-import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon, AttendanceIcon } from './icons/navigation'
+import { usePlannedAttention } from '@/hooks/usePlannedAttention'
+import { SalesIcon, ClientsIcon, ScheduleIcon, TemplatesIcon, AccountingIcon, SettingsIcon, LogoutIcon, JournalIcon, DashboardIcon, AttendanceIcon, PlannedIcon } from './icons/navigation'
 import styles from './Sidebar.module.css'
 
 const nav = [
@@ -15,6 +16,7 @@ const nav = [
   { href: '/schedule/templates', label: 'Шаблони', icon: <TemplatesIcon /> },
   { href: '/journal', label: 'Журнал', icon: <JournalIcon /> },
   { href: '/attendance', label: 'Відвідуваність', icon: <AttendanceIcon /> },
+  { href: '/planned', label: 'Заплановане', icon: <PlannedIcon /> },
   { href: '/audit', label: 'Аудит', icon: <JournalIcon /> },
   { href: '/accounting', label: 'Звітність', icon: <AccountingIcon /> },
 ]
@@ -51,6 +53,8 @@ export default function Sidebar() {
   const isInSalary = pathname.startsWith('/settings/salary')
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
   const [salaryOpen, setSalaryOpen] = useState(isInSalary)
+  // Лічильник лише для staff (Sidebar рендериться в адмінці; роль може ще вантажитись).
+  const { rows: plannedAttention } = usePlannedAttention(role === 'owner' || role === 'admin')
 
   return (
     <aside className={styles.sidebar}>
@@ -69,6 +73,11 @@ export default function Sidebar() {
             >
               <span className={styles.icon} aria-hidden="true">{item.icon}</span>
               {item.label}
+              {item.href === '/planned' && plannedAttention.length > 0 && (
+                <span className={styles.navCount} aria-label={`Потребують уваги: ${plannedAttention.length}`}>
+                  {plannedAttention.length}
+                </span>
+              )}
             </Link>
           )
         })}

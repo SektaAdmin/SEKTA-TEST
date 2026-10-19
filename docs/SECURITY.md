@@ -16,6 +16,7 @@
 - RLS-on БЕЗ політики = deny-all. Чистка політик лишає щонайменше owner-політику.
 - Нова таблиця → `ENABLE ROW LEVEL SECURITY` + (`owner_all` або `owner_admin_all`) + trainer/client-політики + `GRANT SELECT,INSERT,UPDATE,DELETE … TO anon, authenticated`.
 - `class_series` — RLS УВІМКНЕНО (`owner_admin_all` + `trainer_select_own`: SELECT лише власних `trainer_id = current_trainer_id()`, екран `/trainer/regulars`); DML відкликано в `anon`.
+- `planned_enrollment_changes` — RLS УВІМКНЕНО: SELECT owner/admin (`owner_admin_select`) + trainer лише для своїх серій (`trainer_select_own`); DML-грантів НЕМА ні в кого — запис лише через DEFINER-RPC «Запланованого» з гейтом `can_manage_series(series_id)` (owner/admin АБО тренер-власник серії). Внутрішні `_planned_apply_class/_planned_apply_range/_planned_validate` — EXECUTE лише `postgres`. Відміна паузою делегує в `change_enrollment_status` під `app.trusted_call='on'` (local) — після гейта серії.
 - Матриця → `ROLES_PLAN.md` §Фаза 3.
 
 ## Гранти

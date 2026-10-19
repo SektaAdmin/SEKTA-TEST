@@ -1,10 +1,12 @@
 'use client'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useSeriesTemplates } from '@/hooks/useSeriesTemplates'
 import { deleteSeries, generateWeek, listTemplateSeriesIds, deleteClassesInRange, type GeneratedConflict } from '@/lib/queries/classes'
+import { WARNING_REASON, ymdShort, type GenerateWarning } from '@/lib/planned'
 import { useTrainers } from '@/hooks/useTrainers'
 import { useHalls } from '@/hooks/useHalls'
 import { useTrainingTypes } from '@/hooks/useTrainingTypes'
@@ -44,6 +46,8 @@ export default function TemplatesPage() {
   const { trainers } = useTrainers()
   const { halls } = useHalls()
   const { trainingTypes } = useTrainingTypes()
+  const router = useRouter()
+  const typeLabel = (code: string) => trainingTypes.find(t => t.code === code)?.label ?? code
 
   const isMobile = useIsMobile()
 
@@ -133,12 +137,14 @@ export default function TemplatesPage() {
     setGenerating(true)
     let totalClasses = 0, totalEnrollments = 0
     const totalConflicts: GeneratedConflict[] = []
+    const totalWarnings: GenerateWarning[] = []
     for (const monday of [...selectedMondays].sort()) {
-      const { classesCreated, enrollmentsCreated, conflicts, error } = await generateWeek(supabase, monday, 1)
+      const { classesCreated, enrollmentsCreated, conflicts, warnings, error } = await generateWeek(supabase, monday, 1)
       if (error) { toast.error(error); setGenerating(false); return }
       totalClasses += classesCreated
       totalEnrollments += enrollmentsCreated
       totalConflicts.push(...conflicts)
+      totalWarnings.push(...warnings)
     }
     setGenerating(false)
     setShowGenerate(false)
@@ -162,6 +168,28 @@ export default function TemplatesPage() {
             {totalConflicts.length > shown.length && <div>…та ще {totalConflicts.length - shown.length}</div>}
           </>
         ),
+      })
+    }
+    // Записи (постійники / заплановане), що не виконались повністю — розбирати в «Заплановане».
+    if (totalWarnings.length > 0) {
+      const shown = totalWarnings.slice(0, 5)
+      toast.warning(`Потребують уваги ${totalWarnings.length} записів`, {
+        duration: 12000,
+        description: (
+          <>
+            {shown.map((w, i) => {
+              const dow = DOW_LABELS_SHORT[new Date(w.class_date).getDay()]
+              const what = w.series_title || typeLabel(w.ticket_type)
+              return (
+                <div key={i}>
+                  {w.client_name} — {what} {dow} {ymdShort(w.class_date)} {w.time_of_day}: {WARNING_REASON[w.reason]}
+                </div>
+              )
+            })}
+            {totalWarnings.length > shown.length && <div>…та ще {totalWarnings.length - shown.length}</div>}
+          </>
+        ),
+        action: { label: 'Заплановане', onClick: () => router.push('/planned') },
       })
     }
   }

@@ -115,6 +115,8 @@ export type Database = {
           title: string | null
           trainer_id: string | null
           type: string
+          valid_from: string | null
+          valid_to: string | null
         }
         Insert: {
           capacity?: number | null
@@ -129,6 +131,8 @@ export type Database = {
           title?: string | null
           trainer_id?: string | null
           type?: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Update: {
           capacity?: number | null
@@ -143,6 +147,8 @@ export type Database = {
           title?: string | null
           trainer_id?: string | null
           type?: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -609,6 +615,87 @@ export type Database = {
         }
         Relationships: []
       }
+      planned_enrollment_changes: {
+        Row: {
+          action: string
+          client_id: string
+          created_at: string
+          created_by: string | null
+          created_by_role: string | null
+          date_from: string
+          date_to: string
+          hours_attended: number[] | null
+          id: string
+          is_active: boolean
+          note: string | null
+          series_id: string
+        }
+        Insert: {
+          action: string
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          date_from: string
+          date_to: string
+          hours_attended?: number[] | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          series_id: string
+        }
+        Update: {
+          action?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_role?: string | null
+          date_from?: string
+          date_to?: string
+          hours_attended?: number[] | null
+          id?: string
+          is_active?: boolean
+          note?: string | null
+          series_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planned_enrollment_changes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_enrollment_changes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_negative_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_enrollment_changes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_with_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_enrollment_changes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "v_client_balance_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_enrollment_changes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "class_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           amount_given: number
@@ -729,6 +816,8 @@ export type Database = {
           hours_attended: number[] | null
           id: string
           series_id: string
+          valid_from: string | null
+          valid_to: string | null
         }
         Insert: {
           client_id: string
@@ -736,6 +825,8 @@ export type Database = {
           hours_attended?: number[] | null
           id?: string
           series_id: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Update: {
           client_id?: string
@@ -743,6 +834,8 @@ export type Database = {
           hours_attended?: number[] | null
           id?: string
           series_id?: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -1216,6 +1309,38 @@ export type Database = {
           outcome: number
         }[]
       }
+      _planned_apply_class: {
+        Args: {
+          p_action: string
+          p_class_id: string
+          p_client_id: string
+          p_dry_run: boolean
+          p_hours: number[]
+        }
+        Returns: Json
+      }
+      _planned_apply_range: {
+        Args: {
+          p_action: string
+          p_client_id: string
+          p_dry_run: boolean
+          p_from: string
+          p_hours: number[]
+          p_series_id: string
+          p_to: string
+        }
+        Returns: Json
+      }
+      _planned_validate: {
+        Args: {
+          p_action: string
+          p_client_id: string
+          p_date_from: string
+          p_date_to: string
+          p_series_id: string
+        }
+        Returns: string
+      }
       accounting_balance: {
         Args: {
           p_from?: string
@@ -1292,11 +1417,19 @@ export type Database = {
         Returns: boolean
       }
       can_manage_enrollment: { Args: never; Returns: boolean }
+      can_manage_series: { Args: { p_series_id: string }; Returns: boolean }
       cancel_class_and_restore_sessions: {
         Args: { p_class_id: string }
         Returns: {
           error_message: string
           restored_count: number
+          success: boolean
+        }[]
+      }
+      cancel_planned_change: {
+        Args: { p_id: string }
+        Returns: {
+          error_message: string
           success: boolean
         }[]
       }
@@ -1339,6 +1472,21 @@ export type Database = {
           ticket_type: string
         }[]
       }
+      check_template_slot_conflicts: {
+        Args: {
+          p_duration_min: number
+          p_hall_id?: string
+          p_starts_at: string
+          p_trainer_id?: string
+        }
+        Returns: {
+          conflict_type: string
+          series_id: string
+          starts_at: string
+          ticket_type: string
+          title: string
+        }[]
+      }
       class_availability: {
         Args: { p_class_ids: string[] }
         Returns: {
@@ -1362,6 +1510,22 @@ export type Database = {
           enrolled_status: string
           enrollment_id: string
           error_message: string
+          success: boolean
+        }[]
+      }
+      create_planned_change: {
+        Args: {
+          p_action: string
+          p_client_id: string
+          p_date_from: string
+          p_date_to: string
+          p_note?: string
+          p_series_id: string
+        }
+        Returns: {
+          applied: Json
+          error_message: string
+          id: string
           success: boolean
         }[]
       }
@@ -1425,6 +1589,7 @@ export type Database = {
           classes_created: number
           conflicts: Json
           enrollments_created: number
+          warnings: Json
         }[]
       }
       get_my_trainer: {
@@ -1489,6 +1654,62 @@ export type Database = {
         }[]
       }
       normalize_phone_ua: { Args: { p_phone: string }; Returns: string }
+      planned_register: {
+        Args: {
+          p_client_id?: string
+          p_include_done?: boolean
+          p_trainer_id?: string
+        }
+        Returns: {
+          client_id: string
+          client_name: string
+          created_at: string
+          created_by_role: string
+          date_from: string
+          date_to: string
+          id: string
+          issues_count: number
+          kind: string
+          note: string
+          opened_count: number
+          series_id: string
+          series_title: string
+          status: string
+          ticket_type: string
+          trainer_id: string
+          trainer_name: string
+        }[]
+      }
+      preview_planned_change: {
+        Args: {
+          p_action: string
+          p_client_id: string
+          p_date_from: string
+          p_date_to: string
+          p_series_id: string
+        }
+        Returns: {
+          error_message: string
+          items: Json
+          success: boolean
+        }[]
+      }
+      projected_template_slots: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          capacity: number
+          class_date: string
+          duration_min: number
+          hall_id: string
+          paused_count: number
+          roster_count: number
+          series_id: string
+          starts_at: string
+          ticket_type: string
+          title: string
+          trainer_id: string
+        }[]
+      }
       render_enrollment_event_message: {
         Args: {
           p_actor_role: string
@@ -1530,6 +1751,20 @@ export type Database = {
           id: string
           kind: string
           total_count: number
+        }[]
+      }
+      series_roster: {
+        Args: { p_date: string; p_series_id: string }
+        Returns: {
+          change_id: string
+          client_id: string
+          first_name: string
+          hours_attended: number[]
+          last_name: string
+          pause_to: string
+          paused: boolean
+          source: string
+          valid_to: string
         }[]
       }
       show_limit: { Args: never; Returns: number }
@@ -1575,6 +1810,19 @@ export type Database = {
       update_training_type_sort_orders: {
         Args: { p_ids: string[]; p_orders: number[] }
         Returns: undefined
+      }
+      upsert_series_client_period: {
+        Args: {
+          p_client_id: string
+          p_series_id: string
+          p_valid_from: string
+          p_valid_to: string
+        }
+        Returns: {
+          applied: Json
+          error_message: string
+          success: boolean
+        }[]
       }
     }
     Enums: {

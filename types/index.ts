@@ -72,6 +72,9 @@ export interface ClassSeries {
   day_of_week: number   // 0=Нд..6=Сб
   time_of_day: string   // HH:mm
   created_at: string
+  /** Тимчасовий шаблон: період дії (NULL = без межі). */
+  valid_from?: string | null
+  valid_to?: string | null
   trainers?: { name: string } | null
   halls?: { name: string } | null
   series_clients?: { id: string; client_id: string }[]

@@ -7,6 +7,7 @@ import { DebtorListsBlock } from './_components/DebtorListsBlock'
 import { SessionDebtBlock } from './_components/SessionDebtBlock'
 import { FreeSlotsBlock } from './_components/FreeSlotsBlock'
 import { FreeSpacesBlock } from './_components/FreeSpacesBlock'
+import { PlannedAttentionBlock } from './_components/PlannedAttentionBlock'
 import styles from './dashboard.module.css'
 
 export default function DashboardPage() {
@@ -37,6 +38,9 @@ export default function DashboardPage() {
         </div>
 
         <div className={`page-body ${styles.body}`}>
+          {/* Алерт «Запланованого» — лише коли є невиконані наміри у відкритих тижнях. */}
+          <PlannedAttentionBlock />
+
           {/* Операційний ряд: що можна здати (оренда) + куди посадити (вільні місця).
               Danger-алерт «нема кому відкрити зал» живе всередині FreeSlotsBlock. */}
           <div className={styles.opsRow}>

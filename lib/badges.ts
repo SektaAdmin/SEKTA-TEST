@@ -89,6 +89,7 @@ const CANCEL_SOURCE_SUFFIX_ADMIN: Record<string, string> = {
   self:            'клієнт',
   staff_manual:    'адмін',
   auto_close:      'авто',
+  planned:         'пауза',
 }
 
 // Короткий суфікс джерела скасування для admin-перспективи (без «· »).

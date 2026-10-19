@@ -98,3 +98,11 @@ export const AttendanceIcon = () => (
     <path d="M1.5 8h3l2-4.5 3 9 2-4.5h3" />
   </svg>
 )
+
+export const PlannedIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="12" height="11" rx="1.5" />
+    <line x1="2" y1="6.5" x2="14" y2="6.5" />
+    <path d="M8 8.5v2.5l1.5 1" />
+  </svg>
+)

@@ -57,6 +57,22 @@
 
 .icon { display: flex; align-items: center; flex-shrink: 0; }
 
+/* Лічильник «потребують уваги» поруч із пунктом меню (Заплановане). */
+.navCount {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--warning-dim);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+  font-size: var(--fs-2xs);
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .chevron {
   display: flex;
   align-items: center;
