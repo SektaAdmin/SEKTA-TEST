@@ -10,6 +10,8 @@ import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
 import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import GhostSlotModal from '@/components/planned/GhostSlotModal'
+import { listProjectedSlots, type ProjectedSlot } from '@/lib/queries/planned'
 import SlotFinderModal from '@/components/SlotFinderModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
@@ -43,6 +45,40 @@ type ClassWithJoins = Class & {
 }
 
 type Hall = { id: string; name: string; capacity: number; description: string | null; is_active: boolean }
+
+// ── Примарні слоти («Заплановане») ───────────────────────────────
+// Заняття шаблону на дату, де тиждень ще не відкрито. Рендеримо як псевдо-заняття
+// (id «ghost:…»), щоб сітка/доріжки/мобільний тайм-лайн працювали без змін;
+// клік відкриває GhostSlotModal замість ClassDetailModal.
+const GHOST_PREFIX = 'ghost:'
+const isGhostId = (id: string) => id.startsWith(GHOST_PREFIX)
+
+function ghostToClass(
+  g: ProjectedSlot,
+  trainerName: (id: string | null) => string | null,
+  hallName: (id: string | null) => string | null,
+): ClassWithJoins {
+  return {
+    id: `${GHOST_PREFIX}${g.series_id}:${g.class_date}`,
+    trainer_id: g.trainer_id,
+    hall_id: g.hall_id,
+    ticket_type: g.ticket_type,
+    title: g.title,
+    starts_at: g.starts_at,
+    duration_min: g.duration_min,
+    capacity: g.capacity,
+    is_cancelled: false,
+    notes: null,
+    choreo_stage: null,
+    series_id: g.series_id,
+    created_at: g.starts_at,
+    updated_at: g.starts_at,
+    trainers: trainerName(g.trainer_id) ? { name: trainerName(g.trainer_id)! } : null,
+    halls: hallName(g.hall_id) ? { name: hallName(g.hall_id)! } : null,
+    // Майбутній склад (без пауз) — щоб лічильник місць показував заповненість наперед.
+    enrollments: Array.from({ length: g.roster_count }, (_, i) => ({ id: `${g.series_id}-${i}`, status: 'enrolled' })),
+  }
+}
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
@@ -275,6 +311,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+  const ghost = isGhostId(cls.id)
 
   const [showTooltip, setShowTooltip] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
@@ -291,11 +328,11 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   }, [])
 
   const handleMouseEnter = useCallback(() => {
-    if (isMobile) return
+    if (isMobile || ghost) return
     cancelClose()
     if (hoverTimer.current) clearTimeout(hoverTimer.current)
     hoverTimer.current = setTimeout(() => setShowTooltip(true), 250)
-  }, [isMobile, cancelClose])
+  }, [isMobile, ghost, cancelClose])
 
   const handleMouseLeave = useCallback(() => {
     if (hoverTimer.current) clearTimeout(hoverTimer.current)
@@ -306,7 +343,8 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     <button
       ref={cardRef}
       data-card
-      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''}`}
+      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''} ${ghost ? styles.cardGhost : ''}`}
+      title={ghost ? 'За шаблоном — тиждень ще не відкрито' : undefined}
       style={{
         top: `${getCardTop(cls.starts_at, hourHeight) + CARD_GAP}px`,
         height: `${Math.max(cardHeight - CARD_GAP * 2, 20)}px`,
@@ -784,7 +822,7 @@ function MobileScheduleTimeline({
                     return (
                       <button
                         key={cls.id}
-                        className={[styles.mobileTlCard, cls.is_cancelled ? styles.mobileTlCardCancelled : ''].filter(Boolean).join(' ')}
+                        className={[styles.mobileTlCard, cls.is_cancelled ? styles.mobileTlCardCancelled : '', isGhostId(cls.id) ? styles.mobileTlCardGhost : ''].filter(Boolean).join(' ')}
                         style={{ ['--card-color' as string]: color }}
                         onClick={() => onCardClick(cls.id)}
                       >
@@ -803,6 +841,7 @@ function MobileScheduleTimeline({
                           </div>
                           <div className={styles.mobileTlCardMeta}>
                             <span>{timeStr}</span>
+                            {isGhostId(cls.id) && <span> · за шаблоном</span>}
                             {cls.halls?.name && <span> · {cls.halls.name}</span>}
                             {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
                             {free != null && !full && !cls.is_cancelled && (
@@ -915,12 +954,19 @@ export default function SchedulePage() {
     return { weekDays: days, weekStartISO: start.toISOString(), weekEndISO: end.toISOString() }
   }, [baseDate, viewMode])
 
+  const [ghostSlots, setGhostSlots] = useState<ProjectedSlot[]>([])
+  const [openGhost, setOpenGhost] = useState<ProjectedSlot | null>(null)
+
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const { active } = await listClassesForWeek(supabase, weekStartISO, weekEndISO)
+    const [{ active }, projected] = await Promise.all([
+      listClassesForWeek(supabase, weekStartISO, weekEndISO),
+      listProjectedSlots(supabase, toYMD(weekDays[0]), toYMD(weekDays[weekDays.length - 1])),
+    ])
     setClasses(active as ClassWithJoins[])
+    setGhostSlots(projected.data)
     setLoading(false)
-  }, [weekStartISO, weekEndISO])
+  }, [weekStartISO, weekEndISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchClasses() }, [fetchClasses])
 
@@ -967,12 +1013,25 @@ export default function SchedulePage() {
   }, [])
 
   // Apply filters
+  const allClasses = useMemo(() => {
+    if (ghostSlots.length === 0) return classes
+    const tName = (id: string | null) => trainers.find(t => t.id === id)?.name ?? null
+    const hName = (id: string | null) => halls.find(h => h.id === id)?.name ?? null
+    return [...classes, ...ghostSlots.map(g => ghostToClass(g, tName, hName))]
+  }, [classes, ghostSlots, trainers, halls])
+
+  const openCard = useCallback((id: string) => {
+    if (!isGhostId(id)) { setEditClassId(id); return }
+    const [, seriesId, date] = id.split(':')
+    setOpenGhost(ghostSlots.find(g => g.series_id === seriesId && g.class_date === date) ?? null)
+  }, [ghostSlots])
+
   const filteredClasses = useMemo(() => {
-    let result = classes
+    let result = allClasses
     if (filterHall) result = result.filter(c => c.hall_id === filterHall)
     if (filterTrainer) result = result.filter(c => c.trainer_id === filterTrainer)
     return result
-  }, [classes, filterHall, filterTrainer])
+  }, [allClasses, filterHall, filterTrainer])
 
   // Halls that appear in the current view (filtered)
   const visibleHalls = useMemo(() => {
@@ -1194,7 +1253,7 @@ export default function SchedulePage() {
         {/* Mobile timeline view */}
         {isMobile && (
           <MobileScheduleTimeline
-            classes={classes}
+            classes={allClasses}
             selectedDate={baseDate}
             today={today}
             typeLabels={typeLabels}
@@ -1208,7 +1267,7 @@ export default function SchedulePage() {
             onDateSelect={setBaseDate}
             onHallFilter={setFilterHall}
             onTrainerFilter={setFilterTrainer}
-            onCardClick={id => setEditClassId(id)}
+            onCardClick={openCard}
             onFreeSlotClick={(startsAt, hallId) => {
               setPrefill({ starts_at: startsAt, hall_id: hallId })
               setShowModal(true)
@@ -1348,7 +1407,7 @@ export default function SchedulePage() {
                             typeLabels={typeLabels}
                             hourHeight={hourHeight}
                             day={day}
-                            onCardClick={id => setEditClassId(id)}
+                            onCardClick={openCard}
                             onSlotClick={startsAt => {
                               setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                               setShowModal(true)
@@ -1474,6 +1533,18 @@ export default function SchedulePage() {
           onClose={() => setEditClassId(null)}
           onClassUpdated={() => { fetchClasses(); setEditClassId(null) }}
           isStaff={true}
+        />
+      )}
+
+      {openGhost && (
+        <GhostSlotModal
+          slot={openGhost}
+          label={openGhost.title || (typeLabels[openGhost.ticket_type] ?? openGhost.ticket_type)}
+          trainerName={trainers.find(t => t.id === openGhost.trainer_id)?.name ?? null}
+          hallName={halls.find(h => h.id === openGhost.hall_id)?.name ?? null}
+          canEditTemplates
+          onClose={() => setOpenGhost(null)}
+          onChanged={fetchClasses}
         />
       )}
 

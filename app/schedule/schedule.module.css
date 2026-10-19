@@ -634,6 +634,17 @@
 }
 .cardCancelled .cardDot { background: var(--text-3) !important; }
 
+/* Примарний слот («Заплановане»): заняття шаблону, тиждень ще не відкрито. */
+.cardGhost {
+  background: var(--bg-2);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--card-color, var(--border)) 55%, var(--bg-2));
+}
+.cardGhost:hover { background: var(--bg-3); }
+.cardGhost .cardTitle,
+.cardGhost .cardTrainerRow,
+.cardGhost .cardSlots { opacity: 0.75; }
+
 /* trainer cabinet: highlight trainer's own classes */
 .cardOwn {
   outline: 2px solid color-mix(in srgb, var(--card-color, var(--accent)) 60%, transparent);
@@ -1202,6 +1213,12 @@
 .mobileTlCard:active { opacity: 0.75; }
 
 .mobileTlCardCancelled { opacity: 0.45; }
+
+.mobileTlCardGhost {
+  background: var(--bg);
+  border-style: dashed;
+}
+.mobileTlCardGhost .mobileTlCardBorder { opacity: 0.45; }
 
 .mobileTlCardOwn {
   outline: 2px solid color-mix(in srgb, var(--card-color, var(--accent)) 60%, transparent);
