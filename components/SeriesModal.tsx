@@ -7,6 +7,9 @@ import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
 import ClientSearchCombobox from '@/components/features/ClientSearchCombobox'
+import PlannedChangeModal, { type PlannedPrefill } from '@/components/planned/PlannedChangeModal'
+import { listSeriesPlannedChanges } from '@/lib/queries/planned'
+import { periodLabel, ymdShort } from '@/lib/planned'
 import { VM } from '@/lib/validation-messages'
 import { MSG } from '@/lib/messages'
 import {
@@ -58,6 +61,8 @@ interface FormValues {
   capacity: string
   title: string
   notes: string
+  valid_from: string
+  valid_to: string
 }
 
 interface Prefill {
@@ -103,6 +108,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
       capacity: existing.capacity?.toString() ?? '',
       title: existing.title ?? '',
       notes: existing.notes ?? '',
+      valid_from: existing.valid_from ?? '',
+      valid_to: existing.valid_to ?? '',
     } : {
       ticket_type: trainingTypes[0]?.code ?? '',
       trainer_id: '',
@@ -113,6 +120,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
       capacity: '',
       title: '',
       notes: '',
+      valid_from: '',
+      valid_to: '',
     },
   })
 
@@ -125,6 +134,17 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
   const [searchKey, setSearchKey] = useState(0)
   const [selectedHours, setSelectedHours] = useState<number[]>([1, 2])
+
+  // «Заплановане» цієї серії: паузи постійників + записані наперед.
+  const [planned, setPlanned] = useState<Awaited<ReturnType<typeof listSeriesPlannedChanges>>['data']>([])
+  const [wizard, setWizard] = useState<PlannedPrefill | null>(null)
+  const reloadPlanned = () => {
+    if (!activeSeries?.id) return
+    listSeriesPlannedChanges(supabase, activeSeries.id).then(({ data }) => setPlanned(data))
+  }
+  useEffect(reloadPlanned, [activeSeries?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const pauseOf = (clientId: string) => planned.find(p => p.action === 'skip' && p.client_id === clientId)
+  const plannedEnrolls = planned.filter(p => p.action === 'enroll')
 
   useEffect(() => {
     if (!isEdit || !activeSeries?.id) return
@@ -150,6 +170,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
       client_id: client.id,
       hours_attended: hours ?? null,
       clients: { first_name: client.first_name, last_name: client.last_name },
+      valid_from: null,
+      valid_to: null,
     }])
     setSearchKey(k => k + 1)
   }
@@ -172,6 +194,8 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
       capacity: values.capacity ? Number(values.capacity) : null,
       title: values.title.trim() || null,
       notes: values.notes.trim() || null,
+      valid_from: values.valid_from || null,
+      valid_to: values.valid_to || null,
       type: 'template' as const,
     }
 
@@ -193,6 +217,7 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)}>
       <ModalShell
         title={isEdit ? 'Редагувати шаблон' : 'Новий шаблон'}
@@ -292,10 +317,28 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
           />
         </FormField>
 
+        <div className={styles.row}>
+          <FormField id="sm-from" label="Діє з (опц.)">
+            <input id="sm-from" type="date" {...register('valid_from')} disabled={isSubmitting} />
+          </FormField>
+          <FormField id="sm-to" label="Діє по (опц.)" hint="Тимчасовий шаблон: поза періодом заняття не створюються">
+            <input id="sm-to" type="date" {...register('valid_to')} disabled={isSubmitting} />
+          </FormField>
+        </div>
+
         {isEdit && (
           <>
             <div className={styles.divider} />
-            <p className={styles.sectionLabel}>Постійники</p>
+            <div className={styles.sectionHead}>
+              <p className={styles.sectionLabel}>Постійники</p>
+              <button
+                type="button"
+                className={styles.btnLink}
+                onClick={() => setWizard({ kind: 'temp_regular', seriesId: activeSeries!.id })}
+              >
+                + Тимчасовий постійник
+              </button>
+            </div>
 
             {Number(durationMin) >= 120 && (
               <div className={styles.hoursSelect}>
@@ -343,6 +386,24 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
                         {[row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') || 'Клієнт'}
                       </span>
                       {hoursLabel && <span className={`badge badge-type ${styles.hoursTag}`}>{hoursLabel}</span>}
+                      {(row.valid_from || row.valid_to) && (
+                        <span className="badge badge-type">{periodLabel(row.valid_from, row.valid_to)}</span>
+                      )}
+                      {(() => {
+                        const p = pauseOf(row.client_id)
+                        return p
+                          ? <span className="badge badge-type">Пауза {periodLabel(p.date_from, p.date_to)}</span>
+                          : (
+                            <button
+                              type="button"
+                              className={styles.btnRemove}
+                              onClick={() => setWizard({
+                                kind: 'skip', seriesId: activeSeries!.id,
+                                client: { id: row.client_id, name: [row.clients.first_name, row.clients.last_name].filter(Boolean).join(' ') },
+                              })}
+                            >Пауза</button>
+                          )
+                      })()}
                       {confirmRemoveId === row.id ? (
                         <button
                           type="button"
@@ -361,9 +422,38 @@ export default function SeriesModal({ existing, prefill, onClose, onSaved, train
                 })}
               </div>
             )}
+
+            {plannedEnrolls.length > 0 && (
+              <>
+                <p className={styles.sectionLabel}>Записані наперед</p>
+                <div className={styles.clientList}>
+                  {plannedEnrolls.map(p => (
+                    <div key={p.id} className={styles.clientRow}>
+                      <span className={styles.clientName}>
+                        {[p.clients?.first_name, p.clients?.last_name].filter(Boolean).join(' ') || 'Клієнт'}
+                      </span>
+                      <span className="badge badge-type">{p.date_from === p.date_to ? ymdShort(p.date_from) : periodLabel(p.date_from, p.date_to)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </ModalShell>
     </form>
+
+      {wizard && (
+        <PlannedChangeModal
+          canEditTemplates
+          prefill={wizard}
+          onClose={() => setWizard(null)}
+          onSaved={() => {
+            setWizard(null); reloadPlanned()
+            if (activeSeries?.id) listSeriesClients(supabase, activeSeries.id).then(({ data }) => setClients(data))
+          }}
+        />
+      )}
+    </>
   )
 }

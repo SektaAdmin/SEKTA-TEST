@@ -164,6 +164,27 @@
   flex-shrink: 0;
 }
 
+.linkBtn {
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.linkBtn:hover { color: var(--text); }
+
+.slotActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+}
+
 .noClients {
   font-size: var(--fs-sm);
   color: var(--text-3);

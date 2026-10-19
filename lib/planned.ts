@@ -2,6 +2,7 @@
    Дані — lib/queries/planned.ts; БД — міграція 20261019_planned_enrollments.sql. */
 
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
+import type { ProjectedSlot } from '@/lib/queries/planned'
 
 export type PlannedAction = 'skip' | 'enroll'
 /** Вид у реєстрі: 2 дії planned_enrollment_changes + 2 періоди (series_clients / class_series). */
@@ -119,4 +120,43 @@ export function summarizeApplied(items: PlannedApplyItem[], mode: 'preview' | 'd
   if (noSessions) parts.push(`${noSessions} без оплачених занять`)
   if (n('pending')) parts.push(`${n('pending')} при відкритті тижня`)
   return parts.join(' · ') || 'Відкритих занять у цьому періоді немає'
+}
+
+// ── Примарні слоти в сітці розкладу ─────────────────────────────
+// Заняття шаблону на дату, де тиждень ще не відкрито, рендеримо як псевдо-заняття
+// (id «ghost:<series>:<date>»), щоб сітка/доріжки/мобільний тайм-лайн працювали
+// без змін; клік перехоплюється → GhostSlotModal. Спільне для /schedule і /trainer/schedule.
+export const GHOST_PREFIX = 'ghost:'
+export const isGhostId = (id: string) => id.startsWith(GHOST_PREFIX)
+
+export function parseGhostId(id: string): { seriesId: string; date: string } {
+  const [, seriesId, date] = id.split(':')
+  return { seriesId, date }
+}
+
+export function ghostToClass(
+  g: ProjectedSlot,
+  trainerName: string | null,
+  hallName: string | null,
+) {
+  return {
+    id: `${GHOST_PREFIX}${g.series_id}:${g.class_date}`,
+    trainer_id: g.trainer_id,
+    hall_id: g.hall_id,
+    ticket_type: g.ticket_type,
+    title: g.title,
+    starts_at: g.starts_at,
+    duration_min: g.duration_min,
+    capacity: g.capacity,
+    is_cancelled: false,
+    notes: null,
+    choreo_stage: null,
+    series_id: g.series_id,
+    created_at: g.starts_at,
+    updated_at: g.starts_at,
+    trainers: trainerName ? { name: trainerName } : null,
+    halls: hallName ? { name: hallName } : null,
+    // Майбутній склад (без пауз) — лічильник місць показує заповненість наперед.
+    enrollments: Array.from({ length: g.roster_count }, (_, i) => ({ id: `${g.series_id}-${i}`, status: 'enrolled' })),
+  }
 }

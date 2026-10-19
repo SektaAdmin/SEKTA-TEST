@@ -34,9 +34,12 @@ export interface SeriesPayload {
   notes: string | null
   day_of_week?: number
   time_of_day?: string
+  /** Тимчасовий шаблон: період дії (NULL = без межі). */
+  valid_from?: string | null
+  valid_to?: string | null
 }
 
-const SERIES_CLIENT_SELECT = 'id, client_id, hours_attended, clients(first_name, last_name)' as const
+const SERIES_CLIENT_SELECT = 'id, client_id, hours_attended, valid_from, valid_to, clients(first_name, last_name)' as const
 function seriesClientQuery(supabase: Db) {
   return supabase.from('series_clients').select(SERIES_CLIENT_SELECT)
 }
@@ -234,14 +237,26 @@ export async function listClassesForSlotFinder(
   date: string
 ): Promise<{ data: SlotFinderClass[]; error: string | null }> {
   const { from: dayStart, to: dayEnd } = kyivDayUtcBounds(date)
-  const { data, error } = await supabase
-    .from('classes')
-    .select('id, ticket_type, starts_at, duration_min, hall_id, trainer_id')
-    .gte('starts_at', dayStart)
-    .lte('starts_at', dayEnd)
-    .eq('is_cancelled', false)
-    .returns<SlotFinderClass[]>()
-  return { data: data ?? [], error: error?.message ?? null }
+  const [{ data, error }, projected] = await Promise.all([
+    supabase
+      .from('classes')
+      .select('id, ticket_type, starts_at, duration_min, hall_id, trainer_id')
+      .gte('starts_at', dayStart)
+      .lte('starts_at', dayEnd)
+      .eq('is_cancelled', false)
+      .returns<SlotFinderClass[]>(),
+    // Примарні слоти шаблонів (тиждень не відкрито) — теж займають зал/тренера.
+    supabase.rpc('projected_template_slots', { p_from: date, p_to: date }),
+  ])
+  const ghosts: SlotFinderClass[] = (projected.data ?? []).map(g => ({
+    id: `ghost:${g.series_id}:${g.class_date}`,
+    ticket_type: g.ticket_type,
+    starts_at: g.starts_at,
+    duration_min: g.duration_min,
+    hall_id: g.hall_id,
+    trainer_id: g.trainer_id,
+  }))
+  return { data: [...(data ?? []), ...ghosts], error: error?.message ?? projected.error?.message ?? null }
 }
 
 // ── Mutations: classes ──────────────────────────────────────────

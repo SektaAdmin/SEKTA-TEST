@@ -5,6 +5,8 @@ import { useRefs } from '@/contexts/RefsContext'
 import { DOW_LABELS_FULL } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import type { TrainerRegularsSeriesRow } from '@/lib/queries/trainer-cabinet'
+import PlannedChangeModal, { type PlannedPrefill } from '@/components/planned/PlannedChangeModal'
+import { periodLabel } from '@/lib/planned'
 import styles from './regulars.module.css'
 
 // Пн→Нд для навігації; class_series.day_of_week — 0=Нд..6=Сб.
@@ -49,6 +51,7 @@ export default function TrainerRegulars({ series }: Props) {
   const router = useRouter()
   const { trainingTypes } = useRefs()
   const [activeDowIndex, setActiveDowIndex] = useState(todayDowIndex)
+  const [wizard, setWizard] = useState<PlannedPrefill | null>(null)
   const activeDow = DAYS_ORDER[activeDowIndex]
 
   function goPrevDay() {
@@ -119,16 +122,43 @@ export default function TrainerRegulars({ series }: Props) {
                           <span className={styles.clientNum}>{i + 1}</span>
                           <span className={styles.clientChipName}>{clientName(row.clients)}</span>
                           {hoursLabel && <span className={`badge badge-type ${styles.hoursTag}`}>{hoursLabel}</span>}
+                          {(row.valid_from || row.valid_to) && (
+                            <span className={`badge badge-type ${styles.hoursTag}`}>{periodLabel(row.valid_from, row.valid_to)}</span>
+                          )}
+                          <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={() => setWizard({ kind: 'skip', seriesId: s.id, client: { id: row.client_id, name: clientName(row.clients) } })}
+                          >
+                            Пауза
+                          </button>
                         </div>
                       )
                     })
                   )}
+                </div>
+                <div className={styles.slotActions}>
+                  <button type="button" className={styles.linkBtn} onClick={() => setWizard({ kind: 'enroll', seriesId: s.id })}>
+                    Записати наперед
+                  </button>
+                  <button type="button" className={styles.linkBtn} onClick={() => setWizard({ kind: 'temp_regular', seriesId: s.id })}>
+                    Тимчасовий постійник
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {wizard && (
+        <PlannedChangeModal
+          canEditTemplates={false}
+          prefill={wizard}
+          onClose={() => setWizard(null)}
+          onSaved={() => { setWizard(null); router.refresh() }}
+        />
+      )}
     </div>
   )
 }

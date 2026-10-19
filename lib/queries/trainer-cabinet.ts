@@ -140,7 +140,7 @@ export async function listTrainerClients(
 // (trainer_select_own на обох таблицях, лише власний trainer_id).
 
 const TRAINER_REGULARS_SELECT =
-  'id, ticket_type, title, day_of_week, time_of_day, duration_min, halls(name), series_clients(id, client_id, hours_attended, clients(first_name, last_name))' as const
+  'id, ticket_type, title, day_of_week, time_of_day, duration_min, halls(name), series_clients(id, client_id, hours_attended, valid_from, valid_to, clients(first_name, last_name))' as const
 
 function trainerRegularsQuery(supabase: Db, trainerId: string) {
   return supabase

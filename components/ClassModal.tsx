@@ -16,6 +16,7 @@ import {
   deleteSeries,
   type ClassPayload,
 } from '@/lib/queries/classes'
+import { checkTemplateSlotConflicts } from '@/lib/queries/planned'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
 import { FormField } from '@/components/ui/FormField'
@@ -82,6 +83,8 @@ export default function ClassModal({ onClose, onSaved, existing, prefill, forced
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([])
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
+  // Підтверджений перетин із примарним слотом шаблону (ключ параметрів заняття).
+  const [templateAck, setTemplateAck] = useState<string | null>(null)
 
   const [isSeries, setIsSeries] = useState(false)
   const [editScope, setEditScope] = useState<EditScope | null>(
@@ -163,6 +166,21 @@ export default function ClassModal({ onClose, onSaved, existing, prefill, forced
   ): Promise<string | null> =>
     checkClassConflicts(supabase, { starts_at, duration_min, hall_id, trainer_id, exclude_id })
 
+  /**
+   * Перетин зі слотом шаблону у невідкритому тижні — попередження з підтвердженням:
+   * збереження означає, що generate_week пропустить заняття шаблону (конфлікт).
+   * Повертає true, якщо треба зупинитись і показати попередження.
+   */
+  const needsTemplateAck = async (p: ClassPayload): Promise<boolean> => {
+    const msg = await checkTemplateSlotConflicts(supabase, p)
+    if (!msg) return false
+    const key = `${p.starts_at}|${p.duration_min}|${p.hall_id}|${p.trainer_id}`
+    if (templateAck === key) return false
+    setTemplateAck(key)
+    setServerError(`${msg}. Натисніть «Зберегти» ще раз, щоб усе одно зберегти — тоді заняття за шаблоном цього дня не створиться.`)
+    return true
+  }
+
   const onSubmit = async (values: FormValues) => {
     if (!scopeChosen) return
     setLoading(true)
@@ -182,6 +200,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill, forced
     if (isEdit && (!hasSeries || editScope === 'this')) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id, existing!.id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
+      if (await needsTemplateAck(payload)) { setLoading(false); return }
       const { error } = await updateClass(supabase, existing!.id, payload)
       if (error) { setServerError(error); setLoading(false); return }
       onSaved()
@@ -227,6 +246,7 @@ export default function ClassModal({ onClose, onSaved, existing, prefill, forced
     if (!isSeries) {
       const conflict = await checkConflicts(payload.starts_at, payload.duration_min, payload.hall_id, payload.trainer_id)
       if (conflict) { setServerError(conflict); setLoading(false); return }
+      if (await needsTemplateAck(payload)) { setLoading(false); return }
       const { error } = await insertClasses(supabase, [payload])
       if (error) { setServerError(error); setLoading(false); return }
       onSaved()

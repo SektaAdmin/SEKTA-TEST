@@ -17,10 +17,11 @@ import BottomNav from '@/components/BottomNav'
 import ClientModal from '@/components/ClientModal'
 import SaleModal from '@/components/SaleModal'
 import type { EditSaleSnapshot } from '@/components/SaleModal'
-import { formatClientName, formatSaleDatetime, formatMoney, formatDate, hhmm } from '@/lib/formatters'
+import { formatClientName, formatSaleDatetime, formatMoney, formatDate, formatDateShort, hhmm } from '@/lib/formatters'
 import { enrollmentStatusLabel, enrollmentStatusClass, enrollmentStatusIcon, paymentLabel, paymentClass, balanceClass, enrollmentBadge, enrollmentBadgeClass } from '@/lib/badges'
 import EnrollClientModal from '@/components/EnrollClientModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import ClientPlannedSection from './ClientPlannedSection'
 import { DOW_LABELS_SHORT } from '@/lib/dateUtils'
 import { MSG } from '@/lib/messages'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -30,6 +31,7 @@ import styles from './client-profile.module.css'
 type PermanentEnrollment = {
   id: string
   series_id: string
+  valid_to: string | null
   class_series: {
     title: string | null
     ticket_type: string
@@ -679,6 +681,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                       <span className={styles.sessionType}>
                         {DOW_LABELS_SHORT[s.day_of_week]} {timeStr} · {typeLabels[s.ticket_type] ?? s.ticket_type}
                         {s.trainers?.name ? ` · ${s.trainers.name}` : ''}
+                        {e.valid_to ? ` · до ${formatDateShort(e.valid_to)}` : ''}
                       </span>
                     </div>
                   )
@@ -686,6 +689,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
               </div>
             )}
           </section>
+
+          <ClientPlannedSection
+            clientId={id}
+            clientName={formatClientName(client)}
+            onChanged={fetchAllClientData}
+          />
 
           <section className={styles.card}>
             <div className={styles.cardHeader}>

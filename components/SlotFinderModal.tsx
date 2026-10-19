@@ -11,6 +11,7 @@ import {
   type SlotFinderClass,
 } from '@/lib/queries/classes'
 import { enrollClient, getClientSessionBalance } from '@/lib/queries/enrollments'
+import { checkTemplateSlotConflicts } from '@/lib/queries/planned'
 import { computeSlotMatrix, hasFutureSlotToday, type SlotStatus } from '@/lib/slotFinder'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
@@ -176,8 +177,11 @@ export default function SlotFinderModal({ onClose, onSaved, initialDate }: Props
       hall_id: selected.hallId,
       trainer_id: trainerId || null,
     })
-    if (conflict) {
-      toast.error(conflict)
+    const templateConflict = conflict ? null : await checkTemplateSlotConflicts(supabase, {
+      starts_at: startsAt, duration_min: durationMin, hall_id: selected.hallId, trainer_id: trainerId || null,
+    })
+    if (conflict || templateConflict) {
+      toast.error(conflict ?? templateConflict!)
       setSelected(null)
       await fetchDay()
       setSaving(false)

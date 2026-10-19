@@ -211,3 +211,19 @@ function addDaysYMD(ymd: string, n: number): string {
   const dt = new Date(Date.UTC(y, m - 1, d + n))
   return dt.toISOString().slice(0, 10)
 }
+
+/** Активні (не минулі) зміни серії — бейджі пауз і «записані наперед» у SeriesModal. */
+export async function listSeriesPlannedChanges(
+  supabase: Db,
+  seriesId: string
+): Promise<{ data: { id: string; client_id: string; action: string; date_from: string; date_to: string;
+  clients: { first_name: string | null; last_name: string | null } | null }[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('planned_enrollment_changes')
+    .select('id, client_id, action, date_from, date_to, clients(first_name, last_name)')
+    .eq('series_id', seriesId)
+    .eq('is_active', true)
+    .gte('date_to', todayKyiv())
+    .order('date_from')
+  return { data: data ?? [], error: error?.message ?? null }
+}

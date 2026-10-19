@@ -4,7 +4,7 @@ import type { Client, ClientSessionBalance } from '@/types'
 
 // Усі embed тут single-FK (class_series/classes/trainers/halls) → select-літерали
 // напряму, типи виведено через QueryData (джерело істини = .select()).
-const PERMANENT_SELECT = 'id, series_id, class_series(title, ticket_type, day_of_week, time_of_day, duration_min, trainers(name), halls(name))' as const
+const PERMANENT_SELECT = 'id, series_id, valid_to, class_series(title, ticket_type, day_of_week, time_of_day, duration_min, trainers(name), halls(name))' as const
 const UPCOMING_SELECT = 'id, class_id, status, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))' as const
 const PAST_SELECT = 'id, class_id, status, sessions_used, classes!inner(ticket_type, title, starts_at, duration_min, choreo_stage, trainers(name), halls(name))' as const
 

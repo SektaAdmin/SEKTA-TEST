@@ -9,11 +9,14 @@ import { typeColor } from '@/lib/typeColor'
 import { useRealtime } from '@/lib/useRealtime'
 import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
+import GhostSlotModal from '@/components/planned/GhostSlotModal'
+import { listProjectedSlots, type ProjectedSlot } from '@/lib/queries/planned'
+import { ghostToClass, isGhostId, parseGhostId } from '@/lib/planned'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
 import { getActiveCount, getWaitlistCount, isFull } from '@/lib/scheduleMetrics'
 import { ticketTypeAbbr } from '@/lib/badges'
-import { MONTHS_UK_CAP, MONTHS_UK_FULL, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex } from '@/lib/dateUtils'
+import { MONTHS_UK_CAP, MONTHS_UK_FULL, WEEKDAYS_SHORT, WEEKDAYS_FULL, dowMondayIndex, toYMD } from '@/lib/dateUtils'
 import { formatDate, formatDateShort } from '@/lib/formatters'
 import styles from '../../schedule/schedule.module.css'
 import local from './trainerSchedule.module.css'
@@ -260,6 +263,7 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   const cardHeight = getCardHeight(cls.duration_min, hourHeight)
   const isCompact = cardHeight < 60
   const label = cls.title || (typeLabels[cls.ticket_type] ?? cls.ticket_type)
+  const ghost = isGhostId(cls.id)
 
   const [showTooltip, setShowTooltip] = useState(false)
   const cardRef = useRef<HTMLButtonElement>(null)
@@ -276,11 +280,11 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
   }, [])
 
   const handleMouseEnter = useCallback(() => {
-    if (isMobile) return
+    if (isMobile || ghost) return
     cancelClose()
     if (hoverTimer.current) clearTimeout(hoverTimer.current)
     hoverTimer.current = setTimeout(() => setShowTooltip(true), 250)
-  }, [isMobile, cancelClose])
+  }, [isMobile, ghost, cancelClose])
 
   const handleMouseLeave = useCallback(() => {
     if (hoverTimer.current) clearTimeout(hoverTimer.current)
@@ -291,7 +295,8 @@ function ClassCard({ cls, typeLabels, hourHeight, laneIndex = 0, laneCount = 1, 
     <button
       ref={cardRef}
       data-card
-      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''} ${isOwn ? styles.cardOwn : ''}`}
+      className={`${styles.card} ${cls.is_cancelled ? styles.cardCancelled : ''} ${isOwn ? styles.cardOwn : ''} ${ghost ? styles.cardGhost : ''}`}
+      title={ghost ? 'За шаблоном — тиждень ще не відкрито' : undefined}
       style={{
         top: `${getCardTop(cls.starts_at, hourHeight) + CARD_GAP}px`,
         height: `${Math.max(cardHeight - CARD_GAP * 2, 20)}px`,
@@ -745,6 +750,7 @@ function MobileScheduleTimeline({
                           styles.mobileTlCard,
                           cls.is_cancelled ? styles.mobileTlCardCancelled : '',
                           isOwn ? styles.mobileTlCardOwn : '',
+                          isGhostId(cls.id) ? styles.mobileTlCardGhost : '',
                         ].filter(Boolean).join(' ')}
                         style={{ ['--card-color' as string]: color }}
                         onClick={() => onCardClick(cls.id)}
@@ -764,6 +770,7 @@ function MobileScheduleTimeline({
                           </div>
                           <div className={styles.mobileTlCardMeta}>
                             <span>{timeStr}</span>
+                            {isGhostId(cls.id) && <span> · за шаблоном</span>}
                             {cls.halls?.name && <span> · {cls.halls.name}</span>}
                             {cls.trainers?.name && <span> · {cls.trainers.name}</span>}
                             {free != null && !full && !cls.is_cancelled && (
@@ -882,12 +889,47 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
     return { weekDays: days, weekStartISO: start.toISOString(), weekEndISO: end.toISOString() }
   }, [baseDate, viewMode])
 
+  // Примарні слоти: RPC під RLS віддає тренеру лише його серії.
+  const [ghostSlots, setGhostSlots] = useState<ProjectedSlot[]>([])
+  const [openGhost, setOpenGhost] = useState<ProjectedSlot | null>(null)
+
   const fetchClasses = useCallback(async () => {
     setLoading(true)
-    const { active } = await listClassesForWeek(supabase, weekStartISO, weekEndISO)
+    const [{ active }, projected] = await Promise.all([
+      listClassesForWeek(supabase, weekStartISO, weekEndISO),
+      listProjectedSlots(supabase, toYMD(weekDays[0]), toYMD(weekDays[weekDays.length - 1])),
+    ])
     setClasses(active as ClassWithJoins[])
+    setGhostSlots(projected.data)
     setLoading(false)
-  }, [weekStartISO, weekEndISO])
+  }, [weekStartISO, weekEndISO]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const allClasses = useMemo(() => {
+    if (ghostSlots.length === 0) return classes
+    return [...classes, ...ghostSlots.map(g => ghostToClass(
+      g,
+      trainers.find(t => t.id === g.trainer_id)?.name ?? null,
+      halls.find(h => h.id === g.hall_id)?.name ?? null,
+    ))]
+  }, [classes, ghostSlots, trainers, halls])
+
+  const openCard = useCallback((id: string) => {
+    if (!isGhostId(id)) { setEditClassId(id); return }
+    const { seriesId, date } = parseGhostId(id)
+    setOpenGhost(ghostSlots.find(g => g.series_id === seriesId && g.class_date === date) ?? null)
+  }, [ghostSlots])
+
+  const ghostModal = openGhost && (
+    <GhostSlotModal
+      slot={openGhost}
+      label={openGhost.title || (typeLabels[openGhost.ticket_type] ?? openGhost.ticket_type)}
+      trainerName={trainers.find(t => t.id === openGhost.trainer_id)?.name ?? null}
+      hallName={halls.find(h => h.id === openGhost.hall_id)?.name ?? null}
+      canEditTemplates={isStaff}
+      onClose={() => setOpenGhost(null)}
+      onChanged={fetchClasses}
+    />
+  )
 
   useEffect(() => { fetchClasses() }, [fetchClasses])
   useRealtime(['classes', 'enrollments'], fetchClasses)
@@ -933,9 +975,9 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
   }, [])
 
   const filteredClasses = useMemo(() => {
-    if (filterChip !== 'all') return classes.filter(c => c.hall_id === filterChip)
-    return classes
-  }, [classes, filterChip])
+    if (filterChip !== 'all') return allClasses.filter(c => c.hall_id === filterChip)
+    return allClasses
+  }, [allClasses, filterChip])
 
   const visibleHalls = useMemo(() => {
     const hallIds = new Set(filteredClasses.map(c => c.hall_id).filter(Boolean))
@@ -1070,7 +1112,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
         </div>
 
         <MobileScheduleTimeline
-          classes={classes}
+          classes={allClasses}
           selectedDate={baseDate}
           today={today}
           typeLabels={typeLabels}
@@ -1083,13 +1125,14 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
           onDateSelect={setBaseDate}
           onFilterChip={setFilterChip}
           onTrainerFilter={setFilterTrainer}
-          onCardClick={id => setEditClassId(id)}
+          onCardClick={openCard}
           onFreeSlotClick={(startsAt, hallId) => {
             setPrefill({ starts_at: startsAt, hall_id: hallId })
             setShowModal(true)
           }}
         />
 
+        {ghostModal}
         {editClassId && (
           <ClassDetailModal
             classId={editClassId}
@@ -1314,7 +1357,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
                                 typeLabels={typeLabels}
                                 hourHeight={hourHeight}
                                 day={day}
-                                onCardClick={id => setEditClassId(id)}
+                                onCardClick={openCard}
                                 onSlotClick={startsAt => {
                                   setPrefill({ starts_at: startsAt, hall_id: hall?.id })
                                   setShowModal(true)
@@ -1401,6 +1444,7 @@ export default function TrainerSchedule({ viewerTrainerId }: Props) {
         </button>
       </main>
 
+      {ghostModal}
       {editClassId && (
         <ClassDetailModal
           classId={editClassId}

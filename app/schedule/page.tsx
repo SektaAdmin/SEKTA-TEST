@@ -12,6 +12,7 @@ import ClassModal from '@/components/ClassModal'
 import ClassDetailModal from '@/components/ClassDetailModal'
 import GhostSlotModal from '@/components/planned/GhostSlotModal'
 import { listProjectedSlots, type ProjectedSlot } from '@/lib/queries/planned'
+import { ghostToClass, isGhostId, parseGhostId } from '@/lib/planned'
 import SlotFinderModal from '@/components/SlotFinderModal'
 import { useRefs } from '@/contexts/RefsContext'
 import type { Class } from '@/types'
@@ -45,40 +46,6 @@ type ClassWithJoins = Class & {
 }
 
 type Hall = { id: string; name: string; capacity: number; description: string | null; is_active: boolean }
-
-// ── Примарні слоти («Заплановане») ───────────────────────────────
-// Заняття шаблону на дату, де тиждень ще не відкрито. Рендеримо як псевдо-заняття
-// (id «ghost:…»), щоб сітка/доріжки/мобільний тайм-лайн працювали без змін;
-// клік відкриває GhostSlotModal замість ClassDetailModal.
-const GHOST_PREFIX = 'ghost:'
-const isGhostId = (id: string) => id.startsWith(GHOST_PREFIX)
-
-function ghostToClass(
-  g: ProjectedSlot,
-  trainerName: (id: string | null) => string | null,
-  hallName: (id: string | null) => string | null,
-): ClassWithJoins {
-  return {
-    id: `${GHOST_PREFIX}${g.series_id}:${g.class_date}`,
-    trainer_id: g.trainer_id,
-    hall_id: g.hall_id,
-    ticket_type: g.ticket_type,
-    title: g.title,
-    starts_at: g.starts_at,
-    duration_min: g.duration_min,
-    capacity: g.capacity,
-    is_cancelled: false,
-    notes: null,
-    choreo_stage: null,
-    series_id: g.series_id,
-    created_at: g.starts_at,
-    updated_at: g.starts_at,
-    trainers: trainerName(g.trainer_id) ? { name: trainerName(g.trainer_id)! } : null,
-    halls: hallName(g.hall_id) ? { name: hallName(g.hall_id)! } : null,
-    // Майбутній склад (без пауз) — щоб лічильник місць показував заповненість наперед.
-    enrollments: Array.from({ length: g.roster_count }, (_, i) => ({ id: `${g.series_id}-${i}`, status: 'enrolled' })),
-  }
-}
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
@@ -1015,14 +982,16 @@ export default function SchedulePage() {
   // Apply filters
   const allClasses = useMemo(() => {
     if (ghostSlots.length === 0) return classes
-    const tName = (id: string | null) => trainers.find(t => t.id === id)?.name ?? null
-    const hName = (id: string | null) => halls.find(h => h.id === id)?.name ?? null
-    return [...classes, ...ghostSlots.map(g => ghostToClass(g, tName, hName))]
+    return [...classes, ...ghostSlots.map(g => ghostToClass(
+      g,
+      trainers.find(t => t.id === g.trainer_id)?.name ?? null,
+      halls.find(h => h.id === g.hall_id)?.name ?? null,
+    ))]
   }, [classes, ghostSlots, trainers, halls])
 
   const openCard = useCallback((id: string) => {
     if (!isGhostId(id)) { setEditClassId(id); return }
-    const [, seriesId, date] = id.split(':')
+    const { seriesId, date } = parseGhostId(id)
     setOpenGhost(ghostSlots.find(g => g.series_id === seriesId && g.class_date === date) ?? null)
   }, [ghostSlots])
 
