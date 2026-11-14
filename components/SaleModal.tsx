@@ -222,7 +222,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               onChange={e => pricePaid$.onChange(e, n => setValue('price_paid', n))}
               onBlur={() => pricePaid$.onBlur(n => setValue('price_paid', n))}
               min={0}
-              step={1}
+              step={0.01}
               disabled={busy}
             />
           </FormField>
@@ -239,7 +239,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               onChange={e => pricePaid$.onChange(e, n => setValue('price_paid', n))}
               onBlur={() => pricePaid$.onBlur(n => setValue('price_paid', n))}
               min={0}
-              step={1}
+              step={0.01}
               disabled={busy}
             />
           </FormField>
@@ -261,7 +261,7 @@ export default function SaleModal({ onClose, onSaved, editSale, preselectedClien
               onChange={e => amountGiven$.onChange(e, n => setValue('amount_given', n))}
               onBlur={() => amountGiven$.onBlur(n => setValue('amount_given', n))}
               min={ticketId ? 0 : undefined}
-              step={1}
+              step={0.01}
               disabled={busy}
             />
           </FormField>

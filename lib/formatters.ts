@@ -14,10 +14,18 @@ export function formatClientLabel(c: NameFields & Pick<Client, 'phone' | 'id'>):
 const pad = (n: number) => String(n).padStart(2, '0')
 
 /* ── Гроші ──────────────────────────────────────────────────────
-   Єдине форматування. Грн (₴), без копійок. uk-UA → пробіл-роздільник тисяч.
-   Знак ± і «— для 0» лишаються на місці виклику. */
+   Єдине форматування. Грн (₴) з копійками (інв. #5): ціле — без дробу («2 100 ₴»),
+   дробове — рівно 2 знаки («777,50 ₴»). Округлення до копійок ховає float-хвости
+   сум у JS. uk-UA → пробіл-роздільник тисяч. Знак ± і «— для 0» — на місці виклику. */
 export function formatMoney(n: number): string {
-  return `${n.toLocaleString('uk-UA')} ₴`
+  const v = roundMoney(n)
+  const digits = Number.isInteger(v) ? 0 : 2
+  return `${v.toLocaleString('uk-UA', { minimumFractionDigits: digits, maximumFractionDigits: digits })} ₴`
+}
+
+/** Округлення грошей до копійок (замість Math.round до гривні). */
+export function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100
 }
 
 /* ── Дати (display) ─────────────────────────────────────────────

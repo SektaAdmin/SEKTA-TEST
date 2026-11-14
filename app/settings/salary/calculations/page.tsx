@@ -19,7 +19,7 @@ import { listActiveTrainers } from '@/lib/queries/trainers'
 import { getAccountingBalance } from '@/lib/queries/accounting'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
-import { formatMoney, formatDate, formatDateShort, formatTime } from '@/lib/formatters'
+import { formatMoney, formatDate, formatDateShort, formatTime, roundMoney } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
 import { buildDayGroups, salaryToPay, pluralClasses } from '@/lib/salary'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass, salaryPaymentTypeLabel, salaryPaymentTypeClass } from '@/lib/badges'
@@ -231,7 +231,7 @@ export default function SalaryCalculationsPage() {
   function openPaymentModal() {
     setEditingPayment(null)
     setPaymentDate(toYMD(new Date()))
-    setPaymentAmount(String(Math.max(0, Math.round(toPay))))
+    setPaymentAmount(String(Math.max(0, roundMoney(toPay))))
     setPaymentNotes('')
     setPaymentError(null)
     setPaymentType('final')
@@ -260,7 +260,7 @@ export default function SalaryCalculationsPage() {
   }
 
   async function handleSavePayment() {
-    const amount = parseFloat(paymentAmount)
+    const amount = roundMoney(parseFloat(paymentAmount))
     if (isNaN(amount) || amount <= 0) { setPaymentError('Введіть суму виплати'); return }
     if (!paymentDate) { setPaymentError('Оберіть дату'); return }
     setSaving(true)
@@ -832,7 +832,7 @@ export default function SalaryCalculationsPage() {
           <FormField id="pay-amount" label="Виплачено ₴">
             <input
               id="pay-amount"
-              type="number" min="0" step="10"
+              type="number" min="0" step="0.01" inputMode="decimal"
               value={paymentAmount}
               onChange={e => setPaymentAmount(e.target.value)}
               autoFocus

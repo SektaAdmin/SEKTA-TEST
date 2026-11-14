@@ -17,7 +17,7 @@ import { insertTrainerPayment, deleteTrainerPayment } from '@/lib/queries/traine
 import { listActiveTrainers } from '@/lib/queries/trainers'
 import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
-import { formatMoney, formatDate } from '@/lib/formatters'
+import { formatMoney, formatDate, roundMoney } from '@/lib/formatters'
 import { toYMD, ymdToDisplay } from '@/lib/dateUtils'
 import {
   buildVacationQuarters,
@@ -176,7 +176,7 @@ export default function SalaryVacationPage() {
 
   async function handleSavePayment() {
     if (!payQuarter) return
-    const amount = Math.round(Number(payAmount))
+    const amount = roundMoney(Number(payAmount))
     if (!amount || amount <= 0) { setPayError('Введіть суму виплати'); return }
     if (!payDate) { setPayError('Оберіть дату'); return }
     setSaving(true)
@@ -466,7 +466,7 @@ export default function SalaryVacationPage() {
           <FormField id="vac-pay-amount" label="Виплачено ₴">
             <input
               id="vac-pay-amount"
-              type="number" min="0" step="1"
+              type="number" min="0" step="0.01" inputMode="decimal"
               value={payAmount}
               onChange={e => setPayAmount(e.target.value)}
               autoFocus

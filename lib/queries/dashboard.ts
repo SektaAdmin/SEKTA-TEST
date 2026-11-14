@@ -6,7 +6,7 @@ import { type DebtGroup } from '@/lib/dashboardReport'
 
 /* Запити, специфічні для операційного дашборду (/dashboard).
    Решта блоків збирається з існуючих queries (enrollments.ts, trainer-rates.ts).
-   Гроші — integer ₴, НЕ ділити на 100. */
+   Гроші — ₴ з копійками (numeric(12,2)), НЕ ділити на 100. */
 
 /** Клієнти з від'ємним грошовим депозитом (view clients_negative_balance). */
 export async function listNegativeBalanceClients(

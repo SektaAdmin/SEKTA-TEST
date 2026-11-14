@@ -5,6 +5,8 @@
 // Відпускні   = ЗП за квартал ÷ робочих днів × 7  (7 днів/квартал = 28/рік).
 // Усі дати — РРРР-ММ-ДД; арифметика в UTC, щоб DST не з'їдав/додавав добу.
 
+import { roundMoney } from '@/lib/formatters'
+
 export const VACATION_DAYS_PER_QUARTER = 7
 
 const DAY_MS = 86_400_000
@@ -64,7 +66,7 @@ export function vacationDaysInRange(
   return total
 }
 
-/** Відпускні за квартал, ₴ integer (інв. гроші — integer). */
+/** Відпускні за квартал, ₴ з копійками (інв. #5). */
 export function calcVacationPay(
   salary: number,
   daysInQuarter: number,
@@ -72,7 +74,7 @@ export function calcVacationPay(
 ): { workedDays: number; accrued: number } {
   const workedDays = daysInQuarter - vacationDays
   if (workedDays <= 0 || salary <= 0) return { workedDays: Math.max(0, workedDays), accrued: 0 }
-  return { workedDays, accrued: Math.round((salary / workedDays) * VACATION_DAYS_PER_QUARTER) }
+  return { workedDays, accrued: roundMoney((salary / workedDays) * VACATION_DAYS_PER_QUARTER) }
 }
 
 export type VacationQuarterRow = VacationQuarter & {

@@ -8,7 +8,7 @@ import { kyivDayUtcBounds } from '@/lib/dateUtils'
 
 /* Запити для звірки (/accounting). Feed = sales + studio_expenses + trainer_payments
    за один рахунок (метод оплати + опційно cash_holder) у діапазоні дат.
-   Гроші — integer ₴, snapshot-поля (ticket_name/ticket_price) беремо як є.
+   Гроші — ₴ з копійками (numeric(12,2)), snapshot-поля (ticket_name/ticket_price) беремо як є.
    select-літерали (без template ${}) — QueryData парсить embed лише зі статики;
    FK вшито вручну + compile-time guard проти TRAINER_FK. */
 

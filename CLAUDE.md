@@ -10,7 +10,7 @@ Next.js 14.2.3 (App Router) · React 18 · TypeScript (strict) · Supabase (Post
 2. **Залишок занять (`client_session_balances`) — тільки через RPC** (`mark_attendance`/`change_enrollment_status`). Ніколи не `UPDATE` напряму.
 3. **Статуси/скасування занять — тільки через RPC** (`change_enrollment_status`, `cancel_class_and_restore_sessions`). Прямий `UPDATE` ламає баланс.
 4. **М'які видалення скрізь** (`is_active`/`is_cancelled`). Ніколи не `DELETE` доменні рядки.
-5. **Гроші — в гривнях (₴), integer.** Не ділити на 100.
+5. **Гроші — в гривнях (₴), `numeric(12,2)`, копійки дозволені.** Не ділити на 100. Показ — `formatMoney`, округлення — `roundMoney` (`lib/formatters.ts`).
 
 ## Context Dispatcher — ОБОВ'ЯЗКОВО
 

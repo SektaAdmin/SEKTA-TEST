@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/FormField'
 import { insertStudioExpense, updateStudioExpense } from '@/lib/queries/studio-expenses'
 import type { StudioExpense } from '@/lib/queries/studio-expenses'
 import { toYMD, isoToYMD } from '@/lib/dateUtils'
+import { roundMoney } from '@/lib/formatters'
 import type { Trainer } from '@/types'
 import styles from './StudioExpenseModal.module.css'
 
@@ -61,7 +62,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
   const activeTrainers = trainers.filter(t => t.is_active)
 
   async function handleSubmit() {
-    const amt = parseInt(amount, 10)
+    const amt = roundMoney(Number(amount))
     if (!amount || isNaN(amt) || amt <= 0) { setError('Введіть суму більше 0'); return }
 
     if (mode === 'transfer') {
@@ -161,7 +162,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
           </FormField>
 
           <FormField id="se-amount" label="Сума (₴)" required>
-            <input id="se-amount" type="number" min="1" placeholder="0"
+            <input id="se-amount" type="number" min="0.01" step="0.01" inputMode="decimal" placeholder="0"
               value={amount} onChange={e => setAmount(e.target.value)} />
           </FormField>
 
@@ -196,7 +197,7 @@ export default function StudioExpenseModal({ trainers, onClose, onSaved, editExp
           </FormField>
 
           <FormField id="se-amount" label="Сума (₴)" required>
-            <input id="se-amount" type="number" min="1" placeholder="0"
+            <input id="se-amount" type="number" min="0.01" step="0.01" inputMode="decimal" placeholder="0"
               value={amount} onChange={e => setAmount(e.target.value)} />
           </FormField>
 
