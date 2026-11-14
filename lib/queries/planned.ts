@@ -78,6 +78,19 @@ export async function cancelPlannedChange(
   return { error }
 }
 
+/** Прибрати слот шаблону на одну дату: примарна картка зникає, generate_week його не створить. */
+export async function skipTemplateSlot(
+  supabase: Db,
+  seriesId: string,
+  dateYMD: string
+): Promise<{ error: string | null }> {
+  const { error } = await callRpc<{ success: boolean; error_message: string | null }>(
+    () => supabase.rpc('skip_template_slot', { p_series_id: seriesId, p_date: dateYMD }),
+    'Не вдалося прибрати слот'
+  )
+  return { error }
+}
+
 /** Тимчасовий постійник: додати / змінити період. null/null = безстроково. */
 export async function upsertSeriesClientPeriod(
   supabase: Db,

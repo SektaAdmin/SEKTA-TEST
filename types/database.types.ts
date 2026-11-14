@@ -1769,6 +1769,13 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      skip_template_slot: {
+        Args: { p_date: string; p_series_id: string }
+        Returns: {
+          error_message: string
+          success: boolean
+        }[]
+      }
       update_client_balance: {
         Args: {
           p_amount: number

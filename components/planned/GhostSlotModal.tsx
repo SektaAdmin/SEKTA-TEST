@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useAsync } from '@/hooks/useAsync'
 import { ModalShell } from '@/components/ui/ModalShell'
 import PlannedChangeModal, { type PlannedPrefill } from './PlannedChangeModal'
-import { getSeriesRoster, cancelPlannedChange, type ProjectedSlot, type RosterRow } from '@/lib/queries/planned'
+import { getSeriesRoster, cancelPlannedChange, skipTemplateSlot, type ProjectedSlot, type RosterRow } from '@/lib/queries/planned'
 import { kyivDateLabel, ymdShort } from '@/lib/planned'
 import { formatTime } from '@/lib/formatters'
 import styles from './planned.module.css'
@@ -31,6 +31,8 @@ function rosterName(r: RosterRow): string {
 export default function GhostSlotModal({ slot, label, trainerName, hallName, canEditTemplates, onClose, onChanged }: Props) {
   const [wizard, setWizard] = useState<PlannedPrefill | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [confirmSkip, setConfirmSkip] = useState(false)
+  const [skipping, setSkipping] = useState(false)
 
   const { data, loading, error, refetch } = useAsync(
     () => getSeriesRoster(supabase, slot.series_id, slot.class_date),
@@ -48,8 +50,27 @@ export default function GhostSlotModal({ slot, label, trainerName, hallName, can
     refetch(); onChanged()
   }
 
-  const footer = (
+  async function skipSlot() {
+    setSkipping(true)
+    const { error } = await skipTemplateSlot(supabase, slot.series_id, slot.class_date)
+    setSkipping(false)
+    if (error) { toast.error(error); return }
+    toast.success('Слот прибрано на цю дату')
+    onChanged(); onClose()
+  }
+
+  const footer = confirmSkip ? (
     <>
+      <button type="button" className="btn-secondary" onClick={() => setConfirmSkip(false)} disabled={skipping}>Назад</button>
+      <button type="button" autoFocus className="btn-danger" onClick={skipSlot} disabled={skipping}>
+        {skipping ? 'Видалення…' : 'Видалити слот'}
+      </button>
+    </>
+  ) : (
+    <>
+      <button type="button" className={`btn-ghost ${styles.skipSlotBtn}`} onClick={() => setConfirmSkip(true)}>
+        Видалити цей слот
+      </button>
       <button type="button" className="btn-secondary" onClick={onClose}>Закрити</button>
       <button
         type="button"
@@ -73,6 +94,12 @@ export default function GhostSlotModal({ slot, label, trainerName, hallName, can
         <p className={styles.stepHint}>
           Заняття за шаблоном — зʼявиться, коли відкриють тиждень. Записи нижче створяться автоматично.
         </p>
+        {confirmSkip && (
+          <p className={styles.previewError}>
+            Слот буде прибрано лише на {kyivDateLabel(slot.starts_at)} {formatTime(slot.starts_at)}: місце звільниться,
+            а заняття з шаблону на цю дату не створиться.{active.length > 0 ? ` Записані на нього (${active.length}) на заняття не потраплять.` : ''}
+          </p>
+        )}
 
         {loading && !data ? (
           <p className={styles.muted}>Завантаження...</p>

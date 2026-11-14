@@ -34,7 +34,7 @@ export interface GenerateWarning {
   ticket_type: string
   class_date: string
   time_of_day: string
-  reason: 'waitlist' | 'no_sessions' | 'class_missing'
+  reason: 'waitlist' | 'no_sessions' | 'class_missing' | 'slot_skipped'
 }
 
 export const KIND_LABEL: Record<PlannedKind, string> = {
@@ -62,6 +62,7 @@ export const WARNING_REASON: Record<GenerateWarning['reason'], string> = {
   waitlist: 'у черзі — немає місць',
   no_sessions: 'немає оплачених занять',
   class_missing: 'заняття не створено (скасоване або конфлікт)',
+  slot_skipped: 'слот прибрано на цю дату',
 }
 
 /** «Стретчинг Пн 19:00» з полів шаблону. */

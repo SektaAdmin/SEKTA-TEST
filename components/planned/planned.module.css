@@ -320,6 +320,11 @@
 }
 .linkBtn:hover { color: var(--text-2); }
 
+/* «Видалити цей слот» у футері примарного слоту — ліворуч, приглушено; небезпеку видно на hover
+   (той самий рецепт, що .btnDeleteGhost у ClassDetailModal). */
+.skipSlotBtn { margin-right: auto; color: var(--text-3); }
+.skipSlotBtn:hover:not(:disabled) { color: var(--danger-text); background: var(--danger-dim); }
+
 .compact .tableDesktop { display: none; }
 .compact .cardList { display: flex; flex-direction: column; gap: 8px; }
 .compact .controls { flex-direction: column; align-items: stretch; }
