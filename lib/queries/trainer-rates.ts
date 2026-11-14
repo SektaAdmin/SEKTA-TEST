@@ -224,7 +224,7 @@ export async function calcTrainerSalaryDetail(
 
 // Готівка на руках у тренера за період (деталізація в розрахунках ЗП).
 // Формула — дзеркало RPC accounting_balance (єдина правда для «на руках»):
-//   (cash-продажі: ticket → price_paid, без тікета → greatest(0, amount_given))
+//   (cash-продажі: greatest(0, amount_given) — живі гроші, і з тікетом, і без)
 //   + приходи (direction='income') − витрати (direction='expense') − виплати ЗП готівкою.
 // Осі часу: sales/expenses по created_at (Kyiv-доба, як /accounting);
 // виплати — по payment_date СВІДОМО (коли реально виплатили, а не коли внесли запис).
@@ -273,7 +273,7 @@ export async function getTrainerCashBalance(
     created_at: s.created_at,
     client_name: [s.clients?.first_name, s.clients?.last_name].filter(Boolean).join(' ') || '—',
     ticket_name: s.ticket_name ?? null,
-    amount: s.ticket_id !== null ? Number(s.price_paid) : Math.max(0, Number(s.amount_given)),
+    amount: Math.max(0, Number(s.amount_given)),
   }))
 
   const mapExpense = (e: { id: string; created_at: string; description: string | null; amount: number }) => ({

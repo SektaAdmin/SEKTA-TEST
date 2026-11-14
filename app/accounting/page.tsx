@@ -101,8 +101,10 @@ function fmtDatetime(iso: string): { date: string; time: string } {
   return { date, time }
 }
 
+// Каса = живі гроші (amount_given), а не ціна: переплата в депозит теж у касі,
+// частина з депозиту — ні. Дзеркало RPC _accounting_balance_raw.
 function saleRevenue(s: SaleRow): number {
-  return s.ticket_id !== null ? s.price_paid : Math.max(0, s.amount_given)
+  return Math.max(0, s.amount_given)
 }
 
 function getToday(): string { return toYMD(new Date()) }
