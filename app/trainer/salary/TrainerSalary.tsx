@@ -69,7 +69,7 @@ export default function TrainerSalary({ trainerId }: Props) {
   const paid = payments.reduce((s, p) => s + Number(p.paid_amount), 0)
   const cashPeriod = data?.cash.cash_period ?? 0
   const cashTotal = data?.cash.cash_total ?? 0
-  const toPay = salaryToPay(accrued, cashPeriod, paid)
+  const toPay = salaryToPay(accrued, paid, cashTotal)
   const missingRateCount = rows.filter(r => r.has_missing_rate).length
 
   function typeLabel(code: string): string {
@@ -188,7 +188,12 @@ export default function TrainerSalary({ trainerId }: Props) {
                   )}
                 </div>
               </div>
-              <p className={styles.formula}>До виплати = нараховано − готівка на руках за період − виплачено</p>
+              {toPay < 0 && (
+                <p className={styles.formula}>
+                  Готівки на руках більше на {formatMoney(-toPay)} — врахується наступного разу.
+                </p>
+              )}
+              <p className={styles.formula}>До виплати = нараховано − виплачено − готівка на руках зараз</p>
             </section>
 
             {missingRateCount > 0 && (

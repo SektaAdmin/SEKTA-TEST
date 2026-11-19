@@ -21,7 +21,7 @@ import type { Trainer } from '@/types'
 import DatePicker from '@/components/DatePicker'
 import { formatMoney, formatDate, formatDateShort, formatTime, roundMoney } from '@/lib/formatters'
 import { toYMD } from '@/lib/dateUtils'
-import { buildDayGroups, salaryToPay, pluralClasses } from '@/lib/salary'
+import { buildDayGroups, salaryToPay, cashCoverable, pluralClasses } from '@/lib/salary'
 import { ticketTypeShortLabel, enrollmentStatusClass, enrollmentStatusLabel, paymentLabel, paymentClass, salaryPaymentTypeLabel, salaryPaymentTypeClass } from '@/lib/badges'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { ModalFooter } from '@/components/ui/ModalFooter'
@@ -209,8 +209,10 @@ export default function SalaryCalculationsPage() {
   // Заняття, де на дату немає ставки в trainer_rates → нараховано тихий 0 (rate_missing з RPC)
   const missingRateCount = useMemo(() => rows.filter(r => r.has_missing_rate).length, [rows])
   const totalPaidPeriod = useMemo(() => payments.reduce((s, p) => s + Number(p.paid_amount), 0), [payments])
+  // рух готівки за період — лише деталізація; у формулі — «на руках» за весь час (lib/salary.ts)
   const cashOnHand = cashBalance?.total ?? 0
-  const toPay = salaryToPay(totalTrainer, cashOnHand, totalPaidPeriod)
+  const toPay = salaryToPay(totalTrainer, totalPaidPeriod, cashBalanceTotal)
+  const coverable = cashCoverable(totalTrainer, totalPaidPeriod, cashBalanceTotal)
 
   function toggleDay(dateKey: string) {
     setExpandedDays(prev => {
@@ -238,6 +240,15 @@ export default function SalaryCalculationsPage() {
     setPaymentMethod('cash')
     setPaymentCashHolder(selectedTrainerId)
     setPaymentModal(true)
+  }
+
+  /** Тренер забирає готівку з рук як ЗП (воскресний розрахунок): виплата cash, тримач = сам тренер. */
+  function openCashCoverModal() {
+    openPaymentModal()
+    setPaymentAmount(String(roundMoney(coverable)))
+    // покриває все нараховане → фінальна; частково → аванс (решта піде фінальною, напр. на картку)
+    setPaymentType(coverable >= totalTrainer - totalPaidPeriod ? 'final' : 'advance')
+    setPaymentNotes('Зарахування готівки на руках')
   }
 
   function openEditModal(p: TrainerPayment) {
@@ -587,6 +598,7 @@ export default function SalaryCalculationsPage() {
                 </div>
                 {cashExpanded && cashBalance && (
                   <div className={styles.cashDetail}>
+                    <div className={styles.cashHeader}>Рух готівки за період: {formatMoney(cashOnHand)}</div>
                     {cashBalance.cash_sales.length > 0 && (
                       <>
                         <div className={styles.cashHeader}>Cash продажі</div>
@@ -649,13 +661,28 @@ export default function SalaryCalculationsPage() {
                   <span>До виплати:</span>
                   <strong className={toPay > 0 ? styles.toPayAmt : ''}>{formatMoney(Math.max(0, toPay))}</strong>
                 </div>
+                {toPay < 0 && (
+                  <div className={styles.summaryHint}>
+                    Готівки на руках більше на {formatMoney(-toPay)} — лишиться в тренера і врахується наступного разу.
+                  </div>
+                )}
+                <div className={styles.summaryHint}>
+                  До виплати = нараховано − виплачено за період − готівка на руках зараз
+                </div>
               </div>
             </section>
 
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2 className="section-title">Виплати</h2>
-                <button className="btn-primary" onClick={openPaymentModal}>+ Зафіксувати виплату</button>
+                <div className={styles.headerActions}>
+                  {coverable > 0 && (
+                    <button className="btn-secondary" onClick={openCashCoverModal}>
+                      Зарахувати готівку {formatMoney(coverable)}
+                    </button>
+                  )}
+                  <button className="btn-primary" onClick={openPaymentModal}>+ Зафіксувати виплату</button>
+                </div>
               </div>
               {payments.length === 0 ? (
                 <div className={ss.empty}>{MSG.empty.salaryPayments}</div>
@@ -781,8 +808,8 @@ export default function SalaryCalculationsPage() {
         >
           <div className={styles.modalHint}>
             Нараховано тренеру: <strong>{formatMoney(totalTrainer)}</strong>
-            {cashOnHand > 0 && <> · Готівка за період: <strong>{formatMoney(cashOnHand)}</strong></>}
-            {cashBalanceTotal > 0 && cashBalanceTotal !== cashOnHand && <> · Всього на руках: <strong>{formatMoney(cashBalanceTotal)}</strong></>}
+            {totalPaidPeriod > 0 && <> · Виплачено: <strong>{formatMoney(totalPaidPeriod)}</strong></>}
+            {cashBalanceTotal > 0 && <> · На руках: <strong>{formatMoney(cashBalanceTotal)}</strong></>}
           </div>
 
           <div>

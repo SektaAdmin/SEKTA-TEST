@@ -36,9 +36,26 @@ export function buildDayGroups(rows: TrainerSalaryDetailRow[]): DayGroup[] {
   return Array.from(map.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey))
 }
 
-/** «До виплати» — формула 1:1 для власника й тренера: нараховано − готівка на руках за період − виплачено. */
-export function salaryToPay(accrued: number, cashPeriod: number, paidPeriod: number): number {
-  return accrued - cashPeriod - paidPeriod
+/**
+ * «До виплати» — формула 1:1 для власника й тренера:
+ *   нараховано за період − виплачено за період − готівка на руках ЗАРАЗ (за весь час).
+ *
+ * Чому готівка за весь час, а не за період:
+ *  - зарахування готівки як ЗП (виплата cash, cash_holder = тренер) нейтральне в будь-який день:
+ *    «виплачено» +X, «на руках» −X. Раніше готівка рахувалась за період по payment_date,
+ *    а виплати — по періоду, тож зарахування після кінця тижня зсувало суму між тижнями;
+ *  - надлишок готівки (зібрав більше, ніж заробив) лишається «на руках» і сам віднімається
+ *    наступного періоду, а не губиться.
+ * Умова коректності: готівку, яку тренер забрав собі, фіксуємо виплатою (кнопка «Зарахувати готівку»).
+ * Від'ємний результат = на руках більше, ніж до виплати (UI показує 0 + підказку).
+ */
+export function salaryToPay(accrued: number, paidPeriod: number, cashOnHandTotal: number): number {
+  return accrued - paidPeriod - cashOnHandTotal
+}
+
+/** Скільки готівки з рук тренера можна зарахувати як ЗП за період: min(на руках, нараховано − виплачено). */
+export function cashCoverable(accrued: number, paidPeriod: number, cashOnHandTotal: number): number {
+  return Math.max(0, Math.min(cashOnHandTotal, accrued - paidPeriod))
 }
 
 /** Відмінювання «заняття»: 1/2-4→заняття, 0/5+/11-14→занять (патерн pluralHours). */
